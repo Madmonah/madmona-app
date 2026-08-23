@@ -196,9 +196,12 @@ export default function CrmMobilePage() {
   const [err, setErr] = useState<string | null>(null)
   /* 📋 رسالة «الاسكريبت اتنسخ» — بتبان تحت لما يدوس واتساب */
   const [copied, setCopied] = useState<null | boolean>(null)
+  /* ⏱️ (٢٣ أغسطس ٢٠٢٦) المهلة كانت ٥ ثواني — والموظف بيكون وقتها راح
+     لواتساب خلاص، فبيرجع مايلاقيش حاجة ويفتكر إن مفيش اسكريبت اتنسخ.
+     ٣٠ ثانية عشان تفضل مستنياه لما يرجع. */
   const onCopied = useCallback((ok: boolean) => {
     setCopied(ok)
-    setTimeout(() => setCopied(null), 5000)
+    setTimeout(() => setCopied(null), 30000)
   }, [])
   const [tab, setTab] = useState<'calls' | 'tasks' | 'team' | 'all'>('calls')
   /* 🧑‍💼 (٢٢ أغسطس) تاب «كل الأرقام» للمدير — محمد: «افتح لينا إحنا كمان
@@ -707,6 +710,39 @@ export default function CrmMobilePage() {
 
             {/* المحتوى */}
             <div style={{ overflowY: 'auto', padding: 16, flex: 1 }}>
+              {/* 🗣️ (٢٣ أغسطس ٢٠٢٦ — محمد: «لسة إرسال الواتساب مش بيحضّر
+                  الاسكريبت في التاب اللي جمب اتصال»)
+
+                  اتأكدنا إن الكود الحي بيولّد اللينك بالنص صح — بس **واتساب
+                  ديسكتوب على ويندوز بيتجاهل النص المجهّز** في اللينك، وده
+                  خارج إيدينا تمامًا. وكنا بننسخه للكليبورد ونعرض رسالة، بس
+                  الرسالة بتختفي بعد ثواني والموظف يكون وقتها في واتساب —
+                  فعمره ما شافها.
+
+                  الحل اللي مايعتمدش على واتساب خالص: الاسكريبت **مكتوب
+                  قدامه هنا** في الملف، بزرار نسخ صريح. يقرا، ينسخ، يفتح
+                  واتساب، يلزق. مفيش تخمين ومفيش حاجة بتضيع في السكة. */}
+              <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, overflow: 'hidden', marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#f4f8f6', borderBottom: `1px solid ${C.line}` }}>
+                  <Sparkles style={{ width: 15, height: 15, color: C.green }} />
+                  <b style={{ fontSize: 13 }}>الاسكريبت الجاهز — {scriptFor(detailFor.specialty).label}</b>
+                  <button
+                    onClick={async () => {
+                      const ok = await copyScript(detailFor, q?.me?.name ?? null)
+                      onCopied(ok)
+                    }}
+                    style={{ ...btn('primary'), marginRight: 'auto', flex: '0 0 auto', padding: '6px 12px', fontSize: 12, minHeight: 32 }}>
+                    <ClipboardCheck style={{ width: 14, height: 14 }} /> انسخ
+                  </button>
+                </div>
+                <div style={{ padding: '11px 13px', fontSize: 12.5, lineHeight: 1.85, whiteSpace: 'pre-wrap', color: C.ink }}>
+                  {scriptText(detailFor.specialty, detail?.contact?.name || detailFor.name, q?.me?.name ?? null)}
+                </div>
+                <div style={{ padding: '0 13px 11px', fontSize: 11, color: C.sub, lineHeight: 1.7 }}>
+                  دوس «انسخ» وبعدها «واتساب» تحت والزق. عدّل فيه زي ما تحب قبل ما تبعت.
+                </div>
+              </div>
+
               {detailBusy && !detail && (
                 <div style={{ textAlign: 'center', padding: 30 }}>
                   <Loader2 style={{ width: 22, height: 22, color: C.green }} className="animate-spin" />
@@ -967,7 +1003,7 @@ export default function CrmMobilePage() {
       {copied !== null && (
         <div style={{
           position: 'fixed', insetInline: 12, bottom: 'calc(72px + env(safe-area-inset-bottom))',
-          zIndex: 60, background: copied ? '#14231E' : '#b3261e', color: '#fff',
+          zIndex: 9999, background: copied ? '#14231E' : '#b3261e', color: '#fff',
           borderRadius: 12, padding: '11px 14px', fontSize: 13, fontWeight: 700,
           boxShadow: '0 8px 24px rgba(0,0,0,.22)', textAlign: 'center', lineHeight: 1.7,
         }}>
