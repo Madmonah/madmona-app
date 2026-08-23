@@ -100,6 +100,14 @@ export default function AdminListingsPage() {
      الإعلان اللي مندوب ضايفه كان بيفضل شايل رقم المندوب ومحدش يعرف
      صاحبه مين. الخانة دي بتفصل الاتنين: مين صاحبه فعلاً، وإيه رقمه. */
   const [owner, setOwner] = useState<{ id: string; title: string; name: string; phone: string } | null>(null)
+
+  /* ➕ (٢٤ أغسطس ٢٦) محمد: «عايزين تاب لرقم صاحب الإعلان واحنا بنضيف
+     أي إعلان من الأدمن». نموذج مختصر: العنوان والتصنيف + اسم صاحبه ورقمه. */
+  const [adder, setAdder] = useState<null | {
+    title: string; category_id: string; city: string;
+    owner_name: string; owner_phone: string; contact_phone: string
+  }>(null)
+  const [adderErr, setAdderErr] = useState<string | null>(null)
   const [ownerErr, setOwnerErr] = useState<string | null>(null)
 
   // ---- guard ----
@@ -113,6 +121,25 @@ export default function AdminListingsPage() {
       setStage('ready')
     })()
   }, [])
+
+  async function saveNewListing() {
+    if (!adder) return
+    setBusy(true); setAdderErr(null)
+    try {
+      const res: any = await adminRpc('admin_add_listing', {
+        p_title: adder.title.trim(),
+        p_category: adder.category_id,
+        p_city: adder.city.trim() || null,
+        p_owner_name: adder.owner_name.trim() || null,
+        p_owner_phone: adder.owner_phone.trim() || null,
+        p_contact_phone: adder.contact_phone.trim() || null,
+      })
+      setAdder(null)
+      setFlash(`اتضاف الإعلان (${(res?.id || '').slice(0, 8)}) ✓`)
+      await load()
+    } catch (e: any) { setAdderErr(e?.message || 'مقدرناش نضيف') }
+    finally { setBusy(false) }
+  }
 
   async function saveOwner() {
     if (!owner) return
@@ -304,9 +331,15 @@ export default function AdminListingsPage() {
           <Link href="/admin/drafts" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${C.line}`, color: C.ink, padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
             <Clock style={{ width: 16, height: 16, color: C.warn }} /> الواقفة
           </Link>
-          <Link href="/supplier/marketplace/new" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.green, color: '#fff', padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
-            <Plus style={{ width: 16, height: 16 }} /> أضف خدمة
-          </Link>
+          <button
+            onClick={() => { setAdderErr(null); setAdder({
+              title: '', category_id: facets?.categories?.[0]?.id || '',
+              city: '', owner_name: '', owner_phone: '', contact_phone: '',
+            }) }}
+            disabled={!facets?.categories?.length}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.green, color: '#fff', padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, border: 'none', cursor: facets?.categories?.length ? 'pointer' : 'not-allowed' }}>
+            <Plus style={{ width: 16, height: 16 }} /> ضيف إعلان
+          </button>
         </div>
       </header>
 
@@ -617,6 +650,65 @@ export default function AdminListingsPage() {
                 fontWeight: 700, borderRadius: 12, border: 'none',
                 cursor: (!owner.name.trim() && !owner.phone.trim()) ? 'not-allowed' : 'pointer' }}>
               {busy ? 'بنحفظ…' : 'احفظ'}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* ➕ (٢٤ أغسطس ٢٦) مودال إضافة إعلان جديد من اللوحة */}
+      {adder && (
+        <Modal onClose={() => !busy && setAdder(null)}>
+          <h2 style={{ fontSize: 18, fontWeight: 800, margin: '0 0 4px' }}>ضيف إعلان جديد</h2>
+          <p style={{ fontSize: 12, color: C.sub, margin: '0 0 14px', lineHeight: 1.7 }}>
+            الحد الأدنى بس عشان يفتح في اللوحة. الباقي التاجر يكمّله من صفحته لما يستلمه.
+          </p>
+
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>العنوان *</label>
+          <input value={adder.title} onChange={(e) => setAdder({ ...adder, title: e.target.value })}
+            placeholder="مثال: شقة ١٢٠م بالتجمع الخامس"
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 12 }} />
+
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>التصنيف *</label>
+          <select value={adder.category_id} onChange={(e) => setAdder({ ...adder, category_id: e.target.value })}
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 12 }}>
+            {(facets?.categories || []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>المدينة</label>
+          <input value={adder.city} onChange={(e) => setAdder({ ...adder, city: e.target.value })} placeholder="القاهرة / الجيزة / …"
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 16 }} />
+
+          <div style={{ background: C.chip, borderRadius: 12, padding: 12, marginBottom: 4 }}>
+            <p style={{ fontSize: 12, fontWeight: 800, margin: '0 0 8px', color: C.ink }}>👤 صاحب الإعلان</p>
+            <p style={{ fontSize: 11, color: C.sub, margin: '0 0 10px', lineHeight: 1.7 }}>
+              اكتب اسم صاحبه الحقيقي ورقمه — عشان مايبقاش الإعلان منسوب لرقم المندوب.
+            </p>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>الاسم</label>
+            <input value={adder.owner_name} onChange={(e) => setAdder({ ...adder, owner_name: e.target.value })} placeholder="اسم صاحب الإعلان"
+              style={{ width: '100%', padding: 10, borderRadius: 10, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 10, background: '#fff' }} />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>موبايل صاحب الإعلان</label>
+            <input value={adder.owner_phone} onChange={(e) => setAdder({ ...adder, owner_phone: e.target.value })} placeholder="01xxxxxxxxx" inputMode="tel"
+              style={{ width: '100%', padding: 10, borderRadius: 10, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', direction: 'ltr', textAlign: 'right', background: '#fff' }} />
+          </div>
+
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, margin: '14px 0 6px' }}>رقم التواصل مع العميل (اختياري)</label>
+          <input value={adder.contact_phone} onChange={(e) => setAdder({ ...adder, contact_phone: e.target.value })}
+            placeholder="لو مختلف عن موبايل صاحب الإعلان" inputMode="tel"
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', direction: 'ltr', textAlign: 'right' }} />
+          <p style={{ fontSize: 11, color: C.sub, margin: '6px 0 0' }}>سيبه فاضي = هيتحط رقم صاحب الإعلان.</p>
+
+          {adderErr && <p style={{ fontSize: 12, color: C.danger, margin: '10px 0 0', lineHeight: 1.7 }}>{adderErr}</p>}
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+            <button onClick={() => setAdder(null)} disabled={busy}
+              style={{ flex: 1, padding: 12, background: '#f1f1f1', color: C.ink, fontWeight: 700, borderRadius: 12, border: 'none', cursor: 'pointer' }}>إلغاء</button>
+            <button onClick={saveNewListing} disabled={busy || !adder.title.trim() || !adder.category_id}
+              style={{ flex: 1, padding: 12,
+                background: (!adder.title.trim() || !adder.category_id) ? '#eee' : C.green,
+                color: (!adder.title.trim() || !adder.category_id) ? '#999' : '#fff',
+                fontWeight: 700, borderRadius: 12, border: 'none',
+                cursor: (!adder.title.trim() || !adder.category_id) ? 'not-allowed' : 'pointer' }}>
+              {busy ? 'بنضيف…' : 'أضف'}
             </button>
           </div>
         </Modal>
