@@ -582,7 +582,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {units.map((u: any) => (
-                <Link key={u.id} href={`/marketplace/${u.slug}`}
+                <Link key={u.id} href={u.href || `/marketplace/${u.slug}`}
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all">
                   <div className="h-36 bg-gray-100" style={u.photo
                     ? { backgroundImage: `url(${u.photo})`, backgroundSize: 'cover', backgroundPosition: 'center' }

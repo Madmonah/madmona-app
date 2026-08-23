@@ -108,3 +108,20 @@ QR-337.png
 
 env-pull.log
 vercel-*.txt
+
+# (24/8/2026) بروفايلات كروم بتاعت سكريبتات الريلز — فيها جلسات وكوكيز + آلاف الملفات
+scripts/reels/playwright/chrome-cdp-profile/
+scripts/reels/playwright/profile/
+scripts/reels/playwright/frames-tmp/
+scripts/reels/playwright/diag/
+scripts/reels/playwright/flags/
+scripts/reels/playwright/flags-photo/
+
+# ملفات شغل مؤقتة من الجلسات — مش جزء من الابليكيشن
+Artifacts/
+_recovered/
+_ig/
+_chat_backup_*/
+_shots/
+_probe*.js
+.commitmsg.txt
