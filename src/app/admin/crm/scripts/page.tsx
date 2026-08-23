@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Printer, Loader2 } from 'lucide-react'
 import { adminRpc } from '@/lib/adminRpc'
-import { CRM_SCRIPTS, scriptFor } from '@/lib/crmScripts'
+import { CRM_SCRIPTS, scriptFor, scriptText } from '@/lib/crmScripts'
 
 type SpecRow = { key: string; name_ar: string; contacts: number }
 
@@ -139,7 +139,7 @@ export default function CrmScriptsPrintPage() {
 
             <div className="blk">
               <h3>رسالة الواتساب (نفسها اللي بتطلع من زرار «أرسل»)</h3>
-              <div className="wa">{sc.wa('[اسم العميل]', '[اسمك]')}</div>
+              <div className="wa">{scriptText(s.key, '[اسم العميل]', '[اسمك]')}</div>
             </div>
 
             <div className="foot">
