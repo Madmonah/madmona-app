@@ -713,6 +713,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'number_disabled' })
     }
 
+    /* 💰 (٢٤ أغسطس ٢٦) محمد: «شوفلي حل في موضوع رسايل المارد اللي بفلوس كتير —
+       اعمل تمبليت — أنا مش هقدر أدفع الفلوس دي كلها».
+
+       سويتش عام يقطع مكالمات Claude تمامًا للردود الجايّة على واتساب.
+       - `marid_reply_mode = 'off'`         → مانبعتش أي رد (المحادثة اتسجّلت فوق)
+       - `marid_reply_mode = 'template'`    → نبعت رسالة تعريف قصيرة ثابتة وخلاص
+       - غير كده                            → المارد يشتغل زي ما كان
+       الأدمن مستثنى دايمًا — محمد لازم يقدر يجرّب من رقمه.
+
+       ⚠️ ده الحلّ الرخيص الفوري لحد ما نبني تمبليتس مبنية على نيّة الرسالة. */
+    if (!isAdmin(phone)) {
+      const { data: modeRow } = await supabaseUntyped
+        .from('whatsapp_config').select('value').eq('key', 'marid_reply_mode').maybeSingle()
+      const mode = ((modeRow as { value?: string } | null)?.value || '').trim().toLowerCase()
+
+      if (mode === 'off') {
+        return NextResponse.json({ ok: true, logged: true, replied: false, reason: 'marid_ai_off' })
+      }
+      if (mode === 'template') {
+        const { data: tplRow } = await supabaseUntyped
+          .from('whatsapp_config').select('value').eq('key', 'marid_reply_template').maybeSingle()
+        const tpl = ((tplRow as { value?: string } | null)?.value || '').trim()
+          || 'أهلاً 👋\nوصلت رسالتك لمضمونة. مندوبنا هيرد عليك في أقرب وقت — شكرًا لصبرك 🌿'
+        try {
+          const { data: cRow } = await supabaseUntyped
+            .from('whatsapp_conversations').select('metadata').eq('id', conversationId).maybeSingle()
+          const savedJid = ((cRow as { metadata: { wa_jid?: string } | null } | null)?.metadata || {})?.wa_jid
+          await sendText({
+            to: phone, jid: savedJid, session: body.session_id || undefined,
+            body: tpl, conversationId, agentName: 'قالب', aiGenerated: false,
+          })
+        } catch { /* ماينفعش نوقّف كل حاجة عشان قالب فشل — الرسالة اتسجّلت */ }
+        return NextResponse.json({ ok: true, logged: true, replied: true, reason: 'marid_template' })
+      }
+    }
+
     // ── ٠د) حارس اللوب ──────────────────────────────────────────────────
     // لو المارد بعت أكتر من الحد في ساعة على نفس المحادثة، يبقى فيه
     // دوران — بيوقف المحادثة وينبّه بدل ما يفضل يبعت.
