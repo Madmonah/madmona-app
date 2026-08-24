@@ -57,7 +57,7 @@ import { waLink as waScriptLink, waAppLink, canPickWaApp, scriptFor, scriptText 
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
   Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home, Users, Search,
-  FileText, Tag, Package, Clock, Info, ClipboardCheck, Square, Trash2, PlayCircle,
+  FileText, Tag, Package, Clock, Info, ClipboardCheck, Square, Trash2, PlayCircle, Plus, ExternalLink,
 } from 'lucide-react'
 
 const C = {
@@ -103,6 +103,19 @@ type Detail = {
   messages: { at: string; dir: string; body: string }[]
   activity: { bookings: number; orders: number; inquiries: number }
 }
+/* ➕ (٢٤ أغسطس ٢٠٢٦) تاب «إضافة» — محمد: «عايزين الإضافة تتحط كـتابة جمب
+   مكالماتي تفتح حسب التصنيف اللي موجود».
+   الأقسام جاية من `crm_add_menu()` — والربط بين التخصص والقسم مصدره
+   `crm_specialties.match_cats` اللي بتتعدّل من `/admin/crm`. **مفيش ولا
+   slug متكتّب في الشاشة دي** عشان أي قسم جديد يبان لوحده. */
+type AddCat = { slug: string; name_ar: string; group_name_ar: string | null; has_kids: boolean }
+type AddSpec = { key: string; name_ar: string; cats: AddCat[] }
+type AddMenu = {
+  ok: boolean; error?: string
+  viewing?: string; viewing_name?: string | null
+  mine: AddSpec[]; rest: AddSpec[]; unmapped: { slug: string; name_ar: string }[]
+}
+
 type TeamRow = {
   profile_id: string; name: string; receives: boolean
   mine: number; due: number; done: number
@@ -208,7 +221,14 @@ export default function CrmMobilePage() {
      ما الصفحة تركب عشان مايحصلش اختلاف بين السيرفر والمتصفح. */
   const [pickApp, setPickApp] = useState(false)
   useEffect(() => { setPickApp(canPickWaApp()) }, [])
-  const [tab, setTab] = useState<'calls' | 'tasks' | 'team' | 'all'>('calls')
+  const [tab, setTab] = useState<'calls' | 'tasks' | 'add' | 'team' | 'all'>('calls')
+  /* ➕ تاب الإضافة — الأقسام بتتحمّل أول مرة يفتحه بس (مش مع كل تحميل) */
+  const [addMenu, setAddMenu] = useState<AddMenu | null>(null)
+  const [addBusy, setAddBusy] = useState(false)
+  /* الرقم اختياري: لو الموظف جاي من كارت عميل، بيتحط لوحده والويزارد بيفتح
+     وهو عارف صاحب الإعلان — فمش هيسأله عليه تاني. */
+  const [addPhone, setAddPhone] = useState('')
+  const [addShowRest, setAddShowRest] = useState(false)
   /* 🧑‍💼 (٢٢ أغسطس) تاب «كل الأرقام» للمدير — محمد: «افتح لينا إحنا كمان
      الجدول، ممكن الأمور تكون محتاجة مدير يتواصل معاهم».
      المدير بيدوّر ويكلّم أي رقم حتى لو مش بتاعه، **والملكية مابتتغيّرش**. */
@@ -273,6 +293,22 @@ export default function CrmMobilePage() {
   }, [allQ, allSpec])
 
   useEffect(() => { if (tab === 'all' && allRows.length === 0 && !allBusy) searchAll() }, [tab])
+
+  /* ➕ قايمة الإضافة — بتتحمّل أول ما يفتح التاب، وبتتعاد لو الموزّع بدّل
+     الموظف اللي بيتفرّج على قايمته (`viewAs`) عشان الأقسام تبقى بتاعته هو. */
+  const loadAddMenu = useCallback(async () => {
+    setAddBusy(true)
+    try {
+      const { data, error } = await (supabaseBrowser.rpc as unknown as (
+        f: string, a: Record<string, unknown>,
+      ) => Promise<{ data: AddMenu | null; error: { message: string } | null }>)('crm_add_menu', { p_as: viewAs })
+      if (error) setErr(error.message)
+      else setAddMenu(data)
+    } catch (e) { setErr(e instanceof Error ? e.message : 'مقدرناش نحمّل الأقسام') }
+    setAddBusy(false)
+  }, [viewAs])
+  useEffect(() => { setAddMenu(null) }, [viewAs])
+  useEffect(() => { if (tab === 'add' && !addMenu && !addBusy) loadAddMenu() }, [tab, addMenu, addBusy, loadAddMenu])
 
   /* 🎙️ تفريغ الصوت المدمج في المتصفح — كروم أندرويد وسفاري.
      مش موجود في كل المتصفحات، فالزرار بيختفي لو مش مدعوم. */
@@ -485,6 +521,7 @@ export default function CrmMobilePage() {
           {([
             ['calls', `مكالمات (${q?.counts?.todo ?? 0})`],
             ['tasks', `تاسكات (${q?.open_tasks ?? 0})`],
+            ['add', 'إضافة'],
             ...(q?.me?.is_dispatcher
               ? [['team', 'الفريق'] as const, ['all', 'كل الأرقام'] as const]
               : []),
@@ -646,6 +683,77 @@ export default function CrmMobilePage() {
           </>
         )}
 
+        {/* ــــــ الإضافة ــــــ */}
+        {/* ➕ (٢٤ أغسطس ٢٠٢٦) محمد: «عايزين الإضافة تتحط كـتابة جمب مكالماتي
+            تفتح حسب التصنيف اللي موجود».
+            الموظف بيضيف الإعلان **بنفس ويزارد `/add-listing`** اللي العملاء
+            بيستخدموه — مش فورم تاني. اللينك بيفتح الويزارد وهو فاتح على
+            القسم، ولو معاه رقم العميل بيتحط جوّاه فمابيسألش عليه. */}
+        {tab === 'add' && (
+          <>
+            <div style={{ ...card, padding: '12px 13px' }}>
+              <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6 }}>بتضيف لمين؟ (اختياري)</div>
+              <input
+                value={addPhone}
+                onChange={e => setAddPhone(e.target.value)}
+                inputMode="tel"
+                placeholder="رقم صاحب الإعلان — ٠١…"
+                style={{
+                  width: '100%', border: `1px solid ${C.line}`, borderRadius: 12,
+                  padding: '10px 12px', fontSize: 14, fontFamily: 'inherit',
+                  direction: 'ltr', textAlign: 'right', color: C.ink, background: '#fff',
+                }} />
+              <div style={{ fontSize: 11.5, color: C.sub, marginTop: 6, lineHeight: 1.7 }}>
+                حطّ رقمه والويزارد هيفتح وهو عارفه، فمش هيسألك عليه تاني.
+                وتقدر تفتح كارت أي عميل من «مكالمات» وتدوس «ضيف إعلان باسمه» — الرقم بيتحط لوحده.
+              </div>
+            </div>
+
+            {addBusy && !addMenu && (
+              <div style={{ textAlign: 'center', padding: 30 }}>
+                <Loader2 style={{ width: 22, height: 22, color: C.green }} className="animate-spin" />
+              </div>
+            )}
+
+            {addMenu?.ok === false && (
+              <div style={{ ...card, borderColor: C.danger, color: C.danger, fontSize: 13, fontWeight: 700 }}>
+                {addMenu.error || 'مش مسموح'}
+              </div>
+            )}
+
+            {addMenu?.ok && (
+              <>
+                {addMenu.mine.length === 0 && (
+                  <div style={{ ...card, background: '#fffbf0', borderColor: '#e6c25a', fontSize: 13, color: C.warn, fontWeight: 700, lineHeight: 1.8 }}>
+                    لسه مفيش قسم متحدّدلك، فبنوريك الأقسام كلها.
+                    <div style={{ fontWeight: 500, color: C.sub, fontSize: 12, marginTop: 4 }}>
+                      تحديد الأقسام بيتعمل من شاشة الأدمن — «الأرقام والتوزيع».
+                    </div>
+                  </div>
+                )}
+
+                {addMenu.mine.map(sp => (
+                  <AddSpecCard key={sp.key} sp={sp} phone={addPhone} />
+                ))}
+
+                {(addMenu.mine.length > 0 && addMenu.rest.length > 0) && (
+                  <button onClick={() => setAddShowRest(v => !v)}
+                    style={{ ...btn(), width: '100%', marginTop: 4, marginBottom: 8 }}>
+                    {addShowRest ? 'اخفي باقي الأقسام' : `أقسام تانية (${addMenu.rest.length})`}
+                  </button>
+                )}
+                {(addShowRest || addMenu.mine.length === 0) &&
+                  addMenu.rest.map(sp => <AddSpecCard key={sp.key} sp={sp} phone={addPhone} />)}
+
+                <a href={addListingUrl(null, addPhone, null)} target="_blank" rel="noreferrer"
+                  style={{ ...btn(), width: '100%', textDecoration: 'none', marginTop: 4 }}>
+                  <Plus style={{ width: 15, height: 15 }} /> افتح الويزارد من غير قسم
+                </a>
+              </>
+            )}
+          </>
+        )}
+
         {/* ــــــ التاسكات ــــــ */}
         {tab === 'tasks' && q && (
           <>
@@ -747,6 +855,22 @@ export default function CrmMobilePage() {
                   دوس «انسخ» وبعدها «واتساب» تحت والزق. عدّل فيه زي ما تحب قبل ما تبعت.
                 </div>
               </div>
+
+              {/* ➕ (٢٤ أغسطس ٢٠٢٦) الطريق القصير من المكالمة للإعلان:
+                  الموظف بيتكلّم مع صاحب النشاط، وبدل ما يقفل ويدوّر على
+                  القسم من الأول، الزرار ده بيوديه تاب «إضافة» **والرقم
+                  متحطوط** فالويزارد مش هيسأله عليه. */}
+              <a
+                href={addListingUrl(null, detailFor.phone, detailFor.specialty)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  setAddPhone(detailFor.phone)
+                  setTab('add')
+                  setDetailFor(null); setDetail(null)
+                }}
+                style={{ ...btn(), width: '100%', marginBottom: 16, textDecoration: 'none' }}>
+                <Plus style={{ width: 15, height: 15 }} /> ضيف إعلان باسمه
+              </a>
 
               {detailBusy && !detail && (
                 <div style={{ textAlign: 'center', padding: 30 }}>
@@ -1039,6 +1163,62 @@ export default function CrmMobilePage() {
 }
 
 /* عنوان قسم صغير جوّه كارت المكالمة */
+/* ➕ لينك ويزارد الإضافة.
+   `cat` بيفتح الويزارد على القسم على طول، و`phone` بيتحط في بيانات التواصل
+   فمابيسألش الموظف على رقم صاحب الإعلان تاني (الاتنين متقروين في
+   `AddListingClient` عند أول تحميل). و`utm_*` عشان نعرف بعدين كام إعلان
+   دخل من شاشة الفريق مقابل اللي العملاء ضافوه بنفسهم. */
+function addListingUrl(cat: string | null, phone: string, specKey: string | null): string {
+  const qs = new URLSearchParams({ utm_source: 'crm', utm_medium: 'staff' })
+  if (cat) qs.set('cat', cat)
+  if (specKey) qs.set('utm_campaign', specKey)
+  const d = (phone || '').replace(/\D/g, '')
+  if (d.length >= 10) qs.set('phone', d)
+  return `/add-listing?${qs.toString()}`
+}
+
+/* كارت قسم في تاب «إضافة» — الأقسام الرئيسية متجمّعة بالمجموعة بتاعتها.
+   التجميع مهم مش تزويق: «عقارات سكنية» موجودة مرتين — واحدة في «عقارات
+   للإيجار» وواحدة في «عقارات بيع» — وبنفس الاسم بالظبط. من غير عنوان
+   المجموعة الموظف مش هيعرف يفرّق بينهم. */
+function AddSpecCard({ sp, phone }: { sp: AddSpec; phone: string }) {
+  const groups: { name: string; cats: AddCat[] }[] = []
+  for (const c of sp.cats) {
+    const g = c.group_name_ar || 'أقسام'
+    const found = groups.find(x => x.name === g)
+    if (found) found.cats.push(c)
+    else groups.push({ name: g, cats: [c] })
+  }
+  return (
+    <div style={{ background: '#fff', border: `1px solid ${C.line}`, borderRadius: 18, padding: 14, marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <Plus style={{ width: 15, height: 15, color: C.green }} />
+        <b style={{ fontSize: 14.5 }}>{sp.name_ar}</b>
+        <span style={{ fontSize: 11.5, color: C.sub, marginRight: 'auto' }}>{sp.cats.length} قسم</span>
+      </div>
+      {groups.map(g => (
+        <div key={g.name} style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 11.5, color: C.sub, fontWeight: 700, marginBottom: 5 }}>{g.name}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {g.cats.map(c => (
+              <a key={c.slug} href={addListingUrl(c.slug, phone, sp.key)} target="_blank" rel="noreferrer"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  border: `1px solid ${C.line}`, borderRadius: 999, padding: '8px 12px',
+                  fontSize: 13, fontWeight: 700, color: C.ink, textDecoration: 'none',
+                  background: '#f8faf9', minHeight: 38,
+                }}>
+                {c.name_ar}
+                <ExternalLink style={{ width: 11, height: 11, opacity: 0.45 }} />
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
