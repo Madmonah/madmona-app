@@ -416,10 +416,22 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
   // WhatsApp goes to Madmona's business line (AI auto-responder)
   const WA = '201002229982'
 
-  // generated placeholder tiles used until real photos are uploaded
-  const galleryTiles = gallery.length
-    ? gallery.map((g, i) => ({ url: galUrl(g), cap: galCap(g) || `صورة ${i + 1}` }))
-    : v.galleryTiles.map((cap) => ({ url: '', cap }))
+  /* 🖼️ (٢٤ أغسطس ٢٠٢٦ — محمد: «لقيت تابات لصور مش عارف بتترفع منين»)
+   *
+   *  كانت الصفحة بتعرض ٤ مربعات وهمية بعناوين ثابتة («المكان · من جوه ·
+   *  تفاصيل · أجواء») لما البيزنس مايكونش رافع ولا صورة. المربعات دي
+   *  **مش تابات ومش بيترفع فيها حاجة** — دي عناوين متكتّبة في
+   *  `VERTICALS` هنا وفي `vertical.gallery_tiles` في الداتابيز، وبتختفي
+   *  لوحدها أول ما أول صورة حقيقية تتضاف.
+   *
+   *  المشكلة إنها بتقرا كأنها محتوى، فاللي بيشوف الصفحة (وإحنا كمان)
+   *  بيفتكر إن فيه صور مرفوعة. القسم كله بقى يختفي لما مايكونش فيه صور
+   *  حقيقية — الغياب بيقول «لسه مارفعش صور» بصراحة، والمربعات كانت بتكدب.
+   *
+   *  الصور الحقيقية بتترفع من: /supplier/dashboard ← تاب «الصور» (حساب
+   *  صاحب البيزنس)، أو /admin/business-finance/<id>/identity ← «معرض الصور».
+   */
+  const galleryTiles = gallery.map((g, i) => ({ url: galUrl(g), cap: galCap(g) || `صورة ${i + 1}` }))
 
   return (
     <div className="min-h-screen" dir="rtl" style={{ background: t.pageBg }}>
@@ -447,9 +459,17 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         {!cover && <span className="absolute top-3 right-3 z-10 text-[10px] font-bold text-white/85 bg-black/30 px-2.5 py-1 rounded-full">{v.coverBadge}</span>}
 
         <div className="relative z-10 max-w-2xl mx-auto px-5 pt-10 pb-7 min-h-[330px] flex flex-col justify-end">
+          {/* 🏷️ (٢٤ أغسطس ٢٠٢٦) البيزنس اللي مالوش لوجو كان بياخد نجمة ✨ —
+              نفس البيزنس على /manage/<slug> بياخد لوجو مولّد باسمه من
+              `/api/logo/<supplierId>`. الصفحة دي كانت الوحيدة اللي مش
+              بتستعمله. وحّدناها. */}
           {data.logo_url && logoOk ? (
             <div className="mb-3 w-[110px] rounded-2xl overflow-hidden ring-1 ring-white/25 bg-black/30 backdrop-blur-sm" style={{ aspectRatio: '460 / 177' }}>
               <img src={data.logo_url} alt={data.business_name} className="w-full h-full object-contain" onError={() => setLogoOk(false)} />
+            </div>
+          ) : data.supplier_id ? (
+            <div className="mb-3 w-[110px] rounded-2xl overflow-hidden ring-1 ring-white/25 bg-black/30 backdrop-blur-sm" style={{ aspectRatio: '460 / 177' }}>
+              <img src={`/api/logo/${data.supplier_id}`} alt={data.business_name} className="w-full h-full object-contain" />
             </div>
           ) : (
             <div className="mb-3 w-14 h-14 rounded-2xl bg-white/15 ring-1 ring-white/25 grid place-items-center backdrop-blur-sm"><Sparkles className="w-7 h-7 text-white" /></div>
@@ -505,7 +525,8 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           </Link>
         )}
 
-        {/* gallery */}
+        {/* gallery — بيبان بس لو فيه صور حقيقية (شوف التعليق فوق) */}
+        {galleryTiles.length > 0 && (
         <section>
           <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><ImageIcon className="w-4 h-4" style={{ color: t.accent }} /> {v.galleryHeading}</h2>
           <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
@@ -523,6 +544,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
             ))}
           </div>
         </section>
+        )}
 
         {/* team */}
         {team.length > 0 && (

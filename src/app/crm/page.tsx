@@ -53,7 +53,8 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import BottomNav from '@/components/BottomNav'
 import { sinceLabel, fmtDateTime } from '@/lib/arDateTime'
 // 🗣️ اسكريبت البيع بتاع كل نشاط — بيغذّي زرار «واتساب» وورق الفريق المطبوع
-import { waLink as waScriptLink, waAppLink, canPickWaApp, scriptFor, scriptText } from '@/lib/crmScripts'
+import { waLink as waScriptLink, waAppLink, canPickWaApp, scriptFor, scriptText, setScriptOverrides } from '@/lib/crmScripts'
+import type { ScriptOverride } from '@/lib/crmScripts'
 import {
   Phone, MessageCircle, Loader2, RefreshCw, ListChecks, CheckCircle2,
   Mic, Sparkles, X, ChevronLeft, MapPin, CornerDownLeft, LogIn, AlertTriangle, Home, Users, Search,
@@ -283,6 +284,21 @@ export default function CrmMobilePage() {
   }, [viewAs])
 
   useEffect(() => { load() }, [load])
+
+  /* 🗣️ (٢٤ أغسطس ٢٠٢٦) الاسكريبت والنموذج بيتحمّلوا من `crm_scripts` مرة
+     واحدة. أي عطل هنا مايأثّرش على حاجة — النصوص اللي في `crmScripts.ts`
+     بتفضل هي الافتراضي. */
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const { data } = await (supabaseBrowser.rpc as unknown as (
+          f: string, a: Record<string, unknown>,
+        ) => Promise<{ data: { ok?: boolean; rows?: ScriptOverride[] } | null; error: unknown }>)(
+          'crm_scripts_list', {})
+        if (data?.ok && Array.isArray(data.rows)) setScriptOverrides(data.rows)
+      } catch { /* الكود هو الافتراضي */ }
+    })()
+  }, [])
 
   const searchAll = useCallback(async () => {
     setAllBusy(true)
@@ -1299,9 +1315,23 @@ function WaPicker({
   if (!lead) return null
   const l = lead
   const label = scriptFor(l.specialty).label
-  const go = (href: string) => {
+  const go = (href: string, app: string) => {
     /* ⚠️ النسخ لازم يبدأ **جوّه ضغطة المستخدم** — الكليبورد مابيشتغلش من غيرها */
     copyScript(l, me).then(ok => onCopied?.(ok))
+    /* 📤 (٢٤ أغسطس ٢٠٢٦ — محمد: «لأي موظف يبعت رسالة واتساب من أي رقم عايز
+       نوتيفيكيشن بالرسالة اللي اتبعتت») بنسجّل الاسكريبت اللي فتحنا بيه
+       الشات ونبعت إشعار لمحمد. fire-and-forget — مايأخّرش فتح واتساب.
+       ⚠️ ده النص اللي إحنا جهّزناه؛ الموظف يقدر يعدّله جوّه واتساب قبل ما
+          يبعت، والإرسال نفسه من تطبيقه مش من السيرفر بتاعنا. */
+    void (supabaseBrowser.rpc as unknown as (
+      f: string, a: Record<string, unknown>,
+    ) => Promise<unknown>)('crm_log_wa_send', {
+      p_phone: l.phone,
+      p_message: scriptText(l.specialty, l.name, me),
+      p_contact: l.id,
+      p_specialty: l.specialty,
+      p_app: app,
+    })
     onPicked(l)
     /* لينك `intent://` لازم ينط في نفس التاب — `window.open` بيتجاهله على
        أندرويد. اللينك العادي بيفتح تاب جديد عشان الموظف مايسيبش قايمته. */
@@ -1338,15 +1368,15 @@ function WaPicker({
 
         {pickApp ? (
           <>
-            <button onClick={() => go(waAppLink('normal', l.phone, l.specialty, l.name, me))} style={opt}>
+            <button onClick={() => go(waAppLink('normal', l.phone, l.specialty, l.name, me), 'normal')} style={opt}>
               <MessageCircle style={{ width: 18, height: 18, color: C.wa }} /> واتساب
             </button>
-            <button onClick={() => go(waAppLink('business', l.phone, l.specialty, l.name, me))} style={opt}>
+            <button onClick={() => go(waAppLink('business', l.phone, l.specialty, l.name, me), 'business')} style={opt}>
               <MessageCircle style={{ width: 18, height: 18, color: '#0B7A5C' }} /> واتساب بيزنس
             </button>
           </>
         ) : (
-          <button onClick={() => go(waLink(l, me))} style={opt}>
+          <button onClick={() => go(waLink(l, me), 'web')} style={opt}>
             <MessageCircle style={{ width: 18, height: 18, color: C.wa }} /> افتح واتساب
           </button>
         )}

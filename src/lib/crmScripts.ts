@@ -408,14 +408,42 @@ export function scriptFor(specialty: string | null | undefined): CrmScript {
  *  بيتظبط هنا مرة واحدة وبيتحدّث في الاتناشر اسكريبت **وفي الورق
  *  المطبوع** في نفس اللحظة.
  */
+/* 🗃️ (٢٤ أغسطس ٢٠٢٦ — محمد: «محتاج اعدل الرسالة وابعت معاها نموذج للتخصص»)
+ *
+ *  الاسكريبت والنموذج بقوا في جدول `crm_scripts` — يتعدّلوا من غير نشر.
+ *  اللي تحت في الملف ده بقى **الافتراضي الآمن**: لو الجدول فاضي أو القراءة
+ *  وقعت، الرسايل بتفضل زي ما هي بالحرف. أي عمود فاضي في الصف معناه
+ *  «استخدم اللي في الكود» — فالتعديل الجزئي مسموح (مثلًا تغيّر النموذج بس).
+ *
+ *  الشاشة بتحمّلهم مرة واحدة مع القايمة وبتنادي `setScriptOverrides`.
+ */
+export type ScriptOverride = {
+  specialty: string
+  wa_body?: string | null
+  demo_slug?: string | null
+  demo_label?: string | null
+  prepare_lines?: string[] | null
+  intake_wa?: string | null
+}
+let OVERRIDES: Record<string, ScriptOverride> = {}
+export function setScriptOverrides(rows: ScriptOverride[] | null | undefined) {
+  if (!Array.isArray(rows) || !rows.length) return
+  const next: Record<string, ScriptOverride> = {}
+  for (const r of rows) if (r?.specialty) next[r.specialty] = r
+  OVERRIDES = next
+}
+
 function tailFor(key: string) {
-  const demo = DEMOS[key]
-  const prep = PREPARE[key] || PREPARE.other
+  const ov = OVERRIDES[key]
+  const demoSlug = ov?.demo_slug ?? DEMOS[key]?.slug ?? null
+  const demoLabel = ov?.demo_label ?? DEMOS[key]?.label ?? null
+  const prep = (ov?.prepare_lines?.length ? ov.prepare_lines : null) || PREPARE[key] || PREPARE.other
+  const intake = ov?.intake_wa || INTAKE_WA
   const lines: string[] = []
 
-  if (demo) {
-    lines.push(`شوف نموذج حقيقي شغّال عندنا — ${demo.label}:`)
-    lines.push(`https://madmonacairo.com/s/${demo.slug}`)
+  if (demoSlug) {
+    lines.push(`شوف نموذج حقيقي شغّال عندنا${demoLabel ? ` — ${demoLabel}` : ''}:`)
+    lines.push(`https://madmonacairo.com/s/${demoSlug}`)
   } else {
     // مفيش نموذج للنشاط ده لسه — مابنبعتش لينك مالوش لازمة
     lines.push('أبعتلك نموذج تشوفه بعينك قبل ما تقرر.')
@@ -425,7 +453,7 @@ function tailFor(key: string) {
   lines.push('عشان نجهّزلك صفحتك، محتاجين منك:')
   prep.forEach((p) => lines.push(`• ${p}`))
   lines.push('')
-  lines.push(`ابعتهم واتساب على ${INTAKE_WA} وإحنا نظبّطها ونبعتهالك جاهزة.`)
+  lines.push(`ابعتهم واتساب على ${intake} وإحنا نظبّطها ونبعتهالك جاهزة.`)
 
   return lines.join('\n')
 }
@@ -433,7 +461,15 @@ function tailFor(key: string) {
 /** نص الرسالة كامل — الافتتاحية + النموذج + المطلوب + رقم الاستقبال. */
 export function scriptText(specialty: string | null, customer: string | null, sender: string | null) {
   const key = CRM_SCRIPTS[specialty || ''] ? (specialty as string) : 'other'
-  return `${scriptFor(specialty).wa(customer, sender).trimEnd()}\n\n${tailFor(key)}`
+  const ov = OVERRIDES[key]
+  /* النص المعدّل من الشاشة بيدعم نفس المتغيرين اللي في الكود: {customer} {sender} */
+  const opener = ov?.wa_body?.trim()
+    ? ov.wa_body
+        .replace(/\{customer\}/g, customer || 'حضرتك')
+        .replace(/\{sender\}/g, sender ? `${sender} من مضمونة` : 'فريق مضمونة')
+        .trimEnd()
+    : scriptFor(specialty).wa(customer, sender).trimEnd()
+  return `${opener}\n\n${tailFor(key)}`
 }
 
 /** الرقم بالصيغة الدولية اللي واتساب بيفهمها (201XXXXXXXXX). */
