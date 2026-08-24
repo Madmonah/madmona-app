@@ -18,6 +18,18 @@ type Notif = {
   created_at: string
 }
 
+// 🔌 (٢٤ أغسطس ٢٠٢٦) مفاتيح أدوات المارد.
+//    محمد: «المارد مش نافع إنه يضيف إعلانات ويستدعي أدوات — الإضافة تكون
+//    عن طريق صاحب الإعلان». الأداة بتتقفل من هنا مش بحذفها من الكود،
+//    فالرجوع = ضغطة زرار. شوف `src/lib/marid-tool-settings.ts`.
+type MaridTool = {
+  tool_name: string
+  label_ar: string | null
+  enabled: boolean
+  note_ar: string | null
+  blocked_7d: number
+}
+
 type Stats = {
   pool: Record<string, number>
   sectors: Record<string, number>
@@ -57,7 +69,37 @@ export default function MaridAdminPage() {
   const [busy, setBusy] = useState('')
   const [uploadMsg, setUploadMsg] = useState('')
   const [sector, setSector] = useState('restaurants')
+  const [tools, setTools] = useState<MaridTool[]>([])
+  const [editing, setEditing] = useState<string | null>(null)
+  const [draftNote, setDraftNote] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function loadTools() {
+    try {
+      const r = await fetch('/api/admin/marid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list_tools' }),
+      })
+      const d = await r.json()
+      if (Array.isArray(d?.tools)) setTools(d.tools as MaridTool[])
+    } catch { /* الكارت بيفضل بآخر نسخة */ }
+  }
+
+  async function setTool(tool: string, patch: { enabled?: boolean; note?: string }) {
+    // تحديث متفائل عشان الزرار يحس فوري — وبنعيد التحميل بعدها من المصدر
+    setTools(ts => ts.map(t => (t.tool_name === tool ? { ...t, ...patch, note_ar: patch.note ?? t.note_ar } as MaridTool : t)))
+    try {
+      const r = await fetch('/api/admin/marid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_tool', tool, ...patch }),
+      })
+      const d = await r.json()
+      if (d?.error) alert(`❌ ${d.error}`)
+    } catch { alert('حصلت مشكلة — جرب تاني') }
+    await loadTools()
+  }
 
   async function load() {
     try {
@@ -70,6 +112,7 @@ export default function MaridAdminPage() {
 
   useEffect(() => {
     load()
+    loadTools()
     const t = setInterval(load, 30_000)
     return () => clearInterval(t)
   }, [])
@@ -200,6 +243,65 @@ export default function MaridAdminPage() {
             ))}
           </div>
           <p className="text-xs text-gray-400 mt-2">المارد بيفحص الحالة أوتوماتيكياً كل تشغيلة — أول ما تمبلت يتعمد الإرسال بتاعه يبدأ لوحده.</p>
+        </div>
+
+        {/* 🔌 مفاتيح الأدوات */}
+        <div className="rounded-2xl bg-white border border-gray-200 p-4">
+          <div className="font-bold text-gray-800 mb-1">🔌 أدوات المارد — إيه اللي مسموح يعمله</div>
+          <p className="text-xs text-gray-500 mb-3">
+            الأداة المقفولة مابتوصلش للمارد أصلاً، وبنحقن مكانها التعليمة اللي تحتها.
+            التغيير بيبان خلال دقيقة على الأكتر.
+          </p>
+          <div className="space-y-1.5">
+            {tools.length === 0 && <p className="text-sm text-gray-400">…</p>}
+            {tools.map(t => (
+              <div key={t.tool_name} className={`rounded-xl border px-3 py-2 ${t.enabled ? 'border-gray-100 bg-gray-50' : 'border-amber-300 bg-amber-50'}`}>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="text-sm font-bold text-gray-800">{t.label_ar || t.tool_name}</div>
+                    <div className="text-[11px] text-gray-400 font-mono">{t.tool_name}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!t.enabled && t.blocked_7d > 0 && (
+                      <span className="text-[11px] text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
+                        حاول ينادّيها {t.blocked_7d} مرة آخر ٧ أيام
+                      </span>
+                    )}
+                    {!t.enabled && (
+                      <button
+                        onClick={() => { setEditing(editing === t.tool_name ? null : t.tool_name); setDraftNote(t.note_ar || '') }}
+                        className="text-xs text-[#059669] underline">
+                        {editing === t.tool_name ? 'إخفاء' : 'التعليمة البديلة'}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setTool(t.tool_name, { enabled: !t.enabled })}
+                      className={`px-3 py-1 rounded-full text-xs font-bold ${t.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                      {t.enabled ? 'شغّالة ✓' : 'مقفولة ⛔'}
+                    </button>
+                  </div>
+                </div>
+                {editing === t.tool_name && (
+                  <div className="mt-2">
+                    <textarea
+                      value={draftNote}
+                      onChange={e => setDraftNote(e.target.value)}
+                      rows={7}
+                      className="w-full rounded-xl border border-gray-300 p-2 text-xs font-mono leading-5"
+                      placeholder="اكتب للمارد يعمل إيه بدل الأداة دي…" />
+                    <div className="flex items-center gap-2 mt-1">
+                      <button
+                        onClick={async () => { await setTool(t.tool_name, { note: draftNote }); setEditing(null) }}
+                        className="px-3 py-1 rounded-xl bg-[#34D399] text-[#04352A] text-xs font-bold">
+                        احفظ التعليمة
+                      </button>
+                      <span className="text-[11px] text-gray-400">دي بتتبعت للمارد في آخر البرومبت — فبتكسب على أي تعليمة قديمة.</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Excel upload */}

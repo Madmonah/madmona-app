@@ -25,7 +25,7 @@ import {
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 // 💰 (١٦ أغسطس ٢٠٢٦) أرقام العمولة بتتحقن من الداتابيز وقت الرد — مش مكتوبة في البرومبت.
 import { withLiveCommission } from '@/lib/commission'
-import { getNumberConfig, numberPromptSection, isMaridNumber } from '@/lib/wa-number-config'
+import { getNumberConfig, numberPromptSection, maridSkipReason, maridSkipLabel } from '@/lib/wa-number-config'
 import { notifyAdminsMaridReply, notifyAdminsPausedInbound } from '@/lib/admin-notify'
 // 🧞 مخ المارد **المشترك** — كان فيه نسخة متكرّرة من الدالة دي هنا، واتشالت.
 //    نسخة واحدة بس دلوقتي، فأي تعليمة جديدة تسري على كل الماردة على طول
@@ -378,18 +378,23 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // ── ٠أ) مارد بيكلّم مارد ────────────────────────────────────────────
-    // بقى عندنا ٣ أرقام. لو واحد بعت للتاني، كل واحد هيرد على التاني للأبد
-    // — سبام على الرقمين وحرق توكينز، ومفيش حاجة توقّفه من نفسها.
+    // ── ٠أ) قاعدة السكوت — مين المارد مايردّش عليه ───────────────────────
     //
-    // بس محمد بيبعت أوامر الأدمن من ٠١٠٠٢٢٢٩٩٨٢، وده نفسه رقم مارد.
-    // فالاستثناء للأدمن مقصود، واللفة بتتكسر برضو عند الطرف التاني:
-    //   محمد → ٠١٠٢٦٢٢٢٣٣٧      أدمن، فبيتعالج عادي ✔
-    //   رد المارد → ٠١٠٠٢٢٢٩٩٨٢  المرسِل رقم مارد ومش أدمن → يتسكّت ✔
-    // يعني قفزة واحدة وخلاص.
-    if ((await isMaridNumber(phone)) && !isAdmin(phone)) {
-      console.warn('[wa] رسالة من رقم مارد — اتسجّلت ومفيش رد', {
-        from: phone, to: body.session_id,
+    // محمد (٢٤ أغسطس ٢٠٢٦): «أي رسالة تيجي للمارد من الفريق بتاعنا مش عايزه
+    // يتعامل معاها أبدًا يعديها عادي، وأي رسالة تيجي من مارد لمارد نفس
+    // الكلام، وأي رقم اتربط مارد قبل كده برضو مش عايز المارد يرد عليه»
+    //
+    // القرار كله في `marid_should_skip()` في الداتابيز — التفاصيل والأسباب
+    // في `src/lib/wa-number-config.ts`. الرسالة **بتتسجّل زي ما هي** عشان
+    // تفضل ظاهرة في مراجعة الواتساب، بس مفيش رد ومفيش نداء لكلود.
+    //
+    // ⚠️ الاستثناء اللي كان للأدمن (`&& !isAdmin(phone)`) **اتشال** بناءً
+    //    على التعليمة دي — يعني أوامر الأدمن من واتساب من ٠١٠٠٢٢٢٩٩٨٢ وقفت.
+    //    ترجع من غير نشر: صف في `marid_skip_exceptions` بالرقم.
+    const skipReason = await maridSkipReason(phone)
+    if (skipReason) {
+      console.warn('[wa] رسالة اتسجّلت ومفيش رد', {
+        from: phone, to: body.session_id, reason: skipReason, why: maridSkipLabel(skipReason),
       })
       const cid = await upsertConversation({
         phone,
@@ -406,7 +411,7 @@ export async function POST(request: NextRequest) {
           session: body.session_id,
         })
       }
-      return NextResponse.json({ ok: true, skipped: 'marid_to_marid' })
+      return NextResponse.json({ ok: true, skipped: skipReason })
     }
 
     // ── ٠ق) مفتاح الطوارئ ──────────────────────────────────────────────

@@ -70,6 +70,63 @@ export async function isMaridNumber(phone: string | null | undefined): Promise<b
   return maridNumbers.set.has(p)
 }
 
+// ── 🤫 قاعدة السكوت (٢٤ أغسطس ٢٠٢٦) ────────────────────────────────────
+// محمد: «أي رسالة تيجي للمارد من الفريق بتاعنا مش عايزه يتعامل معاها أبدًا
+//        يعديها عادي، وأي رسالة تيجي من مارد لمارد نفس الكلام، وأي رقم
+//        اتربط مارد قبل كده برضو مش عايز المارد يرد عليه»
+//
+// `isMaridNumber()` فوق كانت بتغطي حالة واحدة بس: الأرقام اللي **لسه**
+// في `wa_number_configs`. دي كانت بتسيب تلات ثقوب:
+//   • أرقام الفريق (سامية · شهد · عبير · أحمد …) — المارد كان بيردّ عليهم
+//     كأنهم عملاء، وبيصرف توكينز ويسجّلهم ليدز.
+//   • أرقام اتربطت مارد قبل كده واتشالت من الجدول — لقينا ٢٠١٢٨١٨١٤٦٧٥
+//     (١٥ رسالة يوم ١ أغسطس) لسه كان بيترد عليه.
+//   • أي رقم نقرّر نسكّته يدويًا.
+//
+// القرار كله بقى في `marid_should_skip(phone)` في الداتابيز — المطابقة على
+// آخر ١٠ أرقام فـ`201…`/`01…`/`+201…` كلهم بيتلمّوا. بيرجّع:
+//   'muted' · 'marid_number' · 'ex_marid_number' · 'team' · NULL (رد عادي)
+//
+// ⚠️ **الاستثناء للأدمن اتشال.** كان `isMaridNumber(phone) && !isAdmin(phone)`
+//    عشان محمد يبعت أوامر الأدمن من ٠١٠٠٢٢٢٩٩٨٢. محمد كرّر التعليمة بالحرف
+//    من غير أي استثناء، فالرقم بقى مسكّت زي أي رقم مارد — يعني **أوامر
+//    الأدمن من واتساب وقفت**. الرجوع من غير نشر: صف في
+//    `marid_skip_exceptions` بالرقم، والدالة بترجّع NULL على طول.
+//
+// ⚠️ مفيش كاش هنا عن قصد: الجدول بيتغيّر من الشاشة ومن التوظيف، ورسالة
+//    واردة واحدة = استعلام واحد سريع. الكاش كان هيخلّي موظف جديد يترد عليه
+//    دقيقة كاملة بعد ما يتضاف.
+export type MaridSkipReason = 'muted' | 'marid_number' | 'ex_marid_number' | 'team'
+
+export async function maridSkipReason(
+  phone: string | null | undefined,
+): Promise<MaridSkipReason | null> {
+  const p = (phone || '').replace(/\D/g, '')
+  if (!p) return null
+  try {
+    const { data, error } = await supabaseUntyped.rpc('marid_should_skip', { p_phone: p })
+    if (error) throw new Error(error.message)
+    return (data as MaridSkipReason | null) ?? null
+  } catch (e) {
+    // 🛡️ عطل في القراءة **مايفتحش الباب على البقّ**: بنرجع للحارس القديم
+    //    (أرقام المارد بس). ده بيحمي من لفّة مارد↔مارد اللانهائية حتى لو
+    //    الداتابيز واقعة، وبيسمح لرسايل العملاء تعدّي عادي.
+    console.warn('[wa] marid_should_skip وقعت — بنرجع لحارس أرقام المارد:',
+      e instanceof Error ? e.message : String(e))
+    return (await isMaridNumber(phone)) ? 'marid_number' : null
+  }
+}
+
+const SKIP_LABEL: Record<MaridSkipReason, string> = {
+  muted: 'رقم مسكّت يدويًا',
+  marid_number: 'رقم مارد',
+  ex_marid_number: 'رقم كان مربوط مارد قبل كده',
+  team: 'رقم من فريق مضمونة',
+}
+export function maridSkipLabel(r: MaridSkipReason): string {
+  return SKIP_LABEL[r] ?? r
+}
+
 function defaults(sessionId: string): WaNumberConfig {
   return {
     session_id: sessionId, label: null, persona: null,

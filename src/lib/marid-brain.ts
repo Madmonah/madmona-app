@@ -48,6 +48,7 @@ async function getMaridModel(): Promise<string> {
 }
 import { MARID_TOOLS, runMaridTool, MADMONA_LINKS } from '@/lib/marid-tools'
 import { ADMIN_TOOLS, runAdminTool, ADMIN_PROMPT } from '@/lib/marid-admin'
+import { filterEnabledTools, getDisabledMaridTools, maridDisabledToolsPrompt } from '@/lib/marid-tool-settings'
 
 // 🛡️ (١٩ أغسطس ٢٠٢٦ — محمد: «فيه اعلانات اتبعتت للمارد وبرضو مش شغال»)
 //
@@ -85,7 +86,18 @@ function looksLikeFakeListingConfirmation(text: string): boolean {
 // لازم يفرّقوا بين النوعين عشان الرد الصادق يبقى منطقي (مايتكلّمش عن «صور
 // الإعلان» لعميل بيحاول يحجز ميعاد وبالعكس).
 const MEETING_CLAIM_RE = /ميعاد|الحجز/
-function buildGuardCorrection(isMeeting: boolean): string {
+function buildGuardCorrection(isMeeting: boolean, listingOff = false): string {
+  if (!isMeeting && listingOff) {
+    // 🔌 أداة التسجيل مقفولة — فالتصحيح مايقدرش يقوله «نادِ الأداة».
+    return (
+      '⚠️ نظام (مش من العميل): في ردّك اللي فات أكّدت للعميل إنك سجّلت الإعلان — ' +
+      'وإنت **مش بتسجّل إعلانات خالص**. أداة التسجيل مقفولة، والإضافة بقت من ' +
+      'صاحب الإعلان نفسه. صحّح ردّك: قوله يضيف إعلانه بنفسه من ' +
+      `${MADMONA_LINKS.اضافة_اعلان} (ولو مامعاهوش حساب مورد: ${MADMONA_LINKS.تسجيل_مورد_جديد})، ` +
+      'واعرض عليه إن حد من فريق مضمونة يتصل بيه يساعده. ' +
+      'من غير أي وعد بتسجيل ومن غير ما تطلب منه بيانات عشان تسجّلها إنت.'
+    )
+  }
   if (isMeeting) {
     return (
       '⚠️ نظام (مش من العميل): في ردّك اللي فات أكّدت للعميل إنك حجزت الميعاد، ' +
@@ -104,7 +116,15 @@ function buildGuardCorrection(isMeeting: boolean): string {
     'لو لسه ناقص بيانات أساسية، قول للعميل بالظبط الناقص إيه — من غير أي وعد بتسجيل لسه ماحصلش.'
   )
 }
-function buildHonestFallback(isMeeting: boolean): string {
+function buildHonestFallback(isMeeting: boolean, listingOff = false): string {
+  if (!isMeeting && listingOff) {
+    return (
+      'الإضافة بقت من عندك مباشرة عشان تتحكّم في التفاصيل والصور بنفسك 🙏\n' +
+      `ضيف إعلانك من هنا: ${MADMONA_LINKS.اضافة_اعلان}\n` +
+      `ولو لسه مامعاكش حساب مورد: ${MADMONA_LINKS.تسجيل_مورد_جديد}\n` +
+      'ولو حابب حد من فريق مضمونة يساعدك في الإضافة، قوللي وأنا أخلّي حد يتصل بيك.'
+    )
+  }
   return isMeeting
     ? 'قربنا نخلص! بس محتاج أتأكد من تاريخ ووقت الميعاد بالظبط عشان أحجزه فعليًا وأأكّدلك — قولّيلي تاني وأنا أظبطه على طول 🙏'
     : 'قربنا نخلص! بس محتاج آخر تفاصيل الإعلان (السعر والصور) عشان أسجّله فعليًا وأبعتلك تأكيد — ابعتهملي وأنا أظبطه على طول 🙏'
@@ -130,6 +150,22 @@ function fireListingGuardAlert(phone: string, text: string): void {
     )
 }
 
+// 📎 ملاحظة الملف اللي العميل بعته. النص الأصلي (لما تسجيل الإعلانات
+//    شغّال) اتساب بالحرف؛ الفرع التاني بيشتغل لما `create_listing_draft`
+//    تكون مقفولة من `/admin/marid` — ساعتها التعليمة اللي بتقول «مرّر
+//    الرابط في image_urls» و«نادِ add_menu_items» بقت تعليمة لأداة مش
+//    موجودة، وسيبانها كانت هتخلّي المارد يوعد بتسجيل مش هيحصل.
+function mediaNote(url: string, listingOff: boolean): string {
+  if (listingOff) {
+    return `\n📎 الملف اللي بعته اتحفظ هنا:\n${url}\n` +
+      'اقراه واستعمله في كلامك مع العميل (لو منيو أو قايمة أسعار، تقدر ترد على أسئلته منها).\n' +
+      '⛔ إنت مش بتسجّل إعلانات ولا أصناف منيو — ماتقولش إنك هتحوّل الملف ده لإعلان.\n' +
+      'لو الملف ده لإعلان عايز ينزل: قوله يضيفه بنفسه ويرفع الصور من ' +
+      `${MADMONA_LINKS.اضافة_اعلان} — الصور بتترفع من هناك مباشرة.\n`
+  }
+  return `\n📎 الملف اللي بعته اتحفظ هنا:\n${url}\nلو هتسجّل إعلان أو مشروع، مرّر الرابط ده في image_urls كصورة.\n\n🧾 لو الصورة فيها منيو أو قائمة أسعار: اقرا كل صنف وسعره من الصورة نفسها (إنت شايفها). (قاعدة ١٩ أغسطس — بتشيل قاعدة ١٨ أغسطس اللي كانت بتحط الأصناف في الوصف): المطعم/النشاط ده **create_listing_draft واحد** باسمه بوصف عام مختصر (بدون أصناف/أسعار)، وبعدين نادِ **add_menu_items** بالـlisting_id اللي رجعلك وحط كل صنف من الصورة كعنصر منفصل بسعره — ده اللي بيظهر فعليًا كمنيو على صفحة المطعم. ⛔ ماتحطش الأصناف والأسعار في الـdescription — قاعدة ١٨ أغسطس دي كانت بتسيب المنيو فاضي فعليًا لأن محدش كان بيحوّل الوصف لمنيو يدوي بعد كده. ⛔ برضه مش نداء create_listing_draft لكل صنف (ده اللي خلّى رقاق المدق يظهر ٣٤ مرة) — إعلان واحد للمطعم + add_menu_items للأصناف. الأسعار اللي في الصورة هي المصدر، متخترعش.\n`
+}
+
 // المارد بيقدر يسأل الداتابيز قبل ما يرد: يبحث في الكتالوج، يشوف المتكلّم
 // مين، يجيب حجوزاته، يسجّل إعلان. بندوّر الحلقة لحد ما يخلص أدوات.
 export async function callMaridWithTools(opts: {
@@ -146,7 +182,15 @@ export async function callMaridWithTools(opts: {
 }): Promise<string> {
   const mediaBlocks = opts.mediaBlocks ?? []
   const MAX_TURNS = opts.admin ? 6 : 4
-  const tools = opts.admin ? [...MARID_TOOLS, ...ADMIN_TOOLS] : MARID_TOOLS
+  // 🔌 (٢٤ أغسطس ٢٠٢٦) الأدوات المطفية من `/admin/marid` مابتوصلش لكلود
+  //    أصلًا — ده الحارس الأول من التلاتة (شوف `marid-tool-settings.ts`).
+  const tools = await filterEnabledTools(
+    opts.admin ? [...MARID_TOOLS, ...ADMIN_TOOLS] : MARID_TOOLS,
+  )
+  // بيتقري مرة واحدة هنا ويتستعمل في حارس الوعد الكاذب تحت: لو أداة تسجيل
+  // الإعلان مقفولة، «هسجّله» مابقاش خطأ يتصحّح بنداء الأداة — بقى وعد ممنوع
+  // أصلًا، والتصحيح الصح هو إن العميل يضيف بنفسه.
+  const listingToolOff = (await getDisabledMaridTools()).has('create_listing_draft')
 
   // 🪪 كارت المتكلّم (٣ أغسطس ٢٠٢٦) — بدل ما المارد ينادي who_is_this كأداة
   //    في كل رسالة (نداء كامل لكلود = ٢٢ ألف توكن عشان ١٥٠ توكن معلومة)،
@@ -170,6 +214,13 @@ export async function callMaridWithTools(opts: {
   //    عميل قديم كأنه أول مرة. النسخة اللي قبل دي كانت بتقول «ماتنادّيش
   //    who_is_this» حتى لما الكارت فاضي.
 
+  // 🔌 القسم ده بيتحطّ في **آخر** البرومبت الثابت عن قصد: عشان يجي بعد كل
+  //    تعليمة قديمة بتأمر بنداء أداة مقفولة (وفيه ١٥ تعليمة زي دي في
+  //    `customer-concierge.ts` لوحدها + بلوك الميديا وبلوك «عندك أدوات» اللي
+  //    تحت في نفس الملف ده)، والأخير هو اللي بيتنفّذ. عشان كده بيتلزق في
+  //    **آخر البرومبت كله** مش آخر الجزء المكاش — تمنه ~٣٠٠ توكن مش مكاشين
+  //    وده أرخص بكتير من إن تعليمة قديمة تكسب عليه.
+  const disabledSection = await maridDisabledToolsPrompt()
   const systemRaw = `${opts.systemPrompt}${opts.admin ? ADMIN_PROMPT : ''}<<<CACHE_SPLIT>>>
 
 ═══════════════════════════════════════════════════════════
@@ -199,7 +250,7 @@ ${new Date().toLocaleString('ar-EG', {
 ${contactBlock || `رقمه: ${opts.senderPhone}${opts.senderName ? `\nاسمه: ${opts.senderName}` : ''}`}
 
 استخدم الرقم ده مباشرة في الأدوات — ماتسألهوش عليه.
-${opts.savedMediaUrl ? `\n📎 الملف اللي بعته اتحفظ هنا:\n${opts.savedMediaUrl}\nلو هتسجّل إعلان أو مشروع، مرّر الرابط ده في image_urls كصورة.\n\n🧾 لو الصورة فيها منيو أو قائمة أسعار: اقرا كل صنف وسعره من الصورة نفسها (إنت شايفها). (قاعدة ١٩ أغسطس — بتشيل قاعدة ١٨ أغسطس اللي كانت بتحط الأصناف في الوصف): المطعم/النشاط ده **create_listing_draft واحد** باسمه بوصف عام مختصر (بدون أصناف/أسعار)، وبعدين نادِ **add_menu_items** بالـlisting_id اللي رجعلك وحط كل صنف من الصورة كعنصر منفصل بسعره — ده اللي بيظهر فعليًا كمنيو على صفحة المطعم. ⛔ ماتحطش الأصناف والأسعار في الـdescription — قاعدة ١٨ أغسطس دي كانت بتسيب المنيو فاضي فعليًا لأن محدش كان بيحوّل الوصف لمنيو يدوي بعد كده. ⛔ برضه مش نداء create_listing_draft لكل صنف (ده اللي خلّى رقاق المدق يظهر ٣٤ مرة) — إعلان واحد للمطعم + add_menu_items للأصناف. الأسعار اللي في الصورة هي المصدر، متخترعش.\n` : ''}
+${opts.savedMediaUrl ? mediaNote(opts.savedMediaUrl, listingToolOff) : ''}
 
 ═══════════════════════════════════════════════════════════
 عندك أدوات — استخدمها
@@ -254,7 +305,7 @@ ${contactBlock
 الروابط الرسمية:
 ${Object.entries(MADMONA_LINKS)
   .map(([k, v]) => `  ${k.replace(/_/g, ' ')}: ${v}`)
-  .join('\n')}`
+  .join('\n')}${disabledSection}`
 
   // 💰 Prompt caching (28 Jul 2026) — نكاش الجزء الثابت (البرومبت + تعريفات الأدوات).
   // حلقة الأدوات بتنادي Claude لحد ٤ مرات لكل رسالة بنفس الـsystem+tools — فالكاش
@@ -351,12 +402,12 @@ ${Object.entries(MADMONA_LINKS)
         // لسه فيه لفّات فاضية — نرجّعله يصحّح بنفسه وينادي الأداة فعلًا.
         if (turn < MAX_TURNS - 1) {
           messages.push({ role: 'assistant', content: res.content })
-          messages.push({ role: 'user', content: buildGuardCorrection(isMeeting) })
+          messages.push({ role: 'user', content: buildGuardCorrection(isMeeting, listingToolOff) })
           continue
         }
         // خلصت اللفّات — مانبعتش وعد كاذب. رد صادق + تنبيه لمحمد.
         fireListingGuardAlert(opts.senderPhone, finalText)
-        return buildHonestFallback(isMeeting)
+        return buildHonestFallback(isMeeting, listingToolOff)
       }
 
       return finalText

@@ -4,6 +4,10 @@
 //  POST → { action: 'upload_leads', leads:[{name,phone,sector?,area?}], sector? }
 //         { action: 'mark_seen' }
 //         { action: 'run_now' } / { action: 'send_report' }
+//         { action: 'list_tools' }                        → مفاتيح أدوات المارد
+//         { action: 'set_tool', tool, enabled?, note? }   → تشغيل/إطفاء أداة
+//
+// 🔐 المسار ده محمي مركزياً في `middleware.ts` (حارس /api/admin/*).
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
@@ -80,8 +84,32 @@ export async function POST(req: NextRequest) {
       action?: string
       sector?: string
       leads?: Array<{ name?: string; phone?: string; sector?: string; area?: string }>
+      tool?: string
+      enabled?: boolean
+      note?: string
     } | null
     if (!body?.action) return NextResponse.json({ error: 'action required' }, { status: 400 })
+
+    // 🔌 (٢٤ أغسطس ٢٠٢٦) مفاتيح أدوات المارد — محمد: «المارد مش نافع إنه
+    //    يضيف إعلانات … الإضافة تكون عن طريق صاحب الإعلان». بدل ما نحذف الأداة
+    //    من الكود، بنطفّيها من هنا ونقدر نرجّعها في تانية. شوف
+    //    `src/lib/marid-tool-settings.ts`.
+    if (body.action === 'list_tools') {
+      const { data, error } = await admin.rpc('marid_tools_list')
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+      return NextResponse.json({ ok: true, ...(data as Record<string, unknown>) })
+    }
+
+    if (body.action === 'set_tool') {
+      if (!body.tool) return NextResponse.json({ error: 'tool required' }, { status: 400 })
+      const { data, error } = await admin.rpc('marid_tool_set', {
+        p_tool: body.tool,
+        p_enabled: typeof body.enabled === 'boolean' ? body.enabled : null,
+        p_note: body.note ?? null,
+      })
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+      return NextResponse.json({ ok: true, tool: data })
+    }
 
     if (body.action === 'mark_seen') {
       await admin.from('marid_notifications').update({ seen: true }).eq('seen', false)

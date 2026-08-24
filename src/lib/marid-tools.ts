@@ -13,6 +13,7 @@
 //   لو ضفت أداة جديدة، اسأل «أنهي أعمدة؟» قبل ما تعمل select('*').
 
 import { supabaseUntyped as db } from './supabase'
+import { getDisabledMaridTools, blockedToolResult } from './marid-tool-settings'
 
 const SITE = 'https://www.madmonacairo.com'
 
@@ -2287,6 +2288,15 @@ async function getPropertyPrices(a: { area?: string; segment?: string }): Promis
 }
 export async function runMaridTool(name: string, input: Record<string, unknown>): Promise<ToolResult> {
   try {
+    // 🔌 (٢٤ أغسطس ٢٠٢٦) الحارس التالت لمفاتيح الأدوات — شوف
+    //    `marid-tool-settings.ts`. الأداة المطفية أصلًا مابتتبعتش لكلود،
+    //    بس النموذج ساعات بيخترع نداء لأداة شافها في تعليمة قديمة في
+    //    البرومبت. من غير الحارس ده كان هيرجعله «أداة مش معروفة» —
+    //    رسالة بتخلّيه يحاول تاني بأسماء مختلفة بدل ما يعمل البديل.
+    const off = await getDisabledMaridTools()
+    const blocked = off.get(name)
+    if (blocked) return await blockedToolResult(name, blocked, input)
+
     switch (name) {
       case 'search_catalog':
         return await searchCatalog(input as never)
