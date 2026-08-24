@@ -238,26 +238,31 @@ export async function PATCH(req: NextRequest) {
     
     console.log(`[listing-drafts PATCH] OK token=${token.slice(0,8)} step=${body.current_step} dur=${Date.now()-startedAt}ms`);
 
-    // If submitted, also fire a WhatsApp confirmation to the user
-    if (body.status === 'submitted' && (data as { contact_phone?: string }).contact_phone) {
-      const recipPhone = (data as { contact_phone: string }).contact_phone;
-      const recipName = (data as { contact_name?: string }).contact_name || body.contact_name || 'صديقنا';
-      await supabase.from('whatsapp_outbound_queue').insert({
-        recipient_phone: recipPhone,
-        recipient_name: recipName,
-        message:
-          'استلمنا منتجك في *مضمونة* 🎉\n\n' +
-          'فريقنا هيراجعه ويتواصل معاك خلال ساعات قليلة.\n\n' +
-          'الخطوة التالية: أنشئ حسابك في دقيقة عشان تتحكم في إعلانك:\n' +
-          `🔗 https://madmonacairo.com/signup?token=${token}\n\n` +
-          'محتاج مساعدة؟ رد على الرسالة دي.\n\n' +
-          '— مضمونة 🟢',
-        agent_name: 'listing_draft_submitted',
-        campaign: 'draft_confirmation',
-        status: 'pending',
-        scheduled_at: new Date().toISOString(),
-        metadata: { token, source: 'add_listing_form' },
-      });
+    // ── 📨 (٢٤ أغسطس ٢٠٢٦) رسالة تأكيد التسجيل ────────────────────────
+    //
+    // 🐞 الباج اللي اتقفل هنا: الكود كان بيحط رسالة في الطابور مع **كل**
+    //    PATCH فيه status='submitted'. الويزارد بيبعت أكتر من واحد (رجوع
+    //    وإعادة إرسال، دوسة مزدوجة) — فرقم واحد استلم نفس الرسالة ٣ مرات
+    //    يوم ٢٤ أغسطس، ورقم تاني استلمها بعد ما اتغيّر.
+    //
+    // 🔁 والنص كان واحد للكل: «استلمنا منتجك… أنشئ حسابك». ده منطقي للي
+    //    سجّل بنفسه، بس بقى مربك خالص لما موظف مضمونة يبقى هو اللي سجّل من
+    //    تاب «إضافة» — العميل مبعتش حاجة أصلًا.
+    //
+    // الاتنين اتحلّوا في `listing_notify_submitted()` في الداتابيز:
+    //   • مرة واحدة لكل مسودة (بتشوف الطابور قبل ما تكتب)
+    //   • بتقرا تفاصيل الإعلان **من صف المسودة نفسه** وتحطها في الرسالة —
+    //     فمستحيل نبعت «سجّلنا إعلانك» والداتا مش محفوظة فعلًا
+    //   • بتختار النص من `listing_confirm_templates` حسب مين اللي سجّل
+    //   • وبتعلّم المسودة `awaiting_photos` + `owner_locked`
+    if (body.status === 'submitted') {
+      const { data: notified, error: notifyErr } =
+        await supabase.rpc('listing_notify_submitted', { p_token: token });
+      if (notifyErr) {
+        console.error(`[listing-drafts PATCH] notify failed token=${token.slice(0,8)}:`, notifyErr.message);
+      } else {
+        console.log(`[listing-drafts PATCH] notify token=${token.slice(0,8)}`, JSON.stringify(notified));
+      }
     }
 
     return NextResponse.json({

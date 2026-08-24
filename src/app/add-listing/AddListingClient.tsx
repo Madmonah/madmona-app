@@ -4075,6 +4075,9 @@ function StepPhotos({
     }
   }
 
+  /* دخول من تاب «إضافة» بتاع فريق مضمونة — بيتحط في اللينك من /crm */
+  const staffEntry = draft.utm_source === 'crm';
+
   async function removePhoto(idx: number) {
     const next = photos.filter((_, i) => i !== idx);
     setPhotos(next);
@@ -4168,21 +4171,37 @@ function StepPhotos({
         </div>
       )}
 
+      {/* 📸 (٢٤ أغسطس ٢٠٢٦) موظف مضمونة يقدر يكمّل من غير صور.
+          محمد: «فلان من مضمونة سجل اعلانك … واطلب منه صور ولما يبعت الصور
+          الاعلان ينزل باسمه وصورته».
+
+          الخطوة دي كانت **بتقفل** على صفر صور، فالسيناريو ده كان مستحيل من
+          الأساس: الموظف بيتكلّم في التليفون ومامعاهوش صور العميل. دلوقتي لما
+          الدخول يكون من تاب «إضافة» في /crm (utm_source=crm) بيعدّي، والعميل
+          بيستلم رسالة بتطلب الصور، وأول ما يبعتها الإعلان بينزل باسمه.
+
+          ⚠️ الاستثناء للموظف بس — العميل اللي بيسجّل بنفسه لسه لازم صورة،
+             لأنه شايف إعلانه قدامه ومحدش هيرجعله يطلبها. */}
       <div className="grid grid-cols-2 gap-3 mt-6">
         <button type="button" onClick={onBack} className={btnSecondary}>← رجوع</button>
         <button
           type="button"
           onClick={() => onSubmit(photos)}
-          disabled={saving || uploading || photos.length === 0}
+          disabled={saving || uploading || (photos.length === 0 && !staffEntry)}
           className={btnPrimary}
-          title={photos.length === 0 ? 'ارفع صورة واحدة على الأقل' : undefined}
+          title={photos.length === 0 && !staffEntry ? 'ارفع صورة واحدة على الأقل' : undefined}
         >
-          {saving ? '...' : photos.length === 0 ? '📸 ارفع صورة الأول' : 'كمل →'}
+          {saving ? '...'
+            : photos.length > 0 ? 'كمل →'
+            : staffEntry ? 'كمّل — الصور هتيجي منه ←'
+            : '📸 ارفع صورة الأول'}
         </button>
       </div>
       {photos.length === 0 && (
         <p className="text-xs text-gray-500 mt-3 text-center">
-          💡 صورة واحدة كافية عشان تبدأ — تقدر تضيف باقي الصور من حسابك بعدين.
+          {staffEntry
+            ? '💡 سجّل من غير صور، وإحنا هنبعتله رسالة نطلبها منه — وأول ما يبعتها الإعلان ينزل باسمه وبصوره.'
+            : '💡 صورة واحدة كافية عشان تبدأ — تقدر تضيف باقي الصور من حسابك بعدين.'}
         </p>
       )}
     </section>

@@ -626,6 +626,9 @@ export async function POST(request: NextRequest) {
     let userText = body.text || ''
     const mediaBlocks: Array<Record<string, unknown>> = []
     let savedMediaUrl: string | null = null
+    /* 📸 (٢٤ أغسطس ٢٠٢٦) نتيجة لزق الصورة على الإعلان المستنّيها — بتتحقن
+       في برومبت المارد عشان كلامه يبقى وصف للي حصل فعلًا. شوف تحت. */
+    let photoAttach: Record<string, unknown> | null = null
 
     if (body.media) {
       const mt = body.media.mimetype || ''
@@ -682,6 +685,36 @@ export async function POST(request: NextRequest) {
       // 📸→📝 تفريغ فوري للصورة/الملف — fire-and-forget
       if (mediaBlocks.length > 0 && body.message_id) {
         void enrichMediaTranscript(body.message_id, mediaBlocks)
+      }
+
+      /* ── 📸 الصورة بتتلزق على الإعلان المستنّيها — **هنا، مش بأداة** ──
+         محمد (٢٤ أغسطس ٢٠٢٦): «ولما يبعت الصور الاعلان ينزل باسمه وصورته
+         … بس فعلا يكون الداتا بتاعت الاعلان محفوظة عندنا».
+
+         ليه في الكود مش أداة للمارد؟ درس ١٨ و١٩ أغسطس: أي حاجة لازم تحصل
+         فعلًا مايصحّش تكون معلّقة على إن النموذج «يفتكر» ينادي أداة. هنا
+         الصورة بتتحفظ في الداتابيز الأول، وبعدين المارد بيتقاله اللي حصل.
+
+         ⚠️ ومكانه هنا **قبل** حارس التجميع تحت عن قصد: لما العميل يبعت
+            ١٩ صورة، الحارس بيرمي كل واحدة غير الأخيرة قبل ما توصل
+            للنموذج — بس كلهم بيعدّوا من السطر ده، فالـ١٩ بيتلزقوا كلهم.
+
+         `listing_attach_photos` بتلزق على المسودة اللي **إحنا طلبنا صورها**
+         بس، وبتنشر الإعلان باسم صاحب الرقم (مش باسم الموظف اللي سجّله).
+         أي عطل فيها مايوقفش الرد على العميل. */
+      if (savedMediaUrl && body.type === 'image') {
+        try {
+          const { data: att, error: attErr } = await supabaseUntyped.rpc(
+            'listing_attach_photos', { p_phone: phone, p_urls: [savedMediaUrl] },
+          )
+          if (attErr) console.warn('[wa] listing_attach_photos:', attErr.message)
+          else if (att && (att as { matched?: boolean }).matched) {
+            photoAttach = att as Record<string, unknown>
+            console.log('[wa] صورة اتلزقت على إعلان', JSON.stringify(photoAttach).slice(0, 200))
+          }
+        } catch (e) {
+          console.warn('[wa] listing_attach_photos وقعت:', e instanceof Error ? e.message : String(e))
+        }
       }
     }
 
@@ -1167,6 +1200,7 @@ export async function POST(request: NextRequest) {
       senderPhone: phone,
       senderName: body.name ?? null,
       savedMediaUrl,
+      photoAttach,
       admin: senderIsAdmin,
       // 📊 للقياس بس (٣ أغسطس ٢٠٢٦) — مالهمش أي أثر على البرومبت ولا الرد
       channel: 'whatsapp',

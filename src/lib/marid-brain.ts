@@ -166,6 +166,42 @@ function mediaNote(url: string, listingOff: boolean): string {
   return `\n📎 الملف اللي بعته اتحفظ هنا:\n${url}\nلو هتسجّل إعلان أو مشروع، مرّر الرابط ده في image_urls كصورة.\n\n🧾 لو الصورة فيها منيو أو قائمة أسعار: اقرا كل صنف وسعره من الصورة نفسها (إنت شايفها). (قاعدة ١٩ أغسطس — بتشيل قاعدة ١٨ أغسطس اللي كانت بتحط الأصناف في الوصف): المطعم/النشاط ده **create_listing_draft واحد** باسمه بوصف عام مختصر (بدون أصناف/أسعار)، وبعدين نادِ **add_menu_items** بالـlisting_id اللي رجعلك وحط كل صنف من الصورة كعنصر منفصل بسعره — ده اللي بيظهر فعليًا كمنيو على صفحة المطعم. ⛔ ماتحطش الأصناف والأسعار في الـdescription — قاعدة ١٨ أغسطس دي كانت بتسيب المنيو فاضي فعليًا لأن محدش كان بيحوّل الوصف لمنيو يدوي بعد كده. ⛔ برضه مش نداء create_listing_draft لكل صنف (ده اللي خلّى رقاق المدق يظهر ٣٤ مرة) — إعلان واحد للمطعم + add_menu_items للأصناف. الأسعار اللي في الصورة هي المصدر، متخترعش.\n`
 }
 
+/* 📸 (٢٤ أغسطس ٢٠٢٦) «الصور اللي وصلت» — القسم ده **حقيقة مسجّلة**، مش تعليمة.
+   مسار الواتساب بيلزق الصورة على الإعلان المستنّيها **قبل** ما كلود يشوف
+   الرسالة أصلًا (`listing_attach_photos`)، وبيبعتلنا النتيجة هنا.
+
+   محمد: «بس فعلا يكون الداتا بتاعت الاعلان محفوظة عندنا». فالمارد مابقاش
+   بيوعد ولا بيتوقّع — بيقرا اللي حصل ويقوله. ولو القسم ده مش موجود يبقى
+   مفيش إعلان استلم صور، والقاعدة في `marid_tool_settings` بتقوله يسكت. */
+function photoAttachSection(a: Record<string, unknown> | null | undefined): string {
+  if (!a || a.matched !== true) return ''
+  const title = String(a.title || 'الإعلان')
+  const added = Number(a.photos_added ?? 0)
+  const total = Number(a.photos_total ?? 0)
+  const head = `
+
+═══════════════════════════════════════════════════════════
+📸 الصور اللي وصلت — ده اللي اتسجّل فعلًا في الداتابيز
+═══════════════════════════════════════════════════════════
+الإعلان: «${title}»
+اتضاف دلوقتي: ${added} صورة · الإجمالي: ${total} صورة`
+
+  if (a.published === true && a.url) {
+    return `${head}
+الحالة: ✅ **اتنشر فعلًا** على مضمونة باسم صاحب الرقم وبصوره.
+اللينك: ${a.url}
+
+هنّيه إن الإعلان نزل، وابعتله اللينك ده **بالحرف**. ماتخترعش لينك تاني.`
+  }
+
+  const missing = Array.isArray(a.missing) ? (a.missing as string[]) : []
+  return `${head}
+الحالة: ⏳ الصور اتحفظت، بس الإعلان **لسه ماينفعش ينزل**.
+الناقص: ${missing.length ? missing.join(' · ') : 'حاجة في البيانات'}
+
+قوله الصور وصلت، واطلب منه الناقص ده بالاسم. ⛔ ماتقولش إنه اتنشر.`
+}
+
 // المارد بيقدر يسأل الداتابيز قبل ما يرد: يبحث في الكتالوج، يشوف المتكلّم
 // مين، يجيب حجوزاته، يسجّل إعلان. بندوّر الحلقة لحد ما يخلص أدوات.
 export async function callMaridWithTools(opts: {
@@ -175,6 +211,8 @@ export async function callMaridWithTools(opts: {
   senderPhone: string
   senderName: string | null
   savedMediaUrl?: string | null
+  /** نتيجة لزق الصورة على الإعلان المستنّيها — بتتحسب في مسار الواتساب */
+  photoAttach?: Record<string, unknown> | null
   admin?: boolean
   // 📊 للقياس بس — اختياريين، ولو مابعتّهمش مفيش أي فرق في السلوك
   channel?: string | null
@@ -250,7 +288,7 @@ ${new Date().toLocaleString('ar-EG', {
 ${contactBlock || `رقمه: ${opts.senderPhone}${opts.senderName ? `\nاسمه: ${opts.senderName}` : ''}`}
 
 استخدم الرقم ده مباشرة في الأدوات — ماتسألهوش عليه.
-${opts.savedMediaUrl ? mediaNote(opts.savedMediaUrl, listingToolOff) : ''}
+${opts.savedMediaUrl ? mediaNote(opts.savedMediaUrl, listingToolOff) : ''}${photoAttachSection(opts.photoAttach)}
 
 ═══════════════════════════════════════════════════════════
 عندك أدوات — استخدمها
