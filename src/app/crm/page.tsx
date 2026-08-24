@@ -221,6 +221,11 @@ export default function CrmMobilePage() {
      ما الصفحة تركب عشان مايحصلش اختلاف بين السيرفر والمتصفح. */
   const [pickApp, setPickApp] = useState(false)
   useEffect(() => { setPickApp(canPickWaApp()) }, [])
+  /* 💬 (٢٤ أغسطس ٢٠٢٦ — محمد: «عدّل تاب واتساب وواتساب بيزنس خليها واتساب
+     بس، وأول ما حد يدوس عليها يتخيّر»)
+     زرار واحد، والاختيار بيحصل بعد الدوس في شيت. الرقم اللي الشيت مفتوح
+     عليه بيتحط هنا. */
+  const [waFor, setWaFor] = useState<Lead | null>(null)
   const [tab, setTab] = useState<'calls' | 'tasks' | 'add' | 'team' | 'all'>('calls')
   /* ➕ تاب الإضافة — الأقسام بتتحمّل أول مرة يفتحه بس (مش مع كل تحميل) */
   const [addMenu, setAddMenu] = useState<AddMenu | null>(null)
@@ -591,7 +596,7 @@ export default function CrmMobilePage() {
             )}
             {q.queue.map(l => (
               <LeadCard key={l.id} l={l} onOpen={openDetail} onLog={openSheet}
-                card={card} btn={btn} C={C} startedAt={startedAt} me={q.me?.name ?? null} onCopied={onCopied} pickApp={pickApp} />
+                card={card} btn={btn} C={C} startedAt={startedAt} me={q.me?.name ?? null} onCopied={onCopied} onWa={setWaFor} />
             ))}
           </>
         )}
@@ -635,7 +640,7 @@ export default function CrmMobilePage() {
             </div>
 
             {allRows.map(l => <LeadCard key={l.id} l={l} showOwner onOpen={openDetail} onLog={openSheet}
-              card={card} btn={btn} C={C} startedAt={startedAt} me={q?.me?.name ?? null} onCopied={onCopied} pickApp={pickApp} />)}
+              card={card} btn={btn} C={C} startedAt={startedAt} me={q?.me?.name ?? null} onCopied={onCopied} onWa={setWaFor} />)}
 
             {allRows.length === 0 && !allBusy && (
               <div style={{ ...card, textAlign: 'center', color: C.sub, padding: 26, fontSize: 13.5 }}>
@@ -982,27 +987,15 @@ export default function CrmMobilePage() {
               <a href={`tel:${detailFor.phone}`} onClick={() => { startedAt.current = Date.now() }} style={btn('primary')}>
                 <Phone style={{ width: 16, height: 16 }} /> اتصال
               </a>
-              {/* 📱 نفس اختيار التطبيق بتاع كارت الرقم — أندرويد بيحدّد، غيره لأ */}
-              {detailFor.phone_kind !== 'landline' && (pickApp ? (
-                <>
-                  <a href={waAppLink('normal', detailFor.phone, detailFor.specialty, detail?.contact?.name || detailFor.name, q?.me?.name ?? null)}
-                     onClick={() => { copyScript(detailFor, q?.me?.name ?? null).then(onCopied) }}
-                     style={{ ...btn('wa'), paddingInline: 10 }} title="واتساب العادي">
-                    <MessageCircle style={{ width: 15, height: 15 }} /> عادي
-                  </a>
-                  <a href={waAppLink('business', detailFor.phone, detailFor.specialty, detail?.contact?.name || detailFor.name, q?.me?.name ?? null)}
-                     onClick={() => { copyScript(detailFor, q?.me?.name ?? null).then(onCopied) }}
-                     style={{ ...btn('wa'), background: '#0B7A5C', borderColor: '#0B7A5C', paddingInline: 10 }} title="واتساب بيزنس">
-                    <MessageCircle style={{ width: 15, height: 15 }} /> بيزنس
-                  </a>
-                </>
-              ) : (
-                <a href={waLink(detailFor, q?.me?.name ?? null)} target="_blank" rel="noreferrer" style={btn('wa')}
-                   onClick={() => { copyScript(detailFor, q?.me?.name ?? null).then(onCopied) }}
-                   title={`اسكريبت ${scriptFor(detailFor.specialty).label} — جاهز في الشات ومتنسخ كمان`}>
+              {/* 📱 نفس زرار كارت الرقم — واحد، والاختيار بعد الدوس */}
+              {detailFor.phone_kind !== 'landline' && (
+                <button
+                  onClick={() => setWaFor({ ...detailFor, name: detail?.contact?.name || detailFor.name })}
+                  style={btn('wa')}
+                  title={`اسكريبت ${scriptFor(detailFor.specialty).label} — جاهز ومتنسخ كمان`}>
                   <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
-                </a>
-              ))}
+                </button>
+              )}
               {/* 🗒️ (٢٢ أغسطس ٢٠٢٦ — محمد: «طيب إيه موضوع سجّل ده؟»)
                   «سجّل» لوحدها ماكانتش بتقول إيه اللي هيتسجّل. الاسم بقى
                   بيقول الشغلانة نفسها: «خلّصت؟ سجّل». */}
@@ -1014,6 +1007,21 @@ export default function CrmMobilePage() {
           </div>
         </div>
       )}
+
+      {/* ــــــ شيت اختيار الواتساب ــــــ */}
+      <WaPicker
+        lead={waFor}
+        me={q?.me?.name ?? null}
+        pickApp={pickApp}
+        onCopied={onCopied}
+        onClose={() => setWaFor(null)}
+        onPicked={(l) => {
+          setWaFor(null)
+          /* الشيت بيتفتح من مكانين: كارت الرقم (وساعتها بنفتح الملف زي ما
+             الزرار القديم كان بيعمل) ومن جوّه الملف نفسه (وساعتها هو
+             مفتوح خلاص فمانعملش تحميل تاني على الفاضي). */
+          if (!detailFor) openDetail(l)
+        }} />
 
       {/* ــــــ شيت تسجيل المكالمة ــــــ */}
       {sheet && (
@@ -1263,13 +1271,120 @@ function AudioPlayer({ path }: { path: string }) {
   )
 }
 
+/* 💬 (٢٤ أغسطس ٢٠٢٦ — محمد: «عدّل تاب واتساب وواتساب بيزنس خليها واتساب
+   بس، وأول ما حد يدوس عليها يتخيّر»)
+
+   كان في زرارين جنب بعض على أندرويد («عادي» و«بيزنس») — بياخدوا مكان
+   من زراير المكالمة، والموظف لازم يفتكر هو بيكلّم الرقم ده من أنهي
+   تطبيق **قبل** ما يدوس. دلوقتي زرار واحد، والاختيار بعد الدوس.
+
+   والشيت مش بس اختيار: الاسكريبت نفسه مكتوب فيه بزرار نسخ. ده أهم جزء —
+   واتساب بيرمي الـ`text` بتاع اللينك في حالات كتير (خصوصًا لما ويندوز أو
+   أندرويد يسلّم اللينك للتطبيق المثبّت بدل المتصفح)، فالشات بيفتح فاضي
+   والموظف واقف. النسخ بيحصل في نفس الضغطة، فحتى لو اتفتح فاضي بيلزق.
+
+   ⚠️ على iOS والديسكتوب مفيش scheme منفصل لواتساب بيزنس — فبنعرض خيار
+      واحد بدل ما نوهم الموظف إنه اختار حاجة والنظام هو اللي بيقرر. */
+function WaPicker({
+  lead, me, pickApp, onClose, onPicked, onCopied,
+}: {
+  lead: Lead | null
+  me: string | null
+  pickApp: boolean
+  onClose: () => void
+  /** بيتنده بعد ما يختار — بنفتح كارت الرقم زي ما الزرار القديم كان بيعمل */
+  onPicked: (l: Lead) => void
+  onCopied?: (ok: boolean) => void
+}) {
+  if (!lead) return null
+  const l = lead
+  const label = scriptFor(l.specialty).label
+  const go = (href: string) => {
+    /* ⚠️ النسخ لازم يبدأ **جوّه ضغطة المستخدم** — الكليبورد مابيشتغلش من غيرها */
+    copyScript(l, me).then(ok => onCopied?.(ok))
+    onPicked(l)
+    /* لينك `intent://` لازم ينط في نفس التاب — `window.open` بيتجاهله على
+       أندرويد. اللينك العادي بيفتح تاب جديد عشان الموظف مايسيبش قايمته. */
+    if (href.startsWith('intent://')) window.location.href = href
+    else window.open(href, '_blank', 'noopener')
+  }
+  const opt: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+    border: `1px solid ${C.line}`, background: '#fff', borderRadius: 16,
+    padding: '14px 14px', fontSize: 15, fontWeight: 800, color: C.ink,
+    fontFamily: 'inherit', cursor: 'pointer', marginBottom: 8, textAlign: 'right',
+  }
+  return (
+    <div dir="rtl" style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-end' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.45)' }} />
+      <div style={{
+        position: 'relative', width: '100%', background: C.bg,
+        borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 16,
+        paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
+        maxHeight: '85dvh', overflowY: 'auto',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <b style={{ fontSize: 16 }}>{pickApp ? 'تبعتله من أنهي واتساب؟' : 'افتح واتساب'}</b>
+          <button onClick={onClose} style={{
+            marginRight: 'auto', border: `1px solid ${C.line}`, background: '#fff',
+            borderRadius: 12, padding: 8, cursor: 'pointer', lineHeight: 0,
+          }}>
+            <X style={{ width: 16, height: 16 }} />
+          </button>
+        </div>
+        <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 12 }}>
+          {l.name || 'الرقم'} · <span style={{ direction: 'ltr', unicodeBidi: 'isolate' }}>{l.phone}</span>
+        </div>
+
+        {pickApp ? (
+          <>
+            <button onClick={() => go(waAppLink('normal', l.phone, l.specialty, l.name, me))} style={opt}>
+              <MessageCircle style={{ width: 18, height: 18, color: C.wa }} /> واتساب
+            </button>
+            <button onClick={() => go(waAppLink('business', l.phone, l.specialty, l.name, me))} style={opt}>
+              <MessageCircle style={{ width: 18, height: 18, color: '#0B7A5C' }} /> واتساب بيزنس
+            </button>
+          </>
+        ) : (
+          <button onClick={() => go(waLink(l, me))} style={opt}>
+            <MessageCircle style={{ width: 18, height: 18, color: C.wa }} /> افتح واتساب
+          </button>
+        )}
+
+        {/* الاسكريبت قدامه — مش محتاج يفتكره ولا يدوّر عليه */}
+        <div style={{ border: `1px solid ${C.line}`, borderRadius: 16, overflow: 'hidden', background: '#fff', marginTop: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#f4f8f6', borderBottom: `1px solid ${C.line}` }}>
+            <Sparkles style={{ width: 15, height: 15, color: C.green }} />
+            <b style={{ fontSize: 12.5 }}>الاسكريبت — {label}</b>
+            <button
+              onClick={async () => onCopied?.(await copyScript(l, me))}
+              style={{
+                marginRight: 'auto', border: `1px solid ${C.green}`, background: C.green, color: '#fff',
+                borderRadius: 12, padding: '6px 12px', fontSize: 12, fontWeight: 800,
+                fontFamily: 'inherit', cursor: 'pointer',
+              }}>
+              انسخ
+            </button>
+          </div>
+          <div style={{ padding: '11px 13px', fontSize: 12.5, lineHeight: 1.85, whiteSpace: 'pre-wrap', color: C.ink }}>
+            {scriptText(l.specialty, l.name, me)}
+          </div>
+        </div>
+        <div style={{ fontSize: 11.5, color: C.sub, marginTop: 8, lineHeight: 1.7 }}>
+          الرسالة بتتنسخ لوحدها مع الدوس — لو الشات فتح فاضي الزق وخلاص.
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* 🧾 كارت الرقم — بيتستخدم في «مكالماتي» وفي «كل الأرقام» بتاع المدير.
    `showOwner` بيبان في تاب المدير بس: مين ماسك الرقم ده. */
 function LeadCard({
-  l, onOpen, onLog, card, btn, C, startedAt, showOwner = false, me = null, onCopied, pickApp = false,
+  l, onOpen, onLog, card, btn, C, startedAt, showOwner = false, me = null, onCopied, onWa,
 }: {
-  /** أندرويد؟ يبقى نعرض «عادي» و«بيزنس» بدل زرار واتساب واحد */
-  pickApp?: boolean
+  /** دوسة «واتساب» بتفتح شيت الاختيار — مابتفتحش واتساب على طول */
+  onWa: (l: Lead) => void
   l: Lead
   onOpen: (l: Lead) => void
   onLog: (l: Lead) => void
@@ -1324,33 +1439,15 @@ function LeadCard({
                      style={btn('primary')}>
                     <Phone style={{ width: 16, height: 16 }} /> اتصال
                   </a>
-                  {/* 📱 (٢٣ أغسطس ٢٠٢٦ — محمد: «عايز تاب إرسال الواتساب
-                      تخيّرهم بين واتساب بيزنس أو واتساب عادي») على أندرويد
-                      بنعرض الاتنين بـpackage صريح. على iOS/الديسكتوب مفيش
-                      طريقة نحدّد، فزرار واحد بدل ما نوهمه إنه اختار. */}
-                  {l.phone_kind !== 'landline' && (pickApp ? (
-                    <>
-                      <a href={waAppLink('normal', l.phone, l.specialty, l.name, me)}
-                         onClick={() => { copyScript(l, me).then(ok => onCopied?.(ok)); onOpen(l) }}
-                         style={{ ...btn('wa'), paddingInline: 10 }}
-                         title={`اسكريبت ${scriptFor(l.specialty).label} — واتساب العادي`}>
-                        <MessageCircle style={{ width: 15, height: 15 }} /> عادي
-                      </a>
-                      <a href={waAppLink('business', l.phone, l.specialty, l.name, me)}
-                         onClick={() => { copyScript(l, me).then(ok => onCopied?.(ok)); onOpen(l) }}
-                         style={{ ...btn('wa'), background: '#0B7A5C', borderColor: '#0B7A5C', paddingInline: 10 }}
-                         title={`اسكريبت ${scriptFor(l.specialty).label} — واتساب بيزنس`}>
-                        <MessageCircle style={{ width: 15, height: 15 }} /> بيزنس
-                      </a>
-                    </>
-                  ) : (
-                    <a href={waLink(l, me)} target="_blank" rel="noreferrer"
-                       onClick={() => { copyScript(l, me).then(ok => onCopied?.(ok)); onOpen(l) }}
-                       style={btn('wa')}
-                       title={`اسكريبت ${scriptFor(l.specialty).label} — جاهز في الشات ومتنسخ كمان`}>
+                  {/* 📱 (٢٤ أغسطس ٢٠٢٦ — محمد: «خليها واتساب بس، وأول ما حد
+                      يدوس عليها يتخيّر») زرار واحد، والاختيار بين العادي
+                      والبيزنس بيحصل في شيت بعد الدوس — شوف `WaPicker`. */}
+                  {l.phone_kind !== 'landline' && (
+                    <button onClick={() => onWa(l)} style={btn('wa')}
+                       title={`اسكريبت ${scriptFor(l.specialty).label} — جاهز ومتنسخ كمان`}>
                       <MessageCircle style={{ width: 16, height: 16 }} /> واتساب
-                    </a>
-                  ))}
+                    </button>
+                  )}
                   <button onClick={() => onOpen(l)} style={{ ...btn(), flex: '0 0 auto', paddingInline: 12 }}>
                     <FileText style={{ width: 15, height: 15 }} /> الملف
                   </button>
