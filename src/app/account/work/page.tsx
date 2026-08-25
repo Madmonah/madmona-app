@@ -444,11 +444,14 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
         </div>
       )}
 
-      {/* 📋 مهامي — نفس التاسكات اللي في تاب Task بالشات.
-          محمد: «شيل تابة الصلاحيات اللي في شاشة شغلي وحط مكانها التاسكات،
-          مع العلم إن التاسكات برضو تظهر في الشات في تاب مهامي».
-          الصلاحيات اتشالت من هنا — مكانها الطبيعي لوحة الإدارة، والموظف
-          مش محتاج يبصّ على قايمة صلاحياته كل يوم، هو محتاج شغله. */}
+      {/* 📋 مهامي — المكان الوحيد للمهام في المشروع كله.
+          🎯 (٢٥ أغسطس ٢٠٢٦) محمد: «انا شايف التاسكات متكررة في اكتر من مكان
+          وتاسكات مختلفة انا عايز تاسكات تكون في مكان واحد وبتاب التفاصيل
+          وعايز اعادة صياغة لتاب شغلي بحيث تكون سهلة علي الموظف وعايز اتاكد
+          من ان كل موظف يقدر يضيف او يعدل».
+          - تاب Task في الشات بقى ريدايركت هنا — مفيش شاشتين تاني.
+          - المهام متجمّعة: متأخر 🔥 الأول · بمعاد · من غير معاد.
+          - «➕ ضيف مهمة» بينادي add_my_task — أي موظف يضيف لنفسه. */}
       {b.employee_id && (
         <div className="px-5 py-4">
           <SectionTitle
@@ -456,22 +459,7 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
             title="مهامي"
             extra={b.tasks_done_today > 0 ? `${b.tasks_done_today} خلصت النهاردة` : undefined}
           />
-          {(b.my_tasks || []).length === 0 ? (
-            <p className="text-[12px] text-[#6B7280]">مفيش مهام مفتوحة — تمام 👌</p>
-          ) : (
-            <div className="space-y-1.5">
-              {b.my_tasks.map(t => (
-                <TaskRow key={t.id} t={t} onDone={onRefresh} />
-              ))}
-            </div>
-          )}
-          <Link
-            href="/chat/tasks"
-            className="mt-3 w-full inline-flex items-center justify-center gap-2 bg-[#FAFAF7] border border-gray-200 text-[#1A2E26] py-2.5 rounded-2xl text-[13px] font-bold no-underline hover:bg-white"
-          >
-            <ClipboardList className="w-4 h-4" />
-            كل المهام في الشات
-          </Link>
+          <MyTasks tasks={b.my_tasks || []} onRefresh={onRefresh} />
         </div>
       )}
 
@@ -739,6 +727,121 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
     {err && (
       <p className="text-[11px] font-bold text-red-600 px-3 pt-1">{err}</p>
     )}
+    </div>
+  )
+}
+
+
+/* ---------------------------------------------------------------------------
+   MyTasks — إعادة صياغة «مهامي» عشان تكون سهلة على الموظف.
+   🎯 (٢٥ أغسطس ٢٠٢٦) محمد: «عايز اعادة صياغة لتاب شغلي بحيث تكون سهلة
+   علي الموظف وعايز اتاكد من ان كل موظف يقدر يضيف او يعدل».
+   المهام متقسّمة ٣ مجاميع واضحة بدل ليستة واحدة طويلة:
+   متأخر 🔥 (الأهم فوق) → النهارده بمعاد (مترتبة بالساعة) → من غير معاد.
+   --------------------------------------------------------------------------- */
+function MyTasks({ tasks, onRefresh }: { tasks: Task[]; onRefresh: () => void }) {
+  const overdue = tasks.filter(t => t.overdue)
+  const timed = tasks.filter(t => !t.overdue && t.due_time)
+    .sort((a, b) => String(a.due_time).localeCompare(String(b.due_time)))
+  const anytime = tasks.filter(t => !t.overdue && !t.due_time)
+
+  const groups: { label: string; cls: string; items: Task[] }[] = [
+    { label: '🔥 متأخر — ابدأ بدول', cls: 'text-red-600', items: overdue },
+    { label: '⏰ النهارده بمعاد', cls: 'text-[#B78A12]', items: timed },
+    { label: '📌 من غير معاد', cls: 'text-[#6B7280]', items: anytime },
+  ]
+
+  return (
+    <div>
+      <AddTaskForm onAdded={onRefresh} />
+      {tasks.length === 0 ? (
+        <p className="text-[12px] text-[#6B7280]">مفيش مهام مفتوحة — تمام 👌</p>
+      ) : (
+        <div className="space-y-3">
+          {groups.filter(g => g.items.length > 0).map(g => (
+            <div key={g.label}>
+              <p className={`text-[10.5px] font-black mb-1.5 ${g.cls}`}>
+                {g.label} <span className="opacity-60">({g.items.length})</span>
+              </p>
+              <div className="space-y-1.5">
+                {g.items.map(t => <TaskRow key={t.id} t={t} onDone={onRefresh} />)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   AddTaskForm — «كل موظف يقدر يضيف» — بينادي add_my_task (RPC جديدة
+   ٢٥/٨) اللي بتضيف صف في daily_tasks لليوم بتاع الموظف نفسه بس.
+   --------------------------------------------------------------------------- */
+function AddTaskForm({ onAdded }: { onAdded: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [time, setTime] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  const submit = async () => {
+    if (!title.trim()) { setErr('اكتب المهمة الأول') ; return }
+    setBusy(true); setErr(null)
+    try {
+      const { data, error } = await (supabaseBrowser.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<{ data: { ok?: boolean; error?: string } | null; error: { message: string } | null }>)(
+        'add_my_task', { p_title: title.trim(), p_due_time: time || null },
+      )
+      if (error || (data && data.ok === false)) {
+        setErr(data?.error || 'المهمة ماتضافتش — جرّب تاني'); return
+      }
+      setTitle(''); setTime(''); setOpen(false)
+      pingTasksChanged()
+      onAdded()
+    } catch (e) {
+      console.error('[work] add_my_task failed:', e)
+      setErr('المهمة ماتضافتش — جرّب تاني')
+    } finally { setBusy(false) }
+  }
+
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)}
+        className="w-full inline-flex items-center justify-center gap-2 bg-white border-2 border-dashed border-[#34D399]/60 text-[#059669] py-2 rounded-2xl text-[12.5px] font-black mb-3 hover:bg-[#34D399]/5">
+        <Plus className="w-4 h-4" />
+        ضيف مهمة
+      </button>
+    )
+  }
+
+  return (
+    <div className="bg-[#FAFAF7] border border-gray-200 rounded-2xl p-3 mb-3 space-y-2">
+      <input value={title} onChange={e => setTitle(e.target.value)} autoFocus
+        placeholder="اكتب المهمة… (مثال: اتصل بمورد الزيوت)"
+        className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-[13px]" />
+      <label className="block">
+        <span className="text-[10px] font-bold text-[#6B7280]">معاد التسليم (اختياري)</span>
+        <input type="time" value={time} onChange={e => setTime(e.target.value)}
+          className="w-full mt-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-[13px]" />
+      </label>
+      {err && (
+        <p className="text-[11.5px] text-red-600 flex items-center gap-1.5">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />{err}
+        </p>
+      )}
+      <div className="grid grid-cols-2 gap-2">
+        <button type="button" onClick={submit} disabled={busy}
+          className="inline-flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-2 rounded-xl text-[12.5px] font-bold disabled:opacity-50">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+          ضيفها
+        </button>
+        <button type="button" onClick={() => { setOpen(false); setErr(null) }} disabled={busy}
+          className="bg-white border border-gray-200 text-[#6B7280] py-2 rounded-xl text-[12.5px] font-bold disabled:opacity-50">
+          إلغاء
+        </button>
+      </div>
     </div>
   )
 }

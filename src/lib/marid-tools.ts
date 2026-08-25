@@ -1932,7 +1932,7 @@ async function createTask(a: { title: string; detail?: string; assignee_name?: s
             type: 'task_assigned',
             title: '📋 مهمة جديدة ليك',
             body: title.slice(0, 90),
-            url: '/chat/tasks',
+            url: '/account/work', // 📋 (٢٥/٨) المهام بقت في مكان واحد — «شغلي»
             data: { icon: '/marid-icon-192.png' },
           } as never)
         }
@@ -1979,7 +1979,7 @@ async function createTask(a: { title: string; detail?: string; assignee_name?: s
           type: 'task_assigned',
           title: '📋 مهمة جديدة ليك',
           body: title.slice(0, 90),
-          url: '/chat/tasks',
+          url: '/account/work', // 📋 (٢٥/٨) المهام بقت في مكان واحد — «شغلي»
           data: { icon: '/marid-icon-192.png' },
         } as never)
       }
