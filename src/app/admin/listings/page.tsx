@@ -48,7 +48,7 @@ const STATUS_ORDER = ['published', 'draft', 'paused', 'pending_review', 'rejecte
 type Row = {
   id: string; title: string; slug: string; status: string
   is_directory: boolean; directory_source: string | null
-  category: string | null; city: string | null; district: string | null
+  category: string | null; track: string | null; city: string | null; district: string | null
   phone: string | null; phone_verified: boolean; unclaimed: boolean
   owner_name: string | null
   seller_kind: 'individual' | 'business' | null
@@ -713,6 +713,17 @@ export default function AdminListingsPage() {
                         <a href={`/marketplace/${r.slug}`} target="_blank" rel="noreferrer" title="معاينة" style={iconBtn('#f1f5f3', C.sub)}><Eye style={{ width: 15, height: 15 }} /></a>
                         <button title="تغيير الحالة" style={iconBtn('#eaf1ff', '#2456c8')} onClick={() => setStatusChanging(r)}><SlidersHorizontal style={{ width: 15, height: 15 }} /></button>
                         <Link href={`/supplier/marketplace/${r.id}/edit`} title="تعديل" style={iconBtn(C.green + '1a', C.green)}><Edit2 style={{ width: 15, height: 15 }} /></Link>
+                        {/* 💅🍽️ (٢٥/٨/٢٠٢٦) محمد: «التجميل والمطاعم مينفعش كل خدمة
+                            تيجي في إعلان لوحده» — الإضافة الواقعية: من نفس الشاشة
+                            الموظف بيفتح منيو المطعم أو كتالوج خدمات الصالون
+                            ويضيف الأصناف جوّه الإعلان الواحد. */}
+                        {!r.is_directory && (
+                          <Link
+                            href={`/supplier/marketplace/${r.id}/${r.track === 'restaurants' ? 'menu' : 'products'}`}
+                            title={r.track === 'restaurants' ? 'المنيو' : 'الخدمات والمنتجات'}
+                            style={iconBtn('#fff7e0', '#9a6b00')}
+                          >{r.track === 'restaurants' ? '🍽️' : '🧾'}</Link>
+                        )}
                         <button title="حذف / أرشفة" style={iconBtn('#fdecea', C.danger)} onClick={() => setDeleting(r)}><Trash2 style={{ width: 15, height: 15 }} /></button>
                       </div>
                     </td>

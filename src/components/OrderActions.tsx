@@ -308,10 +308,16 @@ export function MartProductsCatalog({
   listing,
   supplier,
   products,
+  defaultCatLabel,
 }: {
   listing: Listing
   supplier: Supplier
   products: MartProduct[]
+  /* 💅 (٢٥/٨/٢٠٢٦) محمد: «التجميل والمطاعم لازم نظام عرض واقعي».
+     خدمات الصالون بقت صفوف mart_products جوّه إعلان الصالون — والعنوان
+     الافتراضي «المنتجات» ما ينفعش ليها، فصفحة الإعلان بتبعت التسمية
+     المناسبة («الخدمات والأسعار») حسب تصنيف الإعلان. */
+  defaultCatLabel?: string
 }) {
   const { t, lang } = useT()
   const cart = useCart()
@@ -374,7 +380,7 @@ export function MartProductsCatalog({
     <div className="space-y-4">
       {orderedCats.map((cat) => {
         const items = grouped.get(cat) || []
-        const catLabel = cat === '__general__' ? (lang === 'en' ? 'Products' : 'المنتجات') : cat
+        const catLabel = cat === '__general__' ? (defaultCatLabel || (lang === 'en' ? 'Products' : 'المنتجات')) : cat
         return (
           <section key={cat} className="bg-white rounded-3xl shadow-soft overflow-hidden">
             <div className="px-5 pt-5 pb-3 border-b border-gray-50">

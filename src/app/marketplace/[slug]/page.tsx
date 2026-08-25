@@ -1017,10 +1017,19 @@ export default function ListingDetailPage() {
             )}
 
             {!isRestaurant && !isDirectory && listing.supplier && martProducts.length > 0 && (
+              /* 💅 (٢٥/٨/٢٠٢٦) محمد: «التجميل والمطاعم لازم نظام عرض واقعي» —
+                 لإعلانات التجميل والخدمات، الكتالوج ده هو قايمة الخدمات
+                 بأسعارها، فالعنوان «الخدمات والأسعار» بدل «المنتجات». */
               <MartProductsCatalog
                 listing={{ id: listing.id, title: displayTitle }}
                 supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
                 products={martProducts}
+                defaultCatLabel={
+                  (catSlug === 'beauty' || catSlug.startsWith('beauty-')
+                   || ['bridal-beauty','makeup-artists','hair-stylists','nail-care','skincare-facial','brows-lashes','hair-removal','massage-spa'].includes(catSlug)
+                   || track === 'services')
+                    ? 'الخدمات والأسعار' : undefined
+                }
               />
             )}
 
