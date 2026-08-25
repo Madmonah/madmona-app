@@ -44,19 +44,78 @@ import {
 //
 //    نفس النمط الغلط موجود في شاشات أدمن تانية (زي flow-tasks) — بس
 //    هناك بيقرا جداول، فبيرجع فاضي من غير رسالة خطأ ومحدش واخد باله.
-import { supabaseBrowser } from '@/lib/supabase-browser'
 import { safeStorage } from '@/lib/safe-storage'
 
-// 🔑 (٢٥ أغسطس ٢٠٢٦ — الجذر النهائي) لوحة business-finance ليها نظامين دخول:
-//    جلسة Supabase (موظفي مضمونة من الأبليكيشن) **وتوكن واتساب**
-//    (madmona_token — وده اللي محمد وأصحاب البيزنس بيدخلوا بيه، من غير
-//    أي جلسة Supabase خالص). الشاشة دي كانت شايفة النظام الأول بس،
-//    فمحمد نفسه الداتابيز كانت شايفاه «مش مسجّل». دلوقتي التوكن بيتبعت
-//    مع كل نداء، والدوال بتقبل أي واحد من الاتنين (schedule_access_ok).
-const rpcRaw = supabaseBrowser.rpc as unknown as (fn: string, args?: Record<string, unknown>) => Promise<{ data: any; error: any }>
-const rpc = (fn: string, args?: Record<string, unknown>) => {
+// 🔑 (٢٥ أغسطس ٢٠٢٦ — الجذر النهائي، بعد ما «الجدول مش راضي يتحمّل» فضلت
+//    تظهر رغم إن النداء بيرد في ثانية من بره):
+//    الصفحة دي **مابتستخدمش مكتبة supabase-js خالص**. المكتبة بتاخد قفل
+//    (navigator.locks) قبل أي نداء عشان تجيب الجلسة — ولو تاب PWA قديم
+//    مات وهو ماسك القفل، كل نداءاتها بتعلّق للأبد من غير خطأ. ده اللي
+//    كان بيحصل على موبايل محمد: السيرفر سليم والمكتبة معلّقة.
+//
+//    الحل: fetch مباشر على PostgREST — مفيش أقفال ومفيش حالة مشتركة:
+//      • الهوية الأساسية = p_token (توكن الواتساب من safeStorage) —
+//        وده نظام دخول محمد وأصحاب البيزنس.
+//      • ولو فيه جلسة Supabase متخزنة (موظفي مضمونة) بنقرا الـaccess
+//        token من التخزين **مباشرة** ونبعته — من غير المرور على المكتبة.
+//      • مهلة ١٥ ثانية بـAbortController — الفشل بيظهر برسالة، مش تعليق.
+const SUPA_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+function sessionBearer(): string {
+  try {
+    const ref = new URL(SUPA_URL).hostname.split('.')[0]
+    const raw = safeStorage.get(`sb-${ref}-auth-token`)
+    if (raw) {
+      const j = JSON.parse(raw)
+      const at = j?.access_token || j?.currentSession?.access_token
+      if (typeof at === 'string' && at.length > 20) return at
+    }
+  } catch { /* جلسة بايظة = كمّل بالمفتاح العام، p_token هو الهوية */ }
+  return ANON_KEY
+}
+
+async function rpc(fn: string, args?: Record<string, unknown>): Promise<{ data: any; error: { message: string } | null }> {
   const token = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
-  return rpcRaw(fn, { ...(args || {}), p_token: token || null })
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 15000)
+  try {
+    const res = await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: {
+        apikey: ANON_KEY,
+        Authorization: `Bearer ${sessionBearer()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ...(args || {}), p_token: token || null }),
+      signal: ctrl.signal,
+    })
+    let data = await res.json().catch(() => null)
+    if (res.status === 401) {
+      // جلسة Supabase متخزنة بس منتهية → جرّب تاني بالمفتاح العام.
+      // p_token لسه بيتبعت، فصاحب التوكن بيعدّي عادي.
+      const res2 = await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`, {
+        method: 'POST',
+        headers: { apikey: ANON_KEY, Authorization: `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...(args || {}), p_token: token || null }),
+        signal: ctrl.signal,
+      })
+      data = await res2.json().catch(() => null)
+      if (!res2.ok) return { data: null, error: { message: (data && (data.message || data.error)) || `خطأ من السيرفر (${res2.status})` } }
+      return { data, error: null }
+    }
+    if (!res.ok) {
+      return { data: null, error: { message: (data && (data.message || data.error)) || `خطأ من السيرفر (${res.status})` } }
+    }
+    return { data, error: null }
+  } catch (e: any) {
+    return {
+      data: null,
+      error: { message: e?.name === 'AbortError' ? 'النداء اتأخر ١٥ ثانية — الشبكة بطيئة أو مقطوعة' : (e?.message || 'خطأ في الشبكة') },
+    }
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 type Tpl = {
