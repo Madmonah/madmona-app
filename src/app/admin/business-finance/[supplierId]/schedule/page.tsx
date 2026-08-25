@@ -50,7 +50,6 @@ const PRIO: Record<string, { label: string; cls: string }> = {
 }
 
 const hhmm = (t: string | null) => (t ? t.slice(0, 5) : '')
-const DONE = new Set(['done', 'completed', 'closed'])
 
 export default function SchedulePage({ params }: { params: { supplierId: string } }) {
   const { supplierId } = params
@@ -67,34 +66,21 @@ export default function SchedulePage({ params }: { params: { supplierId: string 
   const [editing, setEditing] = useState<string | null>(null)
   const [adding, setAdding] = useState<string | null>(null)
 
+  // 🧱 (٢٥/٨) نداء واحد بيرجّع كل حاجة: اسم البيزنس · القالب · الموظفين ·
+  //    حالة تاسكات النهارده. قبل كده الشاشة كانت بتقرا `daily_tasks`
+  //    و`business_employees` مباشرة — وبوليسي `daily_tasks` هو `is_admin()`
+  //    بس، فموظف مضمونة كان يفتح الشاشة ويلاقي عمود «اتعملت/لسه» فاضي
+  //    من غير أي رسالة. الصلاحية بقت جوّه الدالة، والشاشة مابتقراش جدول
+  //    مباشرة خالص.
   const load = useCallback(async () => {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
-    setBizName((s as { business_name?: string } | null)?.business_name || '')
-
-    const { data: e } = await supabase
-      .from('business_employees').select('id, full_name')
-      .eq('supplier_id', supplierId).eq('status', 'active').order('full_name')
-    setEmps((e || []) as Emp[])
-
     const { data } = await rpc('get_recurring_tasks', { p_supplier_id: supplierId })
-    if (data && data.ok === false) { setDenied(true); setLoading(false); return }
+    if (!data || data.ok === false) { setDenied(true); setLoading(false); return }
     setDenied(false)
-    setTpls(((data?.templates || []) as Tpl[]))
-
-    // حالة النهارده الفعلية — بتتطابق بالعنوان (نفس مفتاح التوليد)
-    const ids = ((e || []) as Emp[]).map(x => x.id)
-    if (ids.length) {
-      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' })
-      const { data: dt } = await supabase
-        .from('daily_tasks').select('title_ar, status, employee_id')
-        .in('employee_id', ids).eq('task_date', today)
-      const map: Record<string, boolean> = {}
-      ;((dt || []) as { title_ar: string; status: string; employee_id: string }[]).forEach(r => {
-        map[`${r.employee_id}|${r.title_ar}`] = DONE.has((r.status || '').toLowerCase())
-      })
-      setTodayDone(map)
-    }
+    setBizName((data.business_name as string) || '')
+    setTpls((data.templates || []) as Tpl[])
+    setEmps((data.employees || []) as Emp[])
+    setTodayDone((data.today_status || {}) as Record<string, boolean>)
     setLoading(false)
   }, [supplierId])
 
