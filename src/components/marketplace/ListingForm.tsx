@@ -701,6 +701,13 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       const flat = form.pricing.find(p => p.price && parseFloat(p.price) > 0)
       if (isFlatSale && flat) listingPayload.price_egp = parseFloat(flat.price)
     }
+    // 🚗 (٢٥/٨) حقول التصنيف make/model هي المصدر — بننسخها لخانات العرض
+    //    العامة (brand/model_name) عشان صفحة الإعلان تعرض نفس القيم.
+    {
+      const mk = form.attributeValues['make']; const md = form.attributeValues['model']
+      if (attributes.some(a => a.field_key === 'make') && mk) listingPayload.brand = String(mk)
+      if (attributes.some(a => a.field_key === 'model') && md) listingPayload.model_name = String(md)
+    }
 
     let listingId = existingId
 
@@ -942,6 +949,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       {
         const flat = form.pricing.find(p => p.price && parseFloat(p.price) > 0)
         if (isFlatSale && flat) listingPayload.price_egp = parseFloat(flat.price)
+      }
+      // 🚗 (٢٥/٨) نفس القاعدة: make/model من حقول التصنيف → brand/model_name
+      {
+        const mk = form.attributeValues['make']; const md = form.attributeValues['model']
+        if (attributes.some(a => a.field_key === 'make') && mk) listingPayload.brand = String(mk)
+        if (attributes.some(a => a.field_key === 'model') && md) listingPayload.model_name = String(md)
       }
       // 📅 (٢٠ أغسطس ٢٠٢٦) تاريخ النشر يتحط **مرة واحدة** وقت النشر الأول بس.
       //    كان بيتحدّث في كل حفظ — يعني تعديل صورة كان بيرجّع الإعلان لأول
@@ -1441,6 +1454,13 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                     </div>
                   </div>
 
+                  {/* 🚗 (٢٥/٨/٢٠٢٦) محمد: «تعديل الاعلان لسة واخد مسار مختلف عن
+                      الاضافة في عربيات». الماركة والموديل كانوا موجودين مرتين:
+                      مرة كحقول تصنيف (attributes: make/model — بقوايم و«أخرى»)
+                      ومرة كخانتين نص عامتين هنا. لما التصنيف عنده حقوله،
+                      حقول التصنيف هي المصدر الوحيد والخانتين دول بيختفوا —
+                      فالإضافة والتعديل بيسألوا نفس الأسئلة بالظبط. */}
+                  {!attributes.some(a => a.field_key === 'make' || a.field_key === 'model') && (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">الماركة</label>
@@ -1463,6 +1483,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                       />
                     </div>
                   </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -1937,21 +1958,10 @@ function DynamicField({
       )
 
     case 'select':
-      return (
-        <div>
-          {label}
-          <select
-            value={value || ''}
-            onChange={e => onChange(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
-          >
-            <option value="">— اختر —</option>
-            {(attribute.options || []).map(opt => (
-              <option key={opt.key} value={opt.key}>{opt.label_ar || opt.key}</option>
-            ))}
-          </select>
-        </div>
-      )
+      // 📝 (٢٥/٨/٢٠٢٦) محمد: «في حالة ان الماركة مش موجودة محتاجين نضيفها
+      //    تيكست — أخرى = تيكست». أي قايمة اختيار بقى فيها «أخرى…» بتفتح
+      //    خانة كتابة حرة — والقيمة المكتوبة بتتحفظ زي ما هي.
+      return <SelectWithOther attribute={attribute} value={value} onChange={onChange} label={label} />
 
     case 'multi_select':
       const arr = Array.isArray(value) ? value : []
@@ -1992,4 +2002,55 @@ function DynamicField({
     default:
       return null
   }
+}
+
+// 📝 (٢٥/٨/٢٠٢٦) قايمة اختيار بخيار «أخرى…» بيفتح خانة كتابة حرة.
+//    محمد: «الدروب ليست في اضافة او تعديل السيارات — في حالة ان الماركة
+//    مش موجودة محتاجين نضيفها تيكست، أخرى = تيكست».
+//    عامة لأي attribute من نوع select في المشروع كله (مش الماركة بس):
+//    لو القيمة المحفوظة مش من ضمن الخيارات (اتكتبت حرة قبل كده أو جاية
+//    من الويزارد) بتفتح على وضع الكتابة أوتوماتيك وبتعرضها زي ما هي.
+function SelectWithOther({
+  attribute,
+  value,
+  onChange,
+  label,
+}: {
+  attribute: Attribute
+  value: any
+  onChange: (val: any) => void
+  label: JSX.Element
+}) {
+  const opts = attribute.options || []
+  const known = !value || opts.some(o => o.key === value)
+  const [otherMode, setOtherMode] = useState<boolean>(!!value && !known)
+  return (
+    <div>
+      {label}
+      <select
+        value={otherMode ? '__other' : (value || '')}
+        onChange={e => {
+          if (e.target.value === '__other') { setOtherMode(true); onChange('') }
+          else { setOtherMode(false); onChange(e.target.value) }
+        }}
+        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
+      >
+        <option value="">— اختر —</option>
+        {opts.map(opt => (
+          <option key={opt.key} value={opt.key}>{opt.label_ar || opt.key}</option>
+        ))}
+        <option value="__other">أخرى…</option>
+      </select>
+      {otherMode && (
+        <input
+          type="text"
+          autoFocus
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+          placeholder={`اكتب ${attribute.name_ar}`}
+          className="mt-2 w-full px-4 py-2.5 border border-[#059669]/40 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
+        />
+      )}
+    </div>
+  )
 }

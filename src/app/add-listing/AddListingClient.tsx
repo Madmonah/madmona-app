@@ -1858,6 +1858,15 @@ function AttributeFieldRenderer({
     <p className="text-[11px] text-gray-500 mt-1">{attr.help_text}</p>
   ) : null;
 
+  // 📝 (٢٥/٨/٢٠٢٦) محمد: «في حالة ان الماركة مش موجودة نضيفها تيكست —
+  //    أخرى = تيكست». أي select في الويزارد بقى فيه «أخرى…» بتفتح خانة
+  //    كتابة حرة (نفس السلوك اللي في فورم التعديل — SelectWithOther).
+  const selOptions = attr.options || [];
+  const valueIsCustom =
+    attr.field_type === 'select' && typeof value === 'string' && value !== '' &&
+    !selOptions.some((o) => o.key === value);
+  const [selOther, setSelOther] = useState(valueIsCustom);
+
   if (attr.field_type === 'number') {
     return (
       <Field label={attr.name_ar} required={attr.is_required} error={error}>
@@ -1929,6 +1938,16 @@ function AttributeFieldRenderer({
 
   if (attr.field_type === 'select') {
     const options = attr.options || [];
+    const otherInput = (selOther || valueIsCustom) ? (
+      <input
+        type="text"
+        autoFocus
+        value={valueIsCustom || typeof value === 'string' ? (value as string) : ''}
+        onChange={(e) => onChange(e.target.value || undefined)}
+        placeholder={`اكتب ${attr.name_ar}`}
+        className={inputCls + ' mt-2 border-[#059669]/40'}
+      />
+    ) : null;
     // Button group for small option sets, dropdown for many.
     if (options.length <= 6) {
       return (
@@ -1938,7 +1957,7 @@ function AttributeFieldRenderer({
               <button
                 key={opt.key}
                 type="button"
-                onClick={() => onChange(opt.key)}
+                onClick={() => { setSelOther(false); onChange(opt.key); }}
                 className={`py-2.5 rounded-xl border text-sm transition-all ${
                   value === opt.key
                     ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
@@ -1948,7 +1967,19 @@ function AttributeFieldRenderer({
                 {opt.label_ar}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => { setSelOther(true); onChange(undefined); }}
+              className={`py-2.5 rounded-xl border text-sm transition-all ${
+                (selOther || valueIsCustom)
+                  ? 'bg-[#34D399] border-[#059669] text-[#04352A] font-semibold'
+                  : 'bg-white border-[#E5E5E0]'
+              }`}
+            >
+              أخرى…
+            </button>
           </div>
+          {otherInput}
           {helpText}
         </Field>
       );
@@ -1956,15 +1987,20 @@ function AttributeFieldRenderer({
     return (
       <Field label={attr.name_ar} required={attr.is_required} error={error}>
         <select
-          value={(value as string) || ''}
-          onChange={(e) => onChange(e.target.value || undefined)}
+          value={(selOther || valueIsCustom) ? '__other' : ((value as string) || '')}
+          onChange={(e) => {
+            if (e.target.value === '__other') { setSelOther(true); onChange(undefined); }
+            else { setSelOther(false); onChange(e.target.value || undefined); }
+          }}
           className={inputCls}
         >
           <option value="">اختار</option>
           {options.map((opt) => (
             <option key={opt.key} value={opt.key}>{opt.label_ar}</option>
           ))}
+          <option value="__other">أخرى…</option>
         </select>
+        {otherInput}
         {helpText}
       </Field>
     );
@@ -2778,26 +2814,12 @@ function ProductDetailsStep({
       </Field>
       )}
 
-      {profile.showBrand && isVehicle && (
-      <Field label="الماركة">
-        <select
-          value={brandIsOther ? '__other' : brand}
-          onChange={(e) => {
-            if (e.target.value === '__other') { setBrandIsOther(true); setBrand(''); }
-            else { setBrandIsOther(false); setBrand(e.target.value); }
-          }}
-          className={inputCls}
-        >
-          <option value="">اختار الماركة…</option>
-          {vehicleBrands.map((b) => (<option key={b} value={b}>{b}</option>))}
-          <option value="__other">أخرى…</option>
-        </select>
-        {brandIsOther && (
-          <input type="text" value={brand} onChange={(e) => setBrand(e.target.value)}
-            placeholder="اكتب الماركة" className={`${inputCls} mt-2`} />
-        )}
-      </Field>
-      )}
+      {/* 🚗 (٢٥/٨/٢٠٢٦) محمد: «تعديل الاعلان لسة واخد مسار مختلف عن الاضافة
+          في عربيات». الماركة/السنة/الموديل بتاعت المركبات اتشالت من هنا خالص —
+          كل تصنيفات المركبات (بيع + بحرية) بقى عندها حقول make/model/year في
+          جدول attributes (وفيها «أخرى…»)، وبتظهر في خطوة البيانات الأساسية —
+          نفس المصدر اللي فورم التعديل بيقرا منه، فمفيش سؤال بيتسأل مرتين
+          ولا فرق بين الإضافة والتعديل. */}
 
       {profile.showBrand && !isVehicle && (
       <Field label="الماركة (اختياري)">
@@ -2811,22 +2833,15 @@ function ProductDetailsStep({
       </Field>
       )}
 
-      {isVehicle && (
-      <Field label="سنة الصنع">
-        <select value={vehicleYear} onChange={(e) => setVehicleYear(e.target.value)} className={inputCls}>
-          <option value="">اختار السنة…</option>
-          {VEHICLE_YEARS.map((y) => (<option key={y} value={y}>{y}</option>))}
-        </select>
-      </Field>
-      )}
+      {/* سنة الصنع بتاعة المركبات → حقل year في attributes (شوف التعليق فوق) */}
 
-      {profile.showModel && (
+      {profile.showModel && !isVehicle && (
       <Field label="الموديل (اختياري)">
         <input
           type="text"
           value={model}
           onChange={(e) => setModel(e.target.value)}
-          placeholder={isVehicle ? 'مثلاً: كورولا' : 'مثلاً: Galaxy S23, iPhone 15'}
+          placeholder="مثلاً: Galaxy S23, iPhone 15"
           className={inputCls}
         />
       </Field>
