@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
 import {
   ChevronLeft, Loader2, RefreshCw, CalendarClock, Plus, Trash2,
   Check, X, Play, Eye, EyeOff, AlertCircle, CheckCircle2, Circle,
@@ -89,16 +88,36 @@ export default function SchedulePage({ params }: { params: { supplierId: string 
   //    بس، فموظف مضمونة كان يفتح الشاشة ويلاقي عمود «اتعملت/لسه» فاضي
   //    من غير أي رسالة. الصلاحية بقت جوّه الدالة، والشاشة مابتقراش جدول
   //    مباشرة خالص.
+  // 🐞 (٢٥ أغسطس ٢٠٢٦ — محمد: «الصفحة بتفتح لكن بتلود مش بتظهر أي حاجة»)
+  //    أي خطأ جوّه load() كان بيطير قبل setLoading(false) — من غير
+  //    try/finally اللودر بيفضل لولب للأبد **من غير أي رسالة**، ومفيش
+  //    طريقة نعرف إيه اللي حصل. دلوقتي: أي فشل بيظهر على الشاشة بنصّه،
+  //    واللودر بيقف مهما حصل (finally). وزوّدنا مهلة ١٢ ثانية — لو النداء
+  //    نفسه علّق (شبكة · إضافة متصفح بتحجب) بنعرض الخطأ بدل الانتظار.
+  const [loadErr, setLoadErr] = useState<string | null>(null)
+
   const load = useCallback(async () => {
-    setLoading(true)
-    const { data } = await rpc('get_recurring_tasks', { p_supplier_id: supplierId })
-    if (!data || data.ok === false) { setDenied(true); setLoading(false); return }
-    setDenied(false)
-    setBizName((data.business_name as string) || '')
-    setTpls((data.templates || []) as Tpl[])
-    setEmps((data.employees || []) as Emp[])
-    setTodayDone((data.today_status || {}) as Record<string, boolean>)
-    setLoading(false)
+    setLoading(true); setLoadErr(null)
+    try {
+      const timeout = new Promise<never>((_, rej) =>
+        setTimeout(() => rej(new Error('النداء اتأخر أكتر من ١٢ ثانية — جرّب تاني أو شوف الإنترنت')), 12000))
+      const { data, error } = await Promise.race([
+        rpc('get_recurring_tasks', { p_supplier_id: supplierId }),
+        timeout,
+      ])
+      if (error) { setLoadErr(error.message || 'خطأ في الاتصال بالداتابيز'); return }
+      if (!data || data.ok === false) { setDenied(true); return }
+      setDenied(false)
+      setBizName((data.business_name as string) || '')
+      setTpls((data.templates || []) as Tpl[])
+      setEmps((data.employees || []) as Emp[])
+      setTodayDone((data.today_status || {}) as Record<string, boolean>)
+    } catch (e) {
+      console.error('[schedule] load failed:', e)
+      setLoadErr(e instanceof Error ? e.message : 'حصل خطأ غير متوقع')
+    } finally {
+      setLoading(false)
+    }
   }, [supplierId])
 
   useEffect(() => { load() }, [load])
@@ -139,12 +158,41 @@ export default function SchedulePage({ params }: { params: { supplierId: string 
     </div>
   }
 
+  // ⚠️ خطأ حقيقي (شبكة · نداء علّق · استثناء) — بنعرضه بنصّه مع زرار
+  //    إعادة محاولة. قبل كده ده كان بيتبلع واللودر يفضل لولب للأبد.
+  if (loadErr) {
+    return <div className="min-h-screen bg-[#FAFAF7] grid place-items-center px-4" dir="rtl">
+      <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center max-w-sm">
+        <AlertCircle className="w-8 h-8 text-amber-600 mx-auto mb-3" />
+        <p className="font-black text-[#1A2E26]">الجدول مش راضي يتحمّل</p>
+        <p className="text-xs text-[#6B7280] mt-2 leading-relaxed break-words" dir="auto">{loadErr}</p>
+        <button onClick={load}
+          className="mt-5 w-full py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black">
+          حاول تاني
+        </button>
+      </div>
+    </div>
+  }
+
   if (denied) {
     return <div className="min-h-screen bg-[#FAFAF7] grid place-items-center px-4" dir="rtl">
       <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center max-w-sm">
         <AlertCircle className="w-8 h-8 text-[#b3261e] mx-auto mb-3" />
         <p className="font-black text-[#1A2E26]">مالكش صلاحية على البيزنس ده</p>
-        <p className="text-xs text-[#6B7280] mt-1">الجدول ده بيتفتح بصلاحية إدارة الفريق.</p>
+        <p className="text-xs text-[#6B7280] mt-1">
+          الجدول ده بيتفتح بصلاحية إدارة الفريق — ولو لسه مسجلتش دخول
+          بحساب الأبليكيشن، سجّل الأول وبعدين ارجع هنا.
+        </p>
+        <div className="flex gap-2 mt-5">
+          <button onClick={load}
+            className="flex-1 py-2.5 rounded-xl bg-[#FAFAF7] border border-gray-200 text-sm font-bold text-[#1A2E26]">
+            حاول تاني
+          </button>
+          <Link href="/login"
+            className="flex-1 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black no-underline grid place-items-center">
+            تسجيل دخول
+          </Link>
+        </div>
       </div>
     </div>
   }
