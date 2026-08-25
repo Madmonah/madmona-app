@@ -42,11 +42,28 @@ interface EmpRow { id: string; full_name: string; role: string | null; role_ar: 
 async function generateForSupplier(supplierId: string, force: boolean) {
   const { data: sup } = await supabaseAdmin
     .from('suppliers')
-    .select('id, business_name, industry')
+    .select('id, business_name, industry, is_platform_owner')
     .eq('id', supplierId)
     .single()
   if (!sup) return { supplier_id: supplierId, skipped: 'no_supplier', tasks_created: 0 }
-  const supplier = sup as { id: string; business_name: string; industry: string | null }
+  // `as unknown as` مقصودة: أنواع سوبابيز المولّدة في الريبو لسه من غير
+  // عمود `is_platform_owner` على `suppliers` — العمود موجود في الداتابيز
+  // فعلًا (مورّد المنصة = مضمونة). لحد ما الأنواع تتولّد من تاني.
+  const supplier = sup as unknown as {
+    id: string; business_name: string; industry: string | null; is_platform_owner: boolean | null
+  }
+
+  // 🚫 (٢٥ أغسطس ٢٠٢٦) فريق مضمونة نفسه **مستثنى من الوكيل**.
+  //    محمد: «عايز اعمل جدول تاسكات يومي للموظفين اللي عندنا مواعيدهم من ٩ لـ٦»
+  //    → بقى ليهم جدول ساعة بساعة مكتوب بإيدنا في `recurring_task_templates`
+  //      (سطر لكل تاسك بميعاده، الأحد–الخميس، راحة ١–٢).
+  //    الوكيل ده بيولّد تاسكات مكتب عامة («تجهيز مكان العمل»، «إدخال وتحديث
+  //    البيانات») كل يوم فوق الجدول ده — نفس الكلام مرتين وبمواعيد متضاربة.
+  //    نفس الاستثناء متعمول في `generate_daily_tasks_pulse()` (قوالب الأدوار)
+  //    عشان مايفضلش مسار تاني بيدخل من ورا. عملاء B2B زي ما هما.
+  if (supplier.is_platform_owner) {
+    return { supplier_id: supplierId, skipped: 'platform_owner_has_fixed_schedule', tasks_created: 0 }
+  }
 
   const { data: emps } = await supabaseAdmin
     .from('business_employees')
