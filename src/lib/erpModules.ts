@@ -65,6 +65,9 @@ export const MODULE_DEFS: ModuleDef[] = [
   //    تكون updated». «المهام» بتعرض تاسكات يوم بعينه، دي بتعرض **القالب**
   //    اللي بيتولّد منه كل يوم — الميعاد والأيام والأولوية لكل موظف.
   { href: 'schedule',           label: 'جدول التاسكات اليومي', primary: true, v: ['core'], perm: 'can_manage_team' },
+  // 📺 (٢٥ أغسطس ٢٠٢٦) محمد: «محتاج أداة تعمل مونيتور» — الصورة الحية:
+  //    مين حاضر، وكل واحد واقف فين في خطته دلوقتي. بيتحدث كل دقيقة.
+  { href: 'monitor',            label: 'المونيتور',            primary: true, v: ['core'], perm: 'can_manage_team' },
   { href: 'branches',           label: 'الفروع',                          v: ['core'], perm: 'can_manage_branches' },
   { href: 'customers',          label: 'العملاء',                         v: ['core'], perm: 'can_manage_customers' },
   { href: 'expenses',           label: 'المصاريف',                        v: ['core'], perm: 'can_view_finance' },
