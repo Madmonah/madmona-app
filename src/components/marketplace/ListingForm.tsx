@@ -42,6 +42,11 @@ interface Category {
   group_emoji?: string | null
   group_display_order?: number | null
   display_order?: number | null
+  // 💰 (٢٥/٨/٢٠٢٦ — محمد: «العربية في قسم بيع وبيظهر السعر لكل ساعة»)
+  //    الأعمدة دي بتتجاب أصلًا بـselect('*') بس مكانتش متعرّفة — فخطوة
+  //    الأسعار كانت بتعرض الـ٢٤ وحدة (الساعة/اليوم/…) لعربية بيع.
+  allowed_pricing_periods?: string[] | null
+  default_pricing_period?: string | null
 }
 
 // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «تصنيفات الإضافة مش زي العرض بتاع الماركت بليس»)
@@ -349,6 +354,35 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
 
   const [attributes, setAttributes] = useState<Attribute[]>([])
   const [loadingAttrs, setLoadingAttrs] = useState(false)
+
+  // 💰 (٢٥/٨/٢٠٢٦) وحدات التسعير من التصنيف نفسه — محمد: «العربية في قسم بيع
+  //    وبيظهر السعر لكل ساعة». التصنيفات فيها allowed_pricing_periods
+  //    (بيع = per_unit بس) — قايمة الوحدات بتتفلتر عليها، والبيع بيتكتب
+  //    كمان في price_egp عشان العرض وفحص «مفيش سعر» يشوفوه.
+  const selCat = categories.find(c => c.id === form.category_id)
+  const allowedPeriods = selCat?.allowed_pricing_periods && selCat.allowed_pricing_periods.length > 0
+    ? selCat.allowed_pricing_periods : null
+  const isFlatSale = !!allowedPeriods && allowedPeriods.length === 1 && allowedPeriods[0] === 'per_unit'
+
+  // أول ما التصنيف يتحدد/يتغير: لو التسعير لسه على الوضع الافتراضي الفاضي،
+  // حوّل وحدته لوحدة التصنيف (بيع → «الوحدة» بدل «اليوم»).
+  useEffect(() => {
+    if (!selCat) return
+    const def = selCat.default_pricing_period
+      || (allowedPeriods && allowedPeriods.length > 0 ? allowedPeriods[0] : null)
+    if (!def) return
+    setForm(f => {
+      const untouched = f.pricing.length === 1 && !f.pricing[0].price && !f.pricing[0].id
+      const badPeriod = allowedPeriods && f.pricing.some(p => !p.id && !allowedPeriods.includes(p.period_type))
+      if (!untouched && !badPeriod) return f
+      return {
+        ...f,
+        pricing: f.pricing.map(p => (p.id || (allowedPeriods && allowedPeriods.includes(p.period_type)))
+          ? p : { ...p, period_type: def as PricingRule['period_type'] }),
+      }
+    })
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [form.category_id, categories.length])
 
   // ========================================
   // OTP / WhatsApp verification (Task 4)
@@ -661,6 +695,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     if (form.min_booking_hours !== null) listingPayload.min_booking_hours = form.min_booking_hours
     if (form.max_booking_hours !== null) listingPayload.max_booking_hours = form.max_booking_hours
     applyDisplayParityFields(listingPayload, form)
+    // 💰 (٢٥/٨) إعلانات البيع: السعر الثابت يتكتب في price_egp كمان — العرض
+    //    وفحص «النشر متوقف: مفيش سعر» بيبصوا عليه.
+    {
+      const flat = form.pricing.find(p => p.price && parseFloat(p.price) > 0)
+      if (isFlatSale && flat) listingPayload.price_egp = parseFloat(flat.price)
+    }
 
     let listingId = existingId
 
@@ -898,6 +938,11 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       if (form.min_booking_hours !== null) listingPayload.min_booking_hours = form.min_booking_hours
       if (form.max_booking_hours !== null) listingPayload.max_booking_hours = form.max_booking_hours
       applyDisplayParityFields(listingPayload, form)
+      // 💰 (٢٥/٨) نفس قاعدة persistListingAsDraft: سعر البيع الثابت → price_egp
+      {
+        const flat = form.pricing.find(p => p.price && parseFloat(p.price) > 0)
+        if (isFlatSale && flat) listingPayload.price_egp = parseFloat(flat.price)
+      }
       // 📅 (٢٠ أغسطس ٢٠٢٦) تاريخ النشر يتحط **مرة واحدة** وقت النشر الأول بس.
       //    كان بيتحدّث في كل حفظ — يعني تعديل صورة كان بيرجّع الإعلان لأول
       //    الماركتبليس كإنه جديد، وبيضيّع تاريخ نشره الحقيقي.
@@ -1698,18 +1743,26 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-[#059669]" /> الأسعار
             </h2>
-            <p className="text-sm text-gray-500 mb-4">حدد السعر بفترات مختلفة (الأقل سعراً هيظهر للعميل)</p>
+            <p className="text-sm text-gray-500 mb-4">
+              {isFlatSale ? 'ده إعلان بيع — سعر واحد ثابت للوحدة.' : 'حدد السعر بفترات مختلفة (الأقل سعراً هيظهر للعميل)'}
+            </p>
 
             <div className="space-y-3">
               {form.pricing.map((rule, idx) => (
                 <div key={idx} className="bg-gray-50 rounded-xl p-3 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
+                    {/* 💰 (٢٥/٨) الوحدات بتتفلتر على allowed_pricing_periods بتاعة
+                        التصنيف — عربية بيع مش هتشوف «الساعة» تاني. */}
                     <select
                       value={rule.period_type}
                       onChange={e => updatePricingRule(idx, { period_type: e.target.value as PeriodType })}
                       className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+                      disabled={!!allowedPeriods && allowedPeriods.length === 1}
                     >
-                      {periodOptions('ar').map(g => (
+                      {periodOptions('ar')
+                        .map(g => ({ ...g, options: g.options.filter(o => !allowedPeriods || allowedPeriods.includes(o.value)) }))
+                        .filter(g => g.options.length > 0)
+                        .map(g => (
                         <optgroup key={g.group} label={g.group}>
                           {g.options.map(o => (
                             <option key={o.value} value={o.value}>{o.label}</option>
@@ -1742,13 +1795,15 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 </div>
               ))}
 
-              <button
-                type="button"
-                onClick={addPricingRule}
-                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-600 hover:border-[#059669] hover:text-[#059669] flex items-center justify-center gap-1"
-              >
-                <Plus className="w-4 h-4" /> ضيف فترة سعر تانية
-              </button>
+              {!isFlatSale && (
+                <button
+                  type="button"
+                  onClick={addPricingRule}
+                  className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-600 hover:border-[#059669] hover:text-[#059669] flex items-center justify-center gap-1"
+                >
+                  <Plus className="w-4 h-4" /> ضيف فترة سعر تانية
+                </button>
+              )}
             </div>
           </div>
         )}
