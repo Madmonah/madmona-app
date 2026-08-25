@@ -44,129 +44,65 @@ export async function DELETE(
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
 
-  const { data: prof } = await userClient
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
+  // 🔑 (٢٥ أغسطس ٢٠٢٦) الصلاحية بقت `admin_delete_listing()` في الداتابيز،
+  //    مش `profiles.role = 'admin'` هنا. الجذر: الشرط القديم كان بيقفل
+  //    المسح على حساب واحد بس (`madmona@madmonacairo.com`) — فريق مضمونة
+  //    كله، بصلاحية «مسح الإعلانات» بتاعته، كان بياخد 403 من غير سبب واضح.
+  //    الدالة كمان بتفهم الجداول اللي بتمنع المسح: طلبات · بنود طلبات ·
+  //    حجوزات (RESTRICT — سجلات فلوس) وبترجّع رسالة مفهومة بدل خطأ FK خام.
 
-  if (prof?.role !== 'admin') {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+  // 2. المسح نفسه بجلسة اليوزر — الدالة هي اللي بتحكم مين يمسح إيه
+  const { data: result, error: rpcErr } = await (userClient.rpc as unknown as (
+    fn: string, args: Record<string, unknown>,
+  ) => Promise<{ data: any; error: any }>)('admin_delete_listing', {
+    p_listing_id: listingId,
+    p_reason: 'مسح من لوحة الإدارة — /admin/listings',
+  })
+
+  if (rpcErr) {
+    return NextResponse.json({ error: 'delete_failed', message: rpcErr.message }, { status: 500 })
   }
-
-  // 2. Use service_role for DB operations (bypasses RLS)
-  const adminClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
-  // 3. Check if listing exists & if it has any bookings
-  const { data: listing, error: fetchErr } = await adminClient
-    .from('listings')
-    .select('id, title, status')
-    .eq('id', listingId)
-    .maybeSingle()
-
-  if (fetchErr || !listing) {
-    return NextResponse.json({ error: 'listing_not_found' }, { status: 404 })
-  }
-
-  const { count: bookingsCount } = await adminClient
-    .from('marketplace_bookings')
-    .select('id', { count: 'exact', head: true })
-    .eq('listing_id', listingId)
-
-  const hasBookings = (bookingsCount || 0) > 0
-
-  // 4. SOFT DELETE if bookings exist (preserve history)
-  if (hasBookings) {
-    const { error: updateErr } = await adminClient
-      .from('listings')
-      .update({
-        status: 'rejected',
-        // archived_at is optional — only set if column exists
-      })
-      .eq('id', listingId)
-
-    if (updateErr) {
+  if (!result?.ok) {
+    // الإعلان عليه طلبات أو حجوزات → مش خطأ، ده قرار: يتقفل مايتمسحش
+    if (result?.blocked) {
       return NextResponse.json({
-        error: 'soft_delete_failed',
-        message: updateErr.message,
-      }, { status: 500 })
+        error: 'has_transactions',
+        message: `${result.error} — طلبات: ${result.orders} · بنود: ${result.order_items} · حجوزات: ${result.bookings}. ${result.hint}`,
+        ...result,
+      }, { status: 409 })
     }
-
-    return NextResponse.json({
-      ok: true,
-      type: 'soft_delete',
-      message: `الخدمة عندها ${bookingsCount} حجز — تم أرشفتها (إخفاؤها) بدل الحذف الكامل عشان نحافظ على تاريخ الحجوزات`,
-      bookings_count: bookingsCount,
-    })
+    return NextResponse.json(
+      { error: 'forbidden', message: result?.error || 'مالكش صلاحية المسح' },
+      { status: 403 },
+    )
   }
 
-  // 5. HARD DELETE — clean up dependents in order
-  const cleanupSteps: { table: string; success: boolean; error?: string }[] = []
-
-  // Helper to attempt deletion of dependent rows
-  const tryDelete = async (table: string, column: string = 'listing_id') => {
-    try {
-      const { error } = await adminClient
-        .from(table)
-        .delete()
-        .eq(column, listingId)
-      cleanupSteps.push({ table, success: !error, error: error?.message })
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'unknown'
-      cleanupSteps.push({ table, success: false, error: msg })
+  // 3. تنضيف ملفات الصور من الستوريدج — بعد ما المسح نجح، وبأفضل مجهود.
+  //    (الصفوف نفسها اتمسحت CASCADE، ده الملفات بس.) الصور محفوظة في
+  //    `listings_recycle_bin` كـURLs لو حصل استرجاع.
+  let photosRemoved = 0
+  try {
+    const adminClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    )
+    const bin = await adminClient
+      .from('listings_recycle_bin').select('photos').eq('listing_id', listingId).maybeSingle()
+    const paths = (((bin.data as { photos?: { storage_path?: string | null }[] } | null)?.photos) || [])
+      .map(p => p?.storage_path).filter((p): p is string => !!p)
+    if (paths.length) {
+      await adminClient.storage.from('listing-photos').remove(paths)
+      photosRemoved = paths.length
     }
-  }
-
-  // First, fetch storage paths for photos so we can delete files
-  const { data: photos } = await adminClient
-    .from('listing_photos')
-    .select('storage_path')
-    .eq('listing_id', listingId)
-
-  type PhotoRow = { storage_path: string | null }
-  const storagePaths = ((photos || []) as PhotoRow[])
-    .map(p => p.storage_path)
-    .filter((p): p is string => !!p)
-
-  // Delete dependents
-  await tryDelete('listing_photos')
-  await tryDelete('pricing_rules')
-  await tryDelete('listing_values')
-  await tryDelete('favorites')
-  await tryDelete('reviews')
-
-  // Try to delete storage files (best-effort, doesn't block listing deletion)
-  if (storagePaths.length > 0) {
-    try {
-      await adminClient.storage.from('listing-photos').remove(storagePaths)
-    } catch (e) {
-      // Log but don't fail
-      console.warn('Storage cleanup failed:', e)
-    }
-  }
-
-  // 6. Finally, delete the listing itself
-  const { error: deleteErr } = await adminClient
-    .from('listings')
-    .delete()
-    .eq('id', listingId)
-
-  if (deleteErr) {
-    return NextResponse.json({
-      error: 'delete_failed',
-      message: deleteErr.message,
-      cleanup: cleanupSteps,
-    }, { status: 500 })
-  }
+  } catch { /* الملفات مش حاجزة — الإعلان اتمسح خلاص */ }
 
   return NextResponse.json({
     ok: true,
     type: 'hard_delete',
-    message: 'تم حذف الخدمة بالكامل مع كل بياناتها',
-    cleanup: cleanupSteps,
-    photos_removed: storagePaths.length,
+    message: `تم حذف «${result.title || 'الإعلان'}» بالكامل — محفوظ في سلة المهملات لو احتجته`,
+    was_status: result.was_status,
+    photos_removed: photosRemoved || result.photos_removed,
+    reviews_removed: result.reviews_removed,
+    restore: result.restore,
   })
 }

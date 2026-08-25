@@ -29,8 +29,25 @@ import {
    الداتابيز — الشاشة مش هي الحارس.
    ============================================================================ */
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-const rpc = supabase.rpc as unknown as (fn: string, args?: Record<string, unknown>) => Promise<{ data: any; error: any }>
+// 🐞 (٢٥ أغسطس ٢٠٢٦ — محمد: «الصفحة مش بتفتح») **الجذر: العميل الغلط.**
+//    الصفحة كانت بتعمل `createClient()` جديد بالمفتاح العام. العميل ده
+//    **مالوش جلسة** — التوكن متخزّن في `supabaseBrowser` (اللي بيستخدم
+//    safeStorage)، مش في أي عميل جديد بيتعمل على الطاير. يعني كل نداء
+//    كان بيروح للداتابيز و`auth.uid()` فيه NULL، فحارس
+//    `can_manage_business_team()` يرجّع false → الشاشة تقول «مالكش
+//    صلاحية» **لكل الناس، حتى محمد**.
+//
+//    ⚠️ الدرس (محمد، ٢٥/٨): «لما نعمل تعديل نتأكد من كل تبعياته».
+//    أنا اختبرت الحارس بمحاكاة SQL (`set_config('request.jwt.claims')`)
+//    وده أثبت إن الدالة صح — بس ماختبرتش المسار اللي الصفحة بتمشي فيه
+//    فعلًا. الاختبار الصح لأي شاشة بتنادي RPC فيها حارس = من المتصفح
+//    بجلسة حقيقية، مش من SQL.
+//
+//    نفس النمط الغلط موجود في شاشات أدمن تانية (زي flow-tasks) — بس
+//    هناك بيقرا جداول، فبيرجع فاضي من غير رسالة خطأ ومحدش واخد باله.
+import { supabaseBrowser } from '@/lib/supabase-browser'
+
+const rpc = supabaseBrowser.rpc as unknown as (fn: string, args?: Record<string, unknown>) => Promise<{ data: any; error: any }>
 
 type Tpl = {
   id: string; employee_id: string | null; employee_name: string | null
