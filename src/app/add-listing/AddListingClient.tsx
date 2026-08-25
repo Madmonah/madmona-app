@@ -981,22 +981,58 @@ function StepCategory({
               className="w-full p-3.5 rounded-xl border border-[#E5E5E0] bg-white text-sm font-semibold text-gray-800"
             >
               <option value="" disabled>⚡ اختار نشاطك بسرعة من القايمة…</option>
-              {/* ⚡ (٢٤ أغسطس ٢٦) محمد: «كنت قولتلك حط دروب ليست في العربيات ومحصلش»
-                  — القايمة كانت بتعرض تصنيفات التاب المفتوح بس، فاللي واقف
-                  على «إيجار» مش هيلاقي عربيات البيع فيها. بقت بتعرض **كل**
-                  التصنيفات، وكل مجموعة معنون عليها نوعها (بيع/إيجار/خدمات/مطاعم). */}
-              {categories.map((c) => {
-                const tk = (c.track === 'hybrid' ? 'rentals' : c.track === 'sales' ? 'products' : (c.track || 'rentals')) as TrackTab;
-                return (
-              <optgroup key={c.slug} label={`${c.emoji || '🏷️'} ${c.name_ar} — ${TRACK_LABELS[tk] || ''}`}>
-                  {c.subs.length === 0 && <option value={c.slug}>{c.name_ar}</option>}
-                  {c.subs.length > 0 && <option value={c.slug}>{c.name_ar} (عام)</option>}
-                  {c.subs.map((s) => (
-                    <option key={s.slug} value={s.slug}>{s.emoji ? s.emoji + ' ' : ''}{s.name_ar}</option>
-                  ))}
-                </optgroup>
-                );
-              })}
+              {/* 🧹 (٢٥ أغسطس ٢٦) محمد: «موضوع اختار نشاطك من القايمة ده في عك
+                  كتير وحاجات متكررة — نخليها بنفس النظام الي موجود علي الموبايل».
+                  المشكلة كانت: optgroup لكل تصنيف رئيسي (٦٥ مجموعة!)، والقسم
+                  اللي عنده also_show_in بيتكرر تحت كل أب، وتوائم البيع/الإيجار
+                  («شقة» بيع و«شقة» إيجار) جنب بعض من غير تمييز.
+                  دلوقتي: نفس نظام كروت الموبايل بالظبط — المجموعات
+                  (group_slug/group_name_ar) هي الـoptgroups، والمجموعة نفسها
+                  بتفصل البيع عن الإيجار، وdedupe عام بالـslug بيمنع أي تكرار. */}
+              {(() => {
+                type DDSub = { slug: string; emoji: string; name_ar: string };
+                type DDRoot = DDSub & { subs: DDSub[] };
+                const gm = new Map<string, { key: string; name: string; emoji: string; order: number; roots: DDRoot[] }>();
+                const seen = new Set<string>();
+                for (const c of categories) {
+                  const key = c.group_slug || c.slug;
+                  if (!gm.has(key)) {
+                    gm.set(key, {
+                      key,
+                      name: c.group_name_ar || c.name_ar,
+                      emoji: c.group_emoji || c.emoji || '🏷️',
+                      order: c.group_display_order ?? 999,
+                      roots: [],
+                    });
+                  }
+                  if (seen.has(c.slug)) continue;
+                  seen.add(c.slug);
+                  const subs: DDSub[] = [];
+                  for (const s of c.subs) {
+                    if (seen.has(s.slug)) continue;
+                    seen.add(s.slug);
+                    subs.push({ slug: s.slug, emoji: s.emoji, name_ar: s.name_ar });
+                  }
+                  gm.get(key)!.roots.push({ slug: c.slug, emoji: c.emoji, name_ar: c.name_ar, subs });
+                }
+                return Array.from(gm.values())
+                  .filter((g) => g.roots.length > 0)
+                  .sort((a, b) => a.order - b.order)
+                  .map((g) => (
+                    <optgroup key={g.key} label={`${g.emoji} ${g.name}`}>
+                      {g.roots.flatMap((r) => [
+                        <option key={r.slug} value={r.slug}>
+                          {r.emoji ? r.emoji + ' ' : ''}{r.name_ar}{r.subs.length > 0 ? ' (عام)' : ''}
+                        </option>,
+                        ...r.subs.map((s) => (
+                          <option key={s.slug} value={s.slug}>
+                            {'   '}{s.emoji ? s.emoji + ' ' : ''}{s.name_ar}
+                          </option>
+                        )),
+                      ])}
+                    </optgroup>
+                  ));
+              })()}
             </select>
           </div>
         )}

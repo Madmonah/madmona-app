@@ -88,7 +88,16 @@ export default function TasksPage() {
               <button onClick={() => done(t.id, t.source)} title="خلّصت" style={{ width: 26, height: 26, borderRadius: '50%', border: '2px solid #2FA084', background: '#fff', color: '#2FA084', cursor: 'pointer', fontSize: 14, flexShrink: 0, lineHeight: 1 }}>✓</button>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 800, color: '#14231E' }}>{t.title}</div>
-                {t.detail && <div style={{ fontSize: 13, color: '#5A6660', fontWeight: 600, marginTop: 2 }}>{t.detail}</div>}
+                {/* 📋 (٢٥/٨) نفس تجربة «التفاصيل» اللي في شغلي — محمد: «عايزين
+                    نوحد تاسكات الموظفين الي بتظهرلهم في الشات او في مهامي».
+                    كانت التفاصيل كلها مفرودة في سطر واحد بيضيع منه تنسيق
+                    الأرقام والاسكريبتات — بقت قابلة للفتح وبتحافظ على الأسطر. */}
+                {t.detail && (
+                  <details style={{ marginTop: 4 }}>
+                    <summary style={{ fontSize: 12, color: '#2FA084', fontWeight: 800, cursor: 'pointer', userSelect: 'none' }}>التفاصيل</summary>
+                    <div style={{ fontSize: 13, color: '#5A6660', fontWeight: 600, marginTop: 4, whiteSpace: 'pre-line', userSelect: 'text' }}>{t.detail}</div>
+                  </details>
+                )}
                 <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                   <span style={{ fontSize: 10.5, background: p.b, color: p.c, padding: '2px 9px', borderRadius: 20, fontWeight: 800 }}>{p.l}</span>
                   {t.overdue && <span style={{ fontSize: 10.5, background: '#FDEBE8', color: '#E26D5C', padding: '2px 9px', borderRadius: 20, fontWeight: 800 }}>متأخرة</span>}
