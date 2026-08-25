@@ -45,8 +45,19 @@ import {
 //    نفس النمط الغلط موجود في شاشات أدمن تانية (زي flow-tasks) — بس
 //    هناك بيقرا جداول، فبيرجع فاضي من غير رسالة خطأ ومحدش واخد باله.
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { safeStorage } from '@/lib/safe-storage'
 
-const rpc = supabaseBrowser.rpc as unknown as (fn: string, args?: Record<string, unknown>) => Promise<{ data: any; error: any }>
+// 🔑 (٢٥ أغسطس ٢٠٢٦ — الجذر النهائي) لوحة business-finance ليها نظامين دخول:
+//    جلسة Supabase (موظفي مضمونة من الأبليكيشن) **وتوكن واتساب**
+//    (madmona_token — وده اللي محمد وأصحاب البيزنس بيدخلوا بيه، من غير
+//    أي جلسة Supabase خالص). الشاشة دي كانت شايفة النظام الأول بس،
+//    فمحمد نفسه الداتابيز كانت شايفاه «مش مسجّل». دلوقتي التوكن بيتبعت
+//    مع كل نداء، والدوال بتقبل أي واحد من الاتنين (schedule_access_ok).
+const rpcRaw = supabaseBrowser.rpc as unknown as (fn: string, args?: Record<string, unknown>) => Promise<{ data: any; error: any }>
+const rpc = (fn: string, args?: Record<string, unknown>) => {
+  const token = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
+  return rpcRaw(fn, { ...(args || {}), p_token: token || null })
+}
 
 type Tpl = {
   id: string; employee_id: string | null; employee_name: string | null
