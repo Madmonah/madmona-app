@@ -57,16 +57,28 @@ export default function MadmonaLoginPage() {
   async function doLogin() {
     if (!identifier.trim() || !secret.trim()) return
     setError(''); setSending(true)
-    const { data, error: err } = await supabase.rpc('login_with_password', {
-      p_identifier: identifier.trim(), p_secret: secret,
-    })
-    if (err || !data?.success) {
-      setError(data?.error || err?.message || 'البيانات غلط — جرّب تاني')
+    try {
+      // 🔐 (٢٥/٨) /api/login بيفهم كل مخازن الباسورد: باسورد لوحة الأدمن
+      // (وبيفتح جلسة اللوحة كمان بنفس الدخلة) + باسورد الموظفين + الـPIN.
+      // محمد: «شايف ان ليا كذا باسورد في المشروع» — أي واحد فيهم بيدخّلك هنا.
+      const r = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: identifier.trim(), password: secret }),
+      })
+      const data = await r.json().catch(() => null)
+      if (!r.ok || !data?.ok) {
+        setError(data?.error || 'البيانات غلط — جرّب تاني')
+        setSending(false)
+        return
+      }
+      if (data.token) safeStorage.set('madmona_token', data.token)
+      // أدمن → لوحة الأدمن مباشرة (الكوكي اتفتحت)، موظف → /me
+      router.push(nextPath(data.source === 'admin' ? '/admin/listings' : '/me'))
+    } catch {
+      setError('مشكلة اتصال — جرّب تاني')
       setSending(false)
-      return
     }
-    safeStorage.set('madmona_token', data.token)
-    router.push(nextPath('/me'))
   }
 
   if (checking) return <div className="min-h-screen bg-[#34D399] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
