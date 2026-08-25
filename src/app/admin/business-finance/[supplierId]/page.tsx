@@ -67,6 +67,7 @@ const ICON_MAP: Record<string, any> = {
   identity: Sparkles,
   permissions: ShieldCheck,
   requests: ClipboardCheck, custody: ShieldCheck, 'flow-tasks': ClipboardList,
+  schedule: CalendarClock,
   branches: Building2, customers: Heart, expenses: DollarSign, accounting: Calculator,
   attendance: Clock, 'attendance-devices': Smartphone, 'cash-recon': Wallet, payroll: Calculator,
   documents: FileCheck, 'audit-log': FileText, 'at-risk': UserX, reports: Download,

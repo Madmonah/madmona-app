@@ -61,6 +61,10 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'requests',           label: 'طلبات الموظفين',   primary: true, v: ['core'] },
   { href: 'custody',            label: 'العهدة',                          v: ['core'] },
   { href: 'flow-tasks',         label: 'المهام',                          v: ['core'] },
+  // 🗓️ (٢٥ أغسطس ٢٠٢٦) محمد: «عايز أشوف التاسكات دي للمراجعة وعايزها
+  //    تكون updated». «المهام» بتعرض تاسكات يوم بعينه، دي بتعرض **القالب**
+  //    اللي بيتولّد منه كل يوم — الميعاد والأيام والأولوية لكل موظف.
+  { href: 'schedule',           label: 'جدول التاسكات اليومي', primary: true, v: ['core'], perm: 'can_manage_team' },
   { href: 'branches',           label: 'الفروع',                          v: ['core'], perm: 'can_manage_branches' },
   { href: 'customers',          label: 'العملاء',                         v: ['core'], perm: 'can_manage_customers' },
   { href: 'expenses',           label: 'المصاريف',                        v: ['core'], perm: 'can_view_finance' },
