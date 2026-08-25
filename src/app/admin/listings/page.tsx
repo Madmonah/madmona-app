@@ -126,6 +126,10 @@ export default function AdminListingsPage() {
     title: string; category_id: string; city: string;
     owner_name: string; owner_phone: string; contact_phone: string;
     photos: File[]; publish: boolean;
+    seller_kind: 'individual' | 'business';
+    // 💰 (٢٥/٨) السعر — من غيره ترجر النشر بيرفض أي قسم غير العقارات
+    // («النشر متوقف: مفيش سعر») وده كان نص مشكلة «اعلانات شهد مش بتنزل».
+    price: string;
   }>(null)
   const [adderErr, setAdderErr] = useState<string | null>(null)
   const [adderProgress, setAdderProgress] = useState<string | null>(null)
@@ -186,7 +190,7 @@ export default function AdminListingsPage() {
       setAdder({
         title: '', category_id: facets.categories[0]?.id || '',
         city: '', owner_name: '', owner_phone: '', contact_phone: '',
-        photos: [], publish: true, seller_kind: 'individual',
+        photos: [], publish: true, seller_kind: 'individual', price: '',
       })
       window.history.replaceState({}, '', '/admin/listings')
     }
@@ -206,6 +210,8 @@ export default function AdminListingsPage() {
         p_owner_phone: adder.owner_phone.trim() || null,
         p_contact_phone: adder.contact_phone.trim() || null,
         p_seller_kind: adder.seller_kind,
+        // 💰 (٢٥/٨) من غير سعر، النشر بيتوقف لكل الأقسام ما عدا العقارات
+        p_price: adder.price.trim() ? Number(adder.price) : null,
       })
       const listingId = String(res?.id || '')
       if (!listingId) throw new Error('الإعلان اتخلق بس مافيش رقم')
@@ -477,6 +483,7 @@ export default function AdminListingsPage() {
             onClick={() => { setAdderErr(null); setAdder({
               title: '', category_id: facets?.categories?.[0]?.id || '',
               city: '', owner_name: '', owner_phone: '', contact_phone: '',
+              photos: [], publish: true, seller_kind: 'individual', price: '',
             }) }}
             disabled={!facets?.categories?.length}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.green, color: '#fff', padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, border: 'none', cursor: facets?.categories?.length ? 'pointer' : 'not-allowed' }}>
@@ -907,6 +914,14 @@ export default function AdminListingsPage() {
 
           <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>المدينة</label>
           <input value={adder.city} onChange={(e) => setAdder({ ...adder, city: e.target.value })} placeholder="القاهرة / الجيزة / …"
+            style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 16 }} />
+
+          {/* 💰 (٢٥/٨) محمد: «اعلانات شهد لسة مش بتنزل» — نص المشكلة إن
+              المودال ماكانش فيه سعر، وترجر النشر بيرفض أي قسم غير العقارات
+              من غير سعر («النشر متوقف: مفيش سعر»). */}
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>السعر بالجنيه (مطلوب للنشر — ما عدا العقارات)</label>
+          <input value={adder.price} onChange={(e) => setAdder({ ...adder, price: e.target.value.replace(/[^0-9.]/g, '') })}
+            placeholder="مثال: 400000" inputMode="numeric"
             style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 16 }} />
 
           {/* 🏷️ معرض ولا فرد — «لو معرض هنتعامل معاه B2B ولو إعلان يكون واضح» */}
