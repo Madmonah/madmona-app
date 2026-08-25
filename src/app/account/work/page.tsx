@@ -114,6 +114,10 @@ export default function MyWorkPage() {
   const [home, setHome] = useState<Home | null>(null)
   const [loading, setLoading] = useState(true)
   const [autoMsg, setAutoMsg] = useState<string | null>(null)
+  // 📥 (٢٥/٨) عدّاد إعلانات الويزارد المستنية مراجعة — محمد: «الجدول بتاع
+  //    الدرافت مش مسمع في التاب الجديدة اللي في شغلي، اعمل ميرج على مستوى
+  //    الأبليكيشن». الـRPC بترجع 0 لأي حد مش من فريق الإعلانات.
+  const [wizCount, setWizCount] = useState<number>(0)
 
   const load = useCallback(async (): Promise<boolean> => {
     try {
@@ -123,6 +127,13 @@ export default function MyWorkPage() {
         fn: string,
       ) => Promise<{ data: Home | null }>)('get_my_work_home')
       setHome(data)
+      // 📥 (٢٥/٨) عدّاد الويزارد — نداء خفيف لوحده عشان فشله ما يوقّعش الصفحة
+      try {
+        const { data: wc } = await (supabaseBrowser.rpc as unknown as (
+          fn: string,
+        ) => Promise<{ data: number | null }>)('wizard_drafts_pending_count')
+        setWizCount(typeof wc === 'number' ? wc : 0)
+      } catch { /* مش مشكلة — الكارت يظهر من غير عدّاد */ }
       return true
     } catch (e) {
       console.error('[account/work] load failed:', e)
@@ -221,7 +232,7 @@ export default function MyWorkPage() {
           <Empty icon={<Building2 className="w-8 h-8" />} title="مالكش شغل مسجّل"
                  sub="لسه ماتضفتش كموظف ولا كصاحب بيزنس على مضمونة." />
         ) : (
-          list.map(b => <BizCard key={b.supplier_id} b={b} onRefresh={load} />)
+          list.map(b => <BizCard key={b.supplier_id} b={b} onRefresh={load} wizCount={wizCount} />)
         )}
       </main>
 
@@ -267,7 +278,7 @@ function MyCallsCard() {
   )
 }
 
-function BizCard({ b, onRefresh }: { b: Biz; onRefresh: () => void }) {
+function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void; wizCount?: number }) {
   const isOwner = b.relation === 'owner'
   const can = (k: string) => isOwner || b.permissions?.[k] === true
   const att = b.attendance
@@ -379,8 +390,24 @@ function BizCard({ b, onRefresh }: { b: Biz; onRefresh: () => void }) {
             <Building2 className="w-4 h-4" />
             كل الإعلانات — أضف · عدّل · انشر · امسح
           </Link>
+          {/* 📥 (٢٥/٨) واردة الويزارد جوّه شغلي — محمد: «الجدول بتاع الدرافت
+              مش مسمع في التاب الجديدة اللي في شغلي، اعمل ميرج على مستوى
+              الأبليكيشن». العدّاد من wizard_drafts_pending_count والوصول
+              المباشر بيفتح لوحة الويزارد جوّه شاشة الإعلانات الموحّدة. */}
+          <Link
+            href="/admin/listings?stage=wizard"
+            className="mt-2 w-full inline-flex items-center justify-center gap-2 bg-white border-2 border-[#34D399] text-[#04352A] py-2.5 rounded-2xl text-[13px] font-black no-underline"
+          >
+            <Inbox className="w-4 h-4" />
+            واردة الويزارد
+            {wizCount > 0 && (
+              <span className="min-w-[22px] h-[22px] px-1.5 inline-flex items-center justify-center rounded-full bg-amber-400 text-[#4A2E00] text-[11px] font-black">
+                {wizCount}
+              </span>
+            )}
+          </Link>
           <p className="text-[10px] text-[#6B7280] mt-2 text-center">
-            شاشة واحدة لكل إعلانات المنصة — الدرافت والمنشور والموقوف، بفلاتر الحالة والبائع.
+            شاشة واحدة لكل إعلانات المنصة — الدرافت والمنشور والموقوف وواردة الويزارد. أي إعلان جديد من الويزارد بيرنّ إشعار لكل الفريق.
           </p>
         </div>
       )}
