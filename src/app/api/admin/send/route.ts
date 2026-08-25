@@ -131,6 +131,28 @@ async function listSessions(): Promise<SessionOption[]> {
 }
 
 /**
+ * 🧹 (٢٥/٨/٢٠٢٦ — محمد: «تقضيلي الارقام الي في الطابور او تخلي في اوبشن
+ *    دينامك») DELETE = إلغاء كل الرسايل الـqueued فورًا (اختياريًا
+ *    ?session=cars لجلسة واحدة). الطابور المتأخر كان بينطلق دفعة واحدة
+ *    أول ما البوت يتوصل → بان للحساب.
+ */
+export async function DELETE(request: Request) {
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const session = new URL(request.url).searchParams.get('session')
+  let q = supabaseAdmin
+    .from('whatsapp_campaign_messages')
+    .update({ status: 'cancelled', error_message: 'اتلغى من شاشة ابعت 🧹' } as never)
+    .eq('status', 'queued')
+  // (٢٥/٨) عمود session موجود في الداتابيز بس ناقص من types المولّدة القديمة
+  if (session) q = (q as unknown as { eq: (c: string, v: string) => typeof q }).eq('session', session)
+  const { data, error } = await q.select('id')
+  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true, cancelled: (data ?? []).length })
+}
+
+/**
  * body: { campaign_name?, message?, recipients: [{phone, name?, message?}], dry_run?, skip_recent_days? }
  *
  * `message` = النص الموحّد. أي مستلم معاه `message` خاص بيغلب الموحّد.

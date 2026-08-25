@@ -221,10 +221,55 @@ export default function SendPage() {
           />
         </div>
 
+        {/* 🧹 (٢٥/٨/٢٠٢٦ — محمد: «متاكد ان في طابور رسايل بيطلع من عندنا
+            بيعمل بلوك للحسابات… تقضيلي الارقام الي في الطابور او تخلي في
+            اوبشن دينامك») الطابور بقى مكشوف وقابل للمسح من هنا: العدد،
+            الأرقام الجاية بمواعيدها، وزرار بيلغي كل اللي queued فورًا.
+            (النهارده الصبح كان فيه ٢٢٤ رسالة كامبين متأخرة من أيام —
+            أول ما البوت بيتوصل كان بيطلقهم دفعة واحدة → بان ٥ ساعات.) */}
         {s && (
           <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4 text-sm">
-            <span className="text-gray-500 block text-xs">في الطابور دلوقتي</span>
-            <span className="font-black text-gray-900">{status?.counts?.queued ?? 0}</span>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <span className="text-gray-500 block text-xs">في الطابور دلوقتي</span>
+                <span className="font-black text-gray-900 text-lg">{status?.counts?.queued ?? 0}</span>
+                {(status?.counts?.failed ?? 0) > 0 && (
+                  <span className="text-xs text-red-600 mr-3">فشلت: {status?.counts?.failed}</span>
+                )}
+              </div>
+              {(status?.counts?.queued ?? 0) > 0 && (
+                <button
+                  onClick={async () => {
+                    if (!confirm(`هتلغي ${status?.counts?.queued} رسالة مستنية في الطابور؟`)) return
+                    setBusy(true); setError('')
+                    try {
+                      const res = await fetch('/api/admin/send', {
+                        method: 'DELETE',
+                        headers: { 'X-Admin-Password': safePw(password) },
+                      })
+                      const j = await res.json().catch(() => null)
+                      if (!res.ok || j?.ok === false) { setError(j?.error || 'فشل المسح'); return }
+                      await loadStatus(password, true)
+                    } finally { setBusy(false) }
+                  }}
+                  disabled={busy}
+                  className="px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-bold disabled:opacity-50"
+                >
+                  🧹 امسح الطابور ({status?.counts?.queued})
+                </button>
+              )}
+            </div>
+            {(status?.upcoming?.length ?? 0) > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-100 max-h-48 overflow-y-auto space-y-1">
+                {(status?.upcoming ?? []).map((u, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs">
+                    <span className="font-mono" dir="ltr">{u.recipient_phone}</span>
+                    <span className="text-gray-500">{u.recipient_name || ''}</span>
+                    <span className="text-gray-400">{when(u.scheduled_for)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
