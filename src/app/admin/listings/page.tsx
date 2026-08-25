@@ -306,6 +306,21 @@ export default function AdminListingsPage() {
   useEffect(() => { if (stage === 'ready') { loadFacets() } }, [stage, loadFacets])
   useEffect(() => { if (stage === 'ready') { load() } }, [stage, load])
 
+  // 🔄 (٢٥/٨/٢٠٢٦ — محمد: «التابات ليها نفس المسار وكل تابة بتعرض حاجة غير
+  //    التانية») كل تاب مفتوح كان بيفضل ماسك النسخة اللي اتحمّلت وقت فتحه —
+  //    فتابين على نفس الرابط بيعرضوا داتا مختلفة. دلوقتي أول ما ترجع للتاب
+  //    (focus/visibility) الليستة بتتحدّث لوحدها من السيرفر.
+  useEffect(() => {
+    if (stage !== 'ready') return
+    const refresh = () => { if (document.visibilityState === 'visible') { load(); loadFacets() } }
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refresh)
+    }
+  }, [stage, load, loadFacets])
+
   const selectedIds = useMemo(() => Object.keys(sel).filter((k) => sel[k]), [sel])
   const allChecked = rows.length > 0 && rows.every((r) => sel[r.id])
 

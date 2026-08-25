@@ -34,6 +34,7 @@ import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
 import {
   ArrowRight, Loader2, ShieldAlert, Eye, Edit2, ImageOff, Tag,
   CircleDollarSign, CheckCircle2, Clock, RefreshCw, AlertTriangle, Layers,
+  UploadCloud,
 } from 'lucide-react'
 
 const C = {
@@ -142,6 +143,38 @@ export default function AdminStalledPage() {
       } else setFlash({ id: d.id, msg: res?.error || 'مقدرناش ننشره', ok: false })
     } catch (e) {
       setFlash({ id: d.id, msg: e instanceof Error ? e.message : 'خطأ', ok: false })
+    }
+    setBusyId(null)
+  }
+
+  // 📸 (٢٥/٨/٢٠٢٦ — محمد: «لحد دلوقتي هيا مش عارفة تعدل الاعلان وتضيف صور»)
+  //    رفع صور مباشر من الشاشة دي — بيعدي على /api/admin/listing-photo
+  //    (كوكي اللوحة + service key على السيرفر): مفيش أي اعتماد على جلسة
+  //    Supabase في المتصفح، فمستحيل يقع بمشاكل الجلسات اللي كانت بتضرب
+  //    الرفع من فورم التعديل.
+  async function uploadPhotos(d: Row, files: FileList | null) {
+    if (!files || files.length === 0) return
+    setBusyId(d.id); setFlash({ id: d.id, msg: `بيرفع ${files.length} صورة…`, ok: true })
+    try {
+      let done = 0
+      for (let i = 0; i < files.length; i++) {
+        const fd = new FormData()
+        fd.append('listing_id', d.id)
+        fd.append('file', files[i])
+        fd.append('display_order', String(d.photos_all + i))
+        fd.append('is_primary', String(d.photos_all === 0 && i === 0))
+        const r = await fetch('/api/admin/listing-photo', { method: 'POST', body: fd })
+        const j = await r.json().catch(() => null)
+        if (!r.ok || j?.ok === false) {
+          throw new Error(`صورة ${i + 1}: ${j?.error || `HTTP ${r.status}`}`)
+        }
+        done++
+        setFlash({ id: d.id, msg: `اترفعت ${done}/${files.length}…`, ok: true })
+      }
+      setFlash({ id: d.id, msg: `اترفعت ${done} صورة ✅ — دوس نشر لو خلصت`, ok: true })
+      await load(tab)
+    } catch (e) {
+      setFlash({ id: d.id, msg: e instanceof Error ? e.message : 'فشل الرفع', ok: false })
     }
     setBusyId(null)
   }
@@ -352,6 +385,15 @@ export default function AdminStalledPage() {
                     style={{ width: 34, height: 34, borderRadius: 10, background: C.green + '1a', color: C.green, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Edit2 style={{ width: 15, height: 15 }} />
                   </Link>
+                  {/* 📸 (٢٥/٨) رفع صور مباشر من هنا — عبر API اللوحة، من غير
+                      أي اعتماد على جلسة المتصفح (شوف uploadPhotos فوق) */}
+                  <label title="ارفع صور"
+                    style={{ width: 34, height: 34, borderRadius: 10, background: '#fff7e0', color: C.warn, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: busyId === d.id ? 'wait' : 'pointer' }}>
+                    <UploadCloud style={{ width: 15, height: 15 }} />
+                    <input type="file" accept="image/*" multiple style={{ display: 'none' }}
+                      disabled={busyId === d.id}
+                      onChange={(e) => { void uploadPhotos(d, e.target.files); e.target.value = '' }} />
+                  </label>
                   <button
                     onClick={() => publish(d)}
                     disabled={!canPublish || busyId === d.id}
