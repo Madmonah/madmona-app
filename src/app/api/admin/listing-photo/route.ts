@@ -10,7 +10,9 @@
 // الحماية: كوكي جلسة اللوحة (نفس isAdminRequest اللي في /api/admin/rpc).
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { isAdminRequest } from '@/lib/adminGate'
+// 🧑‍💼 (٢٥/٨) محمد: «اعلانات شهد لسة مش بتنزل» — موظفين الأبليكيشن
+// (جلسة Supabase) بقوا مقبولين هنا كمان، مش كوكي اللوحة بس.
+import { isAdminOrListingsStaffRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -19,7 +21,7 @@ const BUCKET = 'listing-photos'
 const MAX_BYTES = 8 * 1024 * 1024 // 8MB
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdminRequest(req))) {
+  if (!(await isAdminOrListingsStaffRequest(req))) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
 
@@ -91,7 +93,7 @@ export async function POST(req: NextRequest) {
 // بكوكي اللوحة من غير جلسة Supabase مايقدرش يمسح مباشرة — فالمسح بيعدي
 // من هنا بنفس حماية الكوكي.
 export async function DELETE(req: NextRequest) {
-  if (!(await isAdminRequest(req))) {
+  if (!(await isAdminOrListingsStaffRequest(req))) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
   const listingId = new URL(req.url).searchParams.get('listing_id')?.trim() || ''

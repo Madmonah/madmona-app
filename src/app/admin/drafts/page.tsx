@@ -29,7 +29,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { adminRpc } from '@/lib/adminRpc'
+import { adminRpc, staffAuthHeaders } from '@/lib/adminRpc'
 import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
 import {
   ArrowRight, Loader2, ShieldAlert, Eye, Edit2, ImageOff, Tag,
@@ -163,7 +163,8 @@ export default function AdminStalledPage() {
         fd.append('file', files[i])
         fd.append('display_order', String(d.photos_all + i))
         fd.append('is_primary', String(d.photos_all === 0 && i === 0))
-        const r = await fetch('/api/admin/listing-photo', { method: 'POST', body: fd })
+        // 🧑‍💼 (٢٥/٨) staffAuthHeaders — عشان موظفين الأبليكيشن (من غير كوكي اللوحة) يرفعوا برضو
+        const r = await fetch('/api/admin/listing-photo', { method: 'POST', body: fd, headers: await staffAuthHeaders() })
         const j = await r.json().catch(() => null)
         if (!r.ok || j?.ok === false) {
           throw new Error(`صورة ${i + 1}: ${j?.error || `HTTP ${r.status}`}`)

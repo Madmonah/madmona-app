@@ -691,7 +691,11 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
       fd.append('file', photo.file as File)
       fd.append('display_order', String(i))
       fd.append('is_primary', String(photo.is_primary))
-      const r = await fetch('/api/admin/listing-photo', { method: 'POST', body: fd })
+      // 🧑‍💼 (٢٥/٨) التوكن بيتبعت عشان حارس /api/admin/* يقبل موظف الأبليكيشن كمان
+      const r = await fetch('/api/admin/listing-photo', {
+        method: 'POST', body: fd,
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
       const j = await r.json().catch(() => null)
       if (!r.ok || j?.ok === false) {
         throw new Error(`فشل رفع صورة ${i + 1}: ${j?.error || `HTTP ${r.status}`}`)

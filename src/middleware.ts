@@ -29,7 +29,7 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { ADMIN_ENTRY_PATH } from './lib/adminGate'
+import { ADMIN_ENTRY_PATH, isListingsStaffRequest } from './lib/adminGate'
 import { PLATFORM_ADMIN_COOKIE } from './lib/platformAdminConst'
 
 // كل subdomain تاجر → الـ slug بتاع ستورفرنته
@@ -90,6 +90,18 @@ export async function middleware(req: NextRequest) {
   // (3) حارس /api/admin/* — رد 401 JSON (مش redirect: دي API مش صفحة)
   if (path.startsWith('/api/admin')) {
     if (await hasAdminApiCredential(req)) return NextResponse.next()
+    /* 🧑‍💼 (٢٥ أغسطس ٢٠٢٦) محمد: «اعلانات شهد لسة مش بتنزل مع انها ضايفاها
+       من تاب شغلي». موظفين مضمونة بيدخلوا من الأبليكيشن بجلسة Supabase
+       (توكن JWT) مش بكوكي اللوحة — فالحارس هنا كان بيرميهم 401 قبل ما
+       الراوت نفسه يشتغل، وأي إضافة/رفع صور كانت بتفشل. الحل: مسارات
+       الإعلانات بس بتقبل توكن جلسة لو صاحبه staff إعلانات متأكد منه
+       (is_listings_staff_uid). الراوتات نفسها بتعيد الفحص (دفاع مضاعف)
+       و/api/admin/rpc بيحصر الدوال المسموحة للـstaff. */
+    const LISTINGS_API = ['/api/admin/rpc', '/api/admin/listing-photo', '/api/admin/listing-drafts', '/api/admin/listings']
+    if (LISTINGS_API.some((p) => path === p || path.startsWith(p + '/'))
+        && (await isListingsStaffRequest(req))) {
+      return NextResponse.next()
+    }
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
 
@@ -97,6 +109,15 @@ export async function middleware(req: NextRequest) {
   if (path.startsWith('/admin')) {
     const token = req.cookies.get(PLATFORM_ADMIN_COOKIE)?.value
     if (token && (await isValidAdminSession(token))) return NextResponse.next()
+
+    /* 🧑‍💼 (٢٥ أغسطس ٢٠٢٦) شاشات الإعلانات — نفس منطق استثناء
+       business-finance تحت: جلسة الأبليكيشن في localStorage والحارس ده
+       على الـedge مايشوفهاش، فكان بيرمي موظفي الإعلانات على /admin-entry.
+       الصفحة نفسها بتتصرف مع اللي معندوش حق (كل عملياتها بتتأكد على
+       السيرفر + RLS). */
+    if (path === '/admin/listings' || path.startsWith('/admin/drafts')) {
+      return NextResponse.next()
+    }
 
     // استثناءات /admin/business-finance/<uuid>[/...]:
     //   (أ) البيزنس تحت التفاوض (تجربة مفتوحة) — بلا حساب خالص

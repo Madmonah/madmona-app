@@ -73,3 +73,56 @@ export async function isAdminRequest(request: Request): Promise<boolean> {
 
   return false
 }
+
+
+/**
+ * 🧑‍💼 (٢٥ أغسطس ٢٠٢٦) هل الطلب ده جاي من موظف إعلانات مضمونة داخل
+ * بجلسة الأبليكيشن (Supabase Auth)؟
+ * محمد: «اعلانات شهد لسة مش بتنزل مع انها ضايفاها من تاب شغلي» —
+ * السبب كان إن راوتات /api/admin/* بتقبل كوكي اللوحة بس، وموظفين
+ * الأبليكيشن معندهمش الكوكي ده فكل حفظ كان بيرجع 401 «لازم تدخل من
+ * بوابة الأدمن». الحل على مستوى المشروع: الراوتات بتاعة الإعلانات
+ * بتقبل كمان توكن جلسة Supabase لو صاحبه staff إعلانات فعلي
+ * (is_listings_staff_uid — نفس منطق is_admin_or_listings_staff).
+ * edge-safe: fetch بس، من غير @supabase/supabase-js.
+ */
+export async function isListingsStaffRequest(request: Request): Promise<boolean> {
+  try {
+    const bearer = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '')
+    // توكنات Supabase JWT بتبدأ بـeyJ — أسرار السيرفر اتفحصت في isAdminRequest
+    if (!bearer || !bearer.startsWith('eyJ')) return false
+    const base = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!base || !anonKey || !serviceKey) return false
+
+    // ١) التوكن ده بتاع مين؟
+    const uRes = await fetch(`${base}/auth/v1/user`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${bearer}` },
+    })
+    if (!uRes.ok) return false
+    const user = (await uRes.json()) as { id?: string }
+    if (!user?.id) return false
+
+    // ٢) هو staff إعلانات مضمونة فعلًا؟
+    const rRes = await fetch(`${base}/rest/v1/rpc/is_listings_staff_uid`, {
+      method: 'POST',
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_uid: user.id }),
+    })
+    if (!rRes.ok) return false
+    return (await rRes.json()) === true
+  } catch {
+    return false
+  }
+}
+
+/** كوكي اللوحة **أو** موظف إعلانات بجلسة الأبليكيشن — لراوتات الإعلانات بس. */
+export async function isAdminOrListingsStaffRequest(request: Request): Promise<boolean> {
+  if (await isAdminRequest(request)) return true
+  return isListingsStaffRequest(request)
+}

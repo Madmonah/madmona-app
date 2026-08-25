@@ -13,7 +13,7 @@
 // =====================================================================
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { isAdminRequest } from '@/lib/adminGate'
+import { isAdminRequest, isListingsStaffRequest } from '@/lib/adminGate'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -106,15 +106,25 @@ const ALLOWED = new Set([
   'crm_health',
 ])
 
-async function isAdmin(req: NextRequest): Promise<boolean> {
-  return await isAdminRequest(req)
-}
+// 🧑‍💼 (٢٥ أغسطس ٢٠٢٦) محمد: «اعلانات شهد لسة مش بتنزل مع انها ضايفاها
+// من تاب شغلي». موظفين مضمونة بيدخلوا /admin/listings من الأبليكيشن
+// بجلسة Supabase — مش بكوكي اللوحة — فكل adminRpc كان بيرجع 401.
+// الحل: دوال الإعلانات دي بس مسموحة كمان لموظف إعلانات متأكد منه
+// (is_listings_staff_uid). باقي الدوال (فلوس · صلاحيات · CRM) فاضلة
+// لكوكي اللوحة زي ما هي.
+const LISTINGS_STAFF_ALLOWED = new Set([
+  'admin_listings_search',
+  'admin_listings_facets',
+  'admin_bulk_set_status',
+  'admin_draft_listings',
+  'admin_stalled_listings',
+  'admin_publish_listing',
+  'admin_set_listing_owner',
+  'admin_add_listing',
+  'admin_publish_listing_now',
+])
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdmin(req))) {
-    return NextResponse.json({ error: 'لازم تدخل من بوابة الأدمن الأول' }, { status: 401 })
-  }
-
   let body: { fn?: string; args?: Record<string, unknown> }
   try {
     body = await req.json()
@@ -125,6 +135,12 @@ export async function POST(req: NextRequest) {
   const fn = String(body.fn || '')
   if (!ALLOWED.has(fn)) {
     return NextResponse.json({ error: `عملية غير مسموحة: ${fn}` }, { status: 400 })
+  }
+
+  const isAdmin = await isAdminRequest(req)
+  const isStaff = !isAdmin && LISTINGS_STAFF_ALLOWED.has(fn) && (await isListingsStaffRequest(req))
+  if (!isAdmin && !isStaff) {
+    return NextResponse.json({ error: 'لازم تدخل من بوابة الأدمن الأول' }, { status: 401 })
   }
 
   const db = createClient(

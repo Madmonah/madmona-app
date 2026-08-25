@@ -15,7 +15,9 @@ import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { adminPanelStage } from '@/lib/platform-staff'
 // 🔐 الـRPCs دي محميّة بصلاحية — لازم تعدّي من بوابة الأدمن على السيرفر
-import { adminRpc } from '@/lib/adminRpc'
+// 🧑‍💼 (٢٥/٨) staffAuthHeaders — موظفين الأبليكيشن (جلسة Supabase) بيبعتوا
+// التوكن مع كل نداء عشان حارس /api/admin/* يقبلهم (شهد وسامية وباقي الفريق).
+import { adminRpc, staffAuthHeaders } from '@/lib/adminRpc'
 // 🕒 (٢١ أغسطس ٢٠٢٦) محمد: «عايز وقت وتاريخ كل إعلان سواء منشور أو درافت
 //    أو أي إعلان عمومًا». التنسيق مركزي في lib/arDateTime.
 import { fmtDateTime, sinceLabel } from '@/lib/arDateTime'
@@ -143,7 +145,7 @@ export default function AdminListingsPage() {
   async function loadWizard() {
     setWizLoading(true)
     try {
-      const r = await fetch('/api/admin/listing-drafts?status=all', { cache: 'no-store' })
+      const r = await fetch('/api/admin/listing-drafts?status=all', { cache: 'no-store', headers: await staffAuthHeaders() })
       const j = await r.json()
       setWizDrafts((j.drafts || []) as WizDraft[])
     } catch { /* الشاشة الأساسية ماتتأثرش */ } finally { setWizLoading(false) }
@@ -218,7 +220,7 @@ export default function AdminListingsPage() {
         fd.append('file', file)
         fd.append('display_order', String(i))
         fd.append('is_primary', i === 0 ? 'true' : 'false')
-        const up = await fetch('/api/admin/listing-photo', { method: 'POST', body: fd })
+        const up = await fetch('/api/admin/listing-photo', { method: 'POST', body: fd, headers: await staffAuthHeaders() })
         const upJ = await up.json().catch(() => null)
         if (!up.ok || upJ?.ok === false) {
           throw new Error(`صورة ${i + 1}: ${upJ?.error || 'فشل الرفع'}`)
@@ -546,13 +548,13 @@ export default function AdminListingsPage() {
                       <>
                         <button style={sBtn(C.green2)} onClick={async () => {
                           await fetch('/api/admin/listing-drafts/nudge', { method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: d.id }) })
+                            headers: { 'Content-Type': 'application/json', ...(await staffAuthHeaders()) }, body: JSON.stringify({ id: d.id }) })
                           setFlash('اتبعت تذكير واتساب'); loadWizard()
                         }}>تذكير</button>
                         <button style={sBtn(C.danger)} onClick={async () => {
                           if (!confirm('هترفض الوارد ده؟')) return
                           await fetch('/api/admin/listing-drafts/reject', { method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: d.id }) })
+                            headers: { 'Content-Type': 'application/json', ...(await staffAuthHeaders()) }, body: JSON.stringify({ id: d.id }) })
                           loadWizard()
                         }}>رفض</button>
                       </>
