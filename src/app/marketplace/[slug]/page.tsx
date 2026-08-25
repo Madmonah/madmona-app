@@ -477,9 +477,24 @@ export default function ListingDetailPage() {
   // directory listings are reference-only: no buy / cart / booking / menu
   const isOrderable = (isRestaurant || isProduct) && !isDirectory && !isRealEstate
   const currentPhoto = sortedPhotos[photoIndex]
-  const phone = isDirectory
-    ? (listing.contact_phone || '')
-    : (listing.supplier?.profile?.phone || '')
+  // 🔒 (٢٥ أغسطس ٢٠٢٦) قاعدة محمد: «أي بيع عقارات أو سيارات، التواصل
+  //    يفتح في شات مضمونة في الجروب اللي فيه موظفين مضمونة مع العميل
+  //    ومع المورد/المطور/المعرض — مش عايز أرقام التواصل الخاصة تفتح
+  //    للعميل دايركت في القسمين دول».
+  //    السبب التجاري: لو العميل كلّم المطور مباشرة، الصفقة (والعمولة)
+  //    بتخرج بره مضمونة. فالقسمين دول كل أزرار الواتساب/التليفون بتفتح
+  //    على **رقم مضمونة** (INTAKE_WA — نفس رقم استقبال ملفات العملاء)
+  //    برسالة فيها لينك الإعلان، والفريق بيكمّل في جروب الشات مع الطرفين.
+  //    رقم المورد نفسه عمره ما بيوصل للمتصفح في الحالة دي.
+  const partyPhoneHidden = catSlug.startsWith('sale-properties')
+    || catSlug.startsWith('sale-vehicles')
+    || catSlug.startsWith('sale-tourism')
+  const MADMONA_INTAKE = '201002229982'
+  const phone = partyPhoneHidden
+    ? MADMONA_INTAKE
+    : isDirectory
+      ? (listing.contact_phone || '')
+      : (listing.supplier?.profile?.phone || '')
   const phoneClean = phone.replace(/\D/g, '')
   const claimMessage = encodeURIComponent(
     `عايز أستلم نشاطي "${displayTitle}" على Madmona.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
@@ -980,7 +995,9 @@ export default function ListingDetailPage() {
                           {[b.address, b.city].filter(Boolean).join(' · ')}
                         </div>
                       )}
-                      {b.phone && (
+                      {/* 🔒 في بيع العقارات/العربيات رقم الفرع نفسه مايتعرضش —
+                          التواصل كله من خلال مضمونة (شوف partyPhoneHidden فوق) */}
+                      {b.phone && !partyPhoneHidden && (
                         <a href={`tel:${b.phone}`} className="inline-block mt-2 pr-5 text-xs font-semibold text-[#059669] hover:underline" dir="ltr">
                           {b.phone}
                         </a>

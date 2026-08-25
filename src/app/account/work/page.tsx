@@ -53,6 +53,7 @@ type Req = {
 }
 type Task = {
   id: string; source: string; title: string
+  description?: string | null   // 📋 (٢٥/٨) التفاصيل الحية — من get_my_work_home
   priority: string | null; due_time: string | null
   task_date: string | null; overdue: boolean
 }
@@ -617,6 +618,8 @@ function RequestForm({ supplierId, onDone }: { supplierId: string; onDone: () =>
 function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  // 📋 عرض التفاصيل الحية (أرقام المكالمات · اسكريبت البوست …)
+  const [showDetail, setShowDetail] = useState(false)
 
   /* 🐞 (٢٢ أغسطس ٢٠٢٦ — محمد: «مهامي لما بدوس عليه مش بتختفي»)
      الكود القديم كان بينادي الـRPC وبيعمل onDone() على طول من غير ما
@@ -669,7 +672,23 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
           {String(t.due_time).slice(0, 5)}
         </span>
       )}
+      {t.description && (
+        <button type="button" onClick={() => setShowDetail(v => !v)}
+          className={`text-[10px] font-black px-2 py-1 rounded-lg flex-shrink-0 ${showDetail ? 'bg-[#34D399] text-[#04352A]' : 'bg-white border border-gray-200 text-[#059669]'}`}>
+          التفاصيل
+        </button>
+      )}
     </div>
+    {/* 📋 (٢٥ أغسطس ٢٠٢٦) محمد: «التوجيه يكون تفصيلي — لو مكالمات يبان
+        الأرقام، ولو بوستات يبان الاسكريبت وفين يتنشر». التفاصيل بتتولد
+        حية وقت البصمة (task_dynamic_detail) وبتتعرض هنا زي ما هي —
+        whitespace-pre-line عشان القوايم والأرقام تبان سطر بسطر،
+        select-text عشان الاسكريبت يتنسخ. */}
+    {showDetail && t.description && (
+      <div className="mt-1 mx-1 rounded-xl bg-white border border-gray-100 px-3 py-2.5 text-[11.5px] text-[#1A2E26] leading-relaxed whitespace-pre-line select-text" dir="auto">
+        {t.description}
+      </div>
+    )}
     {err && (
       <p className="text-[11px] font-bold text-red-600 px-3 pt-1">{err}</p>
     )}
