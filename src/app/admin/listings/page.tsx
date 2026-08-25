@@ -56,6 +56,20 @@ type Row = {
   rejection_reason: string | null; rejected_at: string | null
   pause_reason: string | null; paused_at: string | null
 }
+// 📥 صف من ويزارد الإضافة (جدول listing_drafts) — شوف تعليق الدمج تحت
+type WizDraft = {
+  id: string; title: string | null; description: string | null
+  category_slug: string | null; city: string | null; price: number | null
+  contact_name: string | null; contact_phone: string | null
+  account_type: 'individual' | 'business'; business_name: string | null
+  photos: { url: string }[] | null
+  status: 'draft' | 'submitted' | 'claimed' | 'rejected' | 'expired'
+  created_at: string
+}
+const WIZ_LABEL: Record<string, string> = {
+  draft: 'لسه بيملا', submitted: 'محتاجة مراجعة ⏳', claimed: 'عمل حساب ✅',
+  rejected: 'مرفوضة', expired: 'منتهية',
+}
 type Facets = {
   total: number
   by_tier: { real: number; directory: number }
@@ -115,6 +129,26 @@ export default function AdminListingsPage() {
   const [adderProgress, setAdderProgress] = useState<string | null>(null)
   const [ownerErr, setOwnerErr] = useState<string | null>(null)
 
+  /* 📥 (٢٥ أغسطس ٢٠٢٦) محمد: «الإعلانات اللي في /admin/listing-drafts
+     مختلفة عن اللي في /admin/listings — عايز مكان واحد يعرض الإعلانات
+     كلها وهو اللي يظهر عند الموظفين».
+     الفرق كان حقيقي: listing-drafts بتعرض جدول `listing_drafts` (ويزارد
+     الإضافة — ناس لسه بتملا ومعملتش حساب)، ودي بتعرض `listings`. دمجنا:
+     قسم «واردة الويزارد» جوّه الشاشة دي، والرابط القديم بقى تحويلة هنا.
+     نفس الـAPI ونفس الأفعال (تذكير واتساب · رفض) — مفيش نسخة موازية. */
+  const [wizardOpen, setWizardOpen] = useState(false)
+  const [wizDrafts, setWizDrafts] = useState<WizDraft[]>([])
+  const [wizLoading, setWizLoading] = useState(false)
+
+  async function loadWizard() {
+    setWizLoading(true)
+    try {
+      const r = await fetch('/api/admin/listing-drafts?status=all', { cache: 'no-store' })
+      const j = await r.json()
+      setWizDrafts((j.drafts || []) as WizDraft[])
+    } catch { /* الشاشة الأساسية ماتتأثرش */ } finally { setWizLoading(false) }
+  }
+
   // ---- guard ----
   useEffect(() => {
     (async () => {
@@ -126,6 +160,18 @@ export default function AdminListingsPage() {
       setStage('ready')
     })()
   }, [])
+
+  // 📥 تحميل واردة الويزارد مع الشاشة + فتح القسم لو جايين من الرابط القديم
+  useEffect(() => {
+    if (stage !== 'ready') return
+    loadWizard()
+    if (typeof window !== 'undefined'
+        && new URLSearchParams(window.location.search).get('stage') === 'wizard') {
+      setWizardOpen(true)
+      window.history.replaceState({}, '', '/admin/listings')
+    }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [stage])
 
   /* ➕ (٢٤ أغسطس ٢٦) لو دخلنا الصفحة بـ?add=1 (من تاب «ضيف إعلان» في السايدبار)،
      نفتح المودال أوتوماتيك — بس بعد ما التصنيفات تحمّل عشان يكون فيه اختيار. */
@@ -394,6 +440,22 @@ export default function AdminListingsPage() {
           <Link href="/admin/drafts" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#fff', border: `1px solid ${C.line}`, color: C.ink, padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
             <Clock style={{ width: 16, height: 16, color: C.warn }} /> الواقفة
           </Link>
+          {/* 📥 دمج شاشة listing-drafts هنا — «مكان واحد يعرض الإعلانات كلها» */}
+          <button
+            onClick={() => { setWizardOpen(v => !v); if (!wizardOpen) loadWizard() }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: wizardOpen ? C.green : '#fff',
+              border: `1px solid ${wizardOpen ? C.green : C.line}`,
+              color: wizardOpen ? '#fff' : C.ink,
+              padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+            📥 واردة الويزارد
+            {wizDrafts.filter(d => d.status === 'submitted').length > 0 && (
+              <span style={{ background: wizardOpen ? '#fff' : C.warn, color: wizardOpen ? C.green : '#fff',
+                borderRadius: 999, padding: '1px 8px', fontSize: 11, fontWeight: 800 }}>
+                {wizDrafts.filter(d => d.status === 'submitted').length}
+              </span>
+            )}
+          </button>
           <button
             onClick={() => { setAdderErr(null); setAdder({
               title: '', category_id: facets?.categories?.[0]?.id || '',
@@ -420,6 +482,73 @@ export default function AdminListingsPage() {
             {Object.entries(facets.by_status).map(([s, n]) => (
               <span key={s} style={badge(STATUS_COLOR[s] || C.sub)}>{STATUS_LABEL[s] || s} {n}</span>
             ))}
+          </div>
+        )}
+
+        {/* 📥 واردة الويزارد — كانت شاشة /admin/listing-drafts المنفصلة */}
+        {wizardOpen && (
+          <div style={{ background: C.card, border: `2px solid ${C.green}`, borderRadius: 18, padding: 16, marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+              <div>
+                <b style={{ fontSize: 15 }}>📥 واردة الويزارد</b>
+                <span style={{ fontSize: 12, color: C.sub, marginInlineStart: 8 }}>
+                  ناس بدأت تضيف إعلان من الموقع ولسه معملتش حساب — راجع واتواصل قبل ما تبرد
+                </span>
+              </div>
+              <button onClick={loadWizard} style={{ ...sBtn(C.sub), padding: '6px 12px' }}>
+                {wizLoading ? '…' : 'تحديث'}
+              </button>
+            </div>
+            {wizDrafts.length === 0 ? (
+              <p style={{ fontSize: 13, color: C.sub, margin: 0 }}>{wizLoading ? 'جاري التحميل…' : 'مفيش واردة دلوقتي 📭'}</p>
+            ) : (
+              <div style={{ display: 'grid', gap: 8 }}>
+                {wizDrafts.slice(0, 30).map(d => (
+                  <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+                    background: C.bg, border: `1px solid ${C.line}`, borderRadius: 12, padding: '10px 12px' }}>
+                    {(d.photos?.length ?? 0) > 0 && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={d.photos![0].url} alt="" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover' }} />
+                    )}
+                    <div style={{ flex: 1, minWidth: 180 }}>
+                      <b style={{ fontSize: 13 }}>{d.title || '(من غير عنوان)'}</b>
+                      <div style={{ fontSize: 11.5, color: C.sub }}>
+                        {[d.contact_name, d.city, d.category_slug,
+                          d.account_type === 'business' ? (d.business_name || 'شركة') : 'فرد',
+                          d.price ? `${d.price} ج` : null].filter(Boolean).join(' · ')}
+                        {' · '}{new Date(d.created_at).toLocaleDateString('ar-EG')}
+                      </div>
+                    </div>
+                    <span style={badge(d.status === 'submitted' ? C.warn : d.status === 'claimed' ? C.green : C.sub)}>
+                      {WIZ_LABEL[d.status] || d.status}
+                    </span>
+                    {d.contact_phone && (
+                      <a href={`https://wa.me/${d.contact_phone.replace(/\D/g, '').replace(/^0/, '20')}`}
+                         target="_blank" rel="noopener noreferrer"
+                         style={{ ...sBtn(C.green), textDecoration: 'none' }}>واتساب</a>
+                    )}
+                    {d.status === 'submitted' && (
+                      <>
+                        <button style={sBtn(C.green2)} onClick={async () => {
+                          await fetch('/api/admin/listing-drafts/nudge', { method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: d.id }) })
+                          setFlash('اتبعت تذكير واتساب'); loadWizard()
+                        }}>تذكير</button>
+                        <button style={sBtn(C.danger)} onClick={async () => {
+                          if (!confirm('هترفض الوارد ده؟')) return
+                          await fetch('/api/admin/listing-drafts/reject', { method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: d.id }) })
+                          loadWizard()
+                        }}>رفض</button>
+                      </>
+                    )}
+                  </div>
+                ))}
+                {wizDrafts.length > 30 && (
+                  <p style={{ fontSize: 12, color: C.sub, margin: 0 }}>معروض أول ٣٠ من {wizDrafts.length}</p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
