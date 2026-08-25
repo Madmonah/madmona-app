@@ -42,6 +42,19 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 86400, // 24h
+    // 🐞 (٢٥ أغسطس ٢٠٢٦ — محمد: «فيه صور كتير وقعت في الإعلانات»)
+    //
+    //    الجذر: فيه **٦٠٨ ملف** في bucket `content-images` محتواهم SVG
+    //    (كروت بلايس-هولدر متولّدة بعنوان الإعلان) بس متسمّيين `.jpg` —
+    //    اتولدوا من مسارات الـrehost والبوستات لما الصورة الأصلية فشلت.
+    //    الـoptimizer بتاع Next بيرفض أي SVG افتراضيًا بـ
+    //    400 INVALID_IMAGE_OPTIMIZE_REQUEST — يعني ٢٤ إعلان منشور كانت
+    //    صورهم أيقونة مكسورة على الموقع، والملف نفسه سليم ومتاح.
+    //
+    //    الحل: نسمح بالـSVG بس **معقّم بسياسة أمان** — مفيش سكريبتات
+    //    بتتنفذ جوّاه (ده الشرط اللي علشانه Next بيقفله افتراضيًا).
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   async redirects() {
     const CATEGORY_SLUGS = [
