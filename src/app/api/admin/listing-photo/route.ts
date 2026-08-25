@@ -85,3 +85,25 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ ok: true, id: (row as { id: string }).id, url, path })
 }
+
+// 🧹 (٢٥/٨/٢٠٢٦ — محمد: «بيطلب من سامية الصور بترفع الصور بيجيب لها خطأ»)
+// فورم التعديل وهو بيعيد حفظ الصور بيمسح القديم الأول. الموظف الداخل
+// بكوكي اللوحة من غير جلسة Supabase مايقدرش يمسح مباشرة — فالمسح بيعدي
+// من هنا بنفس حماية الكوكي.
+export async function DELETE(req: NextRequest) {
+  if (!(await isAdminRequest(req))) {
+    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
+  }
+  const listingId = new URL(req.url).searchParams.get('listing_id')?.trim() || ''
+  if (!listingId) return NextResponse.json({ ok: false, error: 'listing_id مطلوب' }, { status: 400 })
+
+  const db = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } },
+  )
+  const { data, error } = await db.from('listing_photos')
+    .delete().eq('listing_id', listingId).select('id')
+  if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true, deleted: (data ?? []).length })
+}

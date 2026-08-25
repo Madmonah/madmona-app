@@ -674,6 +674,80 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
     }
   }
 
+  // 📸 (٢٥/٨/٢٠٢٦ — محمد: «بيطلب من سامية الصور بترفع الصور بيجيب لها خطأ»)
+  // حفظ الصور بمسار مزدوج — مصدر واحد للفلوّين (الحفظ كمسودة والنشر):
+  //   • جلسة Supabase موجودة → رفع مباشر للستوريج (زي الأول)، ولو الرفع
+  //     المباشر فشل بنقع تلقائيًا على API اللوحة.
+  //   • مفيش جلسة (موظف داخل بكوكي اللوحة بس) → الرفع كله عبر
+  //     /api/admin/listing-photo (بترفع وتسجل الصف بنفسها)، ومن غير
+  //     مسح/إعادة إدخال للصور القديمة (مش هينفع من غير جلسة).
+  const persistPhotos = async (listingId: string) => {
+    const { data: { session } } = await supabaseBrowser.auth.getSession()
+    const hasSession = !!session?.user
+
+    const uploadViaApi = async (photo: (typeof form.photos)[number], i: number) => {
+      const fd = new FormData()
+      fd.append('listing_id', listingId)
+      fd.append('file', photo.file as File)
+      fd.append('display_order', String(i))
+      fd.append('is_primary', String(photo.is_primary))
+      const r = await fetch('/api/admin/listing-photo', { method: 'POST', body: fd })
+      const j = await r.json().catch(() => null)
+      if (!r.ok || j?.ok === false) {
+        throw new Error(`فشل رفع صورة ${i + 1}: ${j?.error || `HTTP ${r.status}`}`)
+      }
+    }
+
+    if (!hasSession) {
+      // كوكي اللوحة بس: نرفع الملفات الجديدة عبر الـAPI ونسيب القديم زي ما هو
+      for (let i = 0; i < form.photos.length; i++) {
+        const photo = form.photos[i]
+        if (photo.file) await uploadViaApi(photo, i)
+      }
+      return
+    }
+
+    // جلسة موجودة — نفس السلوك القديم (مسح + إعادة إدخال) مع فولباك API
+    if (isEditing) {
+      await supabaseBrowser.from('listing_photos').delete().eq('listing_id', listingId)
+    }
+    const rows: any[] = []
+    for (let i = 0; i < form.photos.length; i++) {
+      const photo = form.photos[i]
+      let photoUrl = photo.url
+      let storagePath: string | null = photo.storage_path || null
+      if (photo.file) {
+        const ext = (photo.file.name.split('.').pop() || 'jpg').toLowerCase()
+        const path = `${session!.user.id}/${listingId}/${Date.now()}-${i}.${ext}`
+        const { error: uploadErr } = await supabaseBrowser.storage
+          .from('listing-photos')
+          .upload(path, photo.file, { cacheControl: '3600', upsert: false })
+        if (uploadErr) {
+          console.error('Upload failed, falling back to admin API:', uploadErr)
+          await uploadViaApi(photo, i)
+          continue // الـAPI سجلت الصف بنفسها
+        }
+        const { data: { publicUrl } } = supabaseBrowser.storage
+          .from('listing-photos')
+          .getPublicUrl(path)
+        photoUrl = publicUrl
+        storagePath = path
+      }
+      rows.push({
+        listing_id: listingId,
+        url: photoUrl,
+        storage_path: storagePath,
+        caption: photo.caption || null,
+        is_primary: photo.is_primary,
+        display_order: i,
+      })
+    }
+    if (rows.length > 0) {
+      const { error: photosErr } = await supabaseBrowser.from('listing_photos').insert(rows)
+      if (photosErr) throw photosErr
+    }
+  }
+
   // Helper: save listing as draft + photos/attrs/pricing, return listingId
   const persistListingAsDraft = async (): Promise<string> => {
     const slug = isEditing
@@ -729,41 +803,8 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
 
     if (!listingId) throw new Error('فشل إنشاء المنتج')
 
-    // Upload photos
-    const photosToInsert: any[] = []
-    for (let i = 0; i < form.photos.length; i++) {
-      const photo = form.photos[i]
-      let photoUrl = photo.url
-      let storagePath: string | null = photo.storage_path || null
-      if (photo.file) {
-        const ext = (photo.file.name.split('.').pop() || 'jpg').toLowerCase()
-        const path = `${userId}/${listingId}/${Date.now()}-${i}.${ext}`
-        const { error: uploadErr } = await supabaseBrowser.storage
-          .from('listing-photos')
-          .upload(path, photo.file, { cacheControl: '3600', upsert: false })
-        if (uploadErr) throw new Error(`فشل رفع صورة ${i + 1}: ${uploadErr.message}`)
-        const { data: { publicUrl } } = supabaseBrowser.storage
-          .from('listing-photos')
-          .getPublicUrl(path)
-        photoUrl = publicUrl
-        storagePath = path
-      }
-      photosToInsert.push({
-        listing_id: listingId,
-        url: photoUrl,
-        storage_path: storagePath,
-        caption: photo.caption || null,
-        is_primary: photo.is_primary,
-        display_order: i,
-      })
-    }
-    if (isEditing) {
-      await supabaseBrowser.from('listing_photos').delete().eq('listing_id', listingId)
-    }
-    if (photosToInsert.length > 0) {
-      const { error: photosErr } = await supabaseBrowser.from('listing_photos').insert(photosToInsert)
-      if (photosErr) throw photosErr
-    }
+    // 📸 (٢٥/٨) الصور — مسار موحّد مع فولباك API اللوحة (شوف persistPhotos)
+    await persistPhotos(listingId)
 
     // Save attribute values
     if (isEditing) {
@@ -981,52 +1022,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
         listingId = newListing.id
       }
 
-      // 3. Upload new photos to Supabase Storage
-      const photosToInsert: any[] = []
-      for (let i = 0; i < form.photos.length; i++) {
-        const photo = form.photos[i]
-        let photoUrl = photo.url
-        let storagePath: string | null = photo.storage_path || null
-
-        if (photo.file) {
-          const ext = (photo.file.name.split('.').pop() || 'jpg').toLowerCase()
-          const path = `${userId}/${listingId}/${Date.now()}-${i}.${ext}`
-          const { error: uploadErr } = await supabaseBrowser.storage
-            .from('listing-photos')
-            .upload(path, photo.file, { cacheControl: '3600', upsert: false })
-          if (uploadErr) {
-            console.error('Upload failed:', uploadErr, 'size:', photo.file.size, 'type:', photo.file.type)
-            throw new Error(`فشل رفع صورة ${i + 1} (${formatBytes(photo.file.size)}): ${uploadErr.message}`)
-          }
-          const { data: { publicUrl } } = supabaseBrowser.storage
-            .from('listing-photos')
-            .getPublicUrl(path)
-          photoUrl = publicUrl
-          storagePath = path
-        }
-
-        photosToInsert.push({
-          listing_id: listingId,
-          url: photoUrl,
-          storage_path: storagePath,
-          caption: photo.caption || null,
-          is_primary: photo.is_primary,
-          display_order: i,
-        })
-      }
-
-      if (isEditing) {
-        // @ts-expect-error
-        await supabaseBrowser.from('listing_photos').delete().eq('listing_id', listingId)
-      }
-      if (photosToInsert.length > 0) {
-        const { error: photosErr } = await supabaseBrowser.from('listing_photos').insert(photosToInsert)
-        if (photosErr) throw photosErr
-      }
+      // 3. 📸 (٢٥/٨) الصور — مسار موحّد مع فولباك API اللوحة (persistPhotos)
+      if (!listingId) throw new Error('فشل إنشاء المنتج')
+      await persistPhotos(listingId)
 
       // 5. Save attribute values
       if (isEditing) {
-        // @ts-expect-error
         await supabaseBrowser.from('listing_values').delete().eq('listing_id', listingId)
       }
       const valuesToInsert: any[] = []
@@ -1047,7 +1048,6 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
 
       // 6. Save pricing rules
       if (isEditing) {
-        // @ts-expect-error
         await supabaseBrowser.from('pricing_rules').delete().eq('listing_id', listingId)
       }
       const pricingToInsert = form.pricing
