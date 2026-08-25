@@ -365,6 +365,26 @@ function BizCard({ b, onRefresh }: { b: Biz; onRefresh: () => void }) {
         )}
       </div>
 
+      {/* 🏷️ الإعلانات — (٢٥ أغسطس ٢٠٢٦) محمد: «صلاحيات الموظفين للإعلانات
+          تكون مفتوحة ويكون ليها تاب». الشاشة الواحدة لكل الإعلانات هي
+          /admin/listings (منشور · درافت · موقوف · مرفوض) — الصلاحيات
+          اتفتحت للفريق الصبح، وده بابها من الموبايل. لموظفي مضمونة بس. */}
+      {b.is_platform_owner && b.employee_id && can('can_manage_listings') && (
+        <div className="px-5 py-4 border-b border-gray-100">
+          <SectionTitle icon={<Building2 className="w-3.5 h-3.5" />} title="الإعلانات" />
+          <Link
+            href="/admin/listings"
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-3 rounded-2xl text-[13px] font-black no-underline shadow-soft"
+          >
+            <Building2 className="w-4 h-4" />
+            كل الإعلانات — أضف · عدّل · انشر · امسح
+          </Link>
+          <p className="text-[10px] text-[#6B7280] mt-2 text-center">
+            شاشة واحدة لكل إعلانات المنصة — الدرافت والمنشور والموقوف، بفلاتر الحالة والبائع.
+          </p>
+        </div>
+      )}
+
       {/* 💰 المصاريف — بصلاحية «يشوف الفلوس والفاينانس» */}
       {can('can_view_finance') && (
         <div className="px-5 py-4 border-b border-gray-100">
