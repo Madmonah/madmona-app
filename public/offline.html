@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>مفيش إنترنت — مضمونة</title>
+<!-- ============================================================
+  صفحة الأوفلاين — بتظهر من الـService Worker لما النت يفصل.
+  (٢٥ أغسطس ٢٠٢٦) محمد: «لو النت فصل من التليفون يكتب
+  this site can't be reached!؟»
+  الجذر: إصلاح v8 خلّى صفحات HTML من الشبكة دايمًا (وده صح — كان
+  فيه ناس عالقة على نسخ قديمة) بس ماحطش أي بديل لو الشبكة فصلت،
+  فالمتصفح كان بيعرض صفحة الخطأ بتاعته. الصفحة دي ثابتة تمامًا —
+  مفيش فيها JS بأسماء متغيرة، فتخزينها مفيهوش خطر النسخة العالقة.
+============================================================ -->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+    background: #F1EEE6; color: #1A2E26; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  .card {
+    background: #fff; border-radius: 28px; padding: 40px 28px;
+    max-width: 380px; width: 100%; text-align: center;
+    box-shadow: 0 10px 40px rgba(26,46,38,.08);
+  }
+  .icon {
+    width: 72px; height: 72px; border-radius: 20px; background: #34D39918;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px; font-size: 34px;
+  }
+  h1 { font-size: 21px; font-weight: 900; margin-bottom: 10px; }
+  p  { font-size: 14px; color: #6B7280; line-height: 1.8; margin-bottom: 24px; }
+  button {
+    width: 100%; padding: 14px; border: 0; border-radius: 14px;
+    background: #34D399; color: #04352A; font-size: 15px; font-weight: 900;
+    font-family: inherit; cursor: pointer;
+  }
+  button:active { transform: scale(.98); }
+  .brand { margin-top: 22px; font-size: 11px; color: #9CA3AF; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#b3261e; margin-inline-end:6px; vertical-align:1px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">📡</div>
+    <h1><span class="dot"></span>مفيش إنترنت دلوقتي</h1>
+    <p>الاتصال فصل من عندك، مش من مضمونة.<br>أول ما النت يرجع دوس «حاول تاني» وهتكمّل عادي.</p>
+    <button onclick="location.reload()">حاول تاني</button>
+    <div class="brand">مضمونة · معاملاتك مضمونة</div>
+  </div>
+  <script>
+    // أول ما النت يرجع، الصفحة بتحمّل نفسها لوحدها — من غير ما المستخدم يعمل حاجة.
+    window.addEventListener('online', function () { location.reload(); });
+  </script>
+</body>
+</html>

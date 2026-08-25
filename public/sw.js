@@ -27,12 +27,20 @@
 //   ٣) مسارات المصادقة network-only دايمًا (وده الصح أمنيًا كمان).
 // بكده أي نشر بيوصل لكل الناس من غير ما حد يعمل حاجة، ومفيش «امسح الكاش»
 // تاني أبدًا.
-const CACHE_NAME = 'madmona-v8';
+// Version: 9 (25 أغسطس 2026) — 📡 صفحة أوفلاين. محمد: «لو النت فصل من
+// التليفون يكتب this site can't be reached!؟». إصلاح v8 (HTML من الشبكة
+// دايمًا) كان صح، بس ساب المستخدم مع صفحة خطأ المتصفح لو النت فصل.
+// دلوقتي: أي صفحة تفشل بسبب الشبكة → /offline.html (ثابتة، مفيش فيها
+// JS بأسماء متغيرة، فمفيش خطر «النسخة العالقة» اللي v8 اتعمل علشانها).
+// وبترجع لوحدها أول ما النت يرجع (حدث online + زرار حاول تاني).
+const CACHE_NAME = 'madmona-v9';
+const OFFLINE_PAGE = '/offline.html';
 
 // مسارات ممنوع تخزينها نهائيًا (مصادقة/دخول)
 const NEVER_CACHE = ['/auth/', '/admin-entry', '/clock/'];
 const STATIC_ASSETS = [
   '/',
+  OFFLINE_PAGE,
   '/manifest.json',
   '/madmona-logo.png',
   '/icon-192.png',
@@ -88,16 +96,19 @@ self.addEventListener('fetch', (event) => {
   //    (شوف تعليق v7 فوق — دي كانت سبب إن الناس تفضل شايفة صفحة دخول قديمة
   //     بعد النشر، ومحاولاتهم ماتوصلش السيرفر أصلًا.)
   if (NEVER_CACHE.some((p) => url.pathname.startsWith(p))) {
-    event.respondWith(fetch(request));
+    // (v9) حتى صفحات المصادقة: لو الشبكة فصلت، صفحة الأوفلاين أحسن من
+    // صفحة خطأ المتصفح. الصفحة نفسها لسه ماتتخزّنش أبدًا.
+    event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_PAGE)));
     return;
   }
 
   // 📄 صفحات HTML: **من الشبكة دايمًا، وماتتخزّنش أبدًا.**
   //    ده جوهر إصلاح v8 — تخزين الـHTML هو اللي كان بيخلي الناس عالقة على
-  //    نسخة قديمة بتشاور على ملفات JS اتشالت من السيرفر. الأوفلاين هنا
-  //    ماكانش بيفيد أصلًا (ماركت بليس محتاج نت)، وكان بيضر فعليًا.
+  //    نسخة قديمة بتشاور على ملفات JS اتشالت من السيرفر.
+  //    (v9) الجديد الوحيد: لو الشبكة نفسها فصلت → صفحة الأوفلاين الثابتة،
+  //    بدل «This site can't be reached» بتاعة المتصفح.
   if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(fetch(request));
+    event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_PAGE)));
     return;
   }
 
