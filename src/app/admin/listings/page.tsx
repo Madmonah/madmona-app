@@ -187,8 +187,15 @@ function ListingsInner() {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [adder?.category_id])
   const attrOptions = (a: AdderAttr): string[] => {
+    // 🐞 (٢٦/٨) صيغة الاختيارات الفعلية في جدول attributes هي
+    // [{key, label_ar}] — القراءة القديمة (label/value) كانت بترجّع فاضي
+    // فالدروب داون كان بيتحول لخانة كتابة. بنقرا كل الصيغ.
     const raw = Array.isArray(a.options) ? a.options : []
-    return raw.map((o: unknown) => typeof o === 'string' ? o : String((o as { value?: string; label?: string })?.label ?? (o as { value?: string })?.value ?? '')).filter(Boolean)
+    return raw.map((o: unknown) => {
+      if (typeof o === 'string') return o
+      const r = o as { label_ar?: string; label?: string; key?: string; value?: string }
+      return String(r?.label_ar ?? r?.label ?? r?.key ?? r?.value ?? '')
+    }).filter(Boolean)
   }
   const [ownerErr, setOwnerErr] = useState<string | null>(null)
 
