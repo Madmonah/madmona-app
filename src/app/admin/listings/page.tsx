@@ -736,6 +736,23 @@ export default function AdminListingsPage() {
                       <div style={{ display: 'flex', gap: 6 }}>
                         <a href={`/marketplace/${r.slug}`} target="_blank" rel="noreferrer" title="معاينة" style={iconBtn('#f1f5f3', C.sub)}><Eye style={{ width: 15, height: 15 }} /></a>
                         <button title="تغيير الحالة" style={iconBtn('#eaf1ff', '#2456c8')} onClick={() => setStatusChanging(r)}><SlidersHorizontal style={{ width: 15, height: 15 }} /></button>
+                        {/* 🚀 (٢٦/٨) محمد: «من تاب ضيف مش بيكمل الاعلان — مفيش تاب نشر».
+                            زرار نشر مباشر لأي إعلان مش منشور — من غير ما تدخل مودال
+                            تغيير الحالة. بينادي admin_publish_listing_now ولو الترجر
+                            رفض (صور/سعر ناقصين) الرسالة الحقيقية بتظهر فوق. */}
+                        {r.status !== 'published' && (
+                          <button title="انشر دلوقتي" style={iconBtn('#E3F4EE', C.green)}
+                            onClick={async () => {
+                              setBusy(true); setFlash(null)
+                              try {
+                                await adminRpc('admin_publish_listing_now', { p_id: r.id })
+                                setFlash(`اتنشر «${r.title.slice(0, 30)}» ✓`)
+                                await load()
+                              } catch (e) {
+                                setFlash(`النشر وقف: ${e instanceof Error ? e.message : 'خطأ'}`)
+                              } finally { setBusy(false) }
+                            }}>🚀</button>
+                        )}
                         <Link href={`/supplier/marketplace/${r.id}/edit`} title="تعديل" style={iconBtn(C.green + '1a', C.green)}><Edit2 style={{ width: 15, height: 15 }} /></Link>
                         {/* 💅🍽️ (٢٥/٨/٢٠٢٦) محمد: «التجميل والمطاعم مينفعش كل خدمة
                             تيجي في إعلان لوحده» — الإضافة الواقعية: من نفس الشاشة

@@ -1850,7 +1850,11 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
               {isEditing && (
                 <button
                   type="button"
-                  onClick={() => handleSubmit(false)}
+                  /* 🚀 (٢٦/٨) الحفظ من نص الخطوات بيحافظ على حالة الإعلان زي ما هي:
+                     المنشور يفضل منشور، والدرافت يفضل درافت (النشر من زرار
+                     «احفظ وانشر» في آخر خطوة أو 🚀 من شاشة الإعلانات) —
+                     كان بينشر بالساكت وده مش متوقع من زرار اسمه «حفظ». */
+                  onClick={() => handleSubmit(initialData?.status !== 'published')}
                   disabled={submitting || processingImages}
                   className="px-5 py-2 bg-[#34D399] text-[#04352A] rounded-lg text-sm font-semibold hover:bg-[#34D399]/90 disabled:opacity-50 flex items-center gap-1"
                 >
@@ -1888,7 +1892,12 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                 className="px-5 py-2 bg-[#34D399] text-[#04352A] rounded-lg text-sm font-semibold hover:bg-[#34D399]/90 disabled:opacity-50 flex items-center gap-1"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                {submitting ? 'جاري النشر...' : (isEditing ? 'حفظ التعديلات' : 'نشر المنتج')}
+                {/* 🚀 (٢٦/٨) محمد: «مفيش تاب نشر» — لو الإعلان لسه مش منشور،
+                    الزرار لازم يقول بصراحة إنه هينشر، مش «حفظ التعديلات». */}
+                {submitting ? 'جاري النشر...'
+                  : (isEditing
+                      ? (initialData?.status === 'published' ? 'حفظ التعديلات' : '🚀 احفظ وانشر')
+                      : 'نشر المنتج')}
               </button>
             </div>
           )}
