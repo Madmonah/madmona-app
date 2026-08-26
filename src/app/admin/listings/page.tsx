@@ -10,8 +10,13 @@
 //   معاينة · تغيير حالة · تعديل · حذف/أرشفة.
 // ============================================================================
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+// 🐞 (٢٦/٨) محمد: «إيمان بتحاول تضيف اعلان بيفتح صفحة بس مفيهاش تكملة».
+// لينك «➕ ضيف إعلان» في السايدبار بيودّي على ?add=1 — لو الصفحة كانت
+// مفتوحة أصلًا، التنقل بيغيّر الكويري بس والكومبوننت مابيعملش re-render
+// من غير useSearchParams، فالمودال عمره ما بيفتح. دلوقتي بنسمع للكويري.
+import { useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { adminPanelStage } from '@/lib/platform-staff'
 // 🔐 الـRPCs دي محميّة بصلاحية — لازم تعدّي من بوابة الأدمن على السيرفر
@@ -81,6 +86,12 @@ type Facets = {
 }
 
 export default function AdminListingsPage() {
+  // useSearchParams لازم يتلف في Suspense في App Router
+  return <Suspense fallback={null}><ListingsInner /></Suspense>
+}
+
+function ListingsInner() {
+  const searchParams = useSearchParams()
   const [stage, setStage] = useState<Stage>('loading')
 
   const [facets, setFacets] = useState<Facets | null>(null)
@@ -217,21 +228,21 @@ export default function AdminListingsPage() {
   useEffect(() => {
     if (stage !== 'ready') return
     loadWizard()
-    if (typeof window !== 'undefined'
-        && new URLSearchParams(window.location.search).get('stage') === 'wizard') {
+    if (searchParams.get('stage') === 'wizard') {
       setWizardOpen(true)
       window.history.replaceState({}, '', '/admin/listings')
     }
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [stage])
+  }, [stage, searchParams])
 
   /* ➕ (٢٤ أغسطس ٢٦) لو دخلنا الصفحة بـ?add=1 (من تاب «ضيف إعلان» في السايدبار)،
      نفتح المودال أوتوماتيك — بس بعد ما التصنيفات تحمّل عشان يكون فيه اختيار. */
   useEffect(() => {
-    if (typeof window === 'undefined') return
     if (stage !== 'ready' || !addCats.length) return
-    const sp = new URLSearchParams(window.location.search)
-    if (sp.get('add') === '1' && !adder) {
+    // 🐞 (٢٦/٨) بنقرا من useSearchParams مش window.location — عشان الدوسة
+    // على «➕ ضيف إعلان» تشتغل حتى لو الصفحة كانت مفتوحة أصلًا (تنقل
+    // بالكويري بس مابيعملش mount جديد).
+    if (searchParams.get('add') === '1' && !adder) {
       setAdderErr(null)
       setAdder({
         title: '', category_id: addCats[0]?.id || '',
@@ -240,7 +251,7 @@ export default function AdminListingsPage() {
       })
       window.history.replaceState({}, '', '/admin/listings')
     }
-  }, [stage, addCats, adder])
+  }, [stage, addCats, adder, searchParams])
 
   async function saveNewListing() {
     if (!adder) return
@@ -498,7 +509,9 @@ export default function AdminListingsPage() {
     <div dir="rtl" style={{ minHeight: '100vh', background: C.bg, color: C.ink, fontFamily: 'Cairo, Inter, system-ui, sans-serif' }}>
       {/* header */}
       <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.line}` }}>
-        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* 📱 (٢٦/٨) flexWrap — على الموبايل الصف ماكانش بيلف، فزرار
+            «ضيف إعلان» (آخر واحد = أقصى الشمال) كان بيتقص برة الشاشة */}
+        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <Link href="/admin/dashboard" style={{ width: 36, height: 36, borderRadius: 999, background: '#fff', border: `1px solid ${C.line}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
             <ArrowRight style={{ width: 16, height: 16, color: C.sub }} />
           </Link>
