@@ -133,6 +133,32 @@ export default function AdminListingsPage() {
   }>(null)
   const [adderErr, setAdderErr] = useState<string | null>(null)
   const [adderProgress, setAdderProgress] = useState<string | null>(null)
+  /* 🧩 (٢٦/٨) محمد: «تاب ضيف اعلان اللي بتفتح من شغلي محتاجينها تكون نفس
+     الاتربيوت بتاعة الاضافة». بنجيب حقول التصنيف من نفس مصدر الويزارد
+     وفورم التعديل (/api/listing-drafts/attributes ← جدول attributes)،
+     والقيم بتتكتب في listing_values عن طريق admin_add_listing. */
+  type AdderAttr = { id: string; name_ar: string; field_key: string; field_type: string
+    options: unknown; unit: string | null; placeholder: string | null; is_required: boolean }
+  const [adderAttrs, setAdderAttrs] = useState<AdderAttr[]>([])
+  const [adderAttrVals, setAdderAttrVals] = useState<Record<string, string>>({})
+  const [adderAttrOther, setAdderAttrOther] = useState<Record<string, boolean>>({})
+  useEffect(() => {
+    const cid = adder?.category_id
+    if (!cid) { setAdderAttrs([]); return }
+    setAdderAttrVals({}); setAdderAttrOther({})
+    ;(async () => {
+      try {
+        const r = await fetch(`/api/listing-drafts/attributes?category_id=${cid}`, { cache: 'no-store' })
+        const j = await r.json()
+        setAdderAttrs(j?.success ? (j.attributes || []) : [])
+      } catch { setAdderAttrs([]) }
+    })()
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [adder?.category_id])
+  const attrOptions = (a: AdderAttr): string[] => {
+    const raw = Array.isArray(a.options) ? a.options : []
+    return raw.map((o: unknown) => typeof o === 'string' ? o : String((o as { value?: string; label?: string })?.label ?? (o as { value?: string })?.value ?? '')).filter(Boolean)
+  }
   const [ownerErr, setOwnerErr] = useState<string | null>(null)
 
   /* 📥 (٢٥ أغسطس ٢٠٢٦) محمد: «الإعلانات اللي في /admin/listing-drafts
@@ -212,6 +238,8 @@ export default function AdminListingsPage() {
         p_seller_kind: adder.seller_kind,
         // 💰 (٢٥/٨) من غير سعر، النشر بيتوقف لكل الأقسام ما عدا العقارات
         p_price: adder.price.trim() ? Number(adder.price) : null,
+        // 🧩 (٢٦/٨) نفس أتربيوتات التصنيف — بتتكتب في listing_values
+        p_attributes: Object.fromEntries(Object.entries(adderAttrVals).filter(([, v]) => String(v).trim() !== '')),
       })
       const listingId = String(res?.id || '')
       if (!listingId) throw new Error('الإعلان اتخلق بس مافيش رقم')
@@ -940,6 +968,53 @@ export default function AdminListingsPage() {
           <input value={adder.price} onChange={(e) => setAdder({ ...adder, price: e.target.value.replace(/[^0-9.]/g, '') })}
             placeholder="مثال: 400000" inputMode="numeric"
             style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 16 }} />
+
+          {/* 🧩 (٢٦/٨) محمد: «محتاجينها تكون نفس الاتربيوت بتاعة الاضافة» —
+              حقول التصنيف نفسها (ماركة · موديل · سنة …) من جدول attributes،
+              والدروب داون فيها «أخرى…» = كتابة حرة زي كل الشاشات. */}
+          {adderAttrs.length > 0 && (
+            <div style={{ background: C.chip, borderRadius: 12, padding: 12, marginBottom: 16 }}>
+              <p style={{ fontSize: 12, fontWeight: 800, margin: '0 0 10px', color: C.ink }}>🧩 مواصفات {''}التصنيف</p>
+              {adderAttrs.map(a => {
+                const opts = attrOptions(a)
+                const val = adderAttrVals[a.field_key] ?? ''
+                const isOther = !!adderAttrOther[a.field_key]
+                return (
+                  <label key={a.id} style={{ display: 'block', marginBottom: 10 }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: C.sub }}>
+                      {a.name_ar}{a.is_required ? ' *' : ''}{a.unit ? ` (${a.unit})` : ''}
+                    </span>
+                    {opts.length > 0 && !isOther ? (
+                      <select value={opts.includes(val) ? val : ''}
+                        onChange={(e) => {
+                          if (e.target.value === '__other__') {
+                            setAdderAttrOther(o => ({ ...o, [a.field_key]: true }))
+                            setAdderAttrVals(v => ({ ...v, [a.field_key]: '' }))
+                          } else {
+                            setAdderAttrVals(v => ({ ...v, [a.field_key]: e.target.value }))
+                          }
+                        }}
+                        style={{ width: '100%', marginTop: 4, padding: 9, borderRadius: 10, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
+                        <option value="">— اختار —</option>
+                        {opts.map(o => <option key={o} value={o}>{o}</option>)}
+                        <option value="__other__">أخرى…</option>
+                      </select>
+                    ) : (
+                      <input
+                        value={val}
+                        type={a.field_type === 'number' ? 'number' : 'text'}
+                        inputMode={a.field_type === 'number' ? 'numeric' : undefined}
+                        placeholder={isOther ? 'اكتبها بنفسك…' : (a.placeholder || '')}
+                        autoFocus={isOther}
+                        onChange={(e) => setAdderAttrVals(v => ({ ...v, [a.field_key]: e.target.value }))}
+                        style={{ width: '100%', marginTop: 4, padding: 9, borderRadius: 10, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}
+                      />
+                    )}
+                  </label>
+                )
+              })}
+            </div>
+          )}
 
           {/* 🏷️ معرض ولا فرد — «لو معرض هنتعامل معاه B2B ولو إعلان يكون واضح» */}
           <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>نوع البائع *</label>

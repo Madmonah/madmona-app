@@ -1923,20 +1923,8 @@ async function createTask(a: { title: string; detail?: string; assignee_name?: s
       if (rpcErr) return { ok: false, error: 'مقدرش أسجّل المهمة', detail: rpcErr.message }
       const r = res as { ok?: boolean; error?: string; task_id?: string; task_date?: string } | null
       if (!r?.ok) return { ok: false, error: r?.error || 'مقدرش أسجّل المهمة' }
-      try {
-        const { data: prof } = await db.from('profiles').select('id').ilike('full_name', `%${assignee}%`).limit(1).maybeSingle()
-        const pid = (prof as { id?: string } | null)?.id
-        if (pid) {
-          await db.from('notification_queue').insert({
-            recipient_id: pid,
-            type: 'task_assigned',
-            title: '📋 مهمة جديدة ليك',
-            body: title.slice(0, 90),
-            url: '/account/work', // 📋 (٢٥/٨) المهام بقت في مكان واحد — «شغلي»
-            data: { icon: '/marid-icon-192.png' },
-          } as never)
-        }
-      } catch { /* best-effort */ }
+      // 🔔 (٢٦/٨) الإشعار بقى بيطلع من تريجر الداتابيز trg_notify_new_daily_task
+      // — مصدر واحد لأي مسار إضافة، فشيلنا النسخة المكررة من هنا.
       return {
         ok: true,
         task_id: r.task_id,
@@ -1963,28 +1951,8 @@ async function createTask(a: { title: string; detail?: string; assignee_name?: s
     .select('id')
     .single()
   if (error) return { ok: false, error: 'مقدرش أسجّل المهمة', detail: error.message }
-  // إشعار للمكلّف لو اتحدد وله حساب على مضمونة (best-effort — مايوقفش الرد)
-  if (a.assignee_name?.trim()) {
-    try {
-      const { data: prof } = await db
-        .from('profiles')
-        .select('id')
-        .ilike('full_name', a.assignee_name.trim())
-        .limit(1)
-        .maybeSingle()
-      const pid = (prof as { id?: string } | null)?.id
-      if (pid) {
-        await db.from('notification_queue').insert({
-          recipient_id: pid,
-          type: 'task_assigned',
-          title: '📋 مهمة جديدة ليك',
-          body: title.slice(0, 90),
-          url: '/account/work', // 📋 (٢٥/٨) المهام بقت في مكان واحد — «شغلي»
-          data: { icon: '/marid-icon-192.png' },
-        } as never)
-      }
-    } catch { /* best-effort */ }
-  }
+  // 🔔 (٢٦/٨) إشعار المكلّف بقى من تريجر الداتابيز trg_notify_new_flow_task
+  // — بيغطي أي مسار بيضيف flow_task مش بس الشات، فشيلنا النسخة من هنا.
   return {
     ok: true,
     task_id: (data as { id: string }).id,

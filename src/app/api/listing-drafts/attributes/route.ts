@@ -23,15 +23,19 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const slug = url.searchParams.get('slug');
-    if (!slug) {
-      return NextResponse.json({ success: false, error: 'slug required' }, { status: 400 });
+    // 🧩 (٢٦/٨) محمد: «تاب ضيف إعلان محتاجينها تكون نفس الاتربيوت بتاعة
+    // الإضافة» — مودال «ضيف إعلان» في /admin/listings عنده category_id مش
+    // slug، فالراوت بقى يقبل الاتنين. نفس المصدر لكل شاشات الإضافة.
+    const categoryId = url.searchParams.get('category_id');
+    if (!slug && !categoryId) {
+      return NextResponse.json({ success: false, error: 'slug or category_id required' }, { status: 400 });
     }
 
-    // Resolve category_id from slug
+    // Resolve category from slug or id
     const { data: category, error: catErr } = await supabase
       .from('categories')
       .select('id, parent_id')
-      .eq('slug', slug)
+      .eq(categoryId ? 'id' : 'slug', categoryId || slug)
       .limit(1)
       .single();
 
