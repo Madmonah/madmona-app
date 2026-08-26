@@ -139,6 +139,26 @@ export default function AdminListingsPage() {
      والقيم بتتكتب في listing_values عن طريق admin_add_listing. */
   type AdderAttr = { id: string; name_ar: string; field_key: string; field_type: string
     options: unknown; unit: string | null; placeholder: string | null; is_required: boolean }
+  /* 🌳 (٢٦/٨) محمد: «لسة تاب الاضافة بتاعت الاعلان اللي في شغلي فيها مشكلة».
+     التصنيفات كانت من admin_listings_facets (فلاتر البحث) — يعني بس اللي
+     عليه إعلانات، مسطحة، والأب مش الورقة فالأتربيوتات ماكانتش بتظهر.
+     دلوقتي من /api/listing-drafts/categories — نفس شجرة الويزارد بالظبط. */
+  type AddCat = { id: string; name: string; group: string }
+  const [addCats, setAddCats] = useState<AddCat[]>([])
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const r = await fetch('/api/listing-drafts/categories', { cache: 'no-store' })
+        const j = await r.json()
+        if (j?.success) setAddCats(j.options || [])
+      } catch { /* الزرار هيفضل disabled */ }
+    })()
+  }, [])
+  const addCatGroups = useMemo(() => {
+    const g: Record<string, AddCat[]> = {}
+    for (const c of addCats) (g[c.group] = g[c.group] || []).push(c)
+    return g
+  }, [addCats])
   const [adderAttrs, setAdderAttrs] = useState<AdderAttr[]>([])
   const [adderAttrVals, setAdderAttrVals] = useState<Record<string, string>>({})
   const [adderAttrOther, setAdderAttrOther] = useState<Record<string, boolean>>({})
@@ -209,18 +229,18 @@ export default function AdminListingsPage() {
      نفتح المودال أوتوماتيك — بس بعد ما التصنيفات تحمّل عشان يكون فيه اختيار. */
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (stage !== 'ready' || !facets?.categories?.length) return
+    if (stage !== 'ready' || !addCats.length) return
     const sp = new URLSearchParams(window.location.search)
     if (sp.get('add') === '1' && !adder) {
       setAdderErr(null)
       setAdder({
-        title: '', category_id: facets.categories[0]?.id || '',
+        title: '', category_id: addCats[0]?.id || '',
         city: '', owner_name: '', owner_phone: '', contact_phone: '',
         photos: [], publish: true, seller_kind: 'individual', price: '',
       })
       window.history.replaceState({}, '', '/admin/listings')
     }
-  }, [stage, facets, adder])
+  }, [stage, addCats, adder])
 
   async function saveNewListing() {
     if (!adder) return
@@ -509,12 +529,12 @@ export default function AdminListingsPage() {
           </button>
           <button
             onClick={() => { setAdderErr(null); setAdder({
-              title: '', category_id: facets?.categories?.[0]?.id || '',
+              title: '', category_id: addCats[0]?.id || '',
               city: '', owner_name: '', owner_phone: '', contact_phone: '',
               photos: [], publish: true, seller_kind: 'individual', price: '',
             }) }}
-            disabled={!facets?.categories?.length}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.green, color: '#fff', padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, border: 'none', cursor: facets?.categories?.length ? 'pointer' : 'not-allowed' }}>
+            disabled={!addCats.length}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.green, color: '#fff', padding: '8px 14px', borderRadius: 12, fontSize: 13, fontWeight: 700, border: 'none', cursor: addCats.length ? 'pointer' : 'not-allowed' }}>
             <Plus style={{ width: 16, height: 16 }} /> ضيف إعلان
           </button>
         </div>
@@ -952,9 +972,15 @@ export default function AdminListingsPage() {
             style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 12 }} />
 
           <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>التصنيف *</label>
+          {/* 🌳 (٢٦/٨) نفس شجرة الويزارد — مجموعات نضيفة، والاختيار على
+              الورقة اللي عليها الأتربيوتات (مش قايمة فلاتر البحث المسطحة) */}
           <select value={adder.category_id} onChange={(e) => setAdder({ ...adder, category_id: e.target.value })}
             style={{ width: '100%', padding: 10, borderRadius: 12, border: `1px solid ${C.line}`, fontSize: 13, fontFamily: 'inherit', marginBottom: 12 }}>
-            {(facets?.categories || []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {Object.entries(addCatGroups).map(([group, cats]) => (
+              <optgroup key={group} label={group}>
+                {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </optgroup>
+            ))}
           </select>
 
           <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>المدينة</label>
