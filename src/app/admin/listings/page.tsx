@@ -1166,7 +1166,11 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(3px)' }} />
       <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
-        <div dir="rtl" style={{ background: '#fff', borderRadius: 24, padding: 24, maxWidth: 420, width: '100%', pointerEvents: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+        {/* 📱 (٢٦/٨) محمد: «بيفتح شاشة مفيهاش تكملة» — فورم الإضافة بقى أطول
+            من شاشة الموبايل والمودال ماكانش بيسكرول، فكل اللي تحت الحد
+            (الصور والنشر وزرار الحفظ) كان مقصوص ومستحيل توصله.
+            maxHeight + overflowY = المودال بيسكرول جوّاه على أي شاشة. */}
+        <div dir="rtl" style={{ background: '#fff', borderRadius: 24, padding: 24, maxWidth: 420, width: '100%', pointerEvents: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {children}
         </div>
       </div>
