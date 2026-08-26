@@ -763,3 +763,8 @@ git add sql/ && git commit
 ## 🧑‍💼 موظفين الأبليكيشن في شاشات /admin (٢٥ أغسطس ٢٠٢٦)
 - محمد: «اعلانات شهد لسة مش بتنزل مع انها ضايفاها من تاب شغلي». السبب: middleware بيحرس /admin و/api/admin بكوكي اللوحة بس، وجلسة الأبليكيشن في localStorage (الـedge مايشوفهاش) — فأي موظف داخل من شغلي كان بياخد 401/ريدايركت وكل adminRpc بيفشل.
 - **القاعدة**: أي شاشة أدمن المفروض موظفين الأبليكيشن يستخدموها لازم: (١) استثناء pass-through في middleware للصفحة، (٢) قبول توكن Supabase في مسارات الـAPI بتاعتها عبر `isListingsStaffRequest` (adminGate — edge-safe، بيتأكد بـ`is_listings_staff_uid`)، (٣) الفرونت يبعت التوكن بـ`staffAuthHeaders()` من adminRpc. الدوال المسموحة للـstaff في /api/admin/rpc محصورة في `LISTINGS_STAFF_ALLOWED` — متضفش دالة فلوس/صلاحيات هناك أبدًا.
+
+
+## 🔌 النشر الأوتوماتيكي لدرافتات الويزارد (٢٥ أغسطس ٢٠٢٦)
+- محمد: «الاعلان من ضيف ويزارد مش بيضاف عايز اعرف ليه مش بيتنشر». السبب: دالة `auto_publish_submitted_draft()` كانت موجودة من غير تريجر متركب على `listing_drafts` — اتركب `trg_auto_publish_submitted_draft` (AFTER INSERT OR UPDATE OF status). الدالة بترفع نفسها service جوّه الترانزاكشن قبل `publish_unclaimed_draft` عشان ترجرات النشر على listings ماترفضش لو الإدخال جه من سياق من غير هوية (كرون/ويبهوك).
+- **قاعدة**: أي دالة تريجر بتتكتب لازم نتأكد إن التريجر نفسه متركب فعلًا (`select tgname from pg_trigger`) — دي تالت حاجة «مكتوبة بس مش موصّلة» نكتشفها (كرونات pg_cron مرتين + التريجر ده).
