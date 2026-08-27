@@ -199,7 +199,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'مفيش إعلانات باسم الوكيل بالرقم ده', phone }, { status: 404 })
     }
 
-    const bizName = (body.business_name || '').trim() || `مورد ${local}`
+    // 🔒 (٢٧ أغسطس ٢٠٢٦) كان بيحط رقم موبايل المورد كاسم تجاري ظاهر علنًا على
+  //     الماركت بليس («مورد 01xxxxxxxxx») = تسريب رقم شخصي لأي زائر.
+  //     دلوقتي اسم محايد لحد ما المورد يكتب اسمه الحقيقي.
+  const bizName = (body.business_name || '').trim() || 'مورد على مضمونة'
 
     if (body.dry_run) {
       return NextResponse.json({

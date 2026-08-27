@@ -22,6 +22,7 @@ export default function ChatHub() {
   const [maridPreview, setMaridPreview] = useState('اكبس واتكلّم مع المارد — رد فوري ٢٤/٧')
   const [maridTime, setMaridTime] = useState('')
   const [rooms, setRooms] = useState<Room[]>([])
+  const [q, setQ] = useState('')   // 🔍 بحث في قايمة المحادثات
   const [loggedIn, setLoggedIn] = useState(false)
   const [uid, setUid] = useState<string | null>(null)
   const [hidden, setHidden] = useState<Set<string>>(new Set())
@@ -86,6 +87,15 @@ export default function ChatHub() {
     try { await supabaseBrowser.from('chat_hidden_rooms').insert({ user_id: uid, room_id: roomId }) } catch {}
   }
 
+  const nq = q.trim().toLowerCase()
+
+  const visibleRooms = rooms
+
+    .filter((r) => !hidden.has(r.id))
+
+    .filter((r) => !nq || (r.name || '').toLowerCase().includes(nq) || (r.last || '').toLowerCase().includes(nq))
+
+
   return (
     <div dir="rtl" style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: '#FAFAF7', fontFamily: "var(--font-cairo), system-ui, sans-serif" }}>
       {/* هوية 4b: هيدر غامق متدرّج زي شات المارد */}
@@ -119,6 +129,25 @@ export default function ChatHub() {
               دلوقتي شاشة بتفتح في مكانها. */}
           <button onClick={() => setShowNewDM(true)} style={{ background: '#F1EEE6', color: '#059669', borderRadius: 999, padding: '5px 12px', fontSize: 11.5, fontWeight: 800, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>➕ محادثة جديدة</button>
         </div>
+
+        {/* 🔍 (٢٧ أغسطس ٢٠٢٦) محمد: «شات مضمونة مفيهوش سيرش في أي مكان».
+            البحث كان موجود جوّه المحادثة نفسها بس (chat/marid) — مش في
+            قايمة المحادثات، فلو عندك ٣٠ محادثة مفيش طريقة توصل لواحدة
+            غير بالتمرير. بيدوّر في اسم الشخص وفي آخر رسالة. */}
+        <div style={{ padding: '4px 16px 10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F4F1E8', borderRadius: 12, padding: '9px 12px' }}>
+            <span style={{ fontSize: 14, opacity: 0.6 }}>🔍</span>
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="دوّر على محادثة أو اسم…"
+              style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13.5, fontWeight: 600, color: '#14231E', fontFamily: 'inherit' }}
+            />
+            {q && (
+              <button onClick={() => setQ('')} aria-label="مسح البحث" style={{ border: 'none', background: 'transparent', color: '#8A9690', fontSize: 15, cursor: 'pointer', lineHeight: 1 }}>✕</button>
+            )}
+          </div>
+        </div>
         {/* (31 Jul 2026) هيكل مؤقت بدل رسالة «مفيش محادثات» وهي لسه بتحمّل —
             كانت بتقول للمستخدم إنه مالوش محادثات قبل ما الداتا توصل أصلاً. */}
         {loading ? (
@@ -139,8 +168,12 @@ export default function ChatHub() {
               ? <>لسه مفيش محادثات خاصة.<br />اكبس ➕ محادثة جديدة، أو ابعت لينك دعوة لصاحبك من 📕 دفترك.</>
               : 'سجّل دخولك علشان تشوف محادثاتك.'}
           </div>
+        ) : visibleRooms.length === 0 ? (
+          <div style={{ padding: '6px 16px 16px', fontSize: 13, color: '#8A9690', fontWeight: 600 }}>
+            مفيش محادثة بالاسم ده — جرّب كلمة تانية.
+          </div>
         ) : (
-          rooms.filter((r) => !hidden.has(r.id)).map((r) => (
+          visibleRooms.map((r) => (
             <div key={r.id} style={{ ...rowStyle, paddingLeft: 6 }}>
               <Link href={`/chat/team?room=${r.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, textDecoration: 'none' }}>
                 <div style={{ ...avatarStyle, background: 'radial-gradient(circle at 35% 30%,#2FA084,#059669)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 18, fontWeight: 800 }}>{(r.name || '؟').trim().charAt(0)}</div>

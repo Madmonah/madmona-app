@@ -215,7 +215,10 @@ export async function GET(req: Request) {
       const prof = await ensureProfile(supa, phone)
       if (!prof) { results.push({ phone, error: 'no_profile' }); continue }
 
-      const bizName = group[0].contact_name || `مورد ${prof.local}`
+      // 🔒 (٢٧ أغسطس ٢٠٢٦) كان بيحط رقم موبايل المورد كاسم تجاري ظاهر علنًا على
+  //     الماركت بليس («مورد 01xxxxxxxxx») = تسريب رقم شخصي لأي زائر.
+  //     دلوقتي اسم محايد لحد ما المورد يكتب اسمه الحقيقي.
+    const bizName = group[0].contact_name || 'مورد على مضمونة'
 
       // supplier: موجود ولا نعمله — idempotent.
       // FIX (22 يوليو 2026): كان select-then-insert بيقع بـduplicate key على
