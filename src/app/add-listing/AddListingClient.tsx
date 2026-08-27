@@ -1,6 +1,8 @@
 'use client';
 
 import { safeStorage } from '@/lib/safe-storage'
+import { useT } from '@/lib/i18n/LanguageProvider'
+import { catNameFor, attrNameFor } from '@/lib/i18n/catName'
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -300,6 +302,7 @@ function AddListingPageInner({
   dbExtraCategories: MainCategory[];
   beautySchemas: Record<string, BeautySchema>;
 }) {
+  const { t } = useT()
   const router = useRouter();
   const params = useSearchParams();
 
@@ -318,7 +321,7 @@ function AddListingPageInner({
   // mokawalat we mfish category picker".
   const [pendingResume, setPendingResume] = useState<{ step: Step; categorySlug?: string } | null>(null);
 
-  // Phase G+ (May 18 2026): tracks "تغيير الفئة" clicks. When this changes,
+  // Phase G+ (May 18 2026): tracks "{t('al.change_cat')}" clicks. When this changes,
   // StepCategory resets to mains view (instead of resuming at the sub-list of
   // the previously selected main — which was the bug Mohamed reported:
   // "لو دوست بالغلط على شاليه وحبيت ارجع لشقة مش بعرف").
@@ -501,7 +504,7 @@ function AddListingPageInner({
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
-        setErrors({ form: json.error || 'حصل خطأ، حاول تاني' });
+        setErrors({ form: json.error || t('al.err_generic') });
         return null;
       }
       const newToken: string | null = json.token || token || null;
@@ -515,7 +518,7 @@ function AddListingPageInner({
       setDraft({ ...body, claim_token: newToken || undefined });
       return newToken;
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'حصل خطأ، حاول تاني';
+      const msg = e instanceof Error ? e.message : t('al.err_generic');
       setErrors({ form: msg });
       return null;
     } finally {
@@ -592,25 +595,25 @@ function AddListingPageInner({
       <header className="px-5 pt-6 pb-4 border-b border-[#E5E5E0]">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <div className="flex items-center gap-3">
-            <div className="text-2xl font-bold tracking-tight">مضمونة</div>
+            <div className="text-2xl font-bold tracking-tight">{t('al.brand')}</div>
             <span className="text-xs text-[#059669] uppercase tracking-widest">MADMONA</span>
           </div>
           <button
             type="button"
             onClick={() => {
-              if (step > 1 && !window.confirm('متأكد إنك عايز تسيب المنتج؟ اللي كتبته محفوظ وتقدر تكمّله بعدين.')) return;
+              if (step > 1 && !window.confirm(t('al.leave_confirm'))) return;
               window.location.href = '/';
             }}
             className="text-xs text-gray-600 hover:text-[#1A2E26]"
           >
-            ← الرئيسية
+            {t('al.home')}
           </button>
         </div>
         <h1 className="text-xl font-semibold mt-5 max-w-2xl mx-auto">
-          ضيف منتجك في 60 ثانية
+          {t('al.hero')}
         </h1>
         <p className="text-sm text-gray-600 mt-1 max-w-2xl mx-auto">
-          خطوة واحدة من 5 — مش لازم تعمل حساب دلوقتي
+          {t('al.hero_sub')}
         </p>
 
         {/* Progress bar */}
@@ -622,7 +625,7 @@ function AddListingPageInner({
             />
           </div>
           <div className="text-xs text-gray-500 mt-2 text-center">
-            خطوة {step} من 5
+            {t('al.step_of', { n: step })}
           </div>
         </div>
       </header>
@@ -659,22 +662,22 @@ function AddListingPageInner({
                 className="flex-1 text-center py-2.5 px-3 rounded-xl bg-white text-[#1A2E26] text-sm font-bold shadow-sm cursor-default"
                 aria-current="page"
               >
-                ✍️ اكتبها بنفسك
+                {t('al.self')}
               </span>
               <a
                 href="/chat/marid?intent=add-listing"
                 onClick={() => trackEvent({ event_type: 'add_listing_via_marid_click', metadata: { step } })}
                 className="flex-1 text-center py-2.5 px-3 rounded-xl text-[#059669] text-sm font-bold no-underline hover:bg-white/70 transition-colors"
               >
-                🧞 ضيّفها مع المارد
+                {t('al.marid')}
               </a>
             </div>
             <p className="text-xs text-gray-500 -mt-4 mb-6 text-center">
-              مش فاضي تملا الفورم؟ ابعت التفاصيل أو صور المنيو/البروشور للمارد في{' '}
+              {t('al.marid_hint_1')}{' '}
               <a href="/chat/marid?intent=add-listing" className="text-[#059669] font-bold underline">
-                شات مضمونة
+                {t('al.marid_chat')}
               </a>{' '}
-              وهو يعملهالك.
+              {t('al.marid_hint_2')}
             </p>
 
             {/* 🧹 (٢٩ يوليو ٢٠٢٦ — محمد) شريط «ارفع إعلاناتك بالجملة» اتشال من فوق خالص. */}
@@ -711,8 +714,8 @@ function AddListingPageInner({
               // Phase F (May 18 2026): validation moved INTO StepBasics so it
               // can also enforce required category-specific attributes.
               // Parent only persists + advances when child says patch is ready.
-              const t = await persist(patch);
-              if (t) next();
+              const ok = await persist(patch);
+              if (ok) next();
             }}
             onBack={back}
             onChangeCategory={() => {
@@ -734,12 +737,12 @@ function AddListingPageInner({
             beautySchemas={beautySchemas}
             onSubmit={async (patch) => {
               if (!patch.price || patch.price <= 0) {
-                setErrors({ price: 'حط سعر صحيح من فضلك' });
+                setErrors({ price: t('al.err_price') });
                 return;
               }
               // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
-              const t = await persist(patch);
-              if (t) next();
+              const ok = await persist(patch);
+              if (ok) next();
             }}
             onBack={back}
             onChangeCategory={() => {
@@ -810,7 +813,7 @@ function AddListingPageInner({
 
       {/* شريط الضمانات السريع فضل زي ما هو، وتحته الفوتر الموحّد (١١ أغسطس ٢٠٢٦) */}
       <p className="px-5 pb-4 mt-4 max-w-2xl mx-auto text-center text-xs text-gray-500">
-        ✅ الإضافة والنشر مجانًا • 🛡 حماية كاملة • 💰 دفع سريع • 📞 دعم 24/7
+        {t('al.footer_perks')}
       </p>
       <SiteFooter />
     </div>
@@ -860,10 +863,11 @@ function StepCategory({
   // اللينك بقى يبعت ?track= والويزارد يفتح على نفس التاب اللي المستخدم جاي منه.
   initialTrack?: string | null;
   // Phase G+ (May 18 2026): when this number changes, StepCategory resets to
-  // the mains view (clears selectedMain). Used by "تغيير الفئة" button so the
+  // the mains view (clears selectedMain). Used by "{t('al.change_cat')}" button so the
   // user can quickly switch between mains without drilling out of subs first.
   resetSignal?: number;
 }) {
+  const { t, locale } = useT()
   const startingMainSlug = useMemo(() => {
     if (!value) return null;
     const asMain = categories.find((m) => m.slug === value);
@@ -940,8 +944,8 @@ function StepCategory({
   if (!main) {
     return (
       <section>
-        <h2 className="text-lg font-semibold mb-1">إيه اللي عايز تضيفه؟</h2>
-        <p className="text-sm text-gray-500 mb-5">اختار النوع وابدأ — الإضافة مجانية وبتاخد دقيقة</p>
+        <h2 className="text-lg font-semibold mb-1">{t('al.s1_title')}</h2>
+        <p className="text-sm text-gray-500 mb-5">{t('al.s1_sub')}</p>
 
         {/* Track tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">
@@ -980,7 +984,7 @@ function StepCategory({
               onChange={(e) => { if (e.target.value) onSelect(e.target.value) }}
               className="w-full p-3.5 rounded-xl border border-[#E5E5E0] bg-white text-sm font-semibold text-gray-800"
             >
-              <option value="" disabled>⚡ اختار نشاطك بسرعة من القايمة…</option>
+              <option value="" disabled>{t('al.quick_pick')}</option>
               {/* 🧹 (٢٥ أغسطس ٢٦) محمد: «موضوع اختار نشاطك من القايمة ده في عك
                   كتير وحاجات متكررة — نخليها بنفس النظام الي موجود علي الموبايل».
                   المشكلة كانت: optgroup لكل تصنيف رئيسي (٦٥ مجموعة!)، والقسم
@@ -1022,7 +1026,7 @@ function StepCategory({
                     <optgroup key={g.key} label={`${g.emoji} ${g.name}`}>
                       {g.roots.flatMap((r) => [
                         <option key={r.slug} value={r.slug}>
-                          {r.emoji ? r.emoji + ' ' : ''}{r.name_ar}{r.subs.length > 0 ? ' (عام)' : ''}
+                          {r.emoji ? r.emoji + ' ' : ''}{r.name_ar}{r.subs.length > 0 ? ` (${t('al.general')})` : ''}
                         </option>,
                         ...r.subs.map((s) => (
                           <option key={s.slug} value={s.slug}>
@@ -1039,7 +1043,7 @@ function StepCategory({
 
         {visibleMains.length === 0 ? (
           <div className="text-center py-12 text-sm text-gray-500">
-            مفيش تصنيفات في التبويب ده دلوقتي
+            {t('al.no_cats')}
           </div>
         ) : (() => {
           // 🗂️ (Jul 24 2026 — محمد: «عايز أسلوب عرض أضف يبقى شبه الماركت بليس»)
@@ -1127,7 +1131,7 @@ function StepCategory({
                     <span className="text-2xl">{g.emoji}</span>
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-extrabold text-gray-800 leading-tight">{g.name_ar}</span>
-                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{g.roots.length} قسم</span>
+                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{t('al.n_sections', { n: g.roots.length })}</span>
                     </span>
                   </button>
                 ))}
@@ -1177,7 +1181,7 @@ function StepCategory({
                   onClick={() => onSelect(activeRoot.slug)}
                   className="w-full py-2.5 rounded-xl border border-dashed border-gray-300 text-[12px] font-bold text-gray-500 hover:bg-gray-50 transition-all"
                 >
-                  مش لاقي نوعك؟ اختار «{activeRoot.name_ar}» على العموم
+                  {t('al.not_found', { cat: catNameFor(activeRoot, locale) })}
                 </button>
               </div>
             );
@@ -1193,7 +1197,7 @@ function StepCategory({
                     onClick={() => { setPickGroup(null); setPickRoot(null); }}
                     className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
                   >
-                    ← كل الأقسام
+                    {t('al.all_sections')}
                   </button>
                   <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1">
                     <span>{showGroup.emoji}</span>
@@ -1216,7 +1220,7 @@ function StepCategory({
                     <div className="text-3xl mb-2">{r.emoji}</div>
                     <div className="font-semibold text-sm">{r.name_ar}</div>
                     {r.subs.length > 0 && (
-                      <div className="mt-1 text-[10px] font-bold text-gray-400">{r.subs.length} نوع ›</div>
+                      <div className="mt-1 text-[10px] font-bold text-gray-400">{t('al.n_types', { n: r.subs.length })}</div>
                     )}
                   </button>
                 ))}
@@ -1238,13 +1242,13 @@ function StepCategory({
         className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#34D399]/8 hover:bg-[#34D399]/12 border border-[#059669]/20 text-sm font-semibold text-[#059669] transition-colors"
       >
         <span className="text-base">→</span>
-        <span>اختار فئة تانية</span>
+        <span>{t('al.other_cat')}</span>
       </button>
       <h2 className="text-lg font-semibold mb-1">
         <span className="text-2xl me-2">{main.emoji}</span>
         {main.name_ar}
       </h2>
-      <p className="text-sm text-gray-500 mb-6">اختار النوع الأقرب لما عندك</p>
+      <p className="text-sm text-gray-500 mb-6">{t('al.pick_closest')}</p>
       <div className="grid grid-cols-2 gap-3">
         {main.subs.map((s) => {
           const appearsUnderMains = categories
@@ -1267,7 +1271,7 @@ function StepCategory({
               <div className="font-semibold text-sm">{s.name_ar}</div>
               {isCrossListed && (
                 <div className="mt-1.5 text-[10px] text-[#059669] font-bold leading-tight">
-                  هيظهر في: {appearsUnderMains.join(' + ')}
+                  {t('al.appears_in', { list: appearsUnderMains.join(' + ') })}
                 </div>
               )}
             </button>
@@ -1280,7 +1284,7 @@ function StepCategory({
 
 // =================================================
 // CATEGORY CHIP — shows selected category at top of step 2-5
-// with a "تغيير الفئة" button to return to step 1.
+// with a "{t('al.change_cat')}" button to return to step 1.
 // Added May 16 2026 (Mohamed: "اخترت شاليه وحبيت اغير لشقة مفيش زرار يرجعني").
 // =================================================
 function CategoryChip({
@@ -1292,6 +1296,7 @@ function CategoryChip({
   categories: MainCategory[];
   onChange: () => void;
 }) {
+  const { t } = useT()
   if (!slug) return null;
   // Try to match as a main category first
   const main = categories.find((m) => m.slug === slug);
@@ -1322,7 +1327,7 @@ function CategoryChip({
         onClick={onChange}
         className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white border border-[#059669]/30 text-xs text-[#059669] hover:bg-[#34D399]/5 font-bold whitespace-nowrap"
       >
-        تغيير الفئة
+        {t('al.change_cat')}
       </button>
     </div>
   );
@@ -1364,6 +1369,7 @@ function StepBasics({
   onChangeCategory: () => void;
   saving: boolean;
 }) {
+  const { t, locale } = useT()
   // Strip the placeholder so users don't see it pre-filled
   const initialTitle = draft.title && draft.title !== PLACEHOLDER_TITLE ? draft.title : '';
   const [title, setTitle] = useState(initialTitle);
@@ -1428,23 +1434,23 @@ function StepBasics({
       { id: 'ind', v: 'individual', label: indL, desc: indD },
       { id: 'biz', v: 'business', label: bizL, desc: bizD },
     ]);
-    if (hit('vehicle', 'tuktuk')) return two('👤 فرد', 'ببيع/بأجّر مركبتي الشخصية', '🏢 معرض / تاجر', 'بعرض مركبات بشكل مستمر');
-    if (hit('marine')) return two('👤 فرد', 'ببيع/بأجّر مركبي الشخصي', '⚓ مرسى / تاجر مراكب', 'بأجّر أو ببيع مراكب بشكل مستمر');
-    if (hit('propert')) return two('👤 مالك', 'ببيع/بأجّر عقاري الشخصي', '🏢 شركة عقارات / مطور / مكتب', 'بسوّق أو بطوّر عقارات بشكل مستمر');
+    if (hit('vehicle', 'tuktuk')) return two(t('al.who_individual'), t('al.d_vehicle_ind'), t('al.who_showroom'), t('al.d_vehicle_biz'));
+    if (hit('marine')) return two(t('al.who_individual'), t('al.d_marine_ind'), t('al.who_marina'), t('al.d_marine_biz'));
+    if (hit('propert')) return two(t('al.who_owner'), t('al.d_property_ind'), t('al.who_realestate'), t('al.d_property_biz'));
     if (hit('medical', 'clinic', 'doctor', 'dental')) return [
-      { id: 'ind', v: 'individual', label: '🩺 دكتور حر', desc: 'من غير عيادة — كشف منزلي أو أونلاين' },
-      { id: 'biz', v: 'business', label: '🏥 عيادة', desc: 'عيادة بتستقبل حالات' },
-      { id: 'multi', v: 'business', label: '🏥 مجمع عيادات', desc: 'أكتر من عيادة أو فرع', multi: true },
+      { id: 'ind', v: 'individual', label: t('al.who_doctor'), desc: t('al.d_doctor') },
+      { id: 'biz', v: 'business', label: t('al.who_clinic'), desc: t('al.d_clinic') },
+      { id: 'multi', v: 'business', label: t('al.who_clinics'), desc: t('al.d_clinics'), multi: true },
     ];
-    if (hit('education', 'course', 'school', 'teacher', 'lesson', 'nursery')) return two('👤 مدرس / شخص', 'بدرّس أو بدرّب بنفسي', '🏫 سنتر تعليمي', 'منشأة تعليمية بفريق');
-    if (hit('services-care', 'beauty', 'salon')) return two('👤 بشتغل لحسابي', 'بقدم الخدمة بنفسي', '💇 صالون / سنتر', 'منشأة بتقدم خدمات عناية');
-    if (hit('food', 'restaurant')) return two('👤 بشتغل من البيت', 'بطبخ وببيع لحسابي', '🍽️ مطعم / كافيه', 'مكان بيقدم أكل ومشروبات');
-    if (hit('equipment')) return two('👤 فرد', 'بأجّر معدة مملوكة ليا', '🏗️ شركة تأجير معدات', 'بأجّر معدات بشكل مستمر');
-    if (hit('tourism')) return two('👤 منظم مستقل', 'بنظم لحسابي', '🏢 شركة سياحة', 'بنظم رحلات وتجارب بشكل مستمر');
-    if (hit('event')) return two('👤 بشتغل لحسابي', 'بنظم بنفسي', '🎉 شركة تنظيم مناسبات', 'بنظم مناسبات بفريق شغّال');
-    if (hit('services')) return two('👤 بشتغل لحسابي', 'بقدم الخدمة بنفسي (فريلانسر)', '🏢 شركة / مكتب خدمات', 'بقدم الخدمة بفريق أو منشأة');
-    if (hit('shop', 'furniture', 'home-')) return two('👤 فرد', 'ببيع حاجتي الشخصية', '🏪 محل / متجر', 'عندي بضاعة بتتجدد باستمرار');
-    return two('👤 فرد', 'ببيع/بأجّر حاجتي الشخصية', '🏢 نشاط تجاري', 'عندي بضاعة أو خدمات شغّالة');
+    if (hit('education', 'course', 'school', 'teacher', 'lesson', 'nursery')) return two(t('al.who_teacher'), t('al.d_teacher'), t('al.who_center'), t('al.d_center'));
+    if (hit('services-care', 'beauty', 'salon')) return two(t('al.who_self'), t('al.d_service_self'), t('al.who_salon'), t('al.d_salon'));
+    if (hit('food', 'restaurant')) return two(t('al.who_home'), t('al.d_cook_home'), t('al.who_restaurant'), t('al.d_restaurant'));
+    if (hit('equipment')) return two(t('al.who_individual'), t('al.d_equip_ind'), t('al.who_equipment'), t('al.d_equip_biz'));
+    if (hit('tourism')) return two(t('al.who_organizer'), t('al.d_organizer'), t('al.who_tourism'), t('al.d_tourism'));
+    if (hit('event')) return two(t('al.who_self'), t('al.d_organize_self'), t('al.who_events'), t('al.d_events'));
+    if (hit('services')) return two(t('al.who_self'), t('al.d_freelancer'), t('al.who_office'), t('al.d_office'));
+    if (hit('shop', 'furniture', 'home-')) return two(t('al.who_individual'), t('al.d_shop_ind'), t('al.who_shop'), t('al.d_shop_biz'));
+    return two(t('al.who_individual'), t('al.d_generic_ind'), t('al.who_business'), t('al.d_business'));
   })();
   const [sellerChoice, setSellerChoice] = useState<string>(() =>
     (sellerOptions.find((o) => o.v === (draft.account_type === 'business' ? 'business' : 'individual')) || sellerOptions[0]).id
@@ -1495,9 +1501,9 @@ function StepBasics({
   // Fallback to original hardcoded values when meta is null (e.g. new categories
   // not yet filled, or DB read failure).
   const meta = getCategoryWizardMeta(draft.category_slug, categories);
-  const titlePh = meta.title_placeholder || 'مثلاً: شاليه في مراسي بحر مباشر، 4 غرف';
-  const descPh = meta.description_placeholder || 'إيه اللي بيميز اللي عندك؟ (المسبح، الإطلالة، الموقع...)';
-  const districtPh = meta.district_placeholder || 'مثلاً: مراسي، التجمع الخامس، الزمالك...';
+  const titlePh = meta.title_placeholder || t('al.title_ph');
+  const descPh = meta.description_placeholder || t('al.desc_ph');
+  const districtPh = meta.district_placeholder || t('al.district_ph');
 
   // Phase F: attributes state + lazy fetch.
   // 'addons' is owned by StepPricing (beauty add-ons) so we strip it out
@@ -1544,9 +1550,9 @@ function StepBasics({
   function handleNext() {
     const errs: Record<string, string> = {};
     if (!title || title.length < 5 || title === PLACEHOLDER_TITLE) {
-      errs.title = 'العنوان قصير، خليه على الأقل 5 حروف';
+      errs.title = t('al.err_title');
     }
-    if (!city) errs.city = 'اختار المحافظة';
+    if (!city) errs.city = t('al.err_city');
     // Required attributes
     for (const attr of attributes) {
       if (!attr.is_required) continue;
@@ -1557,7 +1563,7 @@ function StepBasics({
         v === '' ||
         (Array.isArray(v) && v.length === 0);
       if (isEmpty) {
-        errs[`attr_${attr.field_key}`] = `${attr.name_ar} مطلوب`;
+        errs[`attr_${attr.field_key}`] = t('al.err_required', { name: attrNameFor(attr, locale) });
       }
     }
     if (Object.keys(errs).length > 0) {
@@ -1586,14 +1592,14 @@ function StepBasics({
 
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-1">معلومات أساسية</h2>
-      <p className="text-sm text-gray-500 mb-6">عنوان ومكان وبس — الباقي اختياري</p>
+      <h2 className="text-lg font-semibold mb-1">{t('al.s2_title')}</h2>
+      <p className="text-sm text-gray-500 mb-6">{t('al.s2_sub')}</p>
 
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
 
       {/* 🏷️ (٢٤ أغسطس ٢٦) السؤال الصريح — معرض/نشاط ولا فرد */}
       <div className="mb-5">
-        <p className="text-sm font-semibold mb-2">إنت مين؟ *</p>
+        <p className="text-sm font-semibold mb-2">{t('al.who_are_you')}</p>
         <div className="flex gap-2">
           {sellerOptions.map((o) => (
             <button key={o.id} type="button"
@@ -1618,16 +1624,16 @@ function StepBasics({
               className="mt-1 w-4 h-4 accent-[#059669]"
             />
             <span className="text-sm">
-              <span className="font-semibold">عندك أكتر من فرع؟</span>
+              <span className="font-semibold">{t('al.multi_branch')}</span>
               <span className="block text-xs text-gray-500 mt-0.5">
-                لو نشاطك ليه أكتر من فرع، فعّل ده وأضفهم في نفس الإعلان.
+                {t('al.multi_branch_sub')}
               </span>
             </span>
           </label>
         </div>
       )}
 
-      <Field label="عنوان الإعلان" error={errors.title} required>
+      <Field label={t('al.f_title')} error={errors.title} required>
         <input
           type="text"
           value={title}
@@ -1637,13 +1643,13 @@ function StepBasics({
         />
       </Field>
 
-      <Field label="المحافظة/المنطقة" error={errors.city} required>
+      <Field label={t('al.f_city')} error={errors.city} required>
         <select
           value={city}
           onChange={(e) => setCity(e.target.value)}
           className={inputCls}
         >
-          <option value="">اختار</option>
+          <option value="">{t('al.choose')}</option>
           {CITIES.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
@@ -1658,13 +1664,13 @@ function StepBasics({
           onClick={() => setShowExtras(true)}
           className="w-full mb-4 py-3 rounded-xl border border-dashed border-[#059669]/40 text-sm font-semibold text-[#059669] hover:bg-[#34D399]/5 transition-colors"
         >
-          + وصف وتفاصيل المكان (اختياري)
+          {t('al.more_details')}
         </button>
       )}
 
       {showExtras && (
         <>
-          <Field label="وصف مختصر" error={errors.description}>
+          <Field label={t('al.f_desc')} error={errors.description}>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -1674,14 +1680,14 @@ function StepBasics({
             />
           </Field>
 
-          <Field label="الحي/المنطقة بالظبط" error={errors.district}>
+          <Field label={t('al.f_district')} error={errors.district}>
             {districtsList.length > 0 ? (
               <select
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
                 className={inputCls}
               >
-                <option value="">اختار الحي</option>
+                <option value="">{t('al.choose_district')}</option>
                 {districtsList.map((d) => (
                   <option key={d.id} value={d.name_ar}>{d.name_ar}</option>
                 ))}
@@ -1691,7 +1697,7 @@ function StepBasics({
                 type="text"
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                placeholder={loadingDistricts ? 'جاري تحميل الأحياء...' : districtPh}
+                placeholder={loadingDistricts ? t('al.loading_districts') : districtPh}
                 className={inputCls}
               />
             )}
@@ -1700,18 +1706,18 @@ function StepBasics({
           {/* 🗺️ العنوان — بيغذّي تبويب «الموقع» في صفحة الإعلان.
               كان ناقص خالص من الفورم ده، فـ٩٣٪ من الإعلانات المنشورة
               مالهاش تبويب موقع. (`ListingForm` بتاعة المورد بتسأله من زمان.) */}
-          <Field label="العنوان بالتفصيل" error={errors.address}>
+          <Field label={t('al.f_address')} error={errors.address}>
             <input
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="اسم الشارع والعلامة المميزة — بيظهر في تبويب «الموقع»"
+              placeholder={t('al.address_ph')}
               className={inputCls}
             />
           </Field>
 
           {/* 🗺️ الموقع على الخريطة — نفس المُلتقِط بتاع شاشة المورد */}
-          <Field label="الموقع على الخريطة">
+          <Field label={t('al.f_map')}>
             <LocationPicker
               value={{ latitude, longitude }}
               onChange={(v) => { setLatitude(v.latitude); setLongitude(v.longitude); }}
@@ -1726,15 +1732,15 @@ function StepBasics({
           Beauty 'addons' kept separate — owned by StepPricing. */}
       {loadingAttrs && (
         <div className="mt-6 text-sm text-gray-500 text-center">
-          ⏳ جاري تحميل تفاصيل التصنيف...
+          {t('al.loading_cat')}
         </div>
       )}
       {!loadingAttrs && attributes.length > 0 && (
         <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
-          <h3 className="text-base font-semibold mb-1">تفاصيل إضافية</h3>
+          <h3 className="text-base font-semibold mb-1">{t('al.extra_details')}</h3>
           <p className="text-xs text-gray-500 mb-5">
-            البيانات دي بتساعد العميل يلاقي إعلانك بسرعة وتزود الحجوزات.{' '}
-            <span className="text-[#059669] font-medium">المعلّمة بنجمة مطلوبة.</span>
+            {t('al.extra_sub')}{' '}
+            <span className="text-[#059669] font-medium">{t('al.starred_required')}</span>
           </p>
           {attributes.map(attr => (
             <AttributeFieldRenderer
@@ -1754,15 +1760,15 @@ function StepBasics({
           individual sales (sale-*) where branches make no sense. */}
       {isBusiness && !isSaleProduct && (
       <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
-        <h3 className="text-base font-semibold mb-1">عندك أكتر من فرع؟ (اختياري)</h3>
+        <h3 className="text-base font-semibold mb-1">{t('al.branches_title')}</h3>
         <p className="text-xs text-gray-500 mb-4">
-          ضيف فروعك هنا بدل ما تعمل إعلان لكل فرع لوحده — هتظهر كلها في نفس الإعلان.
+          {t('al.branches_sub')}
         </p>
 
         {branches.map((b, i) => (
           <div key={i} className="mb-4 p-4 rounded-xl bg-[#F5F4F0] border border-[#E5E5E0]">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-bold text-[#059669]">فرع {i + 1}</span>
+              <span className="text-sm font-bold text-[#059669]">{t('al.branch_n', { n: i + 1 })}</span>
               <button
                 type="button"
                 onClick={() => removeBranch(i)}
@@ -1775,7 +1781,7 @@ function StepBasics({
               type="text"
               value={b.name || ''}
               onChange={(e) => updateBranch(i, 'name', e.target.value)}
-              placeholder="اسم الفرع (مثلاً: فرع مدينة نصر)"
+              placeholder={t('al.branch_name_ph')}
               className={`${inputCls} mb-2`}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
@@ -1784,7 +1790,7 @@ function StepBasics({
                 onChange={(e) => updateBranch(i, 'city', e.target.value)}
                 className={inputCls}
               >
-                <option value="">المحافظة</option>
+                <option value="">{t('al.governorate')}</option>
                 {CITIES.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -1793,7 +1799,7 @@ function StepBasics({
                 type="tel"
                 value={b.phone || ''}
                 onChange={(e) => updateBranch(i, 'phone', e.target.value)}
-                placeholder="تليفون الفرع (اختياري)"
+                placeholder={t('al.branch_phone_ph')}
                 className={inputCls}
               />
             </div>
@@ -1801,7 +1807,7 @@ function StepBasics({
               type="text"
               value={b.address || ''}
               onChange={(e) => updateBranch(i, 'address', e.target.value)}
-              placeholder="العنوان بالتفصيل"
+              placeholder={t('al.f_address')}
               className={inputCls}
             />
           </div>
@@ -1812,7 +1818,7 @@ function StepBasics({
           onClick={addBranch}
           className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#2FA084] text-[#059669] text-sm font-semibold hover:bg-[#F0FAF7] transition"
         >
-          + ضيف فرع
+          {t('al.add_branch')}
         </button>
       </div>
       )}
@@ -1854,12 +1860,13 @@ function AttributeFieldRenderer({
   onChange: (v: unknown) => void;
   error?: string;
 }) {
+  const { t, locale } = useT()
   const helpText = attr.help_text ? (
     <p className="text-[11px] text-gray-500 mt-1">{attr.help_text}</p>
   ) : null;
 
   // 📝 (٢٥/٨/٢٠٢٦) محمد: «في حالة ان الماركة مش موجودة نضيفها تيكست —
-  //    أخرى = تيكست». أي select في الويزارد بقى فيه «أخرى…» بتفتح خانة
+  //    أخرى = تيكست». أي select في الويزارد بقى فيه «{t('al.other')}» بتفتح خانة
   //    كتابة حرة (نفس السلوك اللي في فورم التعديل — SelectWithOther).
   const selOptions = attr.options || [];
   const valueIsCustom =
@@ -1917,7 +1924,7 @@ function AttributeFieldRenderer({
                 : 'bg-white border-[#E5E5E0]'
             }`}
           >
-            ✓ نعم
+            {t('al.yes')}
           </button>
           <button
             type="button"
@@ -1928,7 +1935,7 @@ function AttributeFieldRenderer({
                 : 'bg-white border-[#E5E5E0]'
             }`}
           >
-            ✗ لا
+            {t('al.no')}
           </button>
         </div>
         {helpText}
@@ -1944,7 +1951,7 @@ function AttributeFieldRenderer({
         autoFocus
         value={valueIsCustom || typeof value === 'string' ? (value as string) : ''}
         onChange={(e) => onChange(e.target.value || undefined)}
-        placeholder={`اكتب ${attr.name_ar}`}
+        placeholder={t('al.write_ph', { name: attrNameFor(attr, locale) })}
         className={inputCls + ' mt-2 border-[#059669]/40'}
       />
     ) : null;
@@ -1976,7 +1983,7 @@ function AttributeFieldRenderer({
                   : 'bg-white border-[#E5E5E0]'
               }`}
             >
-              أخرى…
+              {t('al.other')}
             </button>
           </div>
           {otherInput}
@@ -1994,11 +2001,11 @@ function AttributeFieldRenderer({
           }}
           className={inputCls}
         >
-          <option value="">اختار</option>
+          <option value="">{t('al.choose')}</option>
           {options.map((opt) => (
             <option key={opt.key} value={opt.key}>{opt.label_ar}</option>
           ))}
-          <option value="__other">أخرى…</option>
+          <option value="__other">{t('al.other')}</option>
         </select>
         {otherInput}
         {helpText}
@@ -2035,7 +2042,7 @@ function AttributeFieldRenderer({
         </div>
         {selected.length > 0 && (
           <p className="text-[11px] text-gray-500 mt-1.5">
-            {selected.length} مختار
+            {t('al.n_selected', { n: selected.length })}
           </p>
         )}
         {helpText}
@@ -2083,6 +2090,7 @@ function MenuBuilderStep({
   onChangeCategory: () => void;
   saving: boolean;
 }) {
+  const { t } = useT()
   const initialItems = (draft.attributes?.menu_items as MenuItem[] | undefined) || [];
   const [items, setItems] = useState<MenuItem[]>(
     initialItems.length > 0
@@ -2177,7 +2185,7 @@ function MenuBuilderStep({
       });
       setExcelMsg(`✅ اتضاف ${parsed.length} صنف من الشيت${skipped > 0 ? ` (${skipped} صف اتخطى)` : ''}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'مقدرتش أقرأ الملف');
+      setError(err instanceof Error ? err.message : t('al.err_read_file'));
     } finally {
       setExcelBusy(false);
       e.target.value = '';
@@ -2224,10 +2232,10 @@ function MenuBuilderStep({
       if (json.url) {
         updateItem(idx, { photo_url: json.url });
       } else {
-        setError('تعذر تحميل الصورة، حاول تاني');
+        setError(t('al.err_upload'));
       }
     } catch {
-      setError('خطأ في الاتصال');
+      setError(t('al.err_conn'));
     } finally {
       setUploadingIdx(null);
       e.target.value = ''; // allow same-file re-upload
@@ -2237,7 +2245,7 @@ function MenuBuilderStep({
   function handleSubmit() {
     const valid = items.filter((it) => it.name_ar.trim().length > 0 && it.price > 0);
     if (valid.length === 0) {
-      setError('لازم تضيف صنف واحد على الأقل بـ اسم وسعر');
+      setError(t('al.err_one_item'));
       return;
     }
     setError('');
@@ -2253,20 +2261,20 @@ function MenuBuilderStep({
   return (
     <section>
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
-      <h2 className="text-lg font-semibold mb-1">🍽️ أضف الأصناف</h2>
-      <p className="text-sm text-gray-500 mb-1">ضيف أصناف المنيو اللي بتقدمها</p>
+      <h2 className="text-lg font-semibold mb-1">{t('al.s3_menu_title')}</h2>
+      <p className="text-sm text-gray-500 mb-1">{t('al.s3_menu_sub')}</p>
       <p className="text-xs text-[#059669] mb-4 font-medium">
-        💡 ابدأ بـ 5 أصناف على الأقل عشان العميل يلاقي ليه اختيارات
+        {t('al.s3_menu_hint')}
       </p>
 
       {/* Jul 5 2026: Excel bulk import — the whole menu in one sheet */}
       <div className="mb-5 rounded-2xl border-2 border-dashed border-[#059669]/35 bg-[#34D399]/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xl">📊</span>
-          <p className="text-sm font-bold text-[#059669]">المنيو كله جاهز عندك؟ ارفعه Excel مرة واحدة</p>
+          <p className="text-sm font-bold text-[#059669]">{t('al.excel_menu_title')}</p>
         </div>
         <p className="text-[11px] text-gray-500 mb-3 leading-relaxed">
-          الأعمدة: الاسم · القسم · الوصف · السعر · الأحجام (مثال: صغير:90 | وسط:120 | كبير:150) · رابط الصورة
+          {t('al.excel_menu_cols')}
         </p>
         <div className="flex gap-2">
           <button
@@ -2274,7 +2282,7 @@ function MenuBuilderStep({
             onClick={downloadMenuTemplate}
             className="flex-1 py-2.5 rounded-xl border border-[#059669]/40 text-[#059669] text-xs font-bold bg-white"
           >
-            ⬇️ نزّل القالب
+            {t('al.download_template')}
           </button>
           <button
             type="button"
@@ -2282,7 +2290,7 @@ function MenuBuilderStep({
             disabled={excelBusy}
             className="flex-1 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-xs font-bold disabled:opacity-60"
           >
-            {excelBusy ? '...جاري القراءة' : '⬆️ ارفع الشيت'}
+            {excelBusy ? t('al.reading') : t('al.upload_sheet')}
           </button>
           <input
             ref={excelInputRef}
@@ -2303,7 +2311,7 @@ function MenuBuilderStep({
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-bold text-[#059669]">
-                صنف #{idx + 1}
+                {t('al.item_n', { n: idx + 1 })}
               </span>
               {items.length > 1 && (
                 <button
@@ -2311,17 +2319,17 @@ function MenuBuilderStep({
                   onClick={() => removeItem(idx)}
                   className="text-xs text-red-600 hover:text-red-700 font-semibold"
                 >
-                  حذف ✕
+                  {t('al.delete_x')}
                 </button>
               )}
             </div>
 
-            <Field label="اسم الصنف" required>
+            <Field label={t('al.f_item_name')} required>
               <input
                 type="text"
                 value={item.name_ar}
                 onChange={(e) => updateItem(idx, { name_ar: e.target.value })}
-                placeholder="مثلاً: برجر كلاسيك"
+                placeholder={t('al.item_name_ph')}
                 className={inputCls}
               />
             </Field>
@@ -2330,7 +2338,7 @@ function MenuBuilderStep({
             {item.sizes && item.sizes.length > 0 && (
               <div className="mb-3 -mt-1">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-gray-400">الأحجام:</span>
+                  <span className="text-[10px] font-bold text-gray-400">{t('al.sizes')}</span>
                   {item.sizes.map((s, si) => (
                     <span key={si} className="text-[10px] font-bold bg-[#34D399]/10 text-[#059669] px-2 py-0.5 rounded-full">
                       {s.name_ar} {s.price}
@@ -2341,17 +2349,17 @@ function MenuBuilderStep({
                     onClick={() => updateItem(idx, { sizes: undefined })}
                     className="text-[10px] font-bold text-red-500 mr-1"
                   >
-                    شيل الأحجام ✕
+                    {t('al.remove_sizes')}
                   </button>
                 </div>
                 {item.category && (
-                  <p className="text-[10px] font-bold text-[#2FA084] mt-1">القسم: {item.category}</p>
+                  <p className="text-[10px] font-bold text-[#2FA084] mt-1">{t('al.section_label', { name: item.category })}</p>
                 )}
               </div>
             )}
 
             {/* Mohamed May 30 2026: photo upload per menu item */}
-            <Field label="صورة الصنف (اختياري)">
+            <Field label={t('al.f_item_photo')}>
               <div className="flex items-center gap-3">
                 {item.photo_url ? (
                   <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#E5E5E0] flex-shrink-0">
@@ -2376,22 +2384,22 @@ function MenuBuilderStep({
                       disabled={uploadingIdx === idx}
                     />
                     {uploadingIdx === idx ? (
-                      <span className="text-[10px] text-gray-500">جاري...</span>
+                      <span className="text-[10px] text-gray-500">{t('al.uploading_short')}</span>
                     ) : (
                       <>
                         <span className="text-2xl text-[#059669]">📷</span>
-                        <span className="text-[10px] text-[#059669] font-bold mt-0.5">صورة</span>
+                        <span className="text-[10px] text-[#059669] font-bold mt-0.5">{t('al.photo')}</span>
                       </>
                     )}
                   </label>
                 )}
                 <p className="text-[11px] text-gray-500 flex-1">
-                  صورة صنف حلوة = أوردرات أكتر 📈
+                  {t('al.photo_boost')}
                 </p>
               </div>
             </Field>
 
-            <Field label="السعر بالجنيه" required>
+            <Field label={t('al.f_price_egp')} required>
               <input
                 type="number"
                 value={item.price || ''}
@@ -2403,14 +2411,14 @@ function MenuBuilderStep({
               />
             </Field>
 
-            <Field label="وصف قصير (اختياري)">
+            <Field label={t('al.f_short_desc')}>
               <input
                 type="text"
                 value={item.description_ar || ''}
                 onChange={(e) =>
                   updateItem(idx, { description_ar: e.target.value || undefined })
                 }
-                placeholder="لحم 150ج + جبنة + خس + صوص خاص"
+                placeholder={t('al.item_desc_ph')}
                 className={inputCls}
               />
             </Field>
@@ -2424,7 +2432,7 @@ function MenuBuilderStep({
                 }
                 className="w-4 h-4 accent-[#059669]"
               />
-              <span>متاح حالياً</span>
+              <span>{t('al.available_now')}</span>
             </label>
           </div>
         ))}
@@ -2435,7 +2443,7 @@ function MenuBuilderStep({
         onClick={addItem}
         className="mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#059669]/40 text-[#059669] text-sm font-bold hover:bg-[#34D399]/5 transition-colors"
       >
-        + أضف صنف جديد
+        {t('al.add_item')}
       </button>
 
       {error && (
@@ -2499,6 +2507,7 @@ const PROFILE_PROPERTY: ProductFieldProfile = {
   showShipping: false, showWholesale: false,
 };
 function getProductFieldProfile(slug: string | null | undefined): ProductFieldProfile {
+  const { t } = useT()
   if (!slug) return PROFILE_RETAIL;
   if (slug === 'shop-pharmacy' || slug === 'shop-supermarket') return PROFILE_CONSUMABLE;
   if (slug === 'shop-produce') return PROFILE_FRESH;
@@ -2508,7 +2517,7 @@ function getProductFieldProfile(slug: string | null | undefined): ProductFieldPr
 }
 
 // 🚗 (٢٤ أغسطس ٢٦) محمد: «حط دروب ليست في العربيات» — ماركات وسنين
-// جاهزة بدل الكتابة الحرة، و«أخرى…» بتفتح خانة نص.
+// جاهزة بدل الكتابة الحرة، و«{t('al.other')}» بتفتح خانة نص.
 const CAR_BRANDS = ['تويوتا', 'هيونداي', 'كيا', 'نيسان', 'شيفروليه', 'ميتسوبيشي', 'مرسيدس', 'بي إم دبليو', 'أودي', 'فولكس فاجن', 'سكودا', 'سيات', 'كوبرا', 'رينو', 'بيجو', 'سيتروين', 'أوبل', 'فيات', 'هوندا', 'سوزوكي', 'مازدا', 'جيلي', 'شيري', 'بي واي دي', 'إم جي', 'جاك', 'هافال', 'جيتور', 'لادا', 'جيب', 'لاند روفر', 'لكزس', 'سانج يونج', 'دي إف إس كي', 'بروتون', 'إيسوزو', 'هينو'];
 const MOTO_BRANDS = ['هوندا', 'ياماها', 'سوزوكي', 'كاواساكي', 'بيناللي', 'باجاج', 'تي في إس', 'كيه تي إم', 'سيم', 'هوجن', 'دايون', 'رويال إنفيلد', 'هارلي ديفيدسون', 'فيسبا', 'ليفان', 'زونجشن'];
 const VEHICLE_YEARS = Array.from({ length: 2027 - 1989 }, (_, i) => String(2027 - i));
@@ -2528,6 +2537,7 @@ function ProductDetailsStep({
   onChangeCategory: () => void;
   saving: boolean;
 }) {
+  const { t, locale } = useT()
   const existingDetails = (draft.attributes?.product_details as ProductDetails | undefined);
   const existingWholesale = (draft.attributes?.wholesale_tiers as WholesaleTier[] | undefined) || [];
   // Jun 12 2026: pick the field set that matches THIS activity type.
@@ -2596,32 +2606,32 @@ function ProductDetailsStep({
   const conditionOptions: { key: ProductCondition; label_ar: string }[] =
     profile.conditionMode === 'new_used'
       ? [
-          { key: 'new', label_ar: 'جديدة' },
-          { key: 'used_good', label_ar: 'مستعملة' },
+          { key: 'new', label_ar: t('al.cond_new_f') },
+          { key: 'used_good', label_ar: t('al.cond_used_f') },
         ]
       : [
-          { key: 'new', label_ar: 'جديد بالكرتونة' },
-          { key: 'used_like_new', label_ar: 'مستعمل (مثل الجديد)' },
-          { key: 'used_good', label_ar: 'مستعمل (حالة جيدة)' },
+          { key: 'new', label_ar: t('ld.cond_new') },
+          { key: 'used_like_new', label_ar: t('ld.cond_used_like_new') },
+          { key: 'used_good', label_ar: t('ld.cond_used_good') },
           { key: 'refurbished', label_ar: 'Refurbished' },
         ];
 
   function handleSubmit() {
     if (!price || Number(price) <= 0) {
-      setError('حط سعر صحيح');
+      setError(t('al.err_price2'));
       return;
     }
     if (availabilityType === 'ready' && (!stockQty || stockQty < 1)) {
-      setError('الكمية لازم تكون 1 على الأقل');
+      setError(t('al.err_qty'));
       return;
     }
     if (availabilityType === 'made_to_order') {
       if (!leadDays || Number(leadDays) < 1) {
-        setError('حدد مدة التجهيز بالأيام (يوم واحد على الأقل)');
+        setError(t('al.err_leadtime'));
         return;
       }
       if (depositPct !== '' && (Number(depositPct) < 0 || Number(depositPct) > 100)) {
-        setError('نسبة العربون لازم تكون بين 0 و 100');
+        setError(t('al.err_deposit'));
         return;
       }
     }
@@ -2632,7 +2642,7 @@ function ProductDetailsStep({
         (t) => t.unit.trim().length > 0 && t.qty > 0 && t.price_per_unit > 0
       );
       if (wholesaleTiers.length > 0 && valid.length === 0) {
-        setError('اكمل بيانات أسعار الجملة أو الغيها');
+        setError(t('al.err_wholesale'));
         return;
       }
       finalWholesale = valid.map((t) => ({
@@ -2679,25 +2689,25 @@ function ProductDetailsStep({
     <section>
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className="text-lg font-semibold mb-1">
-        {profile === PROFILE_PROPERTY ? '💰 سعر البيع' : profile === PROFILE_VEHICLE ? '🚗 السعر والتفاصيل' : '🛍️ تفاصيل المنتج والسعر'}
+        {profile === PROFILE_PROPERTY ? t('al.price_property') : profile === PROFILE_VEHICLE ? t('al.price_vehicle') : t('al.price_product')}
       </h2>
-      <p className="text-sm text-gray-500 mb-5">حدد السعر والتفاصيل المناسبة لنوع النشاط</p>
+      <p className="text-sm text-gray-500 mb-5">{t('al.price_sub')}</p>
 
-      <Field label="السعر بالجنيه" required>
+      <Field label={t('al.f_price_egp')} required>
         <input
           type="number"
           value={price}
           onChange={(e) =>
             setPrice(e.target.value === '' ? '' : Number(e.target.value))
           }
-          placeholder="مثلاً: 12000"
+          placeholder={t('al.price_ph')}
           className={inputCls}
         />
       </Field>
 
       {/* ─── AVAILABILITY: ready vs made-to-order (Task 8 — May 30 2026) ─── */}
       {profile.showMadeToOrder && (
-      <Field label="نوع التوفّر" required>
+      <Field label={t('al.f_availability')} required>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -2708,7 +2718,7 @@ function ProductDetailsStep({
                 : 'bg-white border-[#E5E5E0]'
             }`}
           >
-            📦 متوفر / جاهز
+            {t('al.in_stock')}
           </button>
           <button
             type="button"
@@ -2719,7 +2729,7 @@ function ProductDetailsStep({
                 : 'bg-white border-[#E5E5E0]'
             }`}
           >
-            🛠️ تحت التصنيع
+            {t('al.made_to_order')}
           </button>
         </div>
       </Field>
@@ -2727,7 +2737,7 @@ function ProductDetailsStep({
 
       {availabilityType === 'made_to_order' && (
         <div className="mt-1 mb-3 p-4 rounded-xl bg-gradient-to-bl from-amber-50 to-emerald-50 border border-amber-200 space-y-3">
-          <Field label="مدة التجهيز بالأيام" required>
+          <Field label={t('al.f_leadtime')} required>
             <div className="relative">
               <input
                 type="number"
@@ -2735,7 +2745,7 @@ function ProductDetailsStep({
                 onChange={(e) =>
                   setLeadDays(e.target.value === '' ? '' : Number(e.target.value))
                 }
-                placeholder="مثلاً: 7"
+                placeholder={t('al.leadtime_ph')}
                 className={inputCls + ' pl-14'}
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
@@ -2744,7 +2754,7 @@ function ProductDetailsStep({
             </div>
           </Field>
 
-          <Field label="عربون مقدّم (% من السعر) — اختياري">
+          <Field label={t('al.f_deposit')}>
             <div className="relative">
               <input
                 type="number"
@@ -2752,7 +2762,7 @@ function ProductDetailsStep({
                 onChange={(e) =>
                   setDepositPct(e.target.value === '' ? '' : Number(e.target.value))
                 }
-                placeholder="مثلاً: 30"
+                placeholder={t('al.deposit_ph')}
                 className={inputCls + ' pl-10'}
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
@@ -2768,21 +2778,21 @@ function ProductDetailsStep({
               onChange={(e) => setCustomizable(e.target.checked)}
               className="w-4 h-4 accent-[#059669]"
             />
-            <span>✏️ بيتفصّل حسب طلب العميل (قابل للتخصيص)</span>
+            <span>{t('al.customizable')}</span>
           </label>
 
           <div className="p-3 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-700">
-            <div className="font-semibold text-[#059669] mb-1">🛡️ حماية المشتري</div>
+            <div className="font-semibold text-[#059669] mb-1">{t('al.buyer_protection')}</div>
             <p>
-              لو معدّتش مدة التجهيز ومسلّمتش في الميعاد المتفق عليه، العميل بياخد
-              <strong> فلوسه كاملة</strong> رجوع (العربون وأي مبلغ مدفوع).
+              {t('al.buyer_protection_1')}
+              <strong> {t('al.buyer_protection_2')}</strong> {t('al.buyer_protection_3')}
             </p>
           </div>
         </div>
       )}
 
       {profile.showStock && availabilityType === 'ready' && (
-        <Field label="الكمية المتوفرة" required>
+        <Field label={t('al.f_stock')} required>
           <input
             type="number"
             value={stockQty}
@@ -2794,7 +2804,7 @@ function ProductDetailsStep({
       )}
 
       {profile.showCondition && (
-      <Field label={profile === PROFILE_VEHICLE ? 'حالة العربية' : 'حالة المنتج'} required>
+      <Field label={profile === PROFILE_VEHICLE ? t('al.f_cond_vehicle') : t('al.f_cond_product')} required>
         <div className="grid grid-cols-2 gap-2">
           {conditionOptions.map((opt) => (
             <button
@@ -2817,17 +2827,17 @@ function ProductDetailsStep({
       {/* 🚗 (٢٥/٨/٢٠٢٦) محمد: «تعديل الاعلان لسة واخد مسار مختلف عن الاضافة
           في عربيات». الماركة/السنة/الموديل بتاعت المركبات اتشالت من هنا خالص —
           كل تصنيفات المركبات (بيع + بحرية) بقى عندها حقول make/model/year في
-          جدول attributes (وفيها «أخرى…»)، وبتظهر في خطوة البيانات الأساسية —
+          جدول attributes (وفيها «{t('al.other')}»)، وبتظهر في خطوة البيانات الأساسية —
           نفس المصدر اللي فورم التعديل بيقرا منه، فمفيش سؤال بيتسأل مرتين
           ولا فرق بين الإضافة والتعديل. */}
 
       {profile.showBrand && !isVehicle && (
-      <Field label="الماركة (اختياري)">
+      <Field label={t('al.f_brand')}>
         <input
           type="text"
           value={brand}
           onChange={(e) => setBrand(e.target.value)}
-          placeholder="مثلاً: Samsung, Apple, Toshiba"
+          placeholder={t('al.brand_ph')}
           className={inputCls}
         />
       </Field>
@@ -2836,12 +2846,12 @@ function ProductDetailsStep({
       {/* سنة الصنع بتاعة المركبات → حقل year في attributes (شوف التعليق فوق) */}
 
       {profile.showModel && !isVehicle && (
-      <Field label="الموديل (اختياري)">
+      <Field label={t('al.f_model')}>
         <input
           type="text"
           value={model}
           onChange={(e) => setModel(e.target.value)}
-          placeholder="مثلاً: Galaxy S23, iPhone 15"
+          placeholder={t('al.model_ph')}
           className={inputCls}
         />
       </Field>
@@ -2856,17 +2866,17 @@ function ProductDetailsStep({
             onChange={(e) => setShippingAvailable(e.target.checked)}
             className="w-4 h-4 accent-[#059669]"
           />
-          🚚 بشحن للعميل
+          {t('al.ships')}
         </label>
         {shippingAvailable && (
-          <Field label="سعر الشحن بالجنيه (اختياري)">
+          <Field label={t('al.f_shipping_cost')}>
             <input
               type="number"
               value={shippingCost}
               onChange={(e) =>
                 setShippingCost(e.target.value === '' ? '' : Number(e.target.value))
               }
-              placeholder="مثلاً: 50 (اتركها فاضية لو مجاني)"
+              placeholder={t('al.shipping_ph')}
               className={inputCls}
             />
           </Field>
@@ -2890,9 +2900,9 @@ function ProductDetailsStep({
             className="w-4 h-4 mt-0.5 accent-[#059669]"
           />
           <div>
-            📦 بتبيع جملة؟ (أسعار خاصة للكميات)
+            {t('al.wholesale_q')}
             <p className="text-[11px] text-gray-500 font-normal mt-0.5">
-              مثلاً: دستة (12 قطعة) بـ 18 جنيه للقطعة = 216 جنيه
+              {t('al.wholesale_ex')}
             </p>
           </div>
         </label>
@@ -2908,29 +2918,29 @@ function ProductDetailsStep({
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-[#059669]">
-                      سعر جملة #{idx + 1}
+                      {t('al.wholesale_n', { n: idx + 1 })}
                     </span>
                     <button
                       type="button"
                       onClick={() => removeTier(idx)}
                       className="text-xs text-red-600 hover:text-red-700 font-semibold"
                     >
-                      حذف ✕
+                      {t('al.delete_x')}
                     </button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="block text-[11px] text-gray-600 mb-1">الوحدة</label>
+                      <label className="block text-[11px] text-gray-600 mb-1">{t('al.f_unit')}</label>
                       <input
                         type="text"
                         value={tier.unit}
                         onChange={(e) => updateTier(idx, { unit: e.target.value })}
-                        placeholder="دستة"
+                        placeholder={t('al.unit_ph')}
                         className={inputCls + ' text-sm py-2'}
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] text-gray-600 mb-1">العدد</label>
+                      <label className="block text-[11px] text-gray-600 mb-1">{t('al.f_count')}</label>
                       <input
                         type="number"
                         value={tier.qty || ''}
@@ -2942,7 +2952,7 @@ function ProductDetailsStep({
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] text-gray-600 mb-1">سعر القطعة</label>
+                      <label className="block text-[11px] text-gray-600 mb-1">{t('al.f_unit_price')}</label>
                       <input
                         type="number"
                         value={tier.price_per_unit || ''}
@@ -2956,7 +2966,7 @@ function ProductDetailsStep({
                   </div>
                   {total > 0 && (
                     <div className="text-xs text-[#059669] font-semibold mt-2">
-                      الإجمالي: {total.toLocaleString('ar-EG')} جنيه
+                      {t('al.wholesale_total', { n: total.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US') })}
                     </div>
                   )}
                 </div>
@@ -2967,7 +2977,7 @@ function ProductDetailsStep({
               onClick={addTier}
               className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#059669]/40 text-[#059669] text-sm font-bold hover:bg-[#34D399]/5 transition-colors"
             >
-              + إضافة سعر جملة
+              {t('al.add_wholesale')}
             </button>
           </div>
         )}
@@ -3040,6 +3050,7 @@ function CatalogBuilderStep({
   onChangeCategory: () => void;
   saving: boolean;
 }) {
+  const { t } = useT()
   const slug = draft.category_slug;
   const showInsurance = slug === 'shop-pharmacy';
   const emptyItem = (): CatalogItem => ({ name_ar: '', price: 0, description_ar: '', is_available: true });
@@ -3129,7 +3140,7 @@ function CatalogBuilderStep({
       });
       setExcelMsg(`✅ اتضاف ${count} منتج في ${bySection.size} قسم${skipped > 0 ? ` (${skipped} صف اتخطى)` : ''}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'مقدرتش أقرأ الملف');
+      setError(err instanceof Error ? err.message : t('al.err_read_file'));
     } finally {
       setExcelBusy(false);
       e.target.value = '';
@@ -3233,8 +3244,8 @@ function CatalogBuilderStep({
       const res = await fetch('/api/listing-drafts/upload', { method: 'POST', body: fd });
       const json = await res.json();
       if (json.url) updateItem(si, ii, { photo_url: json.url });
-      else setError('تعذر تحميل الصورة، حاول تاني');
-    } catch { setError('خطأ في الاتصال'); }
+      else setError(t('al.err_upload'));
+    } catch { setError(t('al.err_conn')); }
     finally { setUploadingKey(null); e.target.value = ''; }
   }
 
@@ -3251,7 +3262,7 @@ function CatalogBuilderStep({
       .map((s) => ({ name_ar: (s.name_ar || '').trim(), items: s.items.filter((it) => it.name_ar.trim().length > 0 && it.price > 0) }))
       .filter((s) => s.items.length > 0);
     const allItems = clean.flatMap((s) => s.items);
-    if (allItems.length === 0) { setError('ضيف منتج واحد على الأقل بـ اسم وسعر'); return; }
+    if (allItems.length === 0) { setError(t('al.err_one_product')); return; }
     setError('');
     const existing = (draft.attributes || {}) as Record<string, unknown>;
     const attrs: Record<string, unknown> = { ...existing, catalog_sections: clean };
@@ -3264,9 +3275,9 @@ function CatalogBuilderStep({
   return (
     <section>
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
-      <h2 className='text-lg font-semibold mb-1'>🛒 أضف منتجاتك</h2>
-      <p className='text-sm text-gray-500 mb-1'>قسّم منتجاتك لأقسام (مثلاً: جبن، ألبان، معلبات) وضيف تحت كل قسم اللي بتبيعه</p>
-      <p className='text-xs text-[#059669] mb-4 font-medium'>💡 كل ما تضيف منتجات أكتر، العميل يلاقي اللي بيدوّر عليه أسرع</p>
+      <h2 className='text-lg font-semibold mb-1'>{t('al.s5_products_title')}</h2>
+      <p className='text-sm text-gray-500 mb-1'>{t('al.s5_products_sub')}</p>
+      <p className='text-xs text-[#059669] mb-4 font-medium'>{t('al.s5_products_hint')}</p>
 
       {/* 🧹 (٢٥ يوليو ٢٠٢٦ — محمد: «فيه حاجات متكررة وحاجات مش منظمة… وتاب
           مكتوب عليه عندك أكتر من صنف ولسه محطوط عليه نزل التمبلت»)
@@ -3281,31 +3292,31 @@ function CatalogBuilderStep({
       <div className="mb-5 rounded-2xl border-2 border-[#2FA084] bg-[#F0FAF7] p-4">
         <div className="flex items-center gap-2 mb-1.5">
           <span className="text-xl">🧞</span>
-          <p className="text-sm font-bold text-[#059669]">عندك قائمتك جاهزة؟ سيبها للمارد</p>
+          <p className="text-sm font-bold text-[#059669]">{t('al.smart_title')}</p>
         </div>
         <p className="text-[11px] text-gray-600 mb-3 leading-relaxed">
-          اكتب أصنافك، أو ارفع صورة للمنيو، أو ملف Excel — والمارد هيطلّعهم ويرتّبهم
-          في ثواني، وانت بس تكمّل الأسعار الناقصة.
+          {t('al.smart_sub')}
+          
         </p>
         <textarea
           value={smartText}
           onChange={(e) => setSmartText(e.target.value)}
           rows={3}
-          placeholder="مثلاً: أرز مصري 45، مكرونة 12، زيت 60، سكر 30 ..."
+          placeholder={t('al.smart_ph')}
           className={inputCls + ' text-sm mb-2 resize-none'}
         />
         <div className="flex gap-2">
           <button type="button" onClick={() => callExtract({ text: smartText })} disabled={smartBusy || smartText.trim().length < 3}
             className="flex-1 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-xs font-bold disabled:opacity-60">
-            {smartBusy ? '🧞 بيقرأ...' : '🧞 استخرج'}
+            {smartBusy ? t('al.smart_reading') : t('al.smart_extract')}
           </button>
           <button type="button" onClick={() => smartFileRef.current?.click()} disabled={smartBusy}
             className="flex-1 py-2.5 rounded-xl border border-[#059669]/40 text-[#059669] text-xs font-bold bg-white disabled:opacity-60">
-            📷 صورة
+            {t('al.photo_btn')}
           </button>
           <button type="button" onClick={() => excelInputRef.current?.click()} disabled={excelBusy || smartBusy}
             className="flex-1 py-2.5 rounded-xl border border-[#059669]/40 text-[#059669] text-xs font-bold bg-white disabled:opacity-60">
-            {excelBusy ? '...بيقرأ' : '📊 Excel'}
+            {excelBusy ? t('al.reading') : '📊 Excel'}
           </button>
           <input ref={smartFileRef} type="file" accept="image/*" className="hidden" onChange={handleSmartFile} />
           <input ref={excelInputRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleExcelFile} />
@@ -3315,14 +3326,14 @@ function CatalogBuilderStep({
         )}
         <button type="button" onClick={downloadCatalogTemplate}
           className="mt-2 text-[11px] text-[#059669]/75 underline underline-offset-2 hover:text-[#059669]">
-          مش عارف تظبط الشيت؟ نزّل قالب Excel جاهز
+          {t('al.template_hint')}
         </button>
       </div>
 
       {CATALOG_TEMPLATES[slug || ''] && (
         <button type="button" onClick={loadTemplate}
           className="w-full mb-5 py-3 rounded-2xl bg-[#FFF7E6] border-2 border-[#F0C36D] text-[#7a5200] text-sm font-bold">
-          🧾 ابدأ بقالب جاهز بالأصناف الدارجة — انت بس تحط السعر
+          {t('al.starter_hint')}
         </button>
       )}
 
@@ -3335,11 +3346,11 @@ function CatalogBuilderStep({
                 type='text'
                 value={section.name_ar}
                 onChange={(e) => updateSectionName(si, e.target.value)}
-                placeholder={`اسم القسم (مثلاً: ${si === 0 ? 'جبن' : si === 1 ? 'ألبان' : 'معلبات'})`}
+                placeholder={t('al.section_ph', { ex: si === 0 ? 'A' : si === 1 ? 'B' : 'C' })}
                 className={inputCls + ' font-semibold'}
               />
               {sections.length > 1 && (
-                <button type='button' onClick={() => removeSection(si)} className='flex-shrink-0 text-xs text-red-600 hover:text-red-700 font-semibold whitespace-nowrap'>حذف القسم</button>
+                <button type='button' onClick={() => removeSection(si)} className='flex-shrink-0 text-xs text-red-600 hover:text-red-700 font-semibold whitespace-nowrap'>{t('al.delete_section')}</button>
               )}
             </div>
 
@@ -3349,9 +3360,9 @@ function CatalogBuilderStep({
                 return (
                   <div key={ii} className='rounded-xl border border-[#E5E5E0] bg-white p-3'>
                     <div className='flex items-center justify-between mb-2'>
-                      <span className='text-xs font-bold text-[#059669]'>منتج #{ii + 1}</span>
+                      <span className='text-xs font-bold text-[#059669]'>{t('al.product_n', { n: ii + 1 })}</span>
                       {section.items.length > 1 && (
-                        <button type='button' onClick={() => removeItem(si, ii)} className='text-xs text-red-600 hover:text-red-700 font-semibold'>حذف ✕</button>
+                        <button type='button' onClick={() => removeItem(si, ii)} className='text-xs text-red-600 hover:text-red-700 font-semibold'>{t('al.delete_x')}</button>
                       )}
                     </div>
                     <div className='flex gap-3'>
@@ -3368,13 +3379,13 @@ function CatalogBuilderStep({
                         </label>
                       )}
                       <div className='flex-1 min-w-0 space-y-2'>
-                        <input type='text' value={item.name_ar} onChange={(e) => updateItem(si, ii, { name_ar: e.target.value })} placeholder='اسم المنتج (مثلاً: جبنة بيضا 1ك)' className={inputCls + ' py-2 text-sm'} />
+                        <input type='text' value={item.name_ar} onChange={(e) => updateItem(si, ii, { name_ar: e.target.value })} placeholder={t('al.product_name_ph')} className={inputCls + ' py-2 text-sm'} />
                         <div className='flex gap-2'>
                           <div className='relative flex-1'>
-                            <input type='number' value={item.price || ''} onChange={(e) => updateItem(si, ii, { price: Number(e.target.value) || 0 })} placeholder='السعر' className={inputCls + ' py-2 text-sm pl-10'} />
+                            <input type='number' value={item.price || ''} onChange={(e) => updateItem(si, ii, { price: Number(e.target.value) || 0 })} placeholder={t('al.price_short')} className={inputCls + ' py-2 text-sm pl-10'} />
                             <span className='absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500'>ج.م</span>
                           </div>
-                          <input type='number' inputMode='numeric' value={item.quantity ?? ''} onChange={(e) => updateItem(si, ii, { quantity: Number(e.target.value) || undefined })} placeholder='العدد' className={inputCls + ' py-2 text-sm w-20 text-center'} />
+                          <input type='number' inputMode='numeric' value={item.quantity ?? ''} onChange={(e) => updateItem(si, ii, { quantity: Number(e.target.value) || undefined })} placeholder={t('al.qty_short')} className={inputCls + ' py-2 text-sm w-20 text-center'} />
                           <label className='flex items-center gap-1.5 text-xs cursor-pointer whitespace-nowrap px-2'>
                             <input type='checkbox' checked={item.is_available} onChange={(e) => updateItem(si, ii, { is_available: e.target.checked })} className='w-4 h-4 accent-[#059669]' />
                             متاح
@@ -3387,20 +3398,20 @@ function CatalogBuilderStep({
               })}
             </div>
 
-            <button type='button' onClick={() => addItem(si)} className='mt-3 w-full py-2 rounded-xl border-2 border-dashed border-[#059669]/40 text-[#059669] text-xs font-bold hover:bg-[#34D399]/5 transition-colors'>+ ضيف منتج في «{section.name_ar.trim() || 'القسم ده'}»</button>
+            <button type='button' onClick={() => addItem(si)} className='mt-3 w-full py-2 rounded-xl border-2 border-dashed border-[#059669]/40 text-[#059669] text-xs font-bold hover:bg-[#34D399]/5 transition-colors'>{t('al.add_product_in', { name: section.name_ar })}</button>
           </div>
         ))}
       </div>
 
-      <button type='button' onClick={addSection} className='mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#2FA084] text-[#059669] text-sm font-bold hover:bg-[#F0FAF7] transition-colors'>+ ضيف قسم جديد</button>
+      <button type='button' onClick={addSection} className='mt-4 w-full py-3 rounded-xl border-2 border-dashed border-[#2FA084] text-[#059669] text-sm font-bold hover:bg-[#F0FAF7] transition-colors'>{t('al.add_section')}</button>
 
       {showInsurance && (
         <div className='mt-6 p-4 rounded-xl bg-gradient-to-bl from-emerald-50 to-amber-50 border border-emerald-200'>
           <label className='flex items-start gap-2 text-sm font-semibold mb-2 cursor-pointer'>
             <input type='checkbox' checked={acceptsInsurance} onChange={(e) => setAcceptsInsurance(e.target.checked)} className='w-4 h-4 mt-0.5 accent-[#059669]' />
             <div>
-              🏥 بتقبل تأمين طبي؟
-              <p className='text-[11px] text-gray-600 font-normal mt-0.5'>حدد شركات التأمين اللي بتتعامل معاها عشان تظهر لعملائها.</p>
+              {t('al.insurance_q')}
+              <p className='text-[11px] text-gray-600 font-normal mt-0.5'>{t('al.insurance_sub')}</p>
             </div>
           </label>
           {acceptsInsurance && (
@@ -3410,14 +3421,14 @@ function CatalogBuilderStep({
                   {insurancePartners.map((p) => (
                     <span key={p} className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#059669]/30 text-xs font-medium'>
                       🏥 {p}
-                      <button type='button' onClick={() => removePartner(p)} className='text-red-500 font-bold hover:text-red-700' aria-label={`إزالة ${p}`}>×</button>
+                      <button type='button' onClick={() => removePartner(p)} className='text-red-500 font-bold hover:text-red-700' aria-label={t('al.remove', { name: p })}>×</button>
                     </span>
                   ))}
                 </div>
               )}
               <div className='flex gap-2'>
-                <input type='text' value={newPartner} onChange={(e) => setNewPartner(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPartner(); } }} placeholder='مثلاً: مديكير، أكسا، صحتك...' className={inputCls + ' text-sm flex-1'} />
-                <button type='button' onClick={addPartner} disabled={!newPartner.trim()} className='py-2.5 px-4 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-semibold disabled:opacity-50 whitespace-nowrap'>+ إضافة</button>
+                <input type='text' value={newPartner} onChange={(e) => setNewPartner(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPartner(); } }} placeholder={t('al.insurance_ph')} className={inputCls + ' text-sm flex-1'} />
+                <button type='button' onClick={addPartner} disabled={!newPartner.trim()} className='py-2.5 px-4 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-semibold disabled:opacity-50 whitespace-nowrap'>{t('al.add_short')}</button>
               </div>
             </div>
           )}
@@ -3426,7 +3437,7 @@ function CatalogBuilderStep({
 
       {error && (<div className='mt-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700'>{error}</div>)}
 
-      {totalProducts > 0 && (<div className='mt-4 text-xs text-center text-[#059669] font-semibold'>✓ {totalProducts} منتج جاهز</div>)}
+      {totalProducts > 0 && (<div className='mt-4 text-xs text-center text-[#059669] font-semibold'>✓ {t('al.products_ready', { n: totalProducts })}</div>)}
       <Nav onBack={onBack} onNext={handleSubmit} saving={saving} />
     </section>
   );
@@ -3456,6 +3467,7 @@ function StepPricing({
   saving: boolean;
   beautySchemas: Record<string, BeautySchema>;
 }) {
+  const { t } = useT()
   // Jul 5 2026: bulk-Excel modal for the generic pricing branch (rentals /
   // services / sale-*). Hook lives ABOVE the early branches so hook order
   // stays consistent for every branch of this component.
@@ -3545,9 +3557,9 @@ function StepPricing({
   // Phase E (May 18 2026): expanded period labels — added per_event, per_visit
   // to match the new DB-driven allowed_pricing_periods values.
   const periodLabel: Record<string, string> = {
-    hourly: 'ساعة', daily: 'يوم', weekly: 'أسبوع', monthly: 'شهر',
-    per_service: 'الخدمة', per_session: 'الجلسة', per_package: 'الباكدج',
-    per_event: 'الحدث', per_visit: 'الزيارة', per_unit: 'الوحدة',
+    hourly: t('al.p_hourly'), daily: t('al.p_daily'), weekly: t('al.p_weekly'), monthly: t('al.p_monthly'),
+    per_service: t('al.p_service'), per_session: t('al.p_session'), per_package: t('al.p_package'),
+    per_event: t('al.p_event'), per_visit: t('al.p_visit'), per_unit: t('al.p_unit'),
   };
 
   // Phase E: read category-specific pricing periods from DB. Beauty keeps its
@@ -3707,16 +3719,16 @@ function StepPricing({
     <section>
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className="text-lg font-semibold mb-1">
-        {isRentalCopy ? 'السعر' : (isHybrid ? 'سعر الفعالية' : 'سعر الخدمة')}
+        {isRentalCopy ? t('al.price_label') : (isHybrid ? t('al.price_event') : t('al.price_service'))}
       </h2>
       <p className="text-sm text-gray-500 mb-4">
         {isRentalCopy
-          ? 'حضرتك بتأجره بكام؟'
+          ? t('al.q_rent')
           : isBeauty
-            ? 'بكام بتقدم الخدمة الأساسية؟'
+            ? t('al.q_service_base')
             : isHybrid
-              ? 'بكام بتقدم الفعالية الأساسية؟'
-              : 'بكام بتقدم الخدمة؟'}
+              ? t('al.q_event_base')
+              : t('al.q_service')}
       </p>
 
       {/* Jul 5 2026: bulk Excel entry for ALL tracks — each row = a separate
@@ -3728,8 +3740,8 @@ function StepPricing({
       >
         <span className="text-xl">📊</span>
         <span className="flex-1">
-          <span className="block text-sm font-bold text-[#059669]">عندك أصناف تانية كتير؟ ارفعهم كلهم Excel مرة واحدة</span>
-          <span className="block text-[11px] text-gray-500 mt-0.5">كمّل الصنف ده عادي — والباقي يترفع بشيت واحد (لحد ٢٠٠ صنف)</span>
+          <span className="block text-sm font-bold text-[#059669]">{t('al.excel_more_title')}</span>
+          <span className="block text-[11px] text-gray-500 mt-0.5">{t('al.excel_more_sub')}</span>
         </span>
         <span className="text-[#059669] font-black">←</span>
       </button>
@@ -3743,7 +3755,7 @@ function StepPricing({
         />
       )}
 
-      <Field label={isRentalCopy ? 'مدة الإيجار' : 'نوع التسعير'} required>
+      <Field label={isRentalCopy ? t('al.f_rental_period') : t('al.f_pricing_type')} required>
         <div className={`grid gap-2 ${isBeauty ? 'grid-cols-3' : 'grid-cols-4'}`}>
           {periodOptions.map((p) => (
             <button
@@ -3767,8 +3779,8 @@ function StepPricing({
           meta.pricing_unit_label
             ? meta.pricing_unit_label
             : (isRentalCopy
-                ? `السعر بالجنيه لكل ${periodLabel[period] || period}`
-                : `سعر ${periodLabel[period] || period} بالجنيه`)
+                ? t('al.price_per', { p: periodLabel[period] || period })
+                : t('al.price_of', { p: periodLabel[period] || period }))
         }
         error={errors.price}
         required
@@ -3778,7 +3790,7 @@ function StepPricing({
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder={isVehicleSale ? 'مثلاً: 950000' : isPropertySale ? 'مثلاً: 3500000' : 'مثلاً: 1500'}
+            placeholder={isVehicleSale ? t('al.price_ph_vehicle') : isPropertySale ? t('al.price_ph_property') : t('al.price_ph_default')}
             className={inputCls + ' pl-16'}
           />
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
@@ -3793,16 +3805,16 @@ function StepPricing({
           كل حسابات «بعد عمولة X%» اتشالت من هنا نهائيًا. */}
       {price !== '' && Number(price) > 0 && (
         <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm">
-          💰 السعر اللي كتبته هو اللي بيوصلك <strong>بالكامل</strong> — من غير أي خصومات.
+          {t('al.net_note_1')} <strong>{t('al.net_note_2')}</strong> {t('al.net_note_3')}
         </div>
       )}
 
       {/* Beauty: add-ons section */}
       {isBeauty && suggestedAddons.length > 0 && (
         <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
-          <h3 className="text-base font-semibold mb-1">✨ خدمات إضافية اختيارية</h3>
+          <h3 className="text-base font-semibold mb-1">{t('al.addons_title')}</h3>
           <p className="text-xs text-gray-500 mb-4">
-            العميل يقدر يضيفها لحجزه. شيّك على اللي بتقدمه وعدّل السعر لو حابب.
+            {t('al.addons_sub')}
           </p>
           <div className="grid grid-cols-1 gap-2">
             {suggestedAddons.map((addon) => {
@@ -3861,8 +3873,8 @@ function StepPricing({
           </div>
           <div className="mt-3 text-xs text-gray-500 text-center">
             {enabledAddons.size === 0
-              ? 'لسة معديتش أي خدمة إضافية'
-              : `${enabledAddons.size} ${enabledAddons.size === 1 ? 'خدمة إضافية' : 'خدمات إضافية'} مختارة`}
+              ? t('al.addons_none')
+              : t('al.addons_count', { n: enabledAddons.size })}
           </div>
         </div>
       )}
@@ -3873,10 +3885,10 @@ function StepPricing({
           suggested add-ons) so the booking page renders them uniformly. */}
       {showCustomAddonBuilder && (
         <div className="mt-8 pt-6 border-t border-[#E5E5E0]">
-          <h3 className="text-base font-semibold mb-1">✨ خدمات إضافية اختيارية</h3>
+          <h3 className="text-base font-semibold mb-1">{t('al.addons_title')}</h3>
           <p className="text-xs text-gray-500 mb-4">
-            ضيف خدمات يقدر العميل يضمّها لحجزه (مثلاً: توصيل للمنزل، صور إضافية،
-            خامات خاصة...). كل خدمة لها سعرها المستقل.
+            {t('al.addons_custom_sub')}
+            
           </p>
 
           {customAddons.length > 0 && (
@@ -3891,7 +3903,7 @@ function StepPricing({
                       type="text"
                       value={addon.name_ar}
                       onChange={(e) => updateCustomAddon(idx, { name_ar: e.target.value })}
-                      placeholder="اسم الخدمة الإضافية"
+                      placeholder={t('al.addon_name_ph')}
                       className="flex-1 p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#059669]"
                     />
                     <div className="relative w-28 flex-shrink-0">
@@ -3901,7 +3913,7 @@ function StepPricing({
                         onChange={(e) =>
                           updateCustomAddon(idx, { price_egp: Number(e.target.value) || 0 })
                         }
-                        placeholder="السعر"
+                        placeholder={t('al.price_short')}
                         className="w-full p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#059669] pl-10"
                       />
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none">
@@ -3912,7 +3924,7 @@ function StepPricing({
                       type="button"
                       onClick={() => removeCustomAddon(idx)}
                       className="flex-shrink-0 w-9 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-base font-bold transition-colors"
-                      aria-label="احذف الخدمة"
+                      aria-label={t('al.delete_addon')}
                     >
                       ×
                     </button>
@@ -3927,12 +3939,12 @@ function StepPricing({
             onClick={addCustomAddon}
             className="w-full py-3 rounded-xl border-2 border-dashed border-[#059669]/30 hover:border-[#059669]/60 hover:bg-[#34D399]/5 text-sm font-semibold text-[#059669] transition-colors"
           >
-            + ضيف خدمة إضافية
+            {t('al.add_addon')}
           </button>
 
           {customAddons.length === 0 && (
             <p className="text-[11px] text-gray-500 text-center mt-3">
-              اختياري — تقدر تتخطاها لو الخدمة سعر واحد بدون إضافات
+              {t('al.addons_optional')}
             </p>
           )}
         </div>
@@ -3951,9 +3963,9 @@ function StepPricing({
               className="w-4 h-4 mt-0.5 accent-[#059669]"
             />
             <div>
-              🏥 بتقبل تأمين صحي؟
+              {t('al.health_ins_q')}
               <p className="text-[11px] text-gray-600 font-normal mt-0.5">
-                لو بتقبل تأمين، حدد شركات التأمين اللي بتتعامل معاها.
+                {t('al.health_ins_sub')}
               </p>
             </div>
           </label>
@@ -3972,7 +3984,7 @@ function StepPricing({
                         type="button"
                         onClick={() => removePartner(p)}
                         className="text-red-500 font-bold hover:text-red-700"
-                        aria-label={`إزالة ${p}`}
+                        aria-label={t('al.remove', { name: p })}
                       >
                         ×
                       </button>
@@ -3992,7 +4004,7 @@ function StepPricing({
                       addPartner();
                     }
                   }}
-                  placeholder="مثلاً: مديلسرفيس، اللجنة، صحتك..."
+                  placeholder={t('al.ins_ph_2')}
                   className={inputCls + ' text-sm flex-1'}
                 />
                 <button
@@ -4006,12 +4018,12 @@ function StepPricing({
               </div>
 
               <div className="p-3 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-700">
-                <div className="font-semibold text-[#059669] mb-1">💳 رسم الحجز للتأمينيين</div>
+                <div className="font-semibold text-[#059669] mb-1">{t('al.ins_fee_title')}</div>
                 <p>
-                  عند حجز عميل بتأمين صحي، بنأخد <strong>5%</strong> رسم خدمة من سعر الكشف (من العميل عبر انستاباي) لتأكيد الحجز.
+                  {t('al.ins_fee_body_1')} <strong>5%</strong> {t('al.ins_fee_body_2')}
                 </p>
                 <p className="text-[11px] text-red-700 mt-1.5 font-bold">
-                  ⚠️ الرسم ده غير قابل للاسترداد — بيضمن جدية حجز العميل (مش بيترجع حتى لو العميل مجاش).
+                  {t('al.ins_fee_note')}
                 </p>
               </div>
             </div>
@@ -4035,28 +4047,29 @@ function StepPricing({
 type PhotoCopy = { heading: string; sub: string; box: string };
 
 function getServicePhotoCopy(slug: string | null | undefined): PhotoCopy | null {
+  const { t } = useT()
   if (!slug) return null;
   const s = slug.toLowerCase();
   const has = (re: RegExp) => re.test(s);
   if (has(/clinic|medical|dentist|dental|dermat|cardio|pediatric|gyneco|ophthal|ent-doctor|orthoped|psychiat|psycholog|physio|nutrition|aesthetic|botox|filler|cosmetic-surgery|hair-transplant|laser|general-practitioner|consultation|veterinar/))
-    return { heading: 'صورة الدكتور أو العيادة', sub: 'ارفع صورة الدكتور أو العيادة — دي أول حاجة المريض بيشوفها وبتبني الثقة.', box: 'صورة الدكتور / العيادة' };
+    return { heading: t('al.ph_doctor_h'), sub: t('al.ph_doctor_s'), box: t('al.ph_doctor_b') };
   if (has(/beauty|hair-stylist|hair-removal|makeup|nail|skincare|brows|lashes|bridal|massage|spa|salon/))
-    return { heading: 'صورة من شغلك', sub: 'ارفع صورة من شغلك (قبل/بعد) أو السالون — بتفرق جداً في جذب العملاء.', box: 'صورة من شغلك' };
+    return { heading: t('al.ph_work_h'), sub: t('al.ph_salon_s'), box: t('al.ph_work_b') };
   if (has(/auto|car-|vehicle|mechanic|tire|towing|motorcycle-service|motorcycle-school/))
-    return { heading: 'صورة الخدمة أو الورشة', sub: 'ارفع صورة للورشة أو لخدمة عملتها قبل كده — بتطمّن العميل.', box: 'صورة الورشة / الخدمة' };
+    return { heading: t('al.ph_workshop_h'), sub: t('al.ph_workshop_s'), box: t('al.ph_workshop_b') };
   if (has(/plumb|electric|carpenter|painter|handyman|contractor|ac-maintenance|appliance-repair|pest|garden|clean|furniture-assembly|moving|home-services/))
-    return { heading: 'صورة من شغلك', sub: 'ارفع صورة من شغل سابق أو أدواتك — بتوري العميل إنك محترف.', box: 'صورة من شغلك' };
+    return { heading: t('al.ph_work_h'), sub: t('al.ph_tools_s'), box: t('al.ph_work_b') };
   if (has(/pet|dog|nann|babysit|childcare|newborn|elder-care|housekeeper|housemanager|domestic/))
-    return { heading: 'صورة توضّح خدمتك', sub: 'ارفع صورة للمكان أو للخدمة اللي بتقدمها.', box: 'صورة الخدمة' };
+    return { heading: t('al.ph_service_h'), sub: t('al.ph_place_s'), box: t('al.ph_service_b') };
   if (has(/tutor|course|class|instructor|education|exam-prep|language|quran|music|art-class|kids-|coach|soft-skills|workshop|translator/))
-    return { heading: 'صورتك أو شهاداتك', sub: 'ارفع صورة ليك وانت بتدرّس، أو شهاداتك — بتبني ثقة الأهل والطلبة.', box: 'صورتك / شهاداتك' };
+    return { heading: t('al.ph_teacher_h'), sub: t('al.ph_teacher_s'), box: t('al.ph_teacher_b') };
   if (has(/event|catering|wedding|zaffa|buffet|party|birthday|planner|djs|photograph|videograph|inshad|mazoun|reciter|hajj|umrah|religious/))
-    return { heading: 'صورة من شغل سابق', sub: 'ارفع صورة من فرح أو فعالية عملتها قبل كده — أقوى دعاية ليك.', box: 'صورة من شغلك' };
+    return { heading: t('al.ph_event_h'), sub: t('al.ph_event_s'), box: t('al.ph_work_b') };
   if (has(/print/))
-    return { heading: 'نماذج من شغل الطباعة', sub: 'ارفع صور لنماذج طبعتها قبل كده — العميل بيختار بعينه.', box: 'نموذج من شغلك' };
+    return { heading: t('al.ph_print_h'), sub: t('al.ph_print_s'), box: t('al.ph_print_b') };
   if (has(/trainer|yoga|pilates|fitness|gym/))
-    return { heading: 'صورتك أو المكان', sub: 'ارفع صورة ليك أو للمكان اللي بتدرّب فيه.', box: 'صورة الخدمة' };
-  return { heading: 'صورة توضّح خدمتك', sub: 'ارفع صورة توضّح الخدمة اللي بتقدمها — دي أول انطباع للعميل وبتزوّد الحجوزات.', box: 'صورة الخدمة' };
+    return { heading: t('al.ph_trainer_h'), sub: t('al.ph_trainer_s'), box: t('al.ph_service_b') };
+  return { heading: t('al.ph_service_h'), sub: t('al.ph_default_s'), box: t('al.ph_service_b') };
 }
 
 // =================================================
@@ -4078,6 +4091,7 @@ function StepPhotos({
   onBack: () => void;
   saving: boolean;
 }) {
+  const { t } = useT()
   // Task 18 (Jul 24 2026): for the services track, tailor the photo prompt per
   // activity (عيادة → صورة الدكتور، كوافير → صورة من شغلك …). Non-service tracks
   // keep the generic copy. The ≥1-photo requirement below applies to all.
@@ -4093,7 +4107,7 @@ function StepPhotos({
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     if (photos.length + files.length > 8) {
-      setError('أقصى عدد 8 صور');
+      setError(t('al.err_max_photos'));
       return;
     }
     setUploading(true);
@@ -4119,7 +4133,7 @@ function StepPhotos({
         finally { setAutoSaving(false); }
       }
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'الصور مرفعتش، حاول تاني';
+      const msg = e instanceof Error ? e.message : t('al.err_photos');
       setError(msg);
     } finally {
       setUploading(false);
@@ -4156,11 +4170,11 @@ function StepPhotos({
 
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-1">{svcCopy ? svcCopy.heading : 'الصور'}</h2>
+      <h2 className="text-lg font-semibold mb-1">{svcCopy ? svcCopy.heading : t('al.photos')}</h2>
       <p className="text-sm text-gray-500 mb-6">
         {svcCopy
           ? svcCopy.sub
-          : 'ارفع صورة واحدة على الأقل عشان نقدر ننشر إعلانك فوراً. الإعلانات بصور بتاخد حجوزات أسرع بـ 7 مرات.'}
+          : t('al.photos_sub')}
       </p>
 
       {photos.length > 0 && (
@@ -4178,7 +4192,7 @@ function StepPhotos({
               </button>
               {i === 0 ? (
                 <span className="absolute bottom-1 inset-x-1 text-center bg-[#34D399] text-[#04352A] text-[10px] font-bold py-1 rounded-lg">
-                  ⭐ الرئيسية
+                  {t('al.primary')}
                 </span>
               ) : (
                 <button
@@ -4186,7 +4200,7 @@ function StepPhotos({
                   onClick={() => makePrimary(i)}
                   className="absolute bottom-1 inset-x-1 text-center bg-black/55 hover:bg-[#34D399] text-[#04352A] text-[10px] font-bold py-1 rounded-lg transition-colors"
                 >
-                  اجعلها الرئيسية
+                  {t('al.make_primary')}
                 </button>
               )}
             </div>
@@ -4197,8 +4211,8 @@ function StepPhotos({
       <label className="block">
         <div className="border-2 border-dashed border-[#D1D5DB] rounded-2xl p-8 text-center cursor-pointer hover:border-[#059669] transition-colors">
           <div className="text-3xl mb-2">📸</div>
-          <div className="font-semibold">{uploading ? 'جاري الرفع...' : (svcCopy ? svcCopy.box : 'اضغط هنا لإضافة صور')}</div>
-          <div className="text-xs text-gray-500 mt-1">JPG/PNG، حتى 8 صور</div>
+          <div className="font-semibold">{uploading ? t('al.uploading') : (svcCopy ? svcCopy.box : t('al.add_photos'))}</div>
+          <div className="text-xs text-gray-500 mt-1">{t('al.photos_hint')}</div>
         </div>
         <input
           type="file"
@@ -4213,12 +4227,12 @@ function StepPhotos({
       {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
       {autoSaving && (
         <div className="mt-2 text-xs text-gray-500">
-          ⏳ جاري حفظ الصور…
+          {t('al.saving_photos')}
         </div>
       )}
       {!autoSaving && !error && photos.length > 0 && (
         <div className="mt-2 text-xs text-emerald-700">
-          ✓ {photos.length} {photos.length === 1 ? 'صورة محفوظة' : 'صور محفوظة'}
+          {t('al.photos_saved', { n: photos.length })}
         </div>
       )}
 
@@ -4234,25 +4248,25 @@ function StepPhotos({
           ⚠️ الاستثناء للموظف بس — العميل اللي بيسجّل بنفسه لسه لازم صورة،
              لأنه شايف إعلانه قدامه ومحدش هيرجعله يطلبها. */}
       <div className="grid grid-cols-2 gap-3 mt-6">
-        <button type="button" onClick={onBack} className={btnSecondary}>← رجوع</button>
+        <button type="button" onClick={onBack} className={btnSecondary}>{t('al.back')}</button>
         <button
           type="button"
           onClick={() => onSubmit(photos)}
           disabled={saving || uploading || (photos.length === 0 && !staffEntry)}
           className={btnPrimary}
-          title={photos.length === 0 && !staffEntry ? 'ارفع صورة واحدة على الأقل' : undefined}
+          title={photos.length === 0 && !staffEntry ? t('al.upload_first_title') : undefined}
         >
           {saving ? '...'
-            : photos.length > 0 ? 'كمل →'
-            : staffEntry ? 'كمّل — الصور هتيجي منه ←'
-            : '📸 ارفع صورة الأول'}
+            : photos.length > 0 ? t('al.next')
+            : staffEntry ? t('al.next_staff')
+            : t('al.upload_first')}
         </button>
       </div>
       {photos.length === 0 && (
         <p className="text-xs text-gray-500 mt-3 text-center">
           {staffEntry
-            ? '💡 سجّل من غير صور، وإحنا هنبعتله رسالة نطلبها منه — وأول ما يبعتها الإعلان ينزل باسمه وبصوره.'
-            : '💡 صورة واحدة كافية عشان تبدأ — تقدر تضيف باقي الصور من حسابك بعدين.'}
+            ? t('al.staff_hint')
+            : t('al.photos_later')}
         </p>
       )}
     </section>
@@ -4271,6 +4285,7 @@ function StepContact({
   onBack: () => void;
   saving: boolean;
 }) {
+  const { t } = useT()
   const [name, setName] = useState(draft.contact_name || '');
   const [phone, setPhone] = useState(draft.contact_phone || '');
   // «شركة/فرد» اتشالت — اسم المتجر/النشاط اختياري للكل.
@@ -4293,22 +4308,22 @@ function StepContact({
 
   return (
     <section>
-      <h2 className="text-lg font-semibold mb-1">بياناتك</h2>
+      <h2 className="text-lg font-semibold mb-1">{t('al.s5_title')}</h2>
       <p className="text-sm text-gray-500 mb-6">
-        آخر خطوة — سيب بياناتك وفريقنا هيراجع المنتج ويتواصل معاك على الواتس اب.
+        {t('al.s5_sub')}
       </p>
 
-      <Field label="اسمك" error={errors.contact_name} required>
+      <Field label={t('al.f_your_name')} error={errors.contact_name} required>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="الاسم بالكامل"
+          placeholder={t('al.your_name_ph')}
           className={inputCls}
         />
       </Field>
 
-      <Field label="رقم الواتس اب" error={errors.contact_phone} required>
+      <Field label={t('al.f_whatsapp')} error={errors.contact_phone} required>
         <input
           type="tel"
           dir="ltr"
@@ -4322,35 +4337,36 @@ function StepContact({
       {/* توثيق الرقم بالـOTP البارد اتشال (بيحظر الرقم + مقرّرين الوارد بس في DECISIONS.md).
           العميل يسيب رقمه والفريق بيراجع ويتواصل ويوثّق. */}
 
-      <Field label="اسم المتجر أو النشاط (اختياري)" error={errors.business_name}>
+      <Field label={t('al.f_business_name')} error={errors.business_name}>
         <input
           type="text"
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
-          placeholder="مثلاً: سوبر ماركت النور، صيدلية الشفا…"
+          placeholder={t('al.business_name_ph')}
           className={inputCls}
         />
       </Field>
 
       <div className="mt-6 p-4 rounded-xl bg-white border border-[#E5E5E0] text-xs text-gray-600">
-        ✅ بكدا حضرتك سجلت المنتج — هنبعتلك تأكيد على الواتس اب وتقدر تكمل تسجيل حسابك (دقيقة واحدة).
+        {t('al.s5_note')}
       </div>
 
       <Nav
         onBack={onBack}
         onNext={handleFinalSubmit}
         saving={saving}
-        nextLabel="ابعت المنتج 🚀"
+        nextLabel={t('al.submit')}
       />
     </section>
   );
 }
 
 function validateContact(patch: Partial<DraftPayload>, setErrors: (e: Record<string, string>) => void): boolean {
+  const { t } = useT()
   const errs: Record<string, string> = {};
-  if (!patch.contact_name || patch.contact_name.length < 2) errs.contact_name = 'اكتب اسمك';
+  if (!patch.contact_name || patch.contact_name.length < 2) errs.contact_name = t('al.err_your_name');
   if (!patch.contact_phone || !/^(\+?2)?01\d{9}$/.test(String(patch.contact_phone).replace(/\s/g, '')))
-    errs.contact_phone = 'رقم تليفون مش صحيح (لازم 11 رقم)';
+    errs.contact_phone = t('al.err_phone');
   setErrors(errs);
   return Object.keys(errs).length === 0;
 }
@@ -4391,13 +4407,14 @@ function Nav({ onBack, onNext, saving, nextLabel }: {
   saving: boolean;
   nextLabel?: string;
 }) {
+  const { t } = useT()
   return (
     <div className="grid grid-cols-2 gap-3 mt-6">
       <button type="button" onClick={onBack} className={btnSecondary}>
-        ← رجوع
+        {t('al.back')}
       </button>
       <button type="button" onClick={onNext} disabled={saving} className={btnPrimary}>
-        {saving ? '...' : (nextLabel || 'كمل →')}
+        {saving ? '...' : (nextLabel || t('al.next'))}
       </button>
     </div>
   );
@@ -4430,6 +4447,7 @@ function ResumeDraftBanner({
   onResume: () => void;
   onDiscard: () => void;
 }) {
+  const { t } = useT()
   // Resolve a friendly display name for the in-progress category.
   let display: { emoji: string; name: string } | null = null;
   if (categorySlug) {
@@ -4452,7 +4470,7 @@ function ResumeDraftBanner({
       <div className="flex items-start gap-3 mb-3">
         <div className="text-2xl leading-none flex-shrink-0">💾</div>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-sm text-[#059669]">لقينالك مسودة محفوظة</div>
+          <div className="font-semibold text-sm text-[#059669]">{t('al.draft_found')}</div>
           {display && (
             <div className="flex items-center gap-2 mt-1.5 text-sm">
               <span className="text-lg leading-none">{display.emoji}</span>
@@ -4460,7 +4478,7 @@ function ResumeDraftBanner({
             </div>
           )}
           <div className="text-xs text-gray-600 mt-1">
-            وصلت لخطوة {pendingStep} من 5 — تقدر تكمل من فين وقفت، أو تبدأ منتج جديد،
+            {t('al.draft_body', { n: pendingStep })}
           </div>
         </div>
       </div>
@@ -4470,14 +4488,14 @@ function ResumeDraftBanner({
           onClick={onResume}
           className="py-2.5 px-3 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-semibold hover:bg-[#34D399]/90 transition-all"
         >
-          → كمل من فين وقفت
+          {t('al.draft_continue')}
         </button>
         <button
           type="button"
           onClick={onDiscard}
           className="py-2.5 px-3 rounded-xl bg-white border border-[#E5E5E0] text-sm font-medium text-gray-700 hover:bg-[#F5F4F0] transition-all"
         >
-          ✨ ابدأ منتج جديد
+          {t('al.draft_new')}
         </button>
       </div>
     </div>
