@@ -7,7 +7,7 @@ import {
   Heart, MapPin, Star, ImageIcon, Loader2, ArrowRight, Lock, Search,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { catNameFor, listingTitleFor } from '@/lib/i18n/catName'
+import { catNameFor, listingTitleFor, cityFor } from '@/lib/i18n/catName'
 
 // ============================================================================
 // /account/favorites
@@ -196,7 +196,7 @@ export default function FavoritesPage() {
                     {(listing.district || listing.city) && (
                       <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
                         <MapPin className="w-3 h-3" />
-                        {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
+                        {[listing.district, cityFor(listing.city, locale)].filter(Boolean).join(locale.startsWith('ar') ? '، ' : ', ')}
                       </p>
                     )}
                     <div className="flex items-center justify-between">

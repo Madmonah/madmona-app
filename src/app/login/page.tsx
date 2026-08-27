@@ -14,6 +14,7 @@ import { safeStorage } from '@/lib/safe-storage'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Phone, CheckCircle2, ShieldCheck, KeyRound, MessageCircle } from 'lucide-react'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
@@ -31,6 +32,7 @@ function nextPath(fallback = '/home'): string {
 }
 
 export default function MadmonaLoginPage() {
+  const { t } = useT()
   const router = useRouter()
   const [identifier, setIdentifier] = useState('')
   const [secret, setSecret] = useState('')
@@ -68,7 +70,7 @@ export default function MadmonaLoginPage() {
       })
       const data = await r.json().catch(() => null)
       if (!r.ok || !data?.ok) {
-        setError(data?.error || 'البيانات غلط — جرّب تاني')
+        setError(data?.error || t('lg.err_creds'))
         setSending(false)
         return
       }
@@ -76,7 +78,7 @@ export default function MadmonaLoginPage() {
       // أدمن → لوحة الأدمن مباشرة (الكوكي اتفتحت)، موظف → /me
       router.push(nextPath(data.source === 'admin' ? '/admin/listings' : '/me'))
     } catch {
-      setError('مشكلة اتصال — جرّب تاني')
+      setError(t('lg.err_conn'))
       setSending(false)
     }
   }
@@ -90,21 +92,21 @@ export default function MadmonaLoginPage() {
           <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">
             <span className="text-3xl font-black text-[#059669]">م</span>
           </div>
-          <h1 className="text-2xl font-black text-white">مضمونة</h1>
-          <p className="text-sm text-white/80 mt-1">معاملاتك مضمونة</p>
+          <h1 className="text-2xl font-black text-white">{t('tn.brand')}</h1>
+          <p className="text-sm text-white/80 mt-1">{t('common.slogan')}</p>
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-2xl">
-          <h2 className="text-lg font-black text-[#1A2E26] mb-1">تسجيل الدخول</h2>
-          <p className="text-sm text-[#6B7280] mb-5">برقم موبايلك أو إيميلك، والباسورد (أو الـPIN بتاع البصمة)</p>
+          <h2 className="text-lg font-black text-[#1A2E26] mb-1">{t('lg.title')}</h2>
+          <p className="text-sm text-[#6B7280] mb-5">{t('lg.sub')}</p>
 
-          <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">رقم الموبايل أو الإيميل</label>
+          <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{t('lg.identifier')}</label>
           <div className="relative mb-3">
             <Phone className="w-4 h-4 text-[#6B7280] absolute right-3 top-1/2 -translate-y-1/2" />
-            <input type="text" value={identifier} onChange={e => setIdentifier(e.target.value)} placeholder="01XXXXXXXXX أو name@email.com" className="w-full pr-9 pl-3 py-3 rounded-xl bg-[#FAFAF7] text-sm font-mono" dir="ltr" autoComplete="username" />
+            <input type="text" value={identifier} onChange={e => setIdentifier(e.target.value)} placeholder={t('lg.identifier_ph')} className="w-full pr-9 pl-3 py-3 rounded-xl bg-[#FAFAF7] text-sm font-mono" dir="ltr" autoComplete="username" />
           </div>
 
-          <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">الباسورد أو الـPIN</label>
+          <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{t('lg.password')}</label>
           <div className="relative">
             <KeyRound className="w-4 h-4 text-[#6B7280] absolute right-3 top-1/2 -translate-y-1/2" />
             <input type="password" value={secret} onChange={e => setSecret(e.target.value)} onKeyDown={e => e.key === 'Enter' && doLogin()} placeholder="••••••••" className="w-full pr-9 pl-3 py-3 rounded-xl bg-[#FAFAF7] text-sm" dir="ltr" autoComplete="current-password" />
@@ -112,7 +114,7 @@ export default function MadmonaLoginPage() {
 
           {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
           <button onClick={doLogin} disabled={sending || !identifier.trim() || !secret.trim()} className="w-full mt-4 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
-            {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري الدخول...</> : <><CheckCircle2 className="w-4 h-4" /> دخول</>}
+            {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('lg.logging_in')}</> : <><CheckCircle2 className="w-4 h-4" /> {t('lg.login')}</>}
           </button>
 
           {/* الواتساب فضل موجود كبديل للعملاء اللي مالهمش باسورد — مش شاشة منفصلة */}
@@ -120,13 +122,13 @@ export default function MadmonaLoginPage() {
             {showWa ? (
               <>
                 <p className="text-xs font-bold text-[#1A2E26] mb-2 flex items-center gap-1.5">
-                  <MessageCircle className="w-3.5 h-3.5 text-[#059669]" /> دخول بواتساب — من غير باسورد، رقمك هو إثبات هويتك
+                  <MessageCircle className="w-3.5 h-3.5 text-[#059669]" /> {t('lg.wa_hint')}
                 </p>
                 <WhatsAppLogin onDone={() => { router.push(nextPath()); router.refresh() }} />
               </>
             ) : (
               <button onClick={() => setShowWa(true)} className="w-full py-2.5 rounded-xl border border-[#059669]/25 text-[#059669] font-bold text-[13px] flex items-center justify-center gap-1.5">
-                <MessageCircle className="w-4 h-4" /> معنديش باسورد — دخول بواتساب
+                <MessageCircle className="w-4 h-4" /> {t('lg.wa_btn')}
               </button>
             )}
           </div>
@@ -134,7 +136,7 @@ export default function MadmonaLoginPage() {
           <div className="mt-5 pt-4 border-t border-gray-100 flex items-start gap-2">
             <ShieldCheck className="w-4 h-4 text-[#059669] flex-shrink-0 mt-0.5" />
             <p className="text-[10px] text-[#6B7280] leading-relaxed">
-              حساب واحد على مضمونة يخدمك كعميل، موظف، أو لعرض وتأجير أي حاجة. لو نسيت الباسورد أو الـPIN كلّم إدارة الفرع.
+              {t('lg.footer')}
             </p>
           </div>
         </div>

@@ -202,7 +202,7 @@ export function RestaurantMenu({
                       <p className="text-sm font-black text-[#059669] mt-2 tabular">
                         {hasSizes && (
                           <span className="text-xs font-normal text-gray-500">
-                            {lang === 'en' ? 'from ' : 'يبدأ من '}
+                            {t('oa.from')}
                           </span>
                         )}
                         {minSize.toLocaleString(
@@ -380,7 +380,7 @@ export function MartProductsCatalog({
     <div className="space-y-4">
       {orderedCats.map((cat) => {
         const items = grouped.get(cat) || []
-        const catLabel = cat === '__general__' ? (defaultCatLabel || (lang === 'en' ? 'Products' : 'المنتجات')) : cat
+        const catLabel = cat === '__general__' ? (defaultCatLabel || t('oa.products')) : cat
         return (
           <section key={cat} className="bg-white rounded-3xl shadow-soft overflow-hidden">
             <div className="px-5 pt-5 pb-3 border-b border-gray-50">
@@ -426,7 +426,7 @@ export function MartProductsCatalog({
                     <div className="flex-shrink-0 self-center">
                       {oos ? (
                         <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2.5 py-1.5 rounded-lg">
-                          {lang === 'en' ? 'Out of stock' : 'غير متوفر'}
+                          {t('oa.out_of_stock')}
                         </span>
                       ) : qty > 0 ? (
                         <QtyStepper
@@ -492,13 +492,13 @@ export function ProductBuyBox({
   if (!price || price <= 0) {
     return (
       <div className="bg-white rounded-3xl shadow-soft p-6 text-center">
-        <p className="font-bold text-[#1A2E26] mb-1">السعر عند الطلب</p>
-        <p className="text-sm text-gray-500 mb-4">كلّم المارد وهيجيبلك السعر والتفاصيل فورًا</p>
+        <p className="font-bold text-[#1A2E26] mb-1">{t('oa.price_on_request')}</p>
+        <p className="text-sm text-gray-500 mb-4">{t('oa.ask_marid')}</p>
         <a
           href={`/chat/marid?listing=${listing.id}`}
           className="inline-block bg-[#34D399] text-[#04352A] font-bold rounded-2xl px-6 py-3 hover:opacity-90 transition-opacity"
         >
-          اسأل عن السعر
+          {t('oa.ask_price')}
         </a>
       </div>
     )

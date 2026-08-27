@@ -13,7 +13,7 @@ import BottomNav from '@/components/BottomNav'
 import CartButton from '@/components/CartButton'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { catNameFor, groupNameFor, listingTitleFor } from '@/lib/i18n/catName'
+import { catNameFor, groupNameFor, listingTitleFor, cityFor } from '@/lib/i18n/catName'
 
 interface Category {
   id: string
@@ -626,7 +626,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // 🌍 اسم المجموعة (عقارات · مركبات ...) باللغة الحالية
   const gName = (g: { name_ar: string; name_i18n?: Record<string, string> | null } | null | undefined) =>
     g ? groupNameFor({ group_name_ar: g.name_ar, group_name_i18n: g.name_i18n }, locale) : ''
-  const comingSoonLabel = lang === 'en' ? 'Coming soon' : 'قريباً'
+  const comingSoonLabel = t('mk.coming_soon')
   const hasFilters = selectedCategorySlug || searchQuery || cityFilter || sortBy !== 'newest'
   // عرض متجر محدد (/marketplace?supplier=...) — بانر باسم التاجر + تصنيفاته
   const supplierInfo: any = supplierFilter ? (listings.find(l => (l.supplier as any)?.business_name)?.supplier || null) : null
@@ -756,7 +756,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                     <span className="text-2xl">{g.emoji || '🏷️'}</span>
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-extrabold text-gray-800 leading-tight">{gName(g) || t('market.track_all')}</span>
-                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{g.cats.length} قسم</span>
+                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{t('mk.n_sections', { n: g.cats.length })}</span>
                     </span>
                   </button>
                 ))}
@@ -768,7 +768,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                     onClick={() => { setSelectedGroupSlug(null); setSelectedCategorySlug(null); setPropertySource('all'); setFurnishedFilter('all') }}
                     className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all flex items-center gap-1"
                   >
-                    ← كل الأقسام
+                    {t('mk.all_sections')}
                   </button>
                   {(() => {
                     const g = rootGroups.find(x => x.slug === selectedGroupSlug) ||
@@ -915,9 +915,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           {(activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism')))) && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
               {([
-                ['all', 'كل العقارات'],
-                ['primary', '🏗️ من المطور (بريمري)'],
-                ['resale', '🔄 ريسيل'],
+                ['all', t('mk.f_all_props')],
+                ['primary', t('mk.f_primary')],
+                ['resale', t('mk.f_resale')],
               ] as const).map(([key, label]) => (
                 <button
                   key={key}
@@ -938,9 +938,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           {activeTrack === 'rentals' && !!selectedCategorySlug && selectedCategorySlug.startsWith('properties-') && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
               {([
-                ['all', 'الكل'],
-                ['furnished', '🛋️ مفروش'],
-                ['unfurnished', '🧱 بدون فرش'],
+                ['all', t('mk.f_all')],
+                ['furnished', t('mk.f_furnished')],
+                ['unfurnished', t('mk.f_unfurnished')],
               ] as const).map(([key, label]) => (
                 <button
                   key={key}
@@ -1044,9 +1044,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       <main className="max-w-6xl mx-auto px-4 py-8 relative">
         {supplierFilter && (
           <div className="mb-6 rounded-3xl bg-white shadow-soft border border-gray-100 p-5">
-            <p className="text-[11px] font-bold text-[#2FA084] uppercase tracking-widest">منتجات التاجر · مضمون عن طريق مضمونة</p>
-            <h2 className="text-xl md:text-2xl font-black text-gray-900">{supplierInfo?.business_name || 'المتجر'}</h2>
-            <p className="text-sm text-gray-500 mt-1">{supplierCatNames.length ? supplierCatNames.join(' · ') : 'منتجات وخدمات المتجر'}</p>
+            <p className="text-[11px] font-bold text-[#2FA084] uppercase tracking-widest">{t('mk.store_eyebrow')}</p>
+            <h2 className="text-xl md:text-2xl font-black text-gray-900">{supplierInfo?.business_name || t('mk.store')}</h2>
+            <p className="text-sm text-gray-500 mt-1">{supplierCatNames.length ? supplierCatNames.join(' · ') : t('mk.store_sub')}</p>
           </div>
         )}
 
@@ -1059,13 +1059,13 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               onClick={() => switchView('products')}
               className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'products' ? 'bg-[#34D399] text-[#04352A] shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
             >
-              🛍️ المنتجات
+              {t('mk.tab_products')}
             </button>
             <button
               onClick={() => switchView('stores')}
               className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'stores' ? 'bg-[#34D399] text-[#04352A] shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
             >
-              🏬 المتاجر
+              {t('mk.tab_stores')}
             </button>
           </div>
         )}
@@ -1104,8 +1104,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           ) : stores.length === 0 ? (
             <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center text-3xl">🏬</div>
-              <h3 className="text-xl font-black text-gray-900 mb-2">لسه مفيش متاجر</h3>
-              <p className="text-sm text-gray-500">أول ما التجار ينضموا هتلاقي متاجرهم هنا</p>
+              <h3 className="text-xl font-black text-gray-900 mb-2">{t('mk.no_stores')}</h3>
+              <p className="text-sm text-gray-500">{t('mk.no_stores_sub')}</p>
             </div>
           ) : (() => {
             // 🗂️ تجميع المتاجر بالقسم بتاعها (طلب محمد ٧ أغسطس: «مش كلهم على بعض»)
@@ -1146,8 +1146,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             if (sections.length === 0) return (
               <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center text-3xl">🏬</div>
-                <h3 className="text-xl font-black text-gray-900 mb-2">مفيش متاجر في القسم ده لسه</h3>
-                <p className="text-sm text-gray-500">جرّب تاب تاني أو ارجع لـ«الكل»</p>
+                <h3 className="text-xl font-black text-gray-900 mb-2">{t('mk.no_stores_section')}</h3>
+                <p className="text-sm text-gray-500">{t('mk.try_other_tab')}</p>
               </div>
             )
             // (٧ أغسطس ٢٠٢٦ — طلب محمد) كل قسم ليه تسميته: بيزنس مقابل أفراد.
@@ -1155,17 +1155,17 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             //  قطع غيار: متاجر أو أشخاص · خدمات: سنتر تعليمي أو محامي حر وهكذا»
             type StoreNoun = { label: string; visit: string }
             const nounFor = (name: string): { biz: StoreNoun; solo: StoreNoun } => {
-              if (name.includes('عقار')) return { biz: { label: 'المطورين والمكاتب', visit: 'شوف المطور' }, solo: { label: 'ريسيل — من المالك', visit: 'شوف الإعلانات' } }
-              if (/(قطع غيار|إكسسوار)/.test(name)) return { biz: { label: 'المتاجر', visit: 'زور المتجر' }, solo: { label: 'أشخاص — بيع مباشر', visit: 'شوف الإعلانات' } }
-              if (name.includes('قاع')) return { biz: { label: 'القاعات', visit: 'زور القاعة' }, solo: { label: 'منظمين أفراد', visit: 'شوف الصفحة' } }
-              if (name.includes('تعليم')) return { biz: { label: 'سناتر ومراكز تعليمية', visit: 'شوف السنتر' }, solo: { label: 'مدرسين ومستقلين', visit: 'شوف الصفحة' } }
-              if (/(محام|استشار|مهني|طباع)/.test(name)) return { biz: { label: 'مكاتب وشركات', visit: 'شوف المكتب' }, solo: { label: 'مستقلين وأحرار', visit: 'شوف الصفحة' } }
-              if (/(طبي|تجميل|عناي)/.test(name)) return { biz: { label: 'عيادات ومراكز', visit: 'شوف المركز' }, solo: { label: 'أخصائيين مستقلين', visit: 'شوف الصفحة' } }
-              if (/(صيان|منزلي|احتفال|مناسب|معدات|خدم)/.test(name)) return { biz: { label: 'شركات ومقدمي خدمات', visit: 'شوف الصفحة' }, solo: { label: 'صنايعية ومستقلين', visit: 'شوف الصفحة' } }
-              if (/(مطعم|مطاعم|مأكول|كافيه|حلويات|طبخ|سوبر|مشوي|جريل|برجر|آسيوي|سوشي|بدوي|شرقي)/.test(name)) return { biz: { label: 'المطاعم', visit: 'زور المطعم' }, solo: { label: 'مطابخ بيتية وأفراد', visit: 'شوف الإعلانات' } }
-              if (/(مركب|عربي|سيار|موتوسيكل|بحري|نقل)/.test(name)) return { biz: { label: 'المعارض', visit: 'زور المعرض' }, solo: { label: 'ريسيل — أفراد', visit: 'شوف الإعلانات' } }
-              if (name.includes('أثاث')) return { biz: { label: 'المعارض', visit: 'زور المعرض' }, solo: { label: 'أفراد — بيع مباشر', visit: 'شوف الإعلانات' } }
-              return { biz: { label: 'المتاجر', visit: 'زور المتجر' }, solo: { label: 'أفراد — بيع مباشر', visit: 'شوف الإعلانات' } }
+              if (name.includes('عقار')) return { biz: { label: t('mk.biz_devs'), visit: t('mk.visit_dev') }, solo: { label: t('mk.solo_resale'), visit: t('mk.visit_listings') } }
+              if (/(قطع غيار|إكسسوار)/.test(name)) return { biz: { label: t('mk.biz_stores'), visit: t('mk.visit_store') }, solo: { label: t('mk.solo_direct'), visit: t('mk.visit_listings') } }
+              if (name.includes('قاع')) return { biz: { label: t('mk.biz_venues'), visit: t('mk.visit_venue') }, solo: { label: t('mk.solo_organizers'), visit: t('mk.visit_page') } }
+              if (name.includes('تعليم')) return { biz: { label: t('mk.biz_centers'), visit: t('mk.visit_center') }, solo: { label: t('mk.solo_tutors'), visit: t('mk.visit_page') } }
+              if (/(محام|استشار|مهني|طباع)/.test(name)) return { biz: { label: t('mk.biz_offices'), visit: t('mk.visit_office') }, solo: { label: t('mk.solo_freelancers'), visit: t('mk.visit_page') } }
+              if (/(طبي|تجميل|عناي)/.test(name)) return { biz: { label: t('mk.biz_clinics'), visit: t('mk.visit_clinic') }, solo: { label: t('mk.solo_specialists'), visit: t('mk.visit_page') } }
+              if (/(صيان|منزلي|احتفال|مناسب|معدات|خدم)/.test(name)) return { biz: { label: t('mk.biz_providers'), visit: t('mk.visit_page') }, solo: { label: t('mk.solo_craftsmen'), visit: t('mk.visit_page') } }
+              if (/(مطعم|مطاعم|مأكول|كافيه|حلويات|طبخ|سوبر|مشوي|جريل|برجر|آسيوي|سوشي|بدوي|شرقي)/.test(name)) return { biz: { label: t('mk.biz_restaurants'), visit: t('mk.visit_restaurant') }, solo: { label: t('mk.solo_kitchens'), visit: t('mk.visit_listings') } }
+              if (/(مركب|عربي|سيار|موتوسيكل|بحري|نقل)/.test(name)) return { biz: { label: t('mk.biz_showrooms'), visit: t('mk.visit_showroom') }, solo: { label: t('mk.solo_resale_ind'), visit: t('mk.visit_listings') } }
+              if (name.includes('أثاث')) return { biz: { label: t('mk.biz_showrooms'), visit: t('mk.visit_showroom') }, solo: { label: t('mk.solo_direct_ind'), visit: t('mk.visit_listings') } }
+              return { biz: { label: t('mk.biz_stores'), visit: t('mk.visit_store') }, solo: { label: t('mk.solo_direct_ind'), visit: t('mk.visit_listings') } }
             }
             const storeCatNames = (s: StoreCard) => {
               const names = Object.keys(s.catCounts)
@@ -1189,7 +1189,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   <section key={sec.root?.id || 'other'}>
                     <div className="flex items-center gap-2 mb-4">
                       <h3 className="text-lg md:text-xl font-black text-gray-900">
-                        {sec.root ? `${sec.root.icon || '🏷️'} ${catName(sec.root)}` : '🏷️ متاجر تانية'}
+                        {sec.root ? `${sec.root.icon || '🏷️'} ${catName(sec.root)}` : t('mk.other_stores')}
                       </h3>
                       <span className="text-[11px] font-bold text-gray-400 bg-gray-100 rounded-full px-2 py-0.5 tabular">
                         {sec.arr.length}
@@ -1223,7 +1223,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                             )}
                             <div className="min-w-0 flex-1">
                               <h3 className="font-black text-base text-gray-900 truncate group-hover:text-[#059669] transition-colors">{s.name}</h3>
-                              <p className="text-[11px] font-bold text-gray-400 mt-0.5 tabular">{s.count} {s.count === 1 ? 'إعلان' : 'إعلانات'}</p>
+                              <p className="text-[11px] font-bold text-gray-400 mt-0.5 tabular">{t('mk.n_listings', { n: s.count })}</p>
                             </div>
                             {s.kyc === 'approved' && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 border border-green-200 rounded-full text-[10px] font-bold text-green-700 flex-shrink-0">
@@ -1236,7 +1236,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                             <p className="text-xs text-gray-500 line-clamp-1 mb-3">{storeCatNames(s).slice(0, 4).join(' · ')}</p>
                           )}
                           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                            <span className="text-[11px] font-bold text-[#2FA084]">مضمون عن طريق مضمونة</span>
+                            <span className="text-[11px] font-bold text-[#2FA084]">{t('mk.guaranteed')}</span>
                             <span className="inline-flex items-center gap-1 text-[#059669] font-bold text-xs group-hover:gap-2 transition-all">
                               <span>{h.n.visit}</span>
                               <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
@@ -1270,13 +1270,13 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         ) : loadError ? (
           <div className="bg-white rounded-3xl shadow-soft p-12 md:p-20 text-center">
             <div className="w-16 h-16 mx-auto mb-4 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl">📡</div>
-            <h3 className="text-xl font-black text-gray-900 mb-2">مش قادرين نحمّل العروض دلوقتي</h3>
-            <p className="text-sm text-gray-500 mb-6">يمكن النت ضعيف شوية — جرّب تاني</p>
+            <h3 className="text-xl font-black text-gray-900 mb-2">{t('mk.load_fail')}</h3>
+            <p className="text-sm text-gray-500 mb-6">{t('mk.load_fail_sub')}</p>
             <button
               onClick={() => { retriesRef.current = 0; setLoadError(false); setLoading(true); setReloadKey((k) => k + 1) }}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#34D399] text-[#04352A] rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
             >
-              🔄 جرّب تاني
+              {t('mk.retry')}
             </button>
           </div>
         ) : filteredListings.length === 0 ? (
@@ -1433,7 +1433,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                     {(listing.district || listing.city) && (
                       <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
                         <MapPin className="w-3 h-3" />
-                        {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
+                        {[listing.district, cityFor(listing.city, locale)].filter(Boolean).join(locale.startsWith('ar') ? '، ' : ', ')}
                       </p>
                     )}
 

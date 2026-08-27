@@ -11,7 +11,7 @@ import {
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import BookingHelper from '@/components/BookingHelper'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { listingTitleFor } from '@/lib/i18n/catName'
+import { listingTitleFor, cityFor } from '@/lib/i18n/catName'
 import { periodPer } from '@/lib/pricing-periods'
 
 // ============================================================================
@@ -317,8 +317,8 @@ export default function BookingPage() {
     // Guest path (no account): require a name + a valid Egyptian mobile.
     const isGuest = !userId
     if (isGuest) {
-      if (!guestName.trim()) { setError('من فضلك اكتب اسمك'); return }
-      if (guestPhone.replace(/\D/g, '').length < 10) { setError('من فضلك اكتب رقم موبايل صحيح'); return }
+      if (!guestName.trim()) { setError(t('bk.err_name')); return }
+      if (guestPhone.replace(/\D/g, '').length < 10) { setError(t('bk.err_phone')); return }
     }
     setError(null)
     setStage('submitting')
@@ -517,7 +517,7 @@ export default function BookingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <a
-                href={`https://wa.me/201002229982?text=${encodeURIComponent(`مرحباً، شفت listing "${listing.title}" على مضمونة وعايز أحجز بس مكتوب إنه موقّف. ممكن تساعدني؟`)}`}
+                href={`https://wa.me/201002229982?text=${encodeURIComponent(t('bk.wa_paused', { title: listing.title }))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-semibold no-underline hover:bg-[#25D366]/90"
@@ -640,7 +640,7 @@ export default function BookingPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <a
-                href={`https://wa.me/201002229982?text=${encodeURIComponent(`مرحباً، شفت "${displayTitle}" على Madmona وعايز أعرف إمتى هيبقى متاح`)}`}
+                href={`https://wa.me/201002229982?text=${encodeURIComponent(t('bk.wa_notify', { title: displayTitle }))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-semibold no-underline hover:bg-[#25D366]/90"
@@ -714,7 +714,7 @@ export default function BookingPage() {
             {(listing.district || listing.city) && (
               <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                 <MapPin className="w-3 h-3" />
-                {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
+                {[listing.district, cityFor(listing.city, locale)].filter(Boolean).join(locale.startsWith('ar') ? '، ' : ', ')}
               </p>
             )}
           </div>
@@ -803,17 +803,17 @@ export default function BookingPage() {
             are enough; the booking can be claimed/linked to an account later. */}
         {!userId && (
           <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
-            <h3 className="text-base font-bold text-gray-900 mb-1">بياناتك للتواصل</h3>
-            <p className="text-xs text-gray-500 mb-3">مش لازم تعمل حساب — هنأكّد الحجز على رقمك على طول.</p>
-            <label className="block text-xs font-medium text-gray-700 mb-1">الاسم</label>
+            <h3 className="text-base font-bold text-gray-900 mb-1">{t('bk.contact_title')}</h3>
+            <p className="text-xs text-gray-500 mb-3">{t('bk.contact_sub')}</p>
+            <label className="block text-xs font-medium text-gray-700 mb-1">{t('bk.name')}</label>
             <input
               type="text"
               value={guestName}
               onChange={e => setGuestName(e.target.value)}
-              placeholder="اكتب اسمك"
+              placeholder={t('bk.name_ph')}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30 mb-3"
             />
-            <label className="block text-xs font-medium text-gray-700 mb-1">رقم الموبايل</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">{t('bk.mobile')}</label>
             <input
               type="tel"
               inputMode="numeric"
@@ -825,9 +825,9 @@ export default function BookingPage() {
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
             />
             <p className="text-[11px] text-gray-500 mt-2">
-              عندك حساب؟{' '}
+              {t('bk.have_account')}{' '}
               <Link href={`/auth/login?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`} className="text-[#059669] font-semibold">
-                سجّل دخول
+                {t('bk.login')}
               </Link>
             </p>
           </div>
@@ -836,11 +836,11 @@ export default function BookingPage() {
         {/* Date/time picker */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
           <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#059669]" /> {isFlatRule ? 'ميعاد الحجز' : t('booking.date')}
+            <Calendar className="w-4 h-4 text-[#059669]" /> {isFlatRule ? t('bk.slot') : t('booking.date')}
           </h3>
           {isFlatRule ? (
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">اليوم والساعة</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">{t('bk.day_time')}</label>
               <input
                 type="datetime-local"
                 value={startAt}
@@ -848,7 +848,7 @@ export default function BookingPage() {
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
                 required
               />
-              <p className="text-[11px] text-gray-500 mt-2">اختار اليوم والساعة اللي يناسبك، والمكان هيأكدلك الميعاد.</p>
+              <p className="text-[11px] text-gray-500 mt-2">{t('bk.slot_hint')}</p>
             </div>
           ) : (
             <div className="space-y-3">

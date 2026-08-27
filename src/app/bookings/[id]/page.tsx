@@ -10,6 +10,7 @@ import {
   CreditCard, X, AlertTriangle, Copy, Check,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { cityFor } from '@/lib/i18n/catName'
 
 // ============================================================================
 // /bookings/[id]
@@ -63,7 +64,7 @@ const STATUS_LABELS: Record<string, { labelKey: string; color: string; icon: Rea
 }
 
 function BookingDetailContent() {
-  const { t, lang, dir } = useT()
+  const { t, lang, dir, locale } = useT()
   const params = useParams()
   const searchParams = useSearchParams()
   const bookingId = params?.id as string
@@ -329,13 +330,7 @@ function BookingDetailContent() {
   const refCode = booking.reference_code || booking.id.slice(0, 8)
   const totalFmt = Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')
   const paymentConfirmationMessage = encodeURIComponent(
-`السلام عليكم، أنا حوّلت مبلغ الحجز عبر InstaPay.
-
-رقم الحجز: ${refCode}
-المبلغ: ${totalFmt} ج.م
-المنتج: ${booking.listing?.title || ''}
-
-ده screenshot من التحويل:`
+t('bkd.wa_receipt', { ref: refCode, amount: totalFmt, title: booking.listing?.title || '' })
   )
   const showPaymentBlock = (isOwnerCustomer || isGuestView) && booking.status === 'pending_payment'
 
@@ -469,7 +464,7 @@ function BookingDetailContent() {
               {(booking.listing.district || booking.listing.city) && (
                 <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  {[booking.listing.district, booking.listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
+                  {[booking.listing.district, cityFor(booking.listing.city, locale)].filter(Boolean).join(locale.startsWith('ar') ? '، ' : ', ')}
                 </p>
               )}
             </div>
@@ -571,7 +566,7 @@ function BookingDetailContent() {
 
         {phoneClean && isOwnerCustomer && booking.status === 'confirmed' && (
           <a
-            href={`https://wa.me/${phoneClean}?text=${encodeURIComponent(`مرحباً، عندي استفسار بخصوص الحجز رقم ${refCode}`)}`}
+            href={`https://wa.me/${phoneClean}?text=${encodeURIComponent(t('bkd.wa_inquiry', { ref: refCode }))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full bg-[#25D366] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#1da851] text-center no-underline"

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { catNameFor, listingTitleFor, listingDescriptionFor } from '@/lib/i18n/catName'
+import { catNameFor, listingTitleFor, listingDescriptionFor, cityFor, attrNameFor, optionLabelFor } from '@/lib/i18n/catName'
 import { RestaurantMenu, MartProductsCatalog, ProductBuyBox, CartCheckoutBar, type MenuItem, type MartProduct } from '@/components/OrderActions'
 import CartButton from '@/components/CartButton'
 import ListQuoteOrderBox from '@/components/ListQuoteOrderBox'
@@ -95,6 +95,9 @@ interface AttributeWithValue {
   attribute: {
     id: string
     name_ar: string
+    name_en?: string | null
+    name_i18n?: Record<string, string> | null
+    options_i18n?: Record<string, Record<string, string>> | null
     field_key: string
     field_type: string
     unit: string | null
@@ -240,7 +243,7 @@ export default function ListingDetailPage() {
             .from('listing_values')
             .select(`
               value,
-              attribute:attributes(id, name_ar, field_key, field_type, unit, options, display_order)
+              attribute:attributes(id, name_ar, name_en, name_i18n, options_i18n, field_key, field_type, unit, options, display_order)
             `)
             .eq('listing_id', l.id),
           // @ts-expect-error
@@ -372,12 +375,12 @@ export default function ListingDetailPage() {
       const data = await res.json()
       if (data?.ok && data.roomId) { router.push(`/chat/team?room=${data.roomId}`); return }
       if (data?.ok && data.pending) {
-        alert('تم إرسال استفسارك ✅\nهنبلّغ صاحب الإعلان على واتساب، وهيرد عليك في شات مضمونة.')
+        alert(t('ld.inquiry_sent'))
         return
       }
-      alert(data?.message || 'مقدرتش أبعت الاستفسار دلوقتي، جرّب تاني.')
+      alert(data?.message || t('ld.inquiry_fail'))
     } catch {
-      alert('مش قادر أبعت الاستفسار دلوقتي.')
+      alert(t('ld.inquiry_fail'))
     } finally {
       setInquiring(false)
     }
@@ -408,7 +411,7 @@ export default function ListingDetailPage() {
   const handleShare = async () => {
     if (!listing) return
     const url = `https://madmonacairo.com/marketplace/${listing.slug}`
-    const text = `شوف "${listing.title}" على Madmona Marketplace`
+    const text = t('ld.share_text', { title: displayTitle })
 
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
@@ -499,7 +502,7 @@ export default function ListingDetailPage() {
       : (listing.supplier?.profile?.phone || '')
   const phoneClean = phone.replace(/\D/g, '')
   const claimMessage = encodeURIComponent(
-    `عايز أستلم نشاطي "${displayTitle}" على Madmona.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
+    t('ld.claim_text', { title: displayTitle, url: `https://madmonacairo.com/marketplace/${listing.slug}` })
   )
   // 💸 (١٥ أغسطس ٢٠٢٦) fallback على `listings.price_egp`.
   //    الجريد (`MarketplaceClient.getMinPrice`) اتحطله نفس الـfallback ده يوم
@@ -524,8 +527,8 @@ export default function ListingDetailPage() {
 
   const whatsappMessage = encodeURIComponent(
     isDemo
-      ? `مرحباً، شفت "${displayTitle}" على Madmona وعايز أعرف إمتى هيبقى متاح. اللينك: https://madmonacairo.com/marketplace/${listing.slug}`
-      : `مرحباً، أنا مهتم بـ "${displayTitle}" على Madmona Marketplace.\nاللينك: https://madmonacairo.com/marketplace/${listing.slug}`
+      ? t('ld.wa_notify', { title: displayTitle, url: `https://madmonacairo.com/marketplace/${listing.slug}` })
+      : t('ld.wa_interest', { title: displayTitle, url: `https://madmonacairo.com/marketplace/${listing.slug}` })
   )
 
   const formatAttrValue = (av: AttributeWithValue): string => {
@@ -535,13 +538,13 @@ export default function ListingDetailPage() {
     if (attr.field_type === 'boolean') return v ? t('listing.val_yes') : t('listing.val_no')
     if (attr.field_type === 'select') {
       const opt = (attr.options || []).find(o => o.key === v)
-      return opt?.label_ar || String(v)
+      return opt ? optionLabelFor({ label_ar: opt.label_ar, label_i18n: attr.options_i18n?.[opt.key] }, locale) : String(v)
     }
     if (attr.field_type === 'multi_select' && Array.isArray(v)) {
       return v.map(key => {
         const opt = (attr.options || []).find(o => o.key === key)
-        return opt?.label_ar || String(key)
-      }).join('، ')
+        return opt ? optionLabelFor({ label_ar: opt.label_ar, label_i18n: attr.options_i18n?.[opt.key] }, locale) : String(key)
+      }).join(locale.startsWith('ar') ? '، ' : ', ')
     }
     if (attr.field_type === 'number' && attr.unit) {
       return `${v} ${attr.unit}`
@@ -702,7 +705,7 @@ export default function ListingDetailPage() {
                 {isDirectory && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-full text-xs font-bold text-gray-600">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    غير موثّق · من دليل مصر
+                    {t('ld.unverified_directory')}
                   </span>
                 )}
                 {!isDirectory && listing.supplier?.kyc_status === 'approved' && (
@@ -723,7 +726,7 @@ export default function ListingDetailPage() {
                 {(listing.district || listing.city) && (
                   <span className="flex items-center gap-1.5 text-gray-600 font-medium">
                     <MapPin className="w-4 h-4 text-[#059669]" />
-                    {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
+                    {[listing.district, cityFor(listing.city, locale)].filter(Boolean).join(locale.startsWith('ar') ? '، ' : ', ')}
                   </span>
                 )}
                 {listing.rating && Number(listing.rating) > 0 && (
@@ -747,15 +750,15 @@ export default function ListingDetailPage() {
               <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
                 <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                   <Tag className="w-4 h-4 text-[#2FA084]" />
-                  تفاصيل المنتج
+                  {t('ld.product_details')}
                 </h2>
 
                 {listing.product_condition && (() => {
                   const conditionMap: Record<string, { label: string; bg: string; text: string }> = {
-                    new: { label: 'جديد بالكرتونة', bg: 'bg-green-50 border-green-300', text: 'text-green-800' },
-                    used_like_new: { label: 'مستعمل (مثل الجديد)', bg: 'bg-blue-50 border-blue-300', text: 'text-blue-800' },
-                    used_good: { label: 'مستعمل (حالة جيدة)', bg: 'bg-amber-50 border-amber-300', text: 'text-amber-800' },
-                    refurbished: { label: 'Refurbished', bg: 'bg-purple-50 border-purple-300', text: 'text-purple-800' },
+                    new: { label: t('ld.cond_new'), bg: 'bg-green-50 border-green-300', text: 'text-green-800' },
+                    used_like_new: { label: t('ld.cond_used_like_new'), bg: 'bg-blue-50 border-blue-300', text: 'text-blue-800' },
+                    used_good: { label: t('ld.cond_used_good'), bg: 'bg-amber-50 border-amber-300', text: 'text-amber-800' },
+                    refurbished: { label: t('ld.cond_refurbished'), bg: 'bg-purple-50 border-purple-300', text: 'text-purple-800' },
                   }
                   const c = conditionMap[listing.product_condition!] || { label: listing.product_condition, bg: 'bg-gray-50 border-gray-300', text: 'text-gray-800' }
                   return (
@@ -770,31 +773,31 @@ export default function ListingDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {listing.brand && (
                     <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
-                      <span className="text-xs font-medium text-gray-500">الماركة</span>
+                      <span className="text-xs font-medium text-gray-500">{t('ld.brand')}</span>
                       <span className="text-sm font-bold text-gray-900">{listing.brand}</span>
                     </div>
                   )}
                   {listing.model_name && (
                     <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
-                      <span className="text-xs font-medium text-gray-500">الموديل</span>
+                      <span className="text-xs font-medium text-gray-500">{t('ld.model')}</span>
                       <span className="text-sm font-bold text-gray-900">{listing.model_name}</span>
                     </div>
                   )}
                   {listing.stock_quantity !== null && listing.stock_quantity !== undefined && !noDelivery && (
                     <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
-                      <span className="text-xs font-medium text-gray-500">المتاح</span>
+                      <span className="text-xs font-medium text-gray-500">{t('ld.available')}</span>
                       <span className={`text-sm font-bold ${listing.stock_quantity > 0 ? 'text-[#059669]' : 'text-red-600'}`}>
-                        {listing.stock_quantity > 0 ? `${listing.stock_quantity} قطعة` : 'نفد المخزون'}
+                        {listing.stock_quantity > 0 ? t('ld.n_pieces', { n: listing.stock_quantity }) : t('ld.out_of_stock')}
                       </span>
                     </div>
                   )}
                   {listing.shipping_available !== null && !noDelivery && (
                     <div className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
-                      <span className="text-xs font-medium text-gray-500">التوصيل</span>
+                      <span className="text-xs font-medium text-gray-500">{t('ld.delivery')}</span>
                       <span className="text-sm font-bold text-gray-900">
                         {listing.shipping_available
-                          ? (listing.shipping_cost ? `متاح · ${Number(listing.shipping_cost)} ج` : 'متاح')
-                          : 'استلام من المحل فقط'}
+                          ? (listing.shipping_cost ? t('ld.delivery_cost', { n: Number(listing.shipping_cost) }) : t('ld.available_word'))
+                          : t('ld.pickup_only')}
                       </span>
                     </div>
                   )}
@@ -808,7 +811,7 @@ export default function ListingDetailPage() {
               <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
                 <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                   <Tag className="w-4 h-4 text-[#2FA084]" />
-                  أسعار الجملة
+                  {t('ld.wholesale')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {listing.wholesale_tiers.map((tier, i) => {
@@ -819,8 +822,8 @@ export default function ListingDetailPage() {
                       <div key={i} className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
                         <div className="flex items-baseline justify-between gap-2 mb-1">
                           <span className="text-sm font-bold text-gray-900">
-                            {tier.unit || 'وحدة'}
-                            {qty > 0 && <span className="text-gray-500 font-medium"> · {qty.toLocaleString('ar-EG')} قطعة</span>}
+                            {tier.unit || t('ld.unit')}
+                            {qty > 0 && <span className="text-gray-500 font-medium"> · {t('ld.n_pieces', { n: qty.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US') })}</span>}
                           </span>
                           {total > 0 && (
                             <span className="text-sm font-black text-[#059669] tabular whitespace-nowrap">
@@ -830,7 +833,7 @@ export default function ListingDetailPage() {
                         </div>
                         {perUnit > 0 && (
                           <p className="text-xs text-gray-500">
-                            {perUnit.toLocaleString('ar-EG')} {t('common.egp')} للقطعة
+                            {perUnit.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')} {t('common.egp')} {t('ld.per_piece')}
                           </p>
                         )}
                       </div>
@@ -846,10 +849,10 @@ export default function ListingDetailPage() {
               <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
                 <h2 className="text-sm font-black text-gray-900 mb-1 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#2FA084]" />
-                  خدمات وإضافات
+                  {t('ld.services_addons')}
                 </h2>
                 <p className="text-xs text-gray-500 mb-4">
-                  {canBook ? 'تقدر تختارها وإنت بتحجز' : 'اسأل صاحب الإعلان عليها'}
+                  {canBook ? t('ld.addons_book') : t('ld.addons_ask')}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {listing.available_addons.map((addon, i) => {
@@ -879,7 +882,7 @@ export default function ListingDetailPage() {
               <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
                 <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-[#2FA084]" />
-                  بيقبل تأمين صحي
+                  {t('ld.insurance')}
                 </h2>
                 {Array.isArray(listing.insurance_partners) && listing.insurance_partners.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
@@ -894,11 +897,11 @@ export default function ListingDetailPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-600">اسأل على شركات التأمين المتعاقد معاها.</p>
+                  <p className="text-sm text-gray-600">{t('ld.insurance_ask')}</p>
                 )}
                 {Number(listing.insurance_deposit_pct) > 0 && (
                   <p className="text-xs text-gray-500 mt-3">
-                    مقدّم الحجز مع التأمين: {Number(listing.insurance_deposit_pct).toLocaleString('ar-EG')}٪
+                    {t('ld.insurance_deposit', { n: Number(listing.insurance_deposit_pct) })}
                   </p>
                 )}
               </section>
@@ -917,61 +920,61 @@ export default function ListingDetailPage() {
               <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
                 <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-[#2FA084]" />
-                  شروط الحجز
+                  {t('ld.terms')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(listing.min_booking_hours || listing.max_booking_hours) && (
                     <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
-                      <p className="text-xs text-gray-500 mb-1">مدة الحجز</p>
+                      <p className="text-xs text-gray-500 mb-1">{t('ld.duration')}</p>
                       <p className="text-sm font-bold text-gray-900">
-                        {listing.min_booking_hours && `من ${listing.min_booking_hours.toLocaleString('ar-EG')} ساعة`}
+                        {listing.min_booking_hours && t('ld.from_hours', { n: listing.min_booking_hours })}
                         {listing.min_booking_hours && listing.max_booking_hours && ' '}
-                        {listing.max_booking_hours && `لحد ${listing.max_booking_hours.toLocaleString('ar-EG')} ساعة`}
+                        {listing.max_booking_hours && t('ld.upto_hours', { n: listing.max_booking_hours })}
                       </p>
                     </div>
                   )}
 
                   {Number(listing.cancellation_hours) > 0 && (
                     <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
-                      <p className="text-xs text-gray-500 mb-1">الإلغاء</p>
+                      <p className="text-xs text-gray-500 mb-1">{t('ld.cancellation')}</p>
                       <p className="text-sm font-bold text-gray-900">
-                        مجاني قبل الميعاد بـ{Number(listing.cancellation_hours).toLocaleString('ar-EG')} ساعة
+                        {t('ld.free_cancel', { n: Number(listing.cancellation_hours) })}
                       </p>
                     </div>
                   )}
 
                   {Number(listing.advance_booking_days) > 0 && (
                     <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
-                      <p className="text-xs text-gray-500 mb-1">الحجز المسبق</p>
+                      <p className="text-xs text-gray-500 mb-1">{t('ld.advance')}</p>
                       <p className="text-sm font-bold text-gray-900">
-                        لحد {Number(listing.advance_booking_days).toLocaleString('ar-EG')} يوم مقدّمًا
+                        {t('ld.advance_days', { n: Number(listing.advance_booking_days) })}
                       </p>
                     </div>
                   )}
 
                   <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
-                    <p className="text-xs text-gray-500 mb-1">التأكيد</p>
+                    <p className="text-xs text-gray-500 mb-1">{t('ld.confirmation')}</p>
                     <p className="text-sm font-bold text-gray-900">
-                      {listing.auto_accept_bookings ? 'فوري — من غير انتظار' : 'بموافقة صاحب الإعلان'}
+                      {listing.auto_accept_bookings ? t('ld.instant') : t('ld.owner_approval')}
                     </p>
                   </div>
 
                   {listing.requires_security_deposit && (
                     <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
-                      <p className="text-xs text-gray-500 mb-1">تأمين مسترد</p>
+                      <p className="text-xs text-gray-500 mb-1">{t('ld.deposit_refundable')}</p>
                       <p className="text-sm font-bold text-gray-900">
                         {Number(listing.security_deposit_amount) > 0
                           ? `${Number(listing.security_deposit_amount).toLocaleString('ar-EG')} ${t('common.egp')}`
-                          : 'مطلوب — اسأل صاحب الإعلان على المبلغ'}
+                          : t('ld.deposit_ask')}
                       </p>
                     </div>
                   )}
 
                   {Number(listing.booking_deposit_pct) > 0 && (
                     <div className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
-                      <p className="text-xs text-gray-500 mb-1">مقدّم الحجز</p>
+                      <p className="text-xs text-gray-500 mb-1">{t('ld.booking_deposit')}</p>
                       <p className="text-sm font-bold text-gray-900">
-                        {Number(listing.booking_deposit_pct).toLocaleString('ar-EG')}٪ من الإجمالي
+                        {t('ld.deposit_pct', { n: Number(listing.booking_deposit_pct) })}
                       </p>
                     </div>
                   )}
@@ -983,14 +986,14 @@ export default function ListingDetailPage() {
               <section className="bg-white rounded-3xl shadow-soft p-6 md:p-8 animate-slide-up delay-50">
                 <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-[#2FA084]" />
-                  فروعنا
+                  {t('ld.branches')}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {listing.branches.map((b, i) => (
                     <div key={i} className="p-4 bg-[#FAFAF7] rounded-2xl border border-[#EFEEE9]">
                       <div className="flex items-center gap-2 mb-1">
                         <MapPin className="w-3.5 h-3.5 text-[#059669] flex-shrink-0" />
-                        <span className="text-sm font-bold text-gray-900">{b.name || `فرع ${i + 1}`}</span>
+                        <span className="text-sm font-bold text-gray-900">{b.name || t('ld.branch_n', { n: i + 1 })}</span>
                       </div>
                       {(b.address || b.city) && (
                         <div className="text-xs text-gray-500 leading-relaxed pr-5">
@@ -1030,28 +1033,28 @@ export default function ListingDetailPage() {
                   (catSlug === 'beauty' || catSlug.startsWith('beauty-')
                    || ['bridal-beauty','makeup-artists','hair-stylists','nail-care','skincare-facial','brows-lashes','hair-removal','massage-spa'].includes(catSlug)
                    || track === 'services')
-                    ? 'الخدمات والأسعار' : undefined
+                    ? t('ld.services_prices') : undefined
                 }
               />
             )}
 
             {isRealEstate && !isDirectory && (
               <div className="lg:hidden bg-white rounded-3xl shadow-card p-5 space-y-2.5">
-                <p className="text-xs font-bold text-gray-500">عقار للبيع — احفظه في مفضلتك أو شوف كل تفاصيل السوق العقاري</p>
+                <p className="text-xs font-bold text-gray-500">{t('ld.sale_hint')}</p>
                 <button
                   onClick={toggleFavorite}
                   disabled={togglingFav}
                   className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${isFavorite ? 'bg-rose-50 text-rose-600 border-2 border-rose-200' : 'bg-[#34D399] text-[#04352A] shadow-elevated'}`}
                 >
                   <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
-                  {isFavorite ? 'محفوظ في المفضلة' : 'أضف للمفضلة'}
+                  {isFavorite ? t('ld.saved') : t('ld.add_fav')}
                 </button>
                 <Link
                   href="/real-estate"
                   className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm bg-white text-[#059669] border-2 border-[#059669] no-underline"
                 >
                   <Building2 className="w-4 h-4" />
-                  المنصة العقارية — قارن وشوف كل المشاريع
+                  {t('ld.bourse_link')}
                 </Link>
               </div>
             )}
@@ -1135,7 +1138,7 @@ export default function ListingDetailPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {attributes.map(av => (
                             <div key={av.attribute.id} className="flex items-center justify-between p-3 bg-[#FAFAF7] rounded-xl">
-                              <span className="text-xs font-medium text-gray-500">{av.attribute.name_ar}</span>
+                              <span className="text-xs font-medium text-gray-500">{attrNameFor(av.attribute, locale)}</span>
                               <span className="text-sm font-bold text-gray-900">
                                 {formatAttrValue(av)}
                               </span>
@@ -1315,7 +1318,7 @@ export default function ListingDetailPage() {
                       className="flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-3.5 rounded-2xl font-bold text-sm shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all w-full disabled:opacity-60"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      {inquiring ? 'جاري الإرسال…' : 'استفسر عن الإعلان'}
+                      {inquiring ? t('ld.inquiring') : t('ld.inquire')}
                     </button>
                   )}
 
@@ -1345,10 +1348,10 @@ export default function ListingDetailPage() {
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 bg-[#34D399] text-[#04352A] py-2.5 rounded-2xl font-bold text-xs no-underline w-full"
                     >
-                      هو ده نشاطك؟ استلمه
+                      {t('ld.claim')}
                     </a>
                     <p className="text-[11px] text-gray-400 leading-relaxed">
-                      بيانات أولية من مصدر عام — لسه مش موثّقة من Madmona.<br />© OpenStreetMap contributors
+                      {t('ld.osm_note')}<br />© OpenStreetMap contributors
                     </p>
                   </div>
                 )}
@@ -1357,21 +1360,21 @@ export default function ListingDetailPage() {
 
               {isRealEstate && !isDirectory && (
                 <div className="bg-white rounded-3xl shadow-card p-6 space-y-2.5">
-                  <p className="text-xs font-bold text-gray-500">عقار للبيع — احفظه في مفضلتك أو شوف كل تفاصيل السوق العقاري</p>
+                  <p className="text-xs font-bold text-gray-500">{t('ld.sale_hint')}</p>
                   <button
                     onClick={toggleFavorite}
                     disabled={togglingFav}
                     className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm transition-all ${isFavorite ? 'bg-rose-50 text-rose-600 border-2 border-rose-200' : 'bg-[#34D399] text-[#04352A] shadow-elevated hover:shadow-luxe hover:-translate-y-0.5'}`}
                   >
                     <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500 text-rose-500' : ''}`} />
-                    {isFavorite ? 'محفوظ في المفضلة' : 'أضف للمفضلة'}
+                    {isFavorite ? t('ld.saved') : t('ld.add_fav')}
                   </button>
                   <Link
                     href="/real-estate"
                     className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm bg-white text-[#059669] border-2 border-[#059669] no-underline hover:bg-[#34D399]/5"
                   >
                     <Building2 className="w-4 h-4" />
-                    المنصة العقارية — قارن وشوف كل المشاريع
+                    {t('ld.bourse_link')}
                   </Link>
                 </div>
               )}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import {
   ArrowRight, Trash2, Minus, Plus, ShoppingBag, Store,
   AlertCircle, ChevronLeft, Image as ImageIcon,
@@ -19,6 +20,7 @@ import {
 // ============================================================================
 
 export default function CartPage() {
+  const { t, locale } = useT()
   const router = useRouter()
   const cart = useCart()
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -38,7 +40,7 @@ export default function CartPage() {
             >
               <ArrowRight className="w-4 h-4 text-gray-700" />
             </Link>
-            <h1 className="text-sm font-bold text-gray-700">السلة</h1>
+            <h1 className="text-sm font-bold text-gray-700">{t('cart.title')}</h1>
           </div>
         </header>
 
@@ -47,15 +49,15 @@ export default function CartPage() {
             <div className="w-20 h-20 mx-auto mb-5 bg-gray-100 rounded-3xl flex items-center justify-center">
               <ShoppingBag className="w-10 h-10 text-gray-400" />
             </div>
-            <h2 className="text-xl font-black text-gray-900 mb-2">السلة فاضية</h2>
+            <h2 className="text-xl font-black text-gray-900 mb-2">{t('cart.empty')}</h2>
             <p className="text-sm text-gray-500 mb-6">
-              لسه ماحطيتش حاجة في السلة. كمّل تسوّق وضيف اللي يعجبك.
+              {t('cart.empty_sub')}
             </p>
             <Link
               href="/marketplace"
               className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-6 py-3 rounded-2xl font-bold shadow-elevated hover:-translate-y-0.5 hover:shadow-luxe transition-all"
             >
-              تصفح الماركت بليس
+              {t('cart.browse')}
               <ChevronLeft className="w-4 h-4" />
             </Link>
           </div>
@@ -76,13 +78,13 @@ export default function CartPage() {
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
           <h1 className="text-sm font-bold text-gray-700 flex-1">
-            السلة <span className="text-gray-400 tabular">({cart.items.length})</span>
+            {t('cart.title')} <span className="text-gray-400 tabular">({cart.items.length})</span>
           </h1>
           <button
             onClick={() => setShowClearConfirm(true)}
             className="text-xs font-bold text-red-600 hover:text-red-700 px-3 py-1.5 rounded-full hover:bg-red-50 transition-all"
           >
-            مسح الكل
+            {t('cart.clear_all')}
           </button>
         </div>
       </header>
@@ -96,7 +98,7 @@ export default function CartPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                {cart.order_type === 'food' ? 'مطعم' : 'متجر'}
+                {cart.order_type === 'food' ? t('cart.restaurant') : t('cart.store')}
               </p>
               <p className="font-bold text-gray-900 truncate">{cart.supplier_name}</p>
             </div>
@@ -122,12 +124,12 @@ export default function CartPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-1">{item.name}</h3>
                   <p className="text-xs text-gray-500 tabular mb-2">
-                    {item.unit_price.toLocaleString('ar-EG')} ج.م × {item.quantity}
+                    {item.unit_price.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')} {t('cart.egp')} × {item.quantity}
                   </p>
 
                   {item.notes && (
                     <p className="text-[11px] text-gray-500 italic mb-2 line-clamp-1">
-                      ملاحظة: {item.notes}
+                      {t('cart.note')} {item.notes}
                     </p>
                   )}
 
@@ -158,7 +160,7 @@ export default function CartPage() {
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-black text-[#059669] tabular">
                         {(item.unit_price * item.quantity).toLocaleString('ar-EG')}
-                        <span className="text-[10px] font-medium text-gray-500 ms-1">ج.م</span>
+                        <span className="text-[10px] font-medium text-gray-500 ms-1">{t('cart.egp')}</span>
                       </p>
                       <button
                         onClick={() => removeItem(item.key)}
@@ -177,14 +179,14 @@ export default function CartPage() {
           {/* Subtotal */}
           <div className="bg-gradient-to-l from-[#34D399]/5 to-transparent border-t border-[#059669]/10 px-4 py-5">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-gray-700">المجموع الفرعي</span>
+              <span className="text-sm font-bold text-gray-700">{t('cart.subtotal')}</span>
               <span className="text-2xl font-black text-[#059669] tabular">
                 {subtotal.toLocaleString('ar-EG')}
-                <span className="text-sm font-medium text-gray-500 ms-1">ج.م</span>
+                <span className="text-sm font-medium text-gray-500 ms-1">{t('cart.egp')}</span>
               </span>
             </div>
             <p className="text-[11px] text-gray-500 mt-1">
-              مصاريف التوصيل هتتحسب عند الـ checkout
+              {t('cart.delivery_at_checkout')}
             </p>
           </div>
         </section>
@@ -196,13 +198,13 @@ export default function CartPage() {
             className="inline-flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-[#059669] transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
-            كمّل تسوّق
+            {t('cart.continue')}
           </Link>
           <button
             onClick={() => router.push('/checkout')}
             className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-8 py-4 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
           >
-            كمّل لتأكيد الطلب
+            {t('cart.checkout')}
             <ChevronLeft className="w-4 h-4" />
           </button>
         </div>
@@ -212,17 +214,17 @@ export default function CartPage() {
       <div className="fixed bottom-0 inset-x-0 glass border-t border-white/40 z-50 lg:hidden shadow-luxe">
         <div className="max-w-3xl mx-auto p-3 flex items-center gap-3">
           <div className="flex-1">
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">المجموع</p>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('cart.total')}</p>
             <p className="text-xl font-black text-[#059669] tabular leading-tight">
               {subtotal.toLocaleString('ar-EG')}
-              <span className="text-xs font-medium text-gray-500 ms-1">ج.م</span>
+              <span className="text-xs font-medium text-gray-500 ms-1">{t('cart.egp')}</span>
             </p>
           </div>
           <button
             onClick={() => router.push('/checkout')}
             className="flex items-center gap-1.5 bg-[#34D399] text-[#04352A] px-6 py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
           >
-            تأكيد الطلب
+            {t('cart.confirm')}
             <ChevronLeft className="w-4 h-4" />
           </button>
         </div>
@@ -235,16 +237,16 @@ export default function CartPage() {
             <div className="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-2xl flex items-center justify-center">
               <AlertCircle className="w-6 h-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-black text-gray-900 mb-2 text-center">تمسح السلة كلها؟</h3>
+            <h3 className="text-lg font-black text-gray-900 mb-2 text-center">{t('cart.clear_q')}</h3>
             <p className="text-sm text-gray-500 mb-5 text-center">
-              هتفقد كل الأصناف اللي ضفتها. لو متأكد كمّل.
+              {t('cart.clear_sub')}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowClearConfirm(false)}
                 className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-2xl font-bold text-sm hover:bg-gray-200 transition-all"
               >
-                ابقى لأ
+                {t('cart.keep')}
               </button>
               <button
                 onClick={() => {
@@ -253,7 +255,7 @@ export default function CartPage() {
                 }}
                 className="flex-1 bg-red-600 text-white py-3 rounded-2xl font-bold text-sm shadow-card hover:bg-red-700 transition-all"
               >
-                امسح السلة
+                {t('cart.clear_btn')}
               </button>
             </div>
           </div>

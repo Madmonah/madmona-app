@@ -87,7 +87,7 @@ export default function TopNav() {
               />
             </div>
             <div className="hidden sm:block">
-              <p className="font-black text-white text-base leading-none">مضمونة</p>
+              <p className="font-black text-white text-base leading-none">{t('tn.brand')}</p>
               <p className="text-[9px] text-white/70 font-bold tracking-[0.25em] mt-0.5">
                 MADMONA
               </p>
@@ -155,7 +155,7 @@ export default function TopNav() {
                   />
                 </div>
                 <div>
-                  <p className="font-black text-[#059669]">مضمونة</p>
+                  <p className="font-black text-[#059669]">{t('tn.brand')}</p>
                   <p className="text-[9px] text-gray-500 font-bold tracking-[0.2em]">
                     MADMONA
                   </p>
@@ -186,11 +186,11 @@ export default function TopNav() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-gray-900">شغلي</p>
+                    <p className="font-bold text-gray-900">{t('tn.my_work')}</p>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {((staff.due ?? 0) > 0 || (staff.tasks ?? 0) > 0)
-                        ? `${staff.due ?? 0} مكالمة · ${staff.tasks ?? 0} تاسك مستنيينك`
-                        : 'حضورك · طلباتك · مكالماتك · تاسكاتك'}
+                        ? t('tn.staff_due', { calls: staff.due ?? 0, tasks: staff.tasks ?? 0 })
+                        : t('tn.staff_sub')}
                     </p>
                   </div>
                 </Link>
@@ -230,8 +230,8 @@ export default function TopNav() {
                   <Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">ضيف المنتج</p>
-                  <p className="text-xs text-gray-500 mt-0.5">ابدأ تبيع أو تؤجّر على مضمونة</p>
+                  <p className="font-bold text-gray-900">{t('tn.add_product')}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t('tn.add_product_sub')}</p>
                 </div>
               </Link>
 
@@ -244,8 +244,8 @@ export default function TopNav() {
                   <Briefcase className="w-5 h-5 text-[#059669]" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">التوظيف</p>
-                  <p className="text-xs text-gray-500 mt-0.5">تقدّم لفرص العمل في مضمونة</p>
+                  <p className="font-bold text-gray-900">{t('tn.careers')}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t('tn.careers_sub')}</p>
                 </div>
               </Link>
 
@@ -259,8 +259,8 @@ export default function TopNav() {
                     <LogOut className="w-5 h-5 text-red-500" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-gray-900">تسجيل الخروج</p>
-                    <p className="text-xs text-gray-500 mt-0.5">إنهاء الجلسة الحالية</p>
+                    <p className="font-bold text-gray-900">{t('tn.logout')}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{t('tn.logout_sub')}</p>
                   </div>
                 </button>
               ) : (
@@ -300,7 +300,7 @@ export default function TopNav() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3.5 rounded-2xl font-bold shadow-soft hover:shadow-elevated hover:-translate-y-0.5 transition-all no-underline"
               >
-                💬 كلّمنا مباشر — رد فوري
+                {t('tn.chat_now')}
               </Link>
             </div>
           </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, MapPin, Phone, User, MessageCircle, Loader2,
@@ -23,6 +24,8 @@ import WhatsAppLogin from '@/components/WhatsAppLogin'
 type PaymentMethod = 'instapay' | 'cod' | 'wallet'
 
 export default function CheckoutPage() {
+  const { t, locale } = useT()
+  const nf = (n: number) => n.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')
   const router = useRouter()
   const cart = useCart()
 
@@ -185,23 +188,23 @@ export default function CheckoutPage() {
 
     // Client-side validation
     if (!isAuthed && !name.trim()) {
-      setError('الاسم مطلوب')
+      setError(t('co.err_name'))
       return
     }
     if (!validatePhone(phone)) {
-      setError('رقم تليفون غير صحيح. لازم يبدأ بـ 01 ويبقى ١١ رقم')
+      setError(t('co.err_phone'))
       return
     }
     if (!address.trim()) {
-      setError('العنوان مطلوب')
+      setError(t('co.err_address'))
       return
     }
     if (!cart.supplier_id || cart.items.length === 0) {
-      setError('السلة فاضية')
+      setError(t('co.err_empty'))
       return
     }
     if (cart.order_type !== 'food' && cart.order_type !== 'product') {
-      setError('نوع الأوردر غير صحيح')
+      setError(t('co.err_type'))
       return
     }
 
@@ -237,7 +240,7 @@ export default function CheckoutPage() {
 
       if (rpcError) {
         console.error('[checkout] rpc error:', rpcError)
-        setError(rpcError.message || 'حصل خطأ، حاول تاني')
+        setError(rpcError.message || t('co.err_generic'))
         setSubmitting(false)
         return
       }
@@ -249,7 +252,7 @@ export default function CheckoutPage() {
         // ويتعمل أوردر تاني مطابق والمورد يجهّز الاتنين. الزرار يفضل متقفل
         // والكارت يتمسح — والعميل يتوجّه لأوردراته/الواتساب بدل إعادة الإرسال.
         clearCart()
-        setError('الأوردر اتسجّل بس حصلت مشكلة في التأكيد — شوف «أوردراتي» أو كلّمنا على واتساب. متعملش الأوردر تاني.')
+        setError(t('co.err_confirm'))
         return
       }
 
@@ -275,8 +278,8 @@ export default function CheckoutPage() {
           if (!payRes.ok) {
             const pj = await payRes.json().catch(() => ({}))
             const msg = pj.error === 'insufficient_funds'
-              ? 'الرصيد مش كافٍ. الأوردر اتعمل وتقدر تدفعه بطريقة تانية من صفحة الأوردر.'
-              : 'تعذّر الدفع من المحفظة. الأوردر اتعمل وتقدر تدفعه من صفحة الأوردر.'
+              ? t('co.wallet_low')
+              : t('co.wallet_fail')
             clearCart()
             setError(msg)
             router.replace(`/order/${result.reference_code}?id=${result.order_id}`)
@@ -303,7 +306,7 @@ export default function CheckoutPage() {
       router.replace(`/order/${result.reference_code}?id=${result.order_id}`)
     } catch (e) {
       console.error('[checkout] submit error:', e)
-      setError(e instanceof Error ? e.message : 'حصل خطأ مش متوقع')
+      setError(e instanceof Error ? e.message : t('co.err_unexpected'))
       setSubmitting(false)
     }
   }
@@ -332,7 +335,7 @@ export default function CheckoutPage() {
           >
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <h1 className="text-sm font-bold text-gray-700 flex-1">تأكيد الطلب</h1>
+          <h1 className="text-sm font-bold text-gray-700 flex-1">{t('co.title')}</h1>
         </div>
       </header>
 
@@ -342,15 +345,15 @@ export default function CheckoutPage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-black text-gray-900 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-[#059669]" />
-              ملخّص الطلب
+              {t('co.summary')}
             </h2>
             <Link href="/cart" className="text-xs font-bold text-[#059669] hover:underline">
-              تعديل السلة
+              {t('co.edit_cart')}
             </Link>
           </div>
           {cart.supplier_name && (
             <p className="text-xs text-gray-500 mb-3">
-              من <strong className="text-gray-700">{cart.supplier_name}</strong>
+              {t('co.from')} <strong className="text-gray-700">{cart.supplier_name}</strong>
             </p>
           )}
           <div className="space-y-2 mb-4">
@@ -360,28 +363,28 @@ export default function CheckoutPage() {
                   {it.name} <span className="text-gray-400 tabular">×{it.quantity}</span>
                 </span>
                 <span className="font-bold text-gray-900 tabular flex-shrink-0">
-                  {(it.unit_price * it.quantity).toLocaleString('ar-EG')} ج.م
+                  {nf(it.unit_price * it.quantity)} {t('cart.egp')}
                 </span>
               </div>
             ))}
           </div>
           <div className="border-t border-gray-100 pt-3 space-y-1.5">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">المجموع الفرعي</span>
-              <span className="font-bold tabular">{subtotal.toLocaleString('ar-EG')} ج.م</span>
+              <span className="text-gray-500">{t('co.subtotal')}</span>
+              <span className="font-bold tabular">{nf(subtotal)} {t('cart.egp')}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">التوصيل</span>
+              <span className="text-gray-500">{t('co.delivery')}</span>
               <span className="font-bold tabular text-gray-500">
                 {deliveryFee === 0
-                  ? (freeOver !== null && subtotal >= freeOver ? 'مجانًا 🎉' : 'مجانًا')
-                  : `${Number(deliveryFee).toLocaleString('ar-EG')} ج.م`}
+                  ? (freeOver !== null && subtotal >= freeOver ? t('co.free_celebrate') : t('co.free'))
+                  : `${nf(Number(deliveryFee))} ${t('cart.egp')}`}
               </span>
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-100">
-              <span className="text-sm font-black text-gray-900">الإجمالي</span>
+              <span className="text-sm font-black text-gray-900">{t('co.total')}</span>
               <span className="text-xl font-black text-[#059669] tabular">
-                {total.toLocaleString('ar-EG')} ج.م
+                {nf(total)} {t('cart.egp')}
               </span>
             </div>
           </div>
@@ -392,11 +395,11 @@ export default function CheckoutPage() {
         {!isAuthed && (
           <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-75">
             <p className="text-xs text-gray-600 mb-3 leading-relaxed">
-              <b className="text-[#059669]">عندك حساب أو أول مرة؟</b> ادخل بالواتساب في ثانية —
-              هيتفعّلك رصيد «شير واكسب» والمحفظة وتتبّع أوردراتك.
+              <b className="text-[#059669]">{t('co.login_pre')}</b> {t('co.login_post')}
+              
             </p>
             <WhatsAppLogin
-              label="ادخل بالواتساب قبل ما تأكّد 🧞"
+              label={t('co.login_btn')}
               onDone={() => window.location.reload()}
             />
           </section>
@@ -406,25 +409,25 @@ export default function CheckoutPage() {
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-100">
           <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
             <User className="w-4 h-4 text-[#059669]" />
-            بياناتك
+            {t('co.your_details')}
           </h2>
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">
-                الاسم {!isAuthed && <span className="text-red-500">*</span>}
+                {t('co.name')} {!isAuthed && <span className="text-red-500">*</span>}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="اسمك الكامل"
+                placeholder={t('co.name_ph')}
                 disabled={!!isAuthed && !!profileName}
                 className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium disabled:bg-gray-50 disabled:text-gray-500"
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">
-                رقم الموبايل <span className="text-red-500">*</span>
+                {t('co.mobile')} <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -445,17 +448,17 @@ export default function CheckoutPage() {
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-200">
           <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
             <MapPin className="w-4 h-4 text-[#059669]" />
-            عنوان التوصيل
+            {t('co.address_title')}
           </h2>
           <div className="space-y-3">
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">
-                العنوان بالتفصيل <span className="text-red-500">*</span>
+                {t('co.address')} <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="الشارع + اسم العمارة + رقم الشقة + علامة مميزة"
+                placeholder={t('co.address_ph')}
                 rows={3}
                 className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium resize-none"
               />
@@ -477,14 +480,14 @@ export default function CheckoutPage() {
               </div>
               <div className="flex-1">
                 <p className="font-bold text-sm text-gray-900">
-                  {geo ? 'موقعك اتسجّل ✓' : 'شارك موقعك (اختياري)'}
+                  {geo ? t('co.geo_saved') : t('co.geo_share')}
                 </p>
                 <p className="text-[11px] text-gray-500">
-                  {geoState === 'loading' ? 'بنحدد موقعك…'
-                    : geoState === 'denied' ? 'مسمحتش للمتصفح — اكتب العنوان بالتفصيل وهنوصلك'
-                    : geoState === 'unsupported' ? 'متصفحك مش بيدعم تحديد الموقع'
-                    : geo ? 'المندوب هيلاقيك على الخريطة'
-                    : 'بيوصل المندوب أسرع وأدق'}
+                  {geoState === 'loading' ? t('co.geo_loading')
+                    : geoState === 'denied' ? t('co.geo_denied')
+                    : geoState === 'unsupported' ? t('co.geo_unsupported')
+                    : geo ? t('co.geo_found')
+                    : t('co.geo_hint')}
                 </p>
               </div>
               {geo && <CheckCircle className="w-5 h-5 text-[#059669] flex-shrink-0" />}
@@ -492,34 +495,34 @@ export default function CheckoutPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">المدينة</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">{t('co.city')}</label>
                 <input
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="القاهرة"
+                  placeholder={t('co.city_ph')}
                   className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">المنطقة</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">{t('co.district')}</label>
                 <input
                   type="text"
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
-                  placeholder="مصر الجديدة"
+                  placeholder={t('co.district_ph')}
                   className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium"
                 />
               </div>
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">
-                ملاحظات (اختياري)
+                {t('co.notes')}
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="مثلا: اتصل قبل الوصول، البواب اسمه عم محمود..."
+                placeholder={t('co.notes_ph')}
                 rows={2}
                 className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/20 outline-none transition-all text-sm font-medium resize-none"
               />
@@ -531,7 +534,7 @@ export default function CheckoutPage() {
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-300">
           <h2 className="text-sm font-black text-gray-900 mb-4 flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-[#059669]" />
-            طريقة الدفع
+            {t('co.payment')}
           </h2>
           <div className="space-y-3">
             {/* Wallet option — authenticated users only (hidden for food while COD-only is on) */}
@@ -552,10 +555,10 @@ export default function CheckoutPage() {
                   <Wallet className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-sm text-gray-900">الدفع من المحفظة</p>
+                  <p className="font-bold text-sm text-gray-900">{t('co.wallet')}</p>
                   <p className="text-[11px] text-gray-500">
-                    رصيدك الحالي: {walletBalance.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م
-                    {walletBalance < total ? ' — رصيد غير كافٍ' : ' — خصم فوري'}
+                    {t('co.wallet_balance')} {walletBalance.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {t('cart.egp')}
+                    {walletBalance < total ? t('co.wallet_insufficient') : t('co.wallet_instant')}
                   </p>
                 </div>
                 {payment === 'wallet' && <CheckCircle className="w-5 h-5 text-[#059669] flex-shrink-0" />}
@@ -577,9 +580,9 @@ export default function CheckoutPage() {
                 <CreditCard className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-sm text-gray-900">InstaPay / فودافون كاش — على حساب مضمونة</p>
+                <p className="font-bold text-sm text-gray-900">{t('co.instapay')}</p>
                 <p className="text-[11px] text-gray-500">
-                  تحويل على مضمونة، وفلوسك محمية لحد ما يوصلك الأوردر سليم
+                  {t('co.instapay_sub')}
                 </p>
               </div>
               {payment === 'instapay' && <CheckCircle className="w-5 h-5 text-[#059669] flex-shrink-0" />}
@@ -601,9 +604,9 @@ export default function CheckoutPage() {
                   <Banknote className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-sm text-gray-900">كاش عند الاستلام</p>
+                  <p className="font-bold text-sm text-gray-900">{t('co.cod')}</p>
                   <p className="text-[11px] text-gray-500">
-                    {foodCodOnly ? 'ادفع كاش وقت ما يوصلك الأوردر — الدفع الأونلاين للمطاعم راجع قريبًا' : 'ادفع كاش للمندوب وقت ما يوصلك الأوردر'}
+                    {foodCodOnly ? t('co.cod_food') : t('co.cod_sub')}
                   </p>
                 </div>
                 {payment === 'cod' && <CheckCircle className="w-5 h-5 text-[#059669] flex-shrink-0" />}
@@ -620,7 +623,7 @@ export default function CheckoutPage() {
                   className="w-4 h-4 accent-[#059669]"
                 />
                 <span className="text-xs text-gray-700 leading-relaxed">
-                  <b className="text-[#059669]">استخدم رصيد «شير واكسب»</b> لو متاح — خصم تلقائي من إجمالي الطلب (بحد أقصى عمولة مضمونة في الطلب)
+                  <b className="text-[#059669]">{t('co.share_earn')}</b> {t('co.share_earn_sub')}
                 </span>
               </label>
             )}
@@ -631,8 +634,8 @@ export default function CheckoutPage() {
         <div className="bg-gradient-to-l from-[#34D399]/5 to-transparent border border-[#059669]/10 rounded-2xl p-4 flex items-start gap-3">
           <CheckCircle className="w-5 h-5 text-[#2FA084] flex-shrink-0 mt-0.5" />
           <div className="text-xs text-gray-700 leading-relaxed">
-            <p className="font-bold mb-1">حماية كاملة من مضمونة</p>
-            <p>فلوسك بتعدّي علينا الأول وبتروح للمورد بعد ما يوصلك الأوردر سليم. لو حصل أي مشكلة، إحنا معاك على واتساب ٢٤/٧.</p>
+            <p className="font-bold mb-1">{t('co.protection')}</p>
+            <p>{t('co.protection_sub')}</p>
           </div>
         </div>
 
@@ -654,11 +657,11 @@ export default function CheckoutPage() {
             {submitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                جاري التأكيد...
+                {t('co.confirming')}
               </>
             ) : (
               <>
-                أكّد الأوردر · {total.toLocaleString('ar-EG')} ج.م
+                {t('co.confirm_btn')} · {nf(total)} {t('cart.egp')}
                 <ChevronLeft className="w-4 h-4" />
               </>
             )}
@@ -677,11 +680,11 @@ export default function CheckoutPage() {
             {submitting ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                جاري التأكيد...
+                {t('co.confirming')}
               </>
             ) : (
               <>
-                أكّد الأوردر · {total.toLocaleString('ar-EG')} ج.م
+                {t('co.confirm_btn')} · {nf(total)} {t('cart.egp')}
               </>
             )}
           </button>

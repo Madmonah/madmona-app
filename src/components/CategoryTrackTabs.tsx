@@ -218,7 +218,7 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
                   {g.image_url && g.emoji && <span className="text-xl">{g.emoji}</span>}
                   {gName(g)}
                 </h3>
-                <p className="text-white/70 text-[11px] font-bold mt-1">{g.count} قسم</p>
+                <p className="text-white/70 text-[11px] font-bold mt-1">{t('mk.n_sections', { n: g.count })}</p>
               </div>
               <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <ArrowLeft className="w-4 h-4 text-white" />

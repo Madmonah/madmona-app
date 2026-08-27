@@ -6,7 +6,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { ArrowLeft, MapPin, Star, ImageIcon, Clock } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { catNameFor, listingTitleFor } from '@/lib/i18n/catName'
+import { catNameFor, listingTitleFor, cityFor } from '@/lib/i18n/catName'
 
 // ============================================================
 // FeaturedListings — "المختار بعناية"
@@ -229,7 +229,7 @@ export default function FeaturedListings() {
                 {(listing.district || listing.city) && (
                   <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
                     <MapPin className="w-3 h-3" />
-                    {[listing.district, listing.city].filter(Boolean).join(lang === 'ar' ? '، ' : ', ')}
+                    {[listing.district, cityFor(listing.city, locale)].filter(Boolean).join(locale.startsWith('ar') ? '، ' : ', ')}
                   </p>
                 )}
 
