@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useState, type FormEvent } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
@@ -17,6 +18,7 @@ import {
 type Stage = 'loading' | 'invalid' | 'expired' | 'used' | 'ready' | 'success'
 
 function ResetPasswordContent() {
+  const { t } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token') || ''
@@ -61,11 +63,11 @@ function ResetPasswordContent() {
     setError(null)
 
     if (password.length < 8) {
-      setError('كلمة السر لازم تكون 8 حروف على الأقل')
+      setError(t('rp.pw_short'))
       return
     }
     if (password !== confirmPassword) {
-      setError('كلمتين السر مش متطابقتين')
+      setError(t('rp.mismatch'))
       return
     }
 
@@ -79,7 +81,7 @@ function ResetPasswordContent() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'حصل خطأ، حاول تاني')
+        setError(data.error || t('rp.err'))
         setSubmitting(false)
         return
       }
@@ -87,7 +89,7 @@ function ResetPasswordContent() {
       setStage('success')
       setSubmitting(false)
     } catch {
-      setError('حصل خطأ في الاتصال. حاول تاني.')
+      setError(t('rp.err_conn'))
       setSubmitting(false)
     }
   }
@@ -111,7 +113,7 @@ function ResetPasswordContent() {
           {stage === 'loading' && (
             <div className="bg-white rounded-3xl shadow-luxe p-10 text-center">
               <Loader2 className="w-8 h-8 text-[#059669] animate-spin mx-auto mb-3" />
-              <p className="text-sm text-gray-600">جاري التحقق من اللينك...</p>
+              <p className="text-sm text-gray-600">{t('rp.checking')}</p>
             </div>
           )}
 
@@ -122,21 +124,21 @@ function ResetPasswordContent() {
                 <AlertCircle className="w-8 h-8 text-red-600" />
               </div>
               <h2 className="text-2xl font-black mb-3">
-                {stage === 'expired' && 'اللينك انتهت صلاحيته'}
-                {stage === 'used' && 'اللينك اتستخدم بالفعل'}
-                {stage === 'invalid' && 'اللينك مش صحيح'}
+                {stage === 'expired' && t('rp.expired')}
+                {stage === 'used' && t('rp.used')}
+                {stage === 'invalid' && t('rp.invalid')}
               </h2>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                {stage === 'expired' && 'اللينك ده كان صالح لمدة ساعة بس. اطلب لينك جديد.'}
-                {stage === 'used' && 'كلمة السر اتغيرت بالفعل بستخدام اللينك ده. لو محتاج تغيرها تاني، اطلب لينك جديد.'}
-                {stage === 'invalid' && 'اللينك مش معروف. ممكن يكون اتغير أو اتمسح.'}
+                {stage === 'expired' && t('rp.expired_note')}
+                {stage === 'used' && t('rp.used_note')}
+                {stage === 'invalid' && t('rp.invalid_note')}
               </p>
               <Link
                 href="/auth/forgot-password"
                 className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-6 py-3.5 rounded-xl font-bold shadow-elevated hover:shadow-luxe transition-all no-underline"
               >
                 <KeyRound className="w-4 h-4" />
-                اطلب لينك جديد
+                {t('rp.request_new')}
               </Link>
             </div>
           )}
@@ -147,15 +149,15 @@ function ResetPasswordContent() {
               <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-              <h2 className="text-2xl font-black mb-3">تم! ✓</h2>
+              <h2 className="text-2xl font-black mb-3">{t('rp.done')}</h2>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                كلمة السر اتحدّثت بنجاح. تقدر تسجل دخول دلوقتي بكلمة السر الجديدة.
+                {t('rp.done_note')}
               </p>
               <Link
                 href="/auth/login"
                 className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-6 py-3.5 rounded-xl font-bold shadow-elevated hover:shadow-luxe transition-all no-underline"
               >
-                سجّل دخول
+                {t('su.login')}
                 <ArrowRight className="w-4 h-4 rotate-180" />
               </Link>
             </div>
@@ -167,13 +169,13 @@ function ResetPasswordContent() {
               <div className="text-center mb-6">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
                   <Sparkles className="w-3 h-3 text-[#2FA084]" />
-                  <span className="text-xs font-bold text-gray-700">مضمونة · Madmona</span>
+                  <span className="text-xs font-bold text-gray-700">{t('su.brand')}</span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
-                  كلمة سر <span className="gradient-text-green">جديدة</span>
+                  {t('rp.title_1')} <span className="gradient-text-green">{t('rp.title_2')}</span>
                 </h1>
                 <p className="text-sm text-gray-500 mt-2">
-                  حدّد كلمة سر جديدة لحسابك
+                  {t('rp.sub')}
                   {maskedEmail && (
                     <span className="block text-xs text-gray-400 mt-1" dir="ltr">{maskedEmail}</span>
                   )}
@@ -184,7 +186,7 @@ function ResetPasswordContent() {
                 <div className="mb-4 p-3 bg-[#34D399]/5 border border-[#059669]/15 rounded-xl flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 text-[#059669] flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-[#059669]/90 leading-relaxed">
-                    اختار كلمة سر قوية: 8 حروف أو أكتر، وتجمع بين أحرف وأرقام.
+                    {t('rp.hint')}
                   </p>
                 </div>
 
@@ -192,7 +194,7 @@ function ResetPasswordContent() {
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                       <Lock className="w-3.5 h-3.5 text-[#059669]" />
-                      كلمة السر الجديدة
+                      {t('fp.new_pw')}
                     </label>
                     <div className="relative">
                       <input
@@ -211,14 +213,14 @@ function ResetPasswordContent() {
                         type="button"
                         onClick={() => setShowPassword((s) => !s)}
                         className="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 hover:bg-gray-100 rounded-lg flex items-center justify-center text-gray-500"
-                        aria-label={showPassword ? 'إخفاء' : 'إظهار'}
+                        aria-label={showPassword ? t('rp.hide') : t('rp.show')}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                     {password.length > 0 && password.length < 8 && (
                       <p className="text-[11px] text-orange-600 mt-1.5">
-                        محتاج {8 - password.length} حرف كمان
+                        {t('rp.need_more', { n: 8 - password.length })}
                       </p>
                     )}
                   </div>
@@ -226,7 +228,7 @@ function ResetPasswordContent() {
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                       <Lock className="w-3.5 h-3.5 text-[#059669]" />
-                      تأكيد كلمة السر
+                      {t('su.pw_confirm')}
                     </label>
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -241,7 +243,7 @@ function ResetPasswordContent() {
                     />
                     {confirmPassword.length > 0 && password !== confirmPassword && (
                       <p className="text-[11px] text-red-600 mt-1.5">
-                        كلمتين السر مش متطابقتين
+                        {t('rp.mismatch')}
                       </p>
                     )}
                   </div>
@@ -261,12 +263,12 @@ function ResetPasswordContent() {
                     {submitting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>جاري التحديث...</span>
+                        <span>{t('rp.updating')}</span>
                       </>
                     ) : (
                       <>
                         <KeyRound className="w-4 h-4" />
-                        حدّث كلمة السر
+                        {t('rp.update')}
                       </>
                     )}
                   </button>

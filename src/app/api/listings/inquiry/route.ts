@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email'
 import { sendText } from '@/lib/whatsapp'
-import { postSalesInquiry } from '@/lib/sales-inquiry-room'
+import { postSalesInquiry, ensureInquiryRoom } from '@/lib/sales-inquiry-room'
 
 export const runtime = 'nodejs'
 
@@ -135,7 +135,19 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: false, error: 'self', message: 'ده إعلانك أنت 🙂' }, { status: 400 })
       }
 
-      const roomId = await ensureDirectRoom(admin, me.id, madmonaProfileId)
+      // 💬 (٢٧ أغسطس ٢٠٢٦) محمد: «شات ثلاثي لكل استفسار» — العميل +
+      //     صاحب الإعلان + فريق مضمونة في روم واحد، بدل شات مباشر مع
+      //     محمد لوحده. لو الروم فشل لأي سبب، بنرجع للشات المباشر
+      //     عشان الاستفسار ما يضيعش.
+      const triad = await ensureInquiryRoom(admin, {
+        listingTitle: l.title,
+        inquirerId: me.id,
+        inquirerName,
+        ownerProfileId,
+        ownerName,
+        ownerPhone: ownerPhoneLocal,
+      })
+      const roomId = triad || (await ensureDirectRoom(admin, me.id, madmonaProfileId))
 
       // 🏷️ بيانات صاحب الإعلان في نص الرسالة — عشان اللي بيرد يعرف
       //    يكلّم مين من غير ما يفتح الأدمن
@@ -145,7 +157,9 @@ export async function POST(req: NextRequest) {
 
       await admin.from('chat_messages').insert({
         room_id: roomId, sender_id: me.id, sender_kind: 'user', sender_name: inquirerName, kind: 'text',
-        body: `مرحبا 👋 عندي استفسار بخصوص «${l.title}».${ownerLine}`,
+        body: triad
+          ? `مرحبا 👋 عندي استفسار بخصوص «${l.title}».`
+          : `مرحبا 👋 عندي استفسار بخصوص «${l.title}».${ownerLine}`,
       } as never)
 
       await admin.from('notification_queue').insert({

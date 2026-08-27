@@ -149,3 +149,68 @@ export async function postSalesInquiry(admin: AdminClient, i: SalesInquiryInput)
     return null
   }
 }
+
+// ============================================================================
+// 💬 (٢٧ أغسطس ٢٠٢٦ — تعديل) محمد: «شايف كده شات ثلاثي لكل استفسار».
+//
+// فبدل ما العميل يفضل في شات مباشر لوحده، كل استفسار بقى ليه روم واحد فيه
+// التلاتة: **العميل + صاحب الإعلان + فريق مضمونة**. مضمونة موجودة في نص
+// الصفقة من أول رسالة، فمفيش حاجة بتتقفل بره المنصة من غير ما الفريق يشوف.
+//
+// روم لكل استفسار (مش لكل صاحب إعلان) — عشان كل صفقة تفضل منفصلة وواضحة.
+// لو صاحب الإعلان معندوش حساب، الروم بيتعمل بالعميل + الفريق بس، ولما
+// يسجّل بعدين ينضم.
+// ============================================================================
+export async function ensureInquiryRoom(
+  admin: AdminClient,
+  opts: {
+    listingTitle: string
+    inquirerId: string
+    inquirerName?: string | null
+    ownerProfileId?: string | null
+    ownerName?: string | null
+    ownerPhone?: string | null
+  },
+): Promise<string | null> {
+  try {
+    const team = await teamMemberIds(admin)
+    const name = `استفسار: ${opts.listingTitle}`.slice(0, 120)
+
+    const { data: room } = await admin.from('chat_rooms')
+      .insert({ kind: 'group', name, marid_enabled: false, created_by: opts.inquirerId })
+      .select('id').single()
+    const roomId = (room as { id: string } | null)?.id
+    if (!roomId) return null
+
+    const ids = [...new Set([opts.inquirerId, ...(opts.ownerProfileId ? [opts.ownerProfileId] : []), ...team])]
+    await admin.from('chat_room_members').insert(
+      ids.map((pid) => ({
+        room_id: roomId,
+        profile_id: pid,
+        role: team.includes(pid) ? 'admin' : 'member',
+      })),
+    )
+
+    const ownerLine = opts.ownerProfileId
+      ? `صاحب الإعلان معانا هنا 👋`
+      : `فريق مضمونة هيوصل صاحب الإعلان ويضمّه للشات.`
+
+    await admin.from('chat_messages').insert({
+      room_id: roomId, sender_id: null, sender_kind: 'system', sender_name: 'مضمونة', kind: 'text',
+      body: `شات استفسار «${opts.listingTitle}» 🟢\n`
+        + `${opts.inquirerName || 'العميل'} · ${ownerLine}\n`
+        + `فريق مضمونة معاكم لحد ما تخلص المعاملة — معاملاتك مضمونة.`,
+    })
+
+    // إشعار لصاحب الإعلان + الفريق
+    const notifyIds = [...new Set([...(opts.ownerProfileId ? [opts.ownerProfileId] : []), ...team])]
+    await notify(admin, notifyIds, 'استفسار جديد 📩',
+      `${opts.inquirerName || 'عميل'} مستفسر عن «${opts.listingTitle}».`,
+      `/chat/team?room=${roomId}`, { room_id: roomId, title: opts.listingTitle })
+
+    return roomId
+  } catch (e) {
+    console.error('[ensureInquiryRoom] failed:', e)
+    return null
+  }
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useRef, useState } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
@@ -28,6 +29,7 @@ import VerifyPhoneByCall from '@/components/VerifyPhoneByCall'
 // بالحساب الحالي عبر /api/auth/complete-phone (مش سيشن جديدة — هو داخل أصلًا).
 // =====================================================================
 function CompletePhoneContent() {
+  const { t } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
@@ -65,7 +67,7 @@ function CompletePhoneContent() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok || !data.ok) {
         setPhase('idle')
-        setErr(data.message || 'حصلت مشكلة، جرّب تاني')
+        setErr(data.message || t('cp.err'))
         return
       }
       setPhase('done')
@@ -73,7 +75,7 @@ function CompletePhoneContent() {
     } catch (e) {
       console.error('[complete-phone] link error:', e)
       setPhase('idle')
-      setErr('حصلت مشكلة، جرّب تاني')
+      setErr(t('cp.err'))
     }
   }
 
@@ -84,7 +86,7 @@ function CompletePhoneContent() {
     timerRef.current = setInterval(async () => {
       if (Date.now() - startedAt > 5 * 60 * 1000) {
         clearInterval(timerRef.current!)
-        setPhase('idle'); setErr('الوقت خلص — جرّب تاني')
+        setPhase('idle'); setErr(t('cp.timeout'))
         return
       }
       try {
@@ -109,7 +111,7 @@ function CompletePhoneContent() {
         body: JSON.stringify({ action: 'start' }),
       })
       const j = await res.json()
-      if (!res.ok || !j.code) { try { win?.close() } catch { /* */ } setErr('حصلت مشكلة — جرّب تاني'); return }
+      if (!res.ok || !j.code) { try { win?.close() } catch { /* */ } setErr(t('cp.err')); return }
       codeRef.current = j.code
       setCode(j.code)
       setWaUrl(j.wa_url)
@@ -118,7 +120,7 @@ function CompletePhoneContent() {
       startPolling()
     } catch {
       try { win?.close() } catch { /* */ }
-      setErr('حصلت مشكلة في الاتصال — جرّب تاني')
+      setErr(t('cp.err_conn'))
     }
   }
 
@@ -137,8 +139,8 @@ function CompletePhoneContent() {
           <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-black mb-2">تمام! 🎉</h1>
-          <p className="text-sm text-gray-600">تم تأكيد رقمك، بنكمّلك دلوقتي…</p>
+          <h1 className="text-2xl font-black mb-2">{t('cp.done')}</h1>
+          <p className="text-sm text-gray-600">{t('cp.done_note')}</p>
         </div>
       </div>
     )
@@ -154,10 +156,10 @@ function CompletePhoneContent() {
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
               <ShieldCheck className="w-3.5 h-3.5 text-[#2FA084]" />
-              <span className="text-xs font-bold text-gray-700">خطوة أخيرة</span>
+              <span className="text-xs font-bold text-gray-700">{t('cp.last_step')}</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
-              وثّق <span className="gradient-text-green">رقمك</span>
+              {t('cp.h_1')} <span className="gradient-text-green">{t('cp.h_2')}</span>
             </h1>
             <p className="text-sm text-gray-500 mt-2 leading-relaxed">
               عشان نأمّن حسابك ونقدر نتواصل معاك. مضمونة مابتبعتش أكواد —
@@ -180,7 +182,7 @@ function CompletePhoneContent() {
 
                 <div className="my-4 flex items-center gap-3">
                   <div className="h-px bg-gray-100 flex-1" />
-                  <span className="text-[11px] text-gray-400 font-bold">أو</span>
+                  <span className="text-[11px] text-gray-400 font-bold">{t('cp.or')}</span>
                   <div className="h-px bg-gray-100 flex-1" />
                 </div>
 
@@ -190,7 +192,7 @@ function CompletePhoneContent() {
                   className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-2xl font-bold text-base shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  وثّق بالواتساب
+                  {t('cp.verify_wa')}
                 </button>
               </>
             )}
@@ -206,7 +208,7 @@ function CompletePhoneContent() {
                       className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 transition-all mb-3"
                     >
                       <Send className="w-5 h-5" />
-                      افتح واتساب وابعت الكود
+                      {t('cp.open_wa')}
                     </a>
                     <p className="text-xs text-gray-600 leading-relaxed mb-2">
                       هيفتحلك واتساب برسالة جاهزة فيها الكود — <b>دوس إرسال بس</b> وارجع هنا.
@@ -217,7 +219,7 @@ function CompletePhoneContent() {
                     </div>
                     <div className="flex items-center justify-center gap-2 text-[#059669] font-bold text-sm mb-1">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      مستنيين رسالتك…
+                      {t('cp.waiting')}
                     </div>
                     <button
                       type="button"
@@ -225,13 +227,13 @@ function CompletePhoneContent() {
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-[#059669] hover:underline mt-1"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
-                      جرّب تاني
+                      {t('cp.retry')}
                     </button>
                   </>
                 ) : (
                   <div className="flex items-center justify-center gap-2 text-[#059669] font-bold text-sm">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    ثواني — بنوثّق رقمك…
+                    {t('cp.verifying')}
                   </div>
                 )}
               </div>
@@ -246,7 +248,7 @@ function CompletePhoneContent() {
           </div>
 
           <p className="text-center text-[11px] text-gray-400 mt-4">
-            رقمك بيتأكّد من رسالتك نفسها — أأمن من أي كود، ومفيش رسايل بتتبعتلك.
+            {t('cp.footer')}
           </p>
         </div>
       </main>
