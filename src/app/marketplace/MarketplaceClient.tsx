@@ -729,7 +729,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all shadow-soft flex items-center gap-1.5 hover:-translate-y-0.5"
                 >
                   <span>{TRACK_EMOJI[tab]}</span>
-                  <span>{lang === 'en' ? TRACK_NAME[tab].en : TRACK_NAME[tab].ar}</span>
+                  <span>{t(TRACK_LABELS[tab])}</span>
                   <span
                     className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
                     style={{ background: isActive ? 'rgba(255,255,255,.22)' : col.bg, color: isActive ? '#fff' : col.accent }}

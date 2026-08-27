@@ -106,15 +106,24 @@ B2B) أو `individual` (فرد). تريجر `trg_listings_seller_kind` بيمل�
 > وتعليق في الكود بتاريخ وكلام محمد نصًا، وسطر هنا لو قاعدة جديدة.
 
 ## ٤.٢) قواعد اتقفلت خلاص — متفتحهاش تاني
-- **🧞 المارد = توجيه فقط لا غير (٢٧/٨)**: محمد «المارد عاكك الدنيا معايا…
-  عايز الوظيفة الأساسية ليه تكون توجيه فقط». المارد يرد ويوجّه ويحوّل
-  (forward_to_supplier) ويسجّل طلب مش متوفر — **ماينشئش** إعلان ولا مشروع
-  ولا تاسك ولا جروب ولا يدير طلب/معاد. الأدوات دي مطفية من `marid_tool_settings`
-  (create_listing_draft · add_menu_items · create_project · create_task ·
-  complete_task · create_supplier_group · manage_meeting · manage_order)
-  والجوبز اللي كانت بتنشئ إعلانات وقفت (`sync_bourse_to_ads` ·
-  `rescue-missed-listings`). **متفتحش أي منهم ولا تضيف أداة كتابة جديدة
-  للمارد** إلا بأمر صريح من محمد.
+- **🧞 المارد = توجيه وترشيح فقط، ومية بيضا (٢٧/٨)**: محمد «المارد عاكك
+  الدنيا معايا… ميبدأش كلام من نفسه ويقتصر شغله على التوجيه والترشيح فقط لا
+  غير. شيل كل الداتا القديمة وأسلوب الشغل القديم — لو احتجت حاجة هبنيها من
+  الأول». اللي اتعمل:
+  · البرومبت اتكتب من الصفر (`customer-concierge.ts` — ٧٦ سطر بدل ٦٢٦):
+    يرد بس لما حد يكلّمه، يرشّح إعلانات، يحوّل للمورد، يوجّه للينكات.
+  · الأدوات المفتوحة **٦ بس**: search_catalog · list_categories · who_is_this
+    · get_my_orders · forward_to_supplier · record_unmet_demand. الباقي
+    (١٨ أداة) مقفول في `marid_tool_settings` بتعليمة توجيه بديلة.
+  · كل جوبز المارد اللي بتبدأ كلام أو تنشئ محتوى وقفت: sync_bourse_to_ads ·
+    rescue-missed-listings · listing_draft_nudges · meeting-reminders ·
+    marid_listing_completion_request · request_missing_project_info ·
+    marid-restaurant-agent · marid-blog-writer · bourse_cover_cards ·
+    marid_project_change_digest. الشغّال: الحرّاس والبنية بس.
+  · الداتا القديمة (marid_notifications · agent_insights · agent_directives)
+    اتمسحت — نسخة في `_backup_marid_reset_20260827`.
+  **ممنوع** أي جلسة تفتح أداة أو جوب من دول أو تزوّد البرومبت — أي قدرة
+  جديدة للمارد تتبني من الأول بأمر محمد نصًا.
 - **🗂️ ترجمة داتا الداتابيز (٢٧/٨)**: `categories.name_i18n` /
   `group_name_i18n` {en,uk,ru,ja} (٤٠٠/٤٠٠ مترجمين — المصدر
   `sql/2026-08-27_category_i18n.cjs` + `scripts/apply-category-i18n.mjs`)
@@ -124,8 +133,11 @@ B2B) أو `individual` (فرد). تريجر `trg_listings_seller_kind` بيمل�
   `listingTitleFor` · `listingDescriptionFor`) — ممنوع `name_ar`/`title`
   مباشرة في العرض. الإعلانات الجديدة: شغّل السكريبت (مش جوب تحت المارد —
   المارد توجيه بس).
-- **🌍 ٦ لغات في الفرونت (٢٧/٨)**: مصري (الافتراضي) · خليجي · English ·
-  Українська · Русский · 日本語. النظام هو `LanguageProvider` الموجود
+- **🌍 ٧ لغات في الفرونت (٢٧/٨)**: مصري (الافتراضي) · خليجي · English ·
+  Українська · Русский · 日本語 · 中文 (zh). لغة جديدة = ٤ خطوات: `Locale` +
+  `LOCALE_META` في dictionary.ts · `locales/xx.ts` · خريطة `H` في
+  layout.tsx · `scripts/translate-categories-lang.mjs --lang xx` +
+  `scripts/translate-listings.mjs --langs xx`. النظام هو `LanguageProvider` الموجود
   (كوكي/localStorage `madmona_lang`) — **مفيش** `[locale]` في الراوتات ولا
   middleware لغات. القواميس: `src/lib/i18n/dictionary.ts` (مصري + إنجليزي
   كاملين) + `locales/{ar-gulf,uk,ru,ja}.ts`. أي نص جديد في الواجهة =

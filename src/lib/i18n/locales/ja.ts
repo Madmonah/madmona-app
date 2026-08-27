@@ -722,4 +722,8 @@ export const ja: Partial<Dict> = {
   'account.admin_categories': 'カテゴリ管理',
   'account.admin_categories_sub': 'カテゴリ + 動的属性',
   'account.version': 'Madmona Services v1.0',
+  'mhome.v_daily': '食料品',
+  'bnav.list': '掲載',
+  'bnav.chat': 'チャット',
+  'bnav.work': 'マイワーク',
 }

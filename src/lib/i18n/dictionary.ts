@@ -27,10 +27,10 @@
 //    قواميس اللغات الجديدة جزئية في ./locales/* — اللي مش مترجم بيرجع للعائلة.
 
 export type Lang = 'ar' | 'en'
-export type Locale = 'ar' | 'ar-gulf' | 'en' | 'uk' | 'ru' | 'ja'
+export type Locale = 'ar' | 'ar-gulf' | 'en' | 'uk' | 'ru' | 'ja' | 'zh'
 
 export const LANGS: Lang[] = ['ar', 'en']
-export const LOCALES: Locale[] = ['ar', 'ar-gulf', 'en', 'uk', 'ru', 'ja']
+export const LOCALES: Locale[] = ['ar', 'ar-gulf', 'en', 'uk', 'ru', 'ja', 'zh']
 export const DEFAULT_LANG: Lang = 'ar'
 export const DEFAULT_LOCALE: Locale = 'ar'
 export const LANG_STORAGE_KEY = 'madmona_lang'
@@ -42,6 +42,8 @@ export const LOCALE_META: Record<Locale, { native: string; short: string; base: 
   'uk':      { native: 'Українська',    short: 'UA',    base: 'en', htmlLang: 'uk' },
   'ru':      { native: 'Русский',       short: 'RU',    base: 'en', htmlLang: 'ru' },
   'ja':      { native: '日本語',         short: 'JA',    base: 'en', htmlLang: 'ja' },
+  // 🇨🇳 (٢٧ أغسطس ٢٠٢٦) محمد: «ضيف اللغة الصينية»
+  'zh':      { native: '中文',           short: 'ZH',    base: 'en', htmlLang: 'zh-CN' },
 }
 
 export const isLocale = (v: unknown): v is Locale =>
@@ -790,6 +792,10 @@ const ar: Dict = {
   'mhome.v_restaurants': 'مطاعم',
   'mhome.v_bourse': 'بورصة مضمونة العقارية',
   'mhome.v_business': 'بورصة رجال الأعمال',
+  'mhome.v_daily': 'سوبر ماركت',
+  'bnav.list': 'ضيف',
+  'bnav.chat': 'الشات',
+  'bnav.work': 'شغلي',
 
 }
 
@@ -1524,6 +1530,10 @@ const en: Dict = {
   'mhome.v_restaurants': 'Restaurants',
   'mhome.v_bourse': 'Madmona Real Estate Exchange',
   'mhome.v_business': 'Business Lounge',
+  'mhome.v_daily': 'Groceries',
+  'bnav.list': 'List',
+  'bnav.chat': 'Chat',
+  'bnav.work': 'My work',
 
 }
 
@@ -1534,6 +1544,7 @@ import { arGulf } from './locales/ar-gulf'
 import { uk } from './locales/uk'
 import { ru } from './locales/ru'
 import { ja } from './locales/ja'
+import { zh } from './locales/zh'
 
 export const localeTranslations: Record<Locale, Partial<Dict>> = {
   'ar': ar,
@@ -1542,6 +1553,7 @@ export const localeTranslations: Record<Locale, Partial<Dict>> = {
   'uk': uk,
   'ru': ru,
   'ja': ja,
+  'zh': zh,
 }
 
 // ترجمة مفتاح بسلسلة الرجوع: اللغة → العائلة → العربي → المفتاح نفسه

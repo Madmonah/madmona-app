@@ -164,7 +164,7 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
               className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-extrabold transition-all border-2 hover:-translate-y-0.5"
             >
               <span className="text-base leading-none">{v.emoji}</span>
-              <span>{lang === 'en' ? v.en : v.ar}</span>
+              <span>{t('mhome.v_' + v.key)}</span>
               <span
                 className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
                 style={{

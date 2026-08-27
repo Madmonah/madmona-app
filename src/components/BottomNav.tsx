@@ -102,13 +102,13 @@ export default function BottomNav() {
           <span className="w-[52px] h-[52px] rounded-[18px] bg-gradient-to-br from-[#34D399] to-[#2FA084] border-[3px] border-white flex items-center justify-center shadow-[0_10px_24px_-6px_rgba(250, 129, 37,.5)]">
             <Plus className="w-6 h-6 text-white" strokeWidth={3} />
           </span>
-          <span className="text-[10px] font-extrabold text-[#059669] mt-[3px]">{en ? 'List' : 'ضيف'}</span>
+          <span className="text-[10px] font-extrabold text-[#059669] mt-[3px]">{t('bnav.list')}</span>
         </Link>
 
         {/* الشات */}
         <Link href="/chat" className={`pointer-events-auto flex flex-col items-center gap-1 no-underline ${chatActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>
           <span className={`text-[20px] leading-none ${chatActive ? '' : 'grayscale opacity-75'}`}>🧞</span>
-          <span className={`text-[10px] ${chatActive ? 'font-extrabold' : 'font-medium'}`}>{en ? 'Chat' : 'الشات'}</span>
+          <span className={`text-[10px] ${chatActive ? 'font-extrabold' : 'font-medium'}`}>{t('bnav.chat')}</span>
         </Link>
 
         {/* شغلي (لفريق مضمونة) — أو حسابي لأي حد تاني */}
@@ -122,7 +122,7 @@ export default function BottomNav() {
                 </span>
               )}
             </span>
-            <span className={`text-[10px] ${workActive ? 'font-extrabold' : 'font-medium'}`}>{en ? 'My work' : 'شغلي'}</span>
+            <span className={`text-[10px] ${workActive ? 'font-extrabold' : 'font-medium'}`}>{t('bnav.work')}</span>
           </Link>
         ) : (
           <Link href="/account" className={`pointer-events-auto flex flex-col items-center gap-1 no-underline ${accountActive ? 'text-[#059669]' : 'text-[#6B7280]'}`}>

@@ -56,7 +56,7 @@ const cairo = Cairo({
 // 🌍 (٢٧ أغسطس ٢٠٢٦) بقى بيفهم ٦ لغات (ar · ar-gulf · en · uk · ru · ja).
 //    الاتجاه من عائلة اللغة: العربي بنوعيه RTL، والباقي LTR. htmlLang بيتطابق
 //    مع LOCALE_META في dictionary.ts — لو ضفت لغة هناك ضيفها هنا كمان.
-const NO_FLASH_LANG = `(function(){try{var H={'ar':'ar-EG','ar-gulf':'ar-SA','en':'en','uk':'uk','ru':'ru','ja':'ja'};var m=document.cookie.match(/(?:^|; )madmona_lang=([a-z-]+)/);var s=null;try{s=window.localStorage.getItem('madmona_lang')}catch(e){}var l=(s||(m&&m[1])||'ar');if(!H[l])l='ar';var e=document.documentElement;e.lang=H[l];e.dir=(l==='ar'||l==='ar-gulf')?'rtl':'ltr';e.setAttribute('data-locale',l);}catch(e){}})();`
+const NO_FLASH_LANG = `(function(){try{var H={'ar':'ar-EG','ar-gulf':'ar-SA','en':'en','uk':'uk','ru':'ru','ja':'ja','zh':'zh-CN'};var m=document.cookie.match(/(?:^|; )madmona_lang=([a-z-]+)/);var s=null;try{s=window.localStorage.getItem('madmona_lang')}catch(e){}var l=(s||(m&&m[1])||'ar');if(!H[l])l='ar';var e=document.documentElement;e.lang=H[l];e.dir=(l==='ar'||l==='ar-gulf')?'rtl':'ltr';e.setAttribute('data-locale',l);}catch(e){}})();`
 
 
 export const metadata: Metadata = {
