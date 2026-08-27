@@ -125,3 +125,5 @@ _chat_backup_*/
 _shots/
 _probe*.js
 .commitmsg.txt
+
+_i18n/
