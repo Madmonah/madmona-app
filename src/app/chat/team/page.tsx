@@ -107,6 +107,13 @@ export default function TeamPage() {
   // 🔍 (٢٧ أغسطس ٢٠٢٦) محمد: «مش شايف السيرش نزل على مستوى الشات — نزل في
   //    المحادثات بس وأنا عايزه ينزل في الجروبات». البحث بيدوّر في اسم الجروب.
   const [groupQ, setGroupQ] = useState('')
+  // 🎤 (٢٧ أغسطس ٢٠٢٦) محمد: «عايز اليوزر يبقى مبسوط وهو بيستخدمه».
+  //    الرسالة الصوتية كانت بتتبعت **على طول** أول ما توقف التسجيل —
+  //    مفيش سماع قبل الإرسال ولا إلغاء، وأي ضغطة غلط = رسالة محرجة
+  //    اتبعتت للجروب. دلوقتي: معاينة + تشغيل + إلغاء + إرسال.
+  const [voiceDraft, setVoiceDraft] = useState<{ url: string; file: File; secs: number } | null>(null)
+  const [recSecs, setRecSecs] = useState(0)
+  const recTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const [newMenu, setNewMenu] = useState(false)             // قايمة ➕ في هيدر قايمة المحادثات
   const incomingRingRef = useRef<{ stop: () => void } | null>(null)
 
@@ -642,16 +649,43 @@ export default function TeamPage() {
       mr.onstop = async () => {
         stream.getTracks().forEach((tr) => tr.stop())
         setRecording(false)
+        if (recTimer.current) { clearInterval(recTimer.current); recTimer.current = null }
         // 🐞 (١٦ أغسطس ٢٠٢٦) نفس بق شات المارد: النوع كان مكتوب بالنص،
         //    والآيفون بيسجّل mp4 — فالملف كان بيتحفظ باسم غلط.
         const realMime = (mr.mimeType || chunksRef.current[0]?.type || 'audio/webm').split(';')[0]
         const ext = realMime.includes('mp4') ? 'm4a' : realMime.includes('ogg') ? 'ogg' : realMime.includes('mpeg') ? 'mp3' : 'webm'
         const blob = new Blob(chunksRef.current, { type: realMime })
-        if (blob.size > 0) await sendMedia(new File([blob], `voice.${ext}`, { type: realMime }))
+        if (blob.size > 0) {
+          // معاينة بدل الإرسال الفوري
+          const file = new File([blob], `voice.${ext}`, { type: realMime })
+          setVoiceDraft({ url: URL.createObjectURL(blob), file, secs: recSecs })
+        }
       }
       recRef.current = mr; mr.start(); setRecording(true)
+      setRecSecs(0)
+      recTimer.current = setInterval(() => setRecSecs((n) => n + 1), 1000)
     } catch { alert('مش قادر أوصل للمايك') }
   }
+
+  /** إلغاء التسجيل الجاري من غير ما يتبعت */
+  function cancelRec() {
+    try { chunksRef.current = []; recRef.current?.stop() } catch {}
+    if (recTimer.current) { clearInterval(recTimer.current); recTimer.current = null }
+    setRecording(false); setRecSecs(0)
+  }
+  /** إرسال المعاينة الصوتية */
+  async function sendVoiceDraft() {
+    if (!voiceDraft) return
+    const f = voiceDraft.file
+    URL.revokeObjectURL(voiceDraft.url)
+    setVoiceDraft(null); setRecSecs(0)
+    await sendMedia(f)
+  }
+  function discardVoiceDraft() {
+    if (voiceDraft) URL.revokeObjectURL(voiceDraft.url)
+    setVoiceDraft(null); setRecSecs(0)
+  }
+  const mmss = (n: number) => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`
 
   // ابدأ مكالمة (صوت/فيديو): بنبعت رسالة kind='call' علشان الطرف التاني يشوف بانر الانضمام
   async function startCall(video: boolean) {
@@ -1546,6 +1580,27 @@ export default function TeamPage() {
           <style>{'@keyframes mdTypingDot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}'}</style>
         </div>
       )}
+      {/* 🎤 (٢٧ أغسطس ٢٠٢٦) معاينة الرسالة الصوتية قبل الإرسال */}
+      {voiceDraft && (
+        <div style={{ background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={discardVoiceDraft} title="إلغاء" aria-label="إلغاء الرسالة الصوتية" style={{ width: 38, height: 38, borderRadius: '50%', background: '#FDECEA', border: 'none', color: '#C0453A', fontSize: 17, cursor: 'pointer', flexShrink: 0 }}>🗑️</button>
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+          <audio src={voiceDraft.url} controls style={{ flex: 1, minWidth: 0, height: 38 }} />
+          <button onClick={sendVoiceDraft} disabled={busy} title="إرسال" aria-label="إرسال الرسالة الصوتية" style={{ ...actionBtn, opacity: busy ? 0.6 : 1, flexShrink: 0 }}>
+            <Send size={18} color="#fff" strokeWidth={2.2} style={{ transform: 'scaleX(-1)' }} />
+          </button>
+        </div>
+      )}
+      {/* ⏱️ شريط التسجيل — عدّاد + إلغاء */}
+      {recording && !voiceDraft && (
+        <div style={{ background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#E26D5C', animation: 'mdRecPulse 1s infinite' }} />
+          <span style={{ fontSize: 13.5, fontWeight: 800, color: '#14231E', fontVariantNumeric: 'tabular-nums' }}>{mmss(recSecs)}</span>
+          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: '#8A9690' }}>بسجّل… اكبس ⏹️ تخلّص، أو ✕ تلغي</span>
+          <button onClick={cancelRec} title="إلغاء التسجيل" aria-label="إلغاء التسجيل" style={{ border: 'none', background: '#F1EEE6', color: '#5A6660', borderRadius: 999, width: 30, height: 30, fontSize: 15, cursor: 'pointer' }}>✕</button>
+          <style>{'@keyframes mdRecPulse{0%,100%{opacity:1}50%{opacity:.25}}'}</style>
+        </div>
+      )}
       <div style={{ background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
         <input ref={fileRef} type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f); e.target.value = '' }} />
         <input ref={docRef} type="file" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) sendMedia(f); e.target.value = '' }} />
@@ -1559,7 +1614,9 @@ export default function TeamPage() {
             onChange={(e) => onInputChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMsg()}
             onFocus={() => { setShowEmoji(false); setShowPlus(false) }}
-            placeholder={recording ? 'بسجّل…' : 'اكتب رسالتك…'}
+            placeholder={recording ? 'بسجّل…' : voiceDraft ? 'اسمعها الأول وابعتها…' : 'اكتب رسالتك…'}
+            disabled={!!voiceDraft}
+            disabled={!!voiceDraft}
             style={{ flex: 1, minWidth: 0, border: 'none', background: 'transparent', fontSize: 13.5, fontWeight: 500, color: '#14231E', outline: 'none', fontFamily: 'inherit' }}
           />
           <button onClick={() => { setShowEmoji((v) => !v); setShowPlus(false) }} title="إيموجي" aria-label="إيموجي" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexShrink: 0 }}>
