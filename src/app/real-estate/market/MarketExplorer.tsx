@@ -16,6 +16,7 @@
 // 🆕 شريطة «🔥 فرص» بتحوّل الصفحة لعرض الفرص بس.
 // =====================================================================
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { DEVELOPER_DIRECTORY, findDeveloperBySlug } from '@/lib/developer-directory'
 import {
@@ -74,6 +75,12 @@ const UNIT_SUFFIX: Record<Item['price_unit'], string> = {
   egp_night: ' ج/ليلة',
 }
 
+// 🌍 (٢٧ أغسطس ٢٠٢٦) مفاتيح الترجمة لأنواع الوحدات — KIND_LABEL العربي
+//    سايبه لأي استخدام سيرفري/تحليلي، والعرض بيستخدم KIND_KEY.
+const KIND_KEY: Record<string, string> = {
+  apartments: 'bo.k_apartments', villas: 'bo.k_villas', chalets: 'bo.k_chalets',
+  offices: 'bo.k_offices', commercial: 'bo.k_commercial',
+}
 const KIND_LABEL: Record<string, string> = {
   apartments: 'شقة',
   villas: 'فيلا',
@@ -144,6 +151,7 @@ export default function MarketExplorer({
   items: Item[]
   opportunities: Opportunity[]
 }) {
+  const { t } = useT()
   const [q, setQ] = useState('')
   const [areaF, setAreaF] = useState<'all' | string>('all')
   const [devF, setDevF] = useState<'all' | string>('all')
@@ -253,26 +261,26 @@ export default function MarketExplorer({
         <div className="flex items-center gap-2.5 min-w-0">
           <Link
             href="/"
-            aria-label="رجوع"
+            aria-label={t('bo.back')}
             className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)] shrink-0"
           >
             <ArrowRight className="w-[18px] h-[18px] text-[#374151]" strokeWidth={2.5} />
           </Link>
           <div className="min-w-0">
             <h1 className="text-[16px] font-black text-[#0A0A0A] leading-[1.2]">
-              بورصة مشاريع المطوّرين{' '}
+              {t('bo.title')}{' '}
               <span className="align-[2px] text-[9px] font-bold text-[#059669] bg-[#34D399]/10 px-[7px] py-[2px] rounded-full">
                 LIVE
               </span>
             </h1>
             <p className="text-[10px] font-bold text-[#7C8A84] mt-px truncate">
-              {arNum(devItems.length)} مشروع في {arNum(areas.length)} مناطق · أسعار من المطوّرين مباشرة
+              {t('bo.sub', { p: arNum(devItems.length), a: arNum(areas.length) })}
             </p>
           </div>
         </div>
         <div className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)] shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/madmona-logo.png" alt="مضمونة" className="w-7 h-7 object-contain" />
+          <img src="/madmona-logo.png" alt={t('tn.brand')} className="w-7 h-7 object-contain" />
         </div>
       </div>
 
@@ -284,13 +292,13 @@ export default function MarketExplorer({
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="اسم المشروع · المطوّر · المنطقة…"
+            placeholder={t('bo.search_ph')}
             className="flex-1 min-w-0 bg-transparent text-[13.5px] font-medium text-[#14231E] placeholder:text-[#7C8A84] focus:outline-none"
           />
           {q && (
             <button
               onClick={() => setQ('')}
-              aria-label="امسح البحث"
+              aria-label={t('bo.clear_search')}
               className="w-5 h-5 rounded-full bg-[#F1EEE6] text-[#7C8A84] flex items-center justify-center shrink-0"
             >
               <X className="w-3 h-3" />
@@ -304,10 +312,10 @@ export default function MarketExplorer({
             <select
               value={areaF}
               onChange={(e) => setAreaF(e.target.value)}
-              aria-label="المنطقة"
+              aria-label={t('bo.area')}
               className="w-full appearance-none bg-white border-[1.5px] border-[#E5DFD3] rounded-full py-[9px] pr-9 pl-8 text-[12px] font-extrabold text-[#1A1A1A] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#059669]/25"
             >
-              <option value="all">كل المناطق ({arNum(areas.length)})</option>
+              <option value="all">{t('bo.all_areas', { n: arNum(areas.length) })}</option>
               {areas.map((a) => (
                 <option key={a.label} value={a.label}>{a.label} ({arNum(a.count)})</option>
               ))}
@@ -320,11 +328,11 @@ export default function MarketExplorer({
             <select
               value={devF}
               onChange={(e) => setDevF(e.target.value)}
-              aria-label="المطوّر"
+              aria-label={t('bo.developer')}
               disabled={developers.length < 2}
               className="w-full appearance-none bg-white border-[1.5px] border-[#E5DFD3] rounded-full py-[9px] pr-9 pl-8 text-[12px] font-extrabold text-[#1A1A1A] cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#7A4FA3]/25"
             >
-              <option value="all">كل المطوّرين ({arNum(developers.length)})</option>
+              <option value="all">{t('bo.all_devs', { n: arNum(developers.length) })}</option>
               {developers.map((d) => (
                 <option key={d.name} value={d.name}>{d.name} ({arNum(d.count)})</option>
               ))}
@@ -334,7 +342,7 @@ export default function MarketExplorer({
         </div>
 
         <div className={`flex gap-2 mt-2.5 overflow-x-auto pb-0.5 ${HS}`}>
-          <ChipBtn active={chip === 'all'} onClick={() => setChip('all')}>الكل</ChipBtn>
+          <ChipBtn active={chip === 'all'} onClick={() => setChip('all')}>{t('bo.chip_all')}</ChipBtn>
           {PROPERTY_TYPES.filter((t) => (typeCounts.get(t) || 0) > 0).map((t) => (
             <ChipBtn key={t} active={chip === t} onClick={() => setChip(chip === t ? 'all' : t)}>
               {CHIP_ICON[t]} {PROPERTY_TYPE_LABEL[t]}
@@ -342,7 +350,7 @@ export default function MarketExplorer({
           ))}
           {opportunities.length > 0 && (
             <ChipBtn active={chip === 'ops'} onClick={() => setChip(chip === 'ops' ? 'all' : 'ops')}>
-              🔥 فرص
+              {t('bo.chip_hot')}
             </ChipBtn>
           )}
         </div>
@@ -362,7 +370,7 @@ export default function MarketExplorer({
       {devSlug && findDeveloperBySlug(devSlug) && (
         <div className="mx-4 mt-3 flex items-center justify-between bg-white border border-[#059669]/20 rounded-2xl px-4 py-2.5">
           <span className="text-[13px] font-black text-[#059669]">
-            مشاريع {findDeveloperBySlug(devSlug)!.name}
+            {t('bo.dev_projects', { name: findDeveloperBySlug(devSlug)!.name })}
           </span>
           <button
             onClick={() => {
@@ -375,7 +383,7 @@ export default function MarketExplorer({
             }}
             className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-500"
           >
-            <X className="w-3.5 h-3.5" /> كل المطوّرين
+            <X className="w-3.5 h-3.5" /> {t('bo.all_devs_btn')}
           </button>
         </div>
       )}
@@ -383,13 +391,13 @@ export default function MarketExplorer({
       {totalResults === 0 ? (
         <section id="bourse-results" className="mx-4 mt-6 bg-white rounded-[18px] border border-black/5 p-10 text-center text-[#7C8A84] text-[13px] font-semibold">
           <Clock className="w-8 h-8 mx-auto mb-3 text-[#059669]" />
-          مفيش نتايج للبحث ده — جرب كلمة تانية أو شيل الفلاتر 🙏
+          {t('bo.no_results')}
           <div className="mt-4">
             <button
               onClick={() => { setQ(''); setAreaF('all'); setDevF('all'); setChip('all'); setDevSlug('') }}
               className="px-5 py-2 rounded-full bg-[#34D399] text-[#04352A] text-sm font-bold"
             >
-              اعرض كل حاجة
+              {t('bo.show_all')}
             </button>
           </div>
         </section>
@@ -422,10 +430,10 @@ export default function MarketExplorer({
             <section id="opportunities" className="px-4 pt-6 scroll-mt-32">
               <div className="flex items-center gap-2.5 mb-1.5">
                 <span className="w-[38px] h-[38px] rounded-[13px] bg-[#34D399] flex items-center justify-center text-[17px]">🔥</span>
-                <h2 className="text-[17px] font-black text-[#0A0A0A]">فرص معروضة دلوقتي</h2>
+                <h2 className="text-[17px] font-black text-[#0A0A0A]">{t('bo.ops_t')}</h2>
               </div>
               <p className="text-[11px] font-semibold text-[#7C8A84] leading-[1.6] mb-3">
-                إعلانات حقيقية بسعر واضح — اسأل والمارد 🧞 يوصّلك بصاحبها بمعاملة مضمونة.
+                {t('bo.ops_d')}
               </p>
               <div className={`flex gap-2.5 overflow-x-auto pb-1 ${HS}`}>
                 {filteredOps.map((op) => (
@@ -441,17 +449,17 @@ export default function MarketExplorer({
       <section className="px-4 pt-6 pb-2">
         <div className="bg-[linear-gradient(118deg,#059669,#34D399)] rounded-[20px] px-5 py-[18px] flex items-center gap-3">
           <span className="flex-1 min-w-0">
-            <span className="block text-white text-[15px] font-black">انت مطوّر أو مسوّق عقاري؟</span>
+            <span className="block text-white text-[15px] font-black">{t('bo.dev_cta_t')}</span>
             <span className="block text-white/75 text-[11px] font-semibold mt-0.5 leading-relaxed">
-              ضيف مشروعك ببلاش — بروشور وفيديو واستفسارات موصولة بيك
+              {t('bo.dev_cta_d')}
             </span>
           </span>
           <Link href={ADD_PROJECT} className="bg-white text-[#059669] rounded-xl px-4 py-2.5 text-[13px] font-black shrink-0">
-            ضيف ←
+            {t('bo.dev_cta_btn')}
           </Link>
         </div>
         <p className="text-[9.5px] font-semibold text-[#9CA3AF] text-center leading-[1.7] max-w-[300px] mx-auto mt-3">
-          الأسعار استرشادية وبتتغير باستمرار — راجع المطور قبل أي قرار. مضمونة بتوصّلك وبتضمن المعاملة.
+          {t('bo.disclaimer')}
         </p>
       </section>
 
@@ -482,12 +490,13 @@ function ChipBtn({ active, onClick, children }: { active: boolean; onClick: () =
 // الضغط على أي لوجو بيفلتر نتايج نفس الصفحة (مش رابط لصفحة تانية).
 // =====================================================================
 function DeveloperLogosGrid({ onSelect, activeSlug }: { onSelect: (slug: string) => void; activeSlug: string }) {
+  const { t } = useT()
   return (
     <section className="px-4 pt-5">
       <div className="flex items-center gap-2 mb-2.5 px-1">
         <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#E5DFD3]" />
         <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#9CA3AF] whitespace-nowrap">
-          نخبة المطورين المتعاقدين
+          {t('bo.elite_devs')}
         </p>
         <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#E5DFD3]" />
       </div>
@@ -499,7 +508,7 @@ function DeveloperLogosGrid({ onSelect, activeSlug }: { onSelect: (slug: string)
               key={d.slug}
               type="button"
               onClick={() => onSelect(d.slug)}
-              aria-label={`مشاريع ${d.name}`}
+              aria-label={t('bo.dev_projects_aria', { name: d.name })}
               className={`bg-white rounded-2xl p-2.5 min-h-[56px] flex items-center justify-center transition-colors ${
                 active ? 'border-2 border-[#059669]' : 'border border-black/5'
               }`}
@@ -522,6 +531,7 @@ function DeveloperLogosGrid({ onSelect, activeSlug }: { onSelect: (slug: string)
 type Trend = 1 | -1 | 0
 
 function IndicatorsBar({ items }: { items: Item[] }) {
+  const { t } = useT()
   const [fin, setFin] = useState<{ usd: number | null; gold21: number | null }>({ usd: null, gold21: null })
   const [trend, setTrend] = useState<{ usd: Trend; gold: Trend }>({ usd: 0, gold: 0 })
 
@@ -566,10 +576,10 @@ function IndicatorsBar({ items }: { items: Item[] }) {
   const fmtK = (r: readonly [number, number]) => `${Math.round(r[0] / 1000)}–${Math.round(r[1] / 1000)} ألف`
 
   const cards: Array<{ label: string; value: string; gold?: boolean; t?: Trend }> = []
-  if (fin.usd != null) cards.push({ label: 'دولار', value: `${fin.usd.toFixed(2)} ج`, t: trend.usd })
-  if (fin.gold21 != null) cards.push({ label: 'ذهب ٢١', value: `${arNum(Math.round(fin.gold21))} ج/جم`, gold: true, t: trend.gold })
-  if (m2.capital) cards.push({ label: 'العاصمة — المتر', value: fmtK(m2.capital) })
-  if (m2.newCairo) cards.push({ label: 'التجمع — المتر', value: fmtK(m2.newCairo) })
+  if (fin.usd != null) cards.push({ label: t('bo.usd'), value: `${fin.usd.toFixed(2)} ${t('bo.egp')}`, t: trend.usd })
+  if (fin.gold21 != null) cards.push({ label: t('bo.gold21'), value: `${arNum(Math.round(fin.gold21))} ${t('bo.egp_gram')}`, gold: true, t: trend.gold })
+  if (m2.capital) cards.push({ label: t('bo.capital_m2'), value: fmtK(m2.capital) })
+  if (m2.newCairo) cards.push({ label: t('bo.newcairo_m2'), value: fmtK(m2.newCairo) })
   if (cards.length === 0) return null
 
   return (
@@ -597,6 +607,7 @@ function IndicatorsBar({ items }: { items: Item[] }) {
 // logInquiry sendBeacon زي ما هو — بنسجّل الاستفسار قبل فتح الواتساب.
 // =====================================================================
 function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
+  const { t } = useT()
   function logInquiry() {
     try {
       const body = JSON.stringify({ project_id: it.id, source: 'bourse_card' })
@@ -663,7 +674,7 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
                 onClick={onPlay}
                 className="inline-flex items-center gap-1 bg-black/60 backdrop-blur-[4px] text-white text-[9.5px] font-bold px-2.5 py-1 rounded-full"
               >
-                <PlayCircle className="w-2.5 h-2.5" /> فيديو
+                <PlayCircle className="w-2.5 h-2.5" /> {t('bo.video')}
               </button>
             )}
             {it.brochure_url && (
@@ -673,7 +684,7 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
                 rel="noopener"
                 className="inline-flex items-center gap-1 bg-black/60 backdrop-blur-[4px] text-white text-[9.5px] font-bold px-2.5 py-1 rounded-full"
               >
-                <FileText className="w-2.5 h-2.5" /> بروشور
+                <FileText className="w-2.5 h-2.5" /> {t('bo.brochure')}
               </a>
             )}
           </span>
@@ -703,7 +714,7 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
             href={`/real-estate/projects/${it.slug}`}
             className="flex-1 inline-flex items-center justify-center py-2.5 rounded-full border-2 border-[#059669]/20 text-[#059669] text-[12px] font-extrabold"
           >
-            التفاصيل
+            {t('bo.details')}
           </Link>
           <a
             href={inquiryWaLink(it)}
@@ -712,7 +723,7 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
             rel="noopener"
             className="flex-1 inline-flex items-center justify-center py-2.5 rounded-full bg-[#34D399] text-[#04352A] text-[12px] font-extrabold"
           >
-            اسأل عنه 🧞
+            {t('bo.ask')}
           </a>
         </div>
       </div>
@@ -724,9 +735,10 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
 // 🔥 كارت الفرصة — 230px سكرول عرضي: بادج النوع + السعر + العنوان + زرار
 // =====================================================================
 function OppCard({ op }: { op: Opportunity }) {
+  const { t } = useT()
   const sale = op.offer_type === 'sale'
   const waMsg =
-    `أهلاً المارد 🧞 — عايز أسأل عن الفرصة دي من بورصة مضمونة: ${op.title}` +
+    t('bo.wa_ask', { title: op.title }) +
     `${op.area_label ? ' — ' + op.area_label : ''} (كود ${op.id.slice(0, 8)})`
   return (
     <div className="flex-none w-[230px] bg-white rounded-2xl border border-black/5 p-3.5 flex flex-col gap-[7px]">
@@ -736,7 +748,7 @@ function OppCard({ op }: { op: Opportunity }) {
             sale ? 'text-[#059669] bg-[#34D399]/10' : 'text-[#D4A017] bg-[#D4A017]/[.12]'
           }`}
         >
-          {KIND_LABEL[op.kind] || 'عقار'} · {sale ? 'للبيع' : 'للإيجار'}
+          {t(KIND_KEY[op.kind] || 'bo.property')} · {sale ? t('bo.for_sale') : t('bo.for_rent')}
         </span>
         {op.price_label && (
           <span className="text-[13px] font-black text-[#059669] whitespace-nowrap">{op.price_label}</span>
@@ -752,7 +764,7 @@ function OppCard({ op }: { op: Opportunity }) {
         rel="noopener"
         className="mt-auto inline-flex items-center justify-center py-[9px] rounded-full bg-[#34D399] text-[#04352A] text-[11.5px] font-extrabold"
       >
-        اسأل عن الوحدة دي
+        {t('bo.ask_unit')}
       </a>
     </div>
   )
@@ -767,6 +779,7 @@ function ytEmbed(url: string): string | null {
 }
 
 function VideoModal({ it, onClose }: { it: Item; onClose: () => void }) {
+  const { t } = useT()
   const embed = it.video_url ? ytEmbed(it.video_url) : null
   return (
     <div
@@ -780,7 +793,7 @@ function VideoModal({ it, onClose }: { it: Item; onClose: () => void }) {
           <p className="text-white font-bold text-sm">{it.title}</p>
           <button
             onClick={onClose}
-            aria-label="اقفل"
+            aria-label={t('bo.close')}
             className="w-8 h-8 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25"
           >
             <X className="w-4 h-4" />
@@ -789,7 +802,7 @@ function VideoModal({ it, onClose }: { it: Item; onClose: () => void }) {
         {embed ? (
           <iframe
             src={`${embed}?autoplay=1`}
-            title={`فيديو ${it.title}`}
+            title={t('bo.video') + ' ' + it.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             className="w-full aspect-video rounded-xl bg-black"
@@ -813,7 +826,7 @@ function VideoModal({ it, onClose }: { it: Item; onClose: () => void }) {
           className="mt-3 w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-[#2FA084] text-white text-sm font-bold"
         >
           <MessageCircle className="w-4 h-4" />
-          اسأل عن {it.title}
+          {t('bo.ask_item', { name: it.title })}
         </a>
       </div>
     </div>
