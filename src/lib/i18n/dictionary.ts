@@ -1358,6 +1358,26 @@ const ar: Dict = {
   'al.draft_continue': '→ كمل من فين وقفت',
   'al.draft_new': '✨ ابدأ منتج جديد',
 
+  // ---- الفوتر وزرار التطبيق (دفعة ٤) ----
+  'sf.tagline': 'سوقك المصري المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي. معاملاتك مضمونة.',
+  'sf.addr1': '٧ ش سليمان عزمي — بجوار الكلية الحربية',
+  'sf.addr2': 'مصر الجديدة، القاهرة',
+  'sf.whatsapp': 'واتساب',
+  'sf.market': 'السوق',
+  'sf.buy': 'بيع',
+  'sf.rent': 'إيجار',
+  'sf.services': 'خدمات',
+  'sf.bourse': 'بورصة مضمونة العقارية',
+  'sf.about': 'عن المنصة',
+  'sf.add_listing': 'ضيف إعلانك',
+  'sf.ask_marid': 'اسأل الجني',
+  'sf.careers': 'التوظيف',
+  'sf.legal': 'قانوني',
+  'sf.privacy': 'الخصوصية',
+  'sf.terms': 'الشروط',
+  'sf.copyright': '© {y} مضمونة — معاملاتك مضمونة',
+  'app.download': 'حمّل التطبيق',
+
 }
 
 const en: Dict = {
@@ -2656,6 +2676,26 @@ const en: Dict = {
   'al.draft_body': 'You reached step {n} of 5 — continue where you left off, or start a new listing,',
   'al.draft_continue': '→ Continue where you left off',
   'al.draft_new': '✨ Start a new listing',
+
+  // ---- footer + app (batch 4) ----
+  'sf.tagline': 'Egypt\'s guaranteed marketplace — rent, buy, and book services, restaurants and beauty. Your deals are guaranteed.',
+  'sf.addr1': '7 Soliman Azmy St — next to the Military Academy',
+  'sf.addr2': 'Heliopolis, Cairo',
+  'sf.whatsapp': 'WhatsApp',
+  'sf.market': 'Marketplace',
+  'sf.buy': 'Buy',
+  'sf.rent': 'Rent',
+  'sf.services': 'Services',
+  'sf.bourse': 'Madmona Real Estate Exchange',
+  'sf.about': 'About the platform',
+  'sf.add_listing': 'Add your listing',
+  'sf.ask_marid': 'Ask the genie',
+  'sf.careers': 'Careers',
+  'sf.legal': 'Legal',
+  'sf.privacy': 'Privacy',
+  'sf.terms': 'Terms',
+  'sf.copyright': '© {y} Madmona — your deals are guaranteed',
+  'app.download': 'Download the app',
 
 }
 

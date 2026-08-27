@@ -186,7 +186,7 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
     // Phase E + G (May 18 2026): wizard metadata + grouping columns.
     // group_* fields enable visual grouping in StepCategory and marketplace.
     // Null/missing values → client falls back to flat rendering.
-    const WIZARD_META_COLS = 'id, slug, name_ar, icon, track, display_order, title_placeholder, description_placeholder, district_placeholder, allowed_pricing_periods, default_pricing_period, pricing_unit_label, group_slug, group_name_ar, group_emoji, group_display_order';
+    const WIZARD_META_COLS = 'id, slug, name_ar, name_i18n, icon, track, display_order, title_placeholder, description_placeholder, district_placeholder, allowed_pricing_periods, default_pricing_period, pricing_unit_label, group_slug, group_name_ar, group_emoji, group_display_order';
 
     const { data: tops, error: topsErr } = await supabase
       .from('categories')
@@ -263,6 +263,8 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
         pricing_unit_label: topMeta.pricing_unit_label ?? null,
         group_slug: (top as { group_slug?: string | null }).group_slug ?? null,
         group_name_ar: (top as { group_name_ar?: string | null }).group_name_ar ?? null,
+        group_name_i18n: (top as { group_name_i18n?: Record<string, string> | null }).group_name_i18n ?? null,
+        name_i18n: (top as { name_i18n?: Record<string, string> | null }).name_i18n ?? null,
         group_emoji: (top as { group_emoji?: string | null }).group_emoji ?? null,
         group_display_order: (top as { group_display_order?: number | null }).group_display_order ?? null,
         subs: expandedSubs.map((s) => ({

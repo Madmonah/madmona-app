@@ -2,7 +2,7 @@
 
 import { safeStorage } from '@/lib/safe-storage'
 import { useT } from '@/lib/i18n/LanguageProvider'
-import { catNameFor, attrNameFor } from '@/lib/i18n/catName'
+import { catNameFor, attrNameFor, groupNameFor } from '@/lib/i18n/catName'
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -53,6 +53,8 @@ export type MainCategory = {
   // When null, the wizard falls back to flat rendering (zero-regression).
   group_slug?: string | null;
   group_name_ar?: string | null;
+  name_i18n?: Record<string, string> | null;
+  group_name_i18n?: Record<string, string> | null;
   group_emoji?: string | null;
   group_display_order?: number | null;
 } & WizardMeta;
@@ -827,6 +829,12 @@ function AddListingPageInner({
 // =================================================
 type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales';
 
+// 🌍 (٢٧ أغسطس ٢٠٢٦) التابات كانت بتعرض TRACK_LABELS العربي مهما كانت اللغة.
+const TRACK_KEYS: Record<TrackTab, string> = {
+  all: 'al.t_all', rentals: 'al.t_rentals', services: 'al.t_services',
+  hybrid: 'al.t_hybrid', restaurants: 'al.t_restaurants', products: 'al.t_products',
+  daily: 'al.t_daily', sales: 'al.t_products',
+};
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'الكل',
   rentals: 'إيجار',
@@ -949,22 +957,22 @@ function StepCategory({
 
         {/* Track tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">
-          {(['products', 'rentals', 'services', 'restaurants'] as TrackTab[]).map((t) => {
-            const count = categories.filter((c) => inTrack(c.track, t)).length;
+          {(['products', 'rentals', 'services', 'restaurants'] as TrackTab[]).map((tt) => {
+            const count = categories.filter((c) => inTrack(c.track, tt)).length;
             return (
               <button
-                key={t}
+                key={tt}
                 type="button"
-                onClick={() => { setActiveTrack(t); setPickGroup(null); setPickRoot(null); }}
+                onClick={() => { setActiveTrack(tt); setPickGroup(null); setPickRoot(null); }}
                 className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all flex items-center gap-1.5 ${
-                  activeTrack === t
+                  activeTrack === tt
                     ? 'bg-[#34D399] border-[#059669] text-[#04352A]'
                     : 'bg-white border-[#E5E5E0] text-gray-700 hover:bg-[#F5F4F0]'
                 }`}
               >
-                <span>{TRACK_EMOJI[t]}</span>
-                <span>{TRACK_LABELS[t]}</span>
-                <span className={`text-[10px] ${activeTrack === t ? 'opacity-80' : 'text-gray-400'}`}>
+                <span>{TRACK_EMOJI[tt]}</span>
+                <span>{t(TRACK_KEYS[tt])}</span>
+                <span className={`text-[10px] ${activeTrack === tt ? 'opacity-80' : 'text-gray-400'}`}>
                   ({count})
                 </span>
               </button>
@@ -1014,7 +1022,7 @@ function StepCategory({
           const groupsMap = new Map<
             string,
             {
-              slug: string; name_ar: string; emoji: string; order: number;
+              slug: string; name_ar: string; name_i18n?: Record<string, string> | null; emoji: string; order: number;
               roots: { slug: string; emoji: string; name_ar: string; subs: { slug: string; emoji: string; name_ar: string }[] }[];
             }
           >();
@@ -1026,6 +1034,7 @@ function StepCategory({
               groupsMap.set(key, {
                 slug: key,
                 name_ar: c.group_name_ar || c.name_ar,
+                name_i18n: (c.group_slug ? c.group_name_i18n : c.name_i18n) || null,
                 emoji: c.group_emoji || c.emoji || '🏷️',
                 order: c.group_display_order ?? 999,
                 roots: [],
@@ -1067,7 +1076,7 @@ function StepCategory({
                   >
                     <span className="text-2xl">{g.emoji}</span>
                     <span className="flex-1 min-w-0">
-                      <span className="block text-sm font-extrabold text-gray-800 leading-tight">{g.name_ar}</span>
+                      <span className="block text-sm font-extrabold text-gray-800 leading-tight">{groupNameFor({ group_name_ar: g.name_ar, group_name_i18n: g.name_i18n }, locale)}</span>
                       <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{t('al.n_sections', { n: g.roots.length })}</span>
                     </span>
                   </button>
@@ -1088,11 +1097,11 @@ function StepCategory({
                     onClick={() => setPickRoot(null)}
                     className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
                   >
-                    ← {showGroup.name_ar}
+                    ← {groupNameFor({ group_name_ar: showGroup.name_ar, group_name_i18n: showGroup.name_i18n }, locale)}
                   </button>
                   <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1">
                     <span>{activeRoot.emoji}</span>
-                    {activeRoot.name_ar}
+                    {catNameFor(activeRoot, locale)}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -1108,7 +1117,7 @@ function StepCategory({
                       }`}
                     >
                       <div className="text-3xl mb-2">{c.emoji}</div>
-                      <div className="font-semibold text-sm">{c.name_ar}</div>
+                      <div className="font-semibold text-sm">{catNameFor(c, locale)}</div>
                     </button>
                   ))}
                 </div>
@@ -1138,7 +1147,7 @@ function StepCategory({
                   </button>
                   <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1">
                     <span>{showGroup.emoji}</span>
-                    {showGroup.name_ar}
+                    {groupNameFor({ group_name_ar: showGroup.name_ar, group_name_i18n: showGroup.name_i18n }, locale)}
                   </span>
                 </div>
               )}
@@ -1155,7 +1164,7 @@ function StepCategory({
                     }`}
                   >
                     <div className="text-3xl mb-2">{r.emoji}</div>
-                    <div className="font-semibold text-sm">{r.name_ar}</div>
+                    <div className="font-semibold text-sm">{catNameFor(r, locale)}</div>
                     {r.subs.length > 0 && (
                       <div className="mt-1 text-[10px] font-bold text-gray-400">{t('al.n_types', { n: r.subs.length })}</div>
                     )}
@@ -1183,7 +1192,7 @@ function StepCategory({
       </button>
       <h2 className="text-lg font-semibold mb-1">
         <span className="text-2xl me-2">{main.emoji}</span>
-        {main.name_ar}
+        {catNameFor(main, locale)}
       </h2>
       <p className="text-sm text-gray-500 mb-6">{t('al.pick_closest')}</p>
       <div className="grid grid-cols-2 gap-3">
@@ -1205,7 +1214,7 @@ function StepCategory({
               }`}
             >
               <div className="text-3xl mb-2">{s.emoji}</div>
-              <div className="font-semibold text-sm">{s.name_ar}</div>
+              <div className="font-semibold text-sm">{catNameFor(s, locale)}</div>
               {isCrossListed && (
                 <div className="mt-1.5 text-[10px] text-[#059669] font-bold leading-tight">
                   {t('al.appears_in', { list: appearsUnderMains.join(' + ') })}
@@ -1813,7 +1822,7 @@ function AttributeFieldRenderer({
 
   if (attr.field_type === 'number') {
     return (
-      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+      <Field label={attrNameFor(attr, locale)} required={attr.is_required} error={error}>
         <div className="relative">
           <input
             type="number"
@@ -1835,7 +1844,7 @@ function AttributeFieldRenderer({
 
   if (attr.field_type === 'text') {
     return (
-      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+      <Field label={attrNameFor(attr, locale)} required={attr.is_required} error={error}>
         <input
           type="text"
           value={(value as string) || ''}
@@ -1850,7 +1859,7 @@ function AttributeFieldRenderer({
 
   if (attr.field_type === 'boolean') {
     return (
-      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+      <Field label={attrNameFor(attr, locale)} required={attr.is_required} error={error}>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -1895,7 +1904,7 @@ function AttributeFieldRenderer({
     // Button group for small option sets, dropdown for many.
     if (options.length <= 6) {
       return (
-        <Field label={attr.name_ar} required={attr.is_required} error={error}>
+        <Field label={attrNameFor(attr, locale)} required={attr.is_required} error={error}>
           <div className="grid grid-cols-2 gap-2">
             {options.map((opt) => (
               <button
@@ -1929,7 +1938,7 @@ function AttributeFieldRenderer({
       );
     }
     return (
-      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+      <Field label={attrNameFor(attr, locale)} required={attr.is_required} error={error}>
         <select
           value={(selOther || valueIsCustom) ? '__other' : ((value as string) || '')}
           onChange={(e) => {
@@ -1954,7 +1963,7 @@ function AttributeFieldRenderer({
     const options = attr.options || [];
     const selected = Array.isArray(value) ? (value as string[]) : [];
     return (
-      <Field label={attr.name_ar} required={attr.is_required} error={error}>
+      <Field label={attrNameFor(attr, locale)} required={attr.is_required} error={error}>
         <div className="grid grid-cols-2 gap-2">
           {options.map((opt) => {
             const isSel = selected.includes(opt.key);

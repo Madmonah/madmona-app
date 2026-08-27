@@ -10,8 +10,10 @@
 // ============================================================================
 
 import Link from 'next/link'
+import { useT } from '@/lib/i18n/LanguageProvider'
 
 export default function SiteFooter() {
+  const { t } = useT()
   const year = new Date().getFullYear()
 
   return (
@@ -39,15 +41,15 @@ export default function SiteFooter() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/madmona-logo.png"
-                alt="مضمونة"
+                alt={t('common.brand')}
                 width={36}
                 height={36}
                 style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 10, background: '#fff' }}
               />
-              <span style={{ fontWeight: 900, fontSize: 20 }}>مضمونة</span>
+              <span style={{ fontWeight: 900, fontSize: 20 }}>{t('common.brand')}</span>
             </div>
             <p style={{ margin: '14px 0 0', fontSize: 13, lineHeight: 1.9, color: 'rgba(250,250,247,0.75)' }}>
-              سوقك المصري المضمون — أجّر، اشتري، واحجز خدمات ومطاعم وبيوتي. معاملاتك مضمونة.
+              {t('sf.tagline')}
             </p>
             {/* 📍 (٢٢ أغسطس ٢٠٢٦) عنوان المقر — كان ناقص من الفوتر خالص.
                 عنوان حقيقي ظاهر بيفرق في ثقة الزائر وفي البحث المحلي كمان. */}
@@ -57,48 +59,48 @@ export default function SiteFooter() {
                 fontStyle: 'normal', color: 'rgba(250,250,247,0.9)',
               }}
             >
-              ٧ ش سليمان عزمي — بجوار الكلية الحربية
+              {t('sf.addr1')}
               <br />
-              مصر الجديدة، القاهرة
+              {t('sf.addr2')}
               <a
                 href="https://wa.me/201002229982"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'block', marginTop: 8, color: '#FFE9A8', textDecoration: 'none', fontWeight: 700 }}
               >
-                واتساب <span dir="ltr">010 022 29982</span>
+                {t('sf.whatsapp')} <span dir="ltr">010 022 29982</span>
               </a>
             </address>
           </div>
 
           <div style={{ display: 'flex', gap: 56, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
-              <span style={{ fontWeight: 800, color: '#FFE9A8', fontSize: 12, letterSpacing: '0.1em' }}>السوق</span>
-              <Link href="/marketplace?track=products" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>بيع</Link>
-              <Link href="/marketplace?track=rentals" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>إيجار</Link>
-              <Link href="/marketplace?track=services" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>خدمات</Link>
-              <Link href="/real-estate/market" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>بورصة مضمونة العقارية</Link>
+              <span style={{ fontWeight: 800, color: '#FFE9A8', fontSize: 12, letterSpacing: '0.1em' }}>{t('sf.market')}</span>
+              <Link href="/marketplace?track=products" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.buy')}</Link>
+              <Link href="/marketplace?track=rentals" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.rent')}</Link>
+              <Link href="/marketplace?track=services" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.services')}</Link>
+              <Link href="/real-estate/market" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.bourse')}</Link>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
-              <span style={{ fontWeight: 800, color: '#FFE9A8', fontSize: 12, letterSpacing: '0.1em' }}>مضمونة</span>
-              <Link href="/about" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>عن المنصة</Link>
-              <Link href="/list-your-asset" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>ضيف إعلانك</Link>
-              <Link href="/chat/marid" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>اسأل الجني</Link>
-              <Link href="/careers" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>التوظيف</Link>
-              <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>واتساب</a>
+              <span style={{ fontWeight: 800, color: '#FFE9A8', fontSize: 12, letterSpacing: '0.1em' }}>{t('common.brand')}</span>
+              <Link href="/about" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.about')}</Link>
+              <Link href="/list-your-asset" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.add_listing')}</Link>
+              <Link href="/chat/marid" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.ask_marid')}</Link>
+              <Link href="/careers" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.careers')}</Link>
+              <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.whatsapp')}</a>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
-              <span style={{ fontWeight: 800, color: '#FFE9A8', fontSize: 12, letterSpacing: '0.1em' }}>قانوني</span>
-              <Link href="/privacy" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>الخصوصية</Link>
-              <Link href="/terms" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>الشروط</Link>
+              <span style={{ fontWeight: 800, color: '#FFE9A8', fontSize: 12, letterSpacing: '0.1em' }}>{t('sf.legal')}</span>
+              <Link href="/privacy" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.privacy')}</Link>
+              <Link href="/terms" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.terms')}</Link>
             </div>
           </div>
         </div>
 
         <p style={{ margin: '20px 0 0', textAlign: 'center', fontSize: 12, color: 'rgba(250,250,247,0.6)' }}>
-          © {year} مضمونة — معاملاتك مضمونة
+          {t('sf.copyright', { y: year })}
         </p>
       </div>
     </footer>

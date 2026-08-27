@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import { Download, Smartphone, X, CheckCircle2, ArrowLeft } from 'lucide-react'
 
 type InstallPromptEvent = Event & {
@@ -26,6 +27,7 @@ const QR_API = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${
 // نفس منطق التثبيت والمودالات بالظبط — الاختلاف في الشكل بس، عشان
 // مانكررش كود اكتشاف المنصة في مكانين ويفضل واحد يتصلّح والتاني لأ.
 export default function DownloadAppBig({ compact = false }: { compact?: boolean }) {
+  const { t } = useT()
   const [installEvent, setInstallEvent] = useState<InstallPromptEvent | null>(null)
   const [isIOS, setIsIOS] = useState(false)
   const [isAndroid, setIsAndroid] = useState(false)
@@ -123,7 +125,7 @@ export default function DownloadAppBig({ compact = false }: { compact?: boolean 
       {compact ? (
         <button onClick={handleClick} className="da-pill" type="button">
           <Download className="da-pill-icon" />
-          <span>حمّل التطبيق</span>
+          <span>{t('app.download')}</span>
         </button>
       ) : (
       <button onClick={handleClick} className="da-big">
