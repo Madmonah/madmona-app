@@ -53,24 +53,26 @@ async function waOtp(phone: string) {
   return res.json() as Promise<{ success: boolean; error?: string; sent_to?: string }>
 }
 
-function friendlyError(code?: string): string {
+// 🌍 (٢٧ أغسطس ٢٠٢٦) الدالة دي بره الكومبوننت فمفيش عندها useT —
+// فبناخد t كباراميتر بدل ما نستدعي الهوك (ممنوع بره الكومبوننت).
+function friendlyError(t: (k: string) => string, code?: string): string {
   switch (code) {
     case 'no_account_with_phone':
-      return 'مفيش حساب مسجّل بالرقم ده.'
+      return t('fp.no_account')
     case 'no_email_on_account':
-      return 'حسابك مالوش إيميل متسجّل — استخدم الواتساب بدله.'
+      return t('fp.no_email')
     case 'invalid_code':
-      return 'الكود غلط أو انتهت صلاحيته — جرّب تاني أو اطلب كود جديد.'
+      return t('su.bad_code')
     case 'weak_password':
-      return 'كلمة السر الجديدة لازم تكون ٨ حروف على الأقل.'
+      return t('fp.pw_short')
     default:
-      if (code && /rate|limit|10/.test(code)) return 'طلبت أكواد كتير — استنى شوية وجرّب تاني.'
-      return code || 'حصلت مشكلة — جرّب تاني.'
+      if (code && /rate|limit|10/.test(code)) return t('su.rate')
+      return code || t('su.generic')
   }
 }
 
 function ForgotContent() {
-  const { dir } = useT()
+  const { dir, t } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const prefilledPhone = searchParams.get('phone') || ''
@@ -100,7 +102,7 @@ function ForgotContent() {
 
     const normalized = normalizePhone(phone)
     if (!normalized) {
-      setError('اكتب رقم موبايل مصري صحيح (01XXXXXXXXX).')
+      setError(t('su.err_phone'))
       return
     }
     normalizedRef.current = normalized
@@ -111,14 +113,14 @@ function ForgotContent() {
         ? await waOtp(normalized)
         : await phoneAuth({ action: 'forgot_start', phone: normalized, channel: via })
       if (!out.success) {
-        setError(friendlyError(out.error))
+        setError(friendlyError(t, out.error))
         return
       }
       setSentTo(out.sent_to || (via === 'whatsapp' ? normalized : ''))
       setStep('reset')
       setResendIn(60)
     } catch {
-      setError('النت فصل لحظة — جرّب تاني.')
+      setError(t('su.net'))
     } finally {
       setSubmitting(false)
     }
@@ -132,10 +134,10 @@ function ForgotContent() {
       const out = channel === 'whatsapp'
         ? await waOtp(normalizedRef.current)
         : await phoneAuth({ action: 'forgot_start', phone: normalizedRef.current, channel })
-      if (!out.success) setError(friendlyError(out.error))
+      if (!out.success) setError(friendlyError(t, out.error))
       else setResendIn(60)
     } catch {
-      setError('النت فصل لحظة — جرّب تاني.')
+      setError(t('su.net'))
     } finally {
       setSubmitting(false)
     }
@@ -145,15 +147,15 @@ function ForgotContent() {
     e.preventDefault()
     setError(null)
     if (code.trim().length < 4) {
-      setError('اكتب الكود اللي وصلك.')
+      setError(t('fp.err_code_empty'))
       return
     }
     if (newPassword.length < 8) {
-      setError('كلمة السر الجديدة لازم تكون ٨ حروف على الأقل.')
+      setError(t('fp.pw_short'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setError('كلمتين السر مش زي بعض.')
+      setError(t('su.err_match'))
       return
     }
 
@@ -167,7 +169,7 @@ function ForgotContent() {
         new_password: newPassword,
       })
       if (!out.success) {
-        setError(friendlyError(out.error))
+        setError(friendlyError(t, out.error))
         return
       }
 
@@ -191,7 +193,7 @@ function ForgotContent() {
         router.refresh()
       }, 1500)
     } catch {
-      setError('النت فصل لحظة — جرّب تاني.')
+      setError(t('su.net'))
     } finally {
       setSubmitting(false)
     }
@@ -218,19 +220,19 @@ function ForgotContent() {
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
               <Sparkles className="w-3 h-3 text-[#2FA084]" />
-              <span className="text-xs font-bold text-gray-700">مضمونة · Madmona</span>
+              <span className="text-xs font-bold text-gray-700">{t('su.brand')}</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
               {step === 'done' ? (
-                <>اتغيّرت <span className="gradient-text-green">بنجاح</span> ✓</>
+                <>{t('fp.h_done_1')} <span className="gradient-text-green">{t('fp.h_done_2')}</span> ✓</>
               ) : (
-                <>نسيت <span className="gradient-text-green">كلمة السر؟</span></>
+                <>{t('fp.h_1')} <span className="gradient-text-green">{t('fp.h_2')}</span></>
               )}
             </h1>
             <p className="text-sm text-gray-500 mt-2">
-              {step === 'phone' && 'اكتب رقمك واختار الكود يوصلك منين'}
-              {step === 'reset' && `بعتنا الكود لـ ${sentTo} — صالح ١٠ دقايق`}
-              {step === 'done' && 'ثانية واحدة وبنودّيك على حسابك…'}
+              {step === 'phone' && t('fp.sub_phone')}
+              {step === 'reset' && t('fp.sub_reset', { to: sentTo })}
+              {step === 'done' && t('fp.sub_done')}
             </p>
           </div>
 
@@ -240,7 +242,7 @@ function ForgotContent() {
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                     <Phone className="w-3.5 h-3.5 text-[#059669]" />
-                    رقم الموبايل
+                    {t('fp.phone')}
                   </label>
                   <input
                     type="tel"
@@ -264,7 +266,7 @@ function ForgotContent() {
                       {error.includes('مفيش حساب') && (
                         <>
                           {' '}
-                          <Link href="/auth/signup" className="font-bold underline">اعمل حساب جديد</Link>
+                          <Link href="/auth/signup" className="font-bold underline">{t('fp.new_account')}</Link>
                         </>
                       )}
                     </span>
@@ -281,7 +283,7 @@ function ForgotContent() {
                   ) : (
                     <MessageCircle className="w-4 h-4" />
                   )}
-                  كود واتساب من المارد
+                  {t('fp.via_wa')}
                 </button>
 
                 <button
@@ -295,7 +297,7 @@ function ForgotContent() {
                   ) : (
                     <Mail className="w-4 h-4 text-[#059669]" />
                   )}
-                  كود على الإيميل
+                  {t('fp.via_email')}
                 </button>
               </form>
             )}
@@ -309,7 +311,7 @@ function ForgotContent() {
 
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    الكود
+                    {t('fp.code')}
                   </label>
                   <input
                     type="text"
@@ -327,13 +329,13 @@ function ForgotContent() {
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                     <Lock className="w-3.5 h-3.5 text-[#059669]" />
-                    كلمة السر الجديدة
+                    {t('fp.new_pw')}
                   </label>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="٨ حروف على الأقل"
+                    placeholder={t('su.pw_ph')}
                     className={inputCls}
                     dir="ltr"
                     style={{ textAlign: 'right' }}
@@ -345,7 +347,7 @@ function ForgotContent() {
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                     <Lock className="w-3.5 h-3.5 text-[#059669]" />
-                    تأكيد كلمة السر
+                    {t('su.pw_confirm')}
                   </label>
                   <input
                     type="password"
@@ -375,12 +377,12 @@ function ForgotContent() {
                   {submitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>بنغيّرها…</span>
+                      <span>{t('fp.changing')}</span>
                     </>
                   ) : (
                     <>
                       <KeyRound className="w-4 h-4" />
-                      غيّر كلمة السر وادخل
+                      {t('fp.change_login')}
                     </>
                   )}
                 </button>
@@ -392,7 +394,7 @@ function ForgotContent() {
                     className="font-bold text-gray-400 hover:text-[#059669] transition-colors flex items-center gap-1"
                   >
                     <PencilLine className="w-3.5 h-3.5" />
-                    غيّر الرقم / القناة
+                    {t('fp.change_channel')}
                   </button>
                   <button
                     type="button"
@@ -401,7 +403,7 @@ function ForgotContent() {
                     className="font-bold text-[#059669] disabled:text-gray-300 transition-colors flex items-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    {resendIn > 0 ? `إعادة الإرسال بعد ${resendIn} ث` : 'ابعت الكود تاني'}
+                    {resendIn > 0 ? t('su.resend_in', { n: resendIn }) : t('su.resend')}
                   </button>
                 </div>
               </form>
@@ -412,15 +414,15 @@ function ForgotContent() {
                 <div className="w-16 h-16 bg-[#34D399]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-[#059669]" />
                 </div>
-                <p className="text-sm text-gray-600">كلمة السر اتغيّرت ودخلت على حسابك ✓</p>
+                <p className="text-sm text-gray-600">{t('fp.done_note')}</p>
               </div>
             )}
 
             {step !== 'done' && (
               <p className="mt-6 pt-5 border-t border-gray-100 text-center text-sm text-gray-500 leading-relaxed">
-                افتكرتها؟{' '}
+                {t('fp.remembered')}{' '}
                 <Link href="/auth/login" className="text-[#059669] font-bold hover:underline">
-                  ارجع لتسجيل الدخول
+                  {t('fp.back_login')}
                 </Link>
               </p>
             )}

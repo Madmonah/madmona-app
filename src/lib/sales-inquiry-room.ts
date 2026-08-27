@@ -5,49 +5,106 @@
 //      شات مضمونة في شات جديد يتحط فيه موظفين مضمونة كلهم ما عدا سامية
 //      (مبقتش في الفريق) ومحمد (أوفيس بوي)».
 //
-// قبل كده: استفسار العقارات/العربيات كان بيروح على **شات مباشر مع محمد ناصف
-// لوحده** — يعني لو محمد مش فاضي الاستفسار بيقف، وباقي الفريق مش شايفه أصلًا.
+// وبعدها: «رأيي تتولد محادثة فيها أعضاء الفريق وصاحب الإعلان بحيث نقدر نتواصل
+//      معاه كفريق لمضمونة وكصاحب إعلان».
 //
-// دلوقتي: بيتكتب في روم جماعي واحد اسمه «استفسارات البيع — عقارات وسيارات»
-// كل موظفي مضمونة أعضاء فيه، مع إشعار لكلهم.
+// فبقى عندنا مسارين:
+//   ① روم الفريق الثابت — كل استفسار بيتسجّل فيه (لوحة متابعة للفريق كله).
+//   ② روم لكل صاحب إعلان — الفريق + صاحب الإعلان، بيتعمل أول مرة وبيتعاد
+//      استخدامه بعد كده، فمفيش روم جديد كل استفسار.
 //
-// ⚠️ العميل **مش** بينضم للروم ده — الروم ده داخلي للفريق بس. العميل بيفضل
-//    في الشات المباشر بتاعه؛ الروم الجماعي فيه لينك يوصّل الموظف للشات ده.
-//    (لو ضفنا العميل، هيشوف استفسارات كل العملاء التانيين.)
+// ⚠️ العميل المستفسر **مش** عضو في أي منهم — لو دخل هيشوف بيانات كل العملاء
+//    والملاك التانيين. العميل بيفضل في شاته المباشر، والرومات دي فيها لينك ليه.
 // ============================================================================
 
 /** الروم الجماعي الثابت — اتعمل في الداتابيز ٢٧ أغسطس ٢٠٢٦ */
 export const SALES_INQUIRY_ROOM_ID = '76a7fdbd-fc75-4e2e-8d48-fdf6b285a8f2'
 
-type AdminClient = {
-  from: (t: string) => {
-    insert: (v: unknown) => Promise<{ error: unknown }>
-    select: (c: string) => { eq: (a: string, b: string) => Promise<{ data: unknown }> }
-  }
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type AdminClient = any
 
 export type SalesInquiryInput = {
-  /** «عقار» · «عربية» · «مشروع» */
+  /** «عقارات/عربيات» · «بورصة عقارية» */
   kind: string
-  /** عنوان الإعلان أو اسم المشروع */
   title: string
-  /** اسم المستفسر (لو معروف) */
   inquirerName?: string | null
-  /** تليفون المستفسر (لو معروف) */
   inquirerPhone?: string | null
-  /** اسم صاحب الإعلان/المطوّر */
   ownerName?: string | null
-  /** تليفون صاحب الإعلان */
   ownerPhone?: string | null
+  /** بروفايل صاحب الإعلان — لو موجود بنعمل روم مشترك معاه */
+  ownerProfileId?: string | null
   /** لينك الشات المباشر مع العميل، أو لينك الإعلان */
   link?: string | null
 }
 
+/** أعضاء روم الفريق (اللي اتحددوا في الداتابيز) */
+async function teamMemberIds(admin: AdminClient): Promise<string[]> {
+  const { data } = await admin.from('chat_room_members')
+    .select('profile_id').eq('room_id', SALES_INQUIRY_ROOM_ID)
+  return ((data || []) as { profile_id: string }[]).map((m) => m.profile_id)
+}
+
+async function notify(admin: AdminClient, ids: string[], title: string, body: string, url: string, data: unknown) {
+  if (!ids.length) return
+  await admin.from('notification_queue').insert(
+    ids.map((rid) => ({ recipient_id: rid, type: 'sales_inquiry', title, body, url, data })),
+  )
+}
+
 /**
- * بيكتب الاستفسار في روم الفريق وبيبعت إشعار لكل الأعضاء.
- * best-effort: أي فشل هنا **مايوقّفش** الاستفسار نفسه.
+ * روم «فريق مضمونة + صاحب الإعلان».
+ * بيدوّر على روم موجود بنفس الاسم الأول — فصاحب الإعلان مابياخدش روم جديد
+ * مع كل استفسار. بيرجّع null لو صاحب الإعلان معندوش حساب.
  */
-export async function postSalesInquiry(admin: AdminClient, i: SalesInquiryInput): Promise<void> {
+export async function ensureOwnerTeamRoom(
+  admin: AdminClient,
+  ownerProfileId: string | null | undefined,
+  ownerName: string | null | undefined,
+): Promise<string | null> {
+  if (!ownerProfileId) return null
+  try {
+    const roomName = `مضمونة × ${ownerName || 'صاحب إعلان'}`
+
+    // موجود قبل كده؟ (روم جروب صاحب الإعلان عضو فيه وبنفس الاسم)
+    const { data: mine } = await admin.from('chat_room_members')
+      .select('room_id').eq('profile_id', ownerProfileId)
+    const ids = ((mine || []) as { room_id: string }[]).map((r) => r.room_id)
+    if (ids.length) {
+      const { data: rooms } = await admin.from('chat_rooms')
+        .select('id').eq('kind', 'group').eq('name', roomName).in('id', ids).limit(1)
+      const r = (rooms || []) as { id: string }[]
+      if (r.length) return r[0].id
+    }
+
+    const team = await teamMemberIds(admin)
+    const { data: room } = await admin.from('chat_rooms')
+      .insert({ kind: 'group', name: roomName, marid_enabled: false, created_by: team[0] || ownerProfileId })
+      .select('id').single()
+    const roomId = (room as { id: string } | null)?.id
+    if (!roomId) return null
+
+    const members = [...new Set([...team, ownerProfileId])].map((pid) => ({
+      room_id: roomId, profile_id: pid,
+      role: pid === ownerProfileId ? 'member' : 'member',
+    }))
+    await admin.from('chat_room_members').insert(members)
+
+    await admin.from('chat_messages').insert({
+      room_id: roomId, sender_id: null, sender_kind: 'system', sender_name: 'مضمونة', kind: 'text',
+      body: `أهلًا 👋 ده شات مشترك بينك وبين فريق مضمونة — أي استفسار على إعلاناتك هيتكتب هنا وتقدر ترد علينا مباشرة.`,
+    })
+    return roomId
+  } catch (e) {
+    console.error('[ensureOwnerTeamRoom] failed:', e)
+    return null
+  }
+}
+
+/**
+ * بيكتب الاستفسار في روم الفريق + في روم صاحب الإعلان (لو عنده حساب)،
+ * وبيبعت إشعارات. best-effort: أي فشل هنا **مايوقّفش** الاستفسار نفسه.
+ */
+export async function postSalesInquiry(admin: AdminClient, i: SalesInquiryInput): Promise<string | null> {
   try {
     const lines = [
       `📩 استفسار جديد — ${i.kind}`,
@@ -58,38 +115,37 @@ export async function postSalesInquiry(admin: AdminClient, i: SalesInquiryInput)
       i.ownerName || i.ownerPhone
         ? `صاحب الإعلان: ${i.ownerName || '—'}${i.ownerPhone ? ' · ' + i.ownerPhone : ''}`
         : null,
-      i.link ? `الرد من هنا: ${i.link}` : null,
+      i.link ? `الرد على العميل: ${i.link}` : null,
     ].filter(Boolean)
+    const body = lines.join('\n')
 
+    // ① روم الفريق
     await admin.from('chat_messages').insert({
-      room_id: SALES_INQUIRY_ROOM_ID,
-      sender_id: null,
-      sender_kind: 'system',
-      sender_name: 'مضمونة',
-      kind: 'text',
-      body: lines.join('\n'),
+      room_id: SALES_INQUIRY_ROOM_ID, sender_id: null, sender_kind: 'system',
+      sender_name: 'مضمونة', kind: 'text', body,
     })
+    const team = await teamMemberIds(admin)
+    await notify(admin, team, `استفسار جديد 📩 (${i.kind})`,
+      `${i.inquirerName || 'عميل'} مستفسر عن «${i.title}».`,
+      i.link || `/chat/team?room=${SALES_INQUIRY_ROOM_ID}`,
+      { room_id: SALES_INQUIRY_ROOM_ID, kind: i.kind, title: i.title })
 
-    // إشعار لكل عضو في الروم
-    const { data: members } = await admin
-      .from('chat_room_members')
-      .select('profile_id')
-      .eq('room_id', SALES_INQUIRY_ROOM_ID)
-
-    const ids = ((members || []) as { profile_id: string }[]).map((m) => m.profile_id)
-    if (ids.length) {
-      await admin.from('notification_queue').insert(
-        ids.map((rid) => ({
-          recipient_id: rid,
-          type: 'sales_inquiry',
-          title: `استفسار جديد 📩 (${i.kind})`,
-          body: `${i.inquirerName || 'عميل'} مستفسر عن «${i.title}».`,
-          url: i.link || `/chat/team?room=${SALES_INQUIRY_ROOM_ID}`,
-          data: { room_id: SALES_INQUIRY_ROOM_ID, kind: i.kind, title: i.title },
-        })),
-      )
+    // ② روم الفريق + صاحب الإعلان
+    const ownerRoom = await ensureOwnerTeamRoom(admin, i.ownerProfileId, i.ownerName)
+    if (ownerRoom) {
+      await admin.from('chat_messages').insert({
+        room_id: ownerRoom, sender_id: null, sender_kind: 'system', sender_name: 'مضمونة', kind: 'text',
+        body: `📩 فيه استفسار جديد على «${i.title}»${i.inquirerName ? ` من ${i.inquirerName}` : ''}. فريق مضمونة بيتابع معاك من هنا.`,
+      })
+      if (i.ownerProfileId) {
+        await notify(admin, [i.ownerProfileId], 'استفسار على إعلانك 📩',
+          `فيه عميل مستفسر عن «${i.title}».`, `/chat/team?room=${ownerRoom}`,
+          { room_id: ownerRoom, title: i.title })
+      }
     }
+    return ownerRoom
   } catch (e) {
     console.error('[postSalesInquiry] failed:', e)
+    return null
   }
 }

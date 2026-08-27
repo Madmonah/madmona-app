@@ -38,25 +38,27 @@ async function phoneAuth(body: Record<string, unknown>) {
   return res.json() as Promise<{ success: boolean; error?: string; [k: string]: unknown }>
 }
 
-function friendlyError(code?: string): string {
+// 🌍 (٢٧ أغسطس ٢٠٢٦) الدالة دي بره الكومبوننت فمفيش عندها useT —
+// فبناخد t كباراميتر بدل ما نستدعي الهوك (ممنوع بره الكومبوننت).
+function friendlyError(t: (k: string) => string, code?: string): string {
   switch (code) {
     case 'phone_exists':
-      return 'الرقم ده عليه حساب بالفعل — سجّل دخول أو استرجع كلمة السر.'
+      return t('su.exists')
     case 'invalid_code':
-      return 'الكود غلط أو انتهت صلاحيته — جرّب تاني أو اطلب كود جديد.'
+      return t('su.bad_code')
     case 'weak_password':
-      return 'كلمة السر لازم تكون ٨ حروف على الأقل.'
+      return t('su.pw_short')
     case 'phone_required':
     case 'missing_params':
-      return 'في بيانات ناقصة — راجع الخانات وجرّب تاني.'
+      return t('su.missing')
     default:
-      if (code && /rate|limit|10/.test(code)) return 'طلبت أكواد كتير — استنى شوية وجرّب تاني.'
-      return code || 'حصلت مشكلة — جرّب تاني.'
+      if (code && /rate|limit|10/.test(code)) return t('su.rate')
+      return code || t('su.generic')
   }
 }
 
 function SignupContent() {
-  const { dir } = useT()
+  const { dir, t } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/account'
@@ -95,20 +97,20 @@ function SignupContent() {
     setError(null)
 
     if (fullName.trim().length < 2) {
-      setError('اكتب اسمك بالكامل.')
+      setError(t('su.err_name'))
       return
     }
     const normalized = normalizePhone(phone)
     if (!normalized) {
-      setError('اكتب رقم موبايل مصري صحيح (01XXXXXXXXX).')
+      setError(t('su.err_phone'))
       return
     }
     if (password.length < 8) {
-      setError('كلمة السر لازم تكون ٨ حروف على الأقل.')
+      setError(t('su.pw_short'))
       return
     }
     if (password !== confirmPassword) {
-      setError('كلمتين السر مش زي بعض.')
+      setError(t('su.err_match'))
       return
     }
 
@@ -121,13 +123,13 @@ function SignupContent() {
         full_name: fullName.trim(),
       })
       if (!out.success) {
-        setError(friendlyError(out.error))
+        setError(friendlyError(t, out.error))
         return
       }
       setStep('code')
       setResendIn(60)
     } catch {
-      setError('النت فصل لحظة — جرّب تاني.')
+      setError(t('su.net'))
     } finally {
       setSubmitting(false)
     }
@@ -143,10 +145,10 @@ function SignupContent() {
         phone: normalizedRef.current,
         full_name: fullName.trim(),
       })
-      if (!out.success) setError(friendlyError(out.error))
+      if (!out.success) setError(friendlyError(t, out.error))
       else setResendIn(60)
     } catch {
-      setError('النت فصل لحظة — جرّب تاني.')
+      setError(t('su.net'))
     } finally {
       setSubmitting(false)
     }
@@ -156,7 +158,7 @@ function SignupContent() {
     e.preventDefault()
     setError(null)
     if (code.trim().length < 4) {
-      setError('اكتب الكود اللي وصلك على واتساب.')
+      setError(t('su.err_code_empty'))
       return
     }
 
@@ -171,7 +173,7 @@ function SignupContent() {
         full_name: fullName.trim(),
       })
       if (!out.success) {
-        setError(friendlyError(out.error))
+        setError(friendlyError(t, out.error))
         return
       }
 
@@ -192,7 +194,7 @@ function SignupContent() {
       router.push(finalRedirect)
       router.refresh()
     } catch {
-      setError('النت فصل لحظة — جرّب تاني.')
+      setError(t('su.net'))
     } finally {
       setSubmitting(false)
     }
@@ -219,30 +221,30 @@ function SignupContent() {
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/80 backdrop-blur rounded-full mb-4 shadow-soft">
               <Sparkles className="w-3 h-3 text-[#2FA084]" />
-              <span className="text-xs font-bold text-gray-700">مضمونة · Madmona</span>
+              <span className="text-xs font-bold text-gray-700">{t('su.brand')}</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
               {step === 'form' ? (
-                <>اعمل <span className="gradient-text-green">حسابك</span> في دقيقة</>
+                <>{t('su.h_create_1')} <span className="gradient-text-green">{t('su.h_create_2')}</span> {t('su.h_create_3')}</>
               ) : (
-                <>اكتب <span className="gradient-text-green">الكود</span> اللي وصلك</>
+                <>{t('su.h_code_1')} <span className="gradient-text-green">{t('su.h_code_2')}</span> {t('su.h_code_3')}</>
               )}
             </h1>
             <p className="text-sm text-gray-500 mt-2">
               {step === 'form'
-                ? 'رقم موبايلك + كلمة سر — وهنأكد الرقم بكود على واتساب'
-                : 'المارد بعتلك كود ٦ أرقام على واتساب — صالح ١٠ دقايق'}
+                ? t('su.sub_form')
+                : t('su.sub_code')}
             </p>
           </div>
 
           <div className="bg-white rounded-3xl shadow-luxe p-7 md:p-9">
             {step === 'form' && (
               <>
-                <GoogleSignInButton redirectTo={finalRedirect} label="اعمل حساب بـ Google" />
+                <GoogleSignInButton redirectTo={finalRedirect} label={t('su.google')} />
 
                 <div className="my-4 flex items-center gap-3">
                   <div className="h-px bg-gray-100 flex-1" />
-                  <span className="text-[11px] text-gray-400 font-bold">أو برقم موبايلك</span>
+                  <span className="text-[11px] text-gray-400 font-bold">{t('su.or_phone')}</span>
                   <div className="h-px bg-gray-100 flex-1" />
                 </div>
 
@@ -250,13 +252,13 @@ function SignupContent() {
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                       <User className="w-3.5 h-3.5 text-[#059669]" />
-                      الاسم
+                      {t('su.name')}
                     </label>
                     <input
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="اسمك بالكامل"
+                      placeholder={t('su.name_ph')}
                       className={inputCls}
                       autoComplete="name"
                       required
@@ -266,7 +268,7 @@ function SignupContent() {
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                       <Phone className="w-3.5 h-3.5 text-[#059669]" />
-                      رقم الموبايل (واتساب)
+                      {t('su.phone')}
                     </label>
                     <input
                       type="tel"
@@ -284,13 +286,13 @@ function SignupContent() {
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                       <Lock className="w-3.5 h-3.5 text-[#059669]" />
-                      كلمة السر
+                      {t('su.password')}
                     </label>
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="٨ حروف على الأقل"
+                      placeholder={t('su.pw_ph')}
                       className={inputCls}
                       dir="ltr"
                       style={{ textAlign: 'right' }}
@@ -302,7 +304,7 @@ function SignupContent() {
                   <div>
                     <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
                       <Lock className="w-3.5 h-3.5 text-[#059669]" />
-                      تأكيد كلمة السر
+                      {t('su.pw_confirm')}
                     </label>
                     <input
                       type="password"
@@ -326,7 +328,7 @@ function SignupContent() {
                           <>
                             {' '}
                             <Link href={`/auth/login?phone=${encodeURIComponent(phone)}`} className="font-bold underline">
-                              سجّل دخول من هنا
+                              {t('su.login_here')}
                             </Link>
                           </>
                         )}
@@ -342,12 +344,12 @@ function SignupContent() {
                     {submitting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>ثانية واحدة…</span>
+                        <span>{t('su.one_sec')}</span>
                       </>
                     ) : (
                       <>
                         <MessageCircle className="w-4 h-4" />
-                        ابعتلي كود التأكيد على واتساب
+                        {t('su.send_code')}
                       </>
                     )}
                   </button>
@@ -364,7 +366,7 @@ function SignupContent() {
 
                 <div>
                   <label className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5 uppercase tracking-wider">
-                    كود الواتساب
+                    {t('su.wa_code')}
                   </label>
                   <input
                     type="text"
@@ -394,12 +396,12 @@ function SignupContent() {
                   {submitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>بنعمل الحساب…</span>
+                      <span>{t('su.creating')}</span>
                     </>
                   ) : (
                     <>
                       <UserPlus className="w-4 h-4" />
-                      أكّد وافتح حسابي
+                      {t('su.confirm_open')}
                     </>
                   )}
                 </button>
@@ -411,7 +413,7 @@ function SignupContent() {
                     className="font-bold text-gray-400 hover:text-[#059669] transition-colors flex items-center gap-1"
                   >
                     <PencilLine className="w-3.5 h-3.5" />
-                    غيّر البيانات
+                    {t('su.change_data')}
                   </button>
                   <button
                     type="button"
@@ -420,25 +422,25 @@ function SignupContent() {
                     className="font-bold text-[#059669] disabled:text-gray-300 transition-colors flex items-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    {resendIn > 0 ? `إعادة الإرسال بعد ${resendIn} ث` : 'ابعت الكود تاني'}
+                    {resendIn > 0 ? t('su.resend_in', { n: resendIn }) : t('su.resend')}
                   </button>
                 </div>
               </form>
             )}
 
             <p className="mt-6 pt-5 border-t border-gray-100 text-center text-sm text-gray-500 leading-relaxed">
-              عندك حساب بالفعل؟{' '}
+              {t('su.have_account')}{' '}
               <Link href="/auth/login" className="text-[#059669] font-bold hover:underline">
-                سجّل دخول
+                {t('su.login')}
               </Link>
             </p>
           </div>
 
           <p className="text-center text-xs text-gray-500 mt-6">
-            بإنشاء الحساب انت موافق على{' '}
-            <Link href="/terms" className="text-[#059669] font-semibold hover:underline">الشروط</Link>
-            {' '}و{' '}
-            <Link href="/privacy" className="text-[#059669] font-semibold hover:underline">الخصوصية</Link>
+            {t('su.terms_pre')}{' '}
+            <Link href="/terms" className="text-[#059669] font-semibold hover:underline">{t('sf.terms')}</Link>
+            {' '}{t('su.and')}{' '}
+            <Link href="/privacy" className="text-[#059669] font-semibold hover:underline">{t('sf.privacy')}</Link>
           </p>
         </div>
       </main>

@@ -172,6 +172,7 @@ export async function POST(req: NextRequest) {
         inquirerName,
         ownerName,
         ownerPhone: ownerPhoneLocal,
+        ownerProfileId,
         link: `/chat/team?room=${roomId}`,
       })
 
