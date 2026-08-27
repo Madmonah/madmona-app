@@ -7,6 +7,7 @@
 // =====================================================================
 import { NextRequest, NextResponse } from 'next/server'
 import { sbProjects as supabase } from '@/lib/supabaseProjects'
+import { postSalesInquiry } from '@/lib/sales-inquiry-room'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -44,5 +45,16 @@ export async function POST(req: NextRequest) {
   })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // 🏠 (٢٧ أغسطس ٢٠٢٦) استفسارات بورصة مضمونة كمان بتتكتب في روم الفريق
+  //     «استفسارات البيع — عقارات وسيارات» عشان الفريق كله يشوفها فورًا.
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  await postSalesInquiry(supabase as any, {
+    kind: 'بورصة عقارية',
+    title: proj.title,
+    ownerName: proj.developer,
+    link: proj.slug ? `/real-estate/projects/${proj.slug}` : null,
+  })
+
   return NextResponse.json({ ok: true })
 }

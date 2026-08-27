@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email'
 import { sendText } from '@/lib/whatsapp'
+import { postSalesInquiry } from '@/lib/sales-inquiry-room'
 
 export const runtime = 'nodejs'
 
@@ -161,6 +162,18 @@ export async function POST(req: NextRequest) {
         supplier_id: l.supplier_id, room_id: roomId, channel: 'in_app',
         routed_to: 'madmona', notified_via: ['push'],
       } as never)
+
+      // 🏠🚗 (٢٧ أغسطس ٢٠٢٦) كمان في روم الفريق — قبل كده كان بيروح لمحمد
+      //     لوحده، فلو مش فاضي الاستفسار يقف وباقي الفريق مش شايفه.
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      await postSalesInquiry(admin as any, {
+        kind: 'عقارات/عربيات',
+        title: l.title,
+        inquirerName,
+        ownerName,
+        ownerPhone: ownerPhoneLocal,
+        link: `/chat/team?room=${roomId}`,
+      })
 
       return NextResponse.json({ ok: true, channel: 'in_app', roomId, ownerName: 'مضمونة', brokered: true })
     }
