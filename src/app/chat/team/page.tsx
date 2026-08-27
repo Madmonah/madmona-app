@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Smile, Mic, Send, Square, Phone, Video } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { maskContacts, hasContactInfo } from '@/lib/mask-contacts'
 import ChatBottomNav from '@/components/ChatBottomNav'
 import dynamic from 'next/dynamic'
 import { playRing } from '@/lib/ringtone'
@@ -168,6 +169,15 @@ export default function TeamPage() {
   //    الفرونت بيعرض اللقب بدل الاسم الحقيقي لحد ما الفريق يفك الإخفاء.
   const [maskedRoom, setMaskedRoom] = useState(false)
   const [roleById, setRoleById] = useState<Record<string, string>>({})
+  // 🔒 نص الرسالة نفسه: بنخفي أي رقم/إيميل/يوزر في الرومات المخفية.
+  //    الفريق (admin) بيشوف النص الأصلي عشان يقدر يتابع.
+  const iAmTeam = !!(uid && roleById[uid] === 'admin')
+  const bodyOf = useCallback((text: string | null | undefined) => {
+    if (!text) return text || ''
+    if (!maskedRoom || iAmTeam) return text
+    return maskContacts(text)
+  }, [maskedRoom, iAmTeam])
+
   const aliasOf = useCallback((senderId: string | null, fallback: string | null) => {
     if (!maskedRoom) return fallback || 'عضو'
     const r = senderId ? roleById[senderId] : null
@@ -773,6 +783,25 @@ export default function TeamPage() {
     } catch { alert('مش قادر أبدأ المحادثة دلوقتي.') }
   }
 
+  // 🔓 الفريق بيفك الإخفاء بعد ما الاتفاق يتم بحضور مضمونة.
+  //    بعدها الأسماء والأرقام بتظهر للطرفين عادي.
+  async function unmaskRoom() {
+    if (!active || !iAmTeam) return
+    if (!window.confirm('هتظهر أسماء وأرقام الطرفين لبعض. متأكد إن الاتفاق تم بحضور مضمونة؟')) return
+    const { error } = await supabaseBrowser
+      .from('chat_rooms')
+      .update({ masked_identities: false } as never)
+      .eq('id', active.id)
+    if (error) { setToast('مقدرتش أفك الإخفاء'); setTimeout(() => setToast(''), 2500); return }
+    setMaskedRoom(false)
+    setMenuOpen(false)
+    await supabaseBrowser.from('chat_messages').insert({
+      room_id: active.id, sender_id: uid, sender_kind: 'system', sender_name: 'مضمونة', kind: 'text',
+      body: '🔓 تم الاتفاق بحضور مضمونة — بيانات الطرفين بقت ظاهرة.',
+    } as never)
+    setToast('اتفك الإخفاء ✅'); setTimeout(() => setToast(''), 2500)
+  }
+
   async function addMember() {
     if (!active) return
     const picked = await getPhone('رقم موبايل العضو (لازم يكون مسجّل على مضمونة):')
@@ -971,7 +1000,7 @@ export default function TeamPage() {
                   <span style={{ fontSize: 11, fontWeight: 800, color: '#059669' }}>{sm.sender_name || 'عضو'}</span>
                   <span style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF' }}>{t(sm.created_at)}</span>
                 </div>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#14231E', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{sm.body || '📎 مرفق'}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#14231E', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{bodyOf(sm.body) || '📎 مرفق'}</div>
               </div>
             ))}
           </div>
@@ -1032,7 +1061,7 @@ export default function TeamPage() {
                 <span style={{ fontSize: 11, fontWeight: 800, color: '#059669' }}>{h.sender_name || 'عضو'}</span>
                 <span style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF' }}>{t(h.created_at)}</span>
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#14231E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.body || '📎 مرفق'}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#14231E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bodyOf(h.body) || '📎 مرفق'}</div>
             </button>
           ))}
         </div>
@@ -1064,6 +1093,19 @@ export default function TeamPage() {
             ) : (
               <>
                 <button onClick={openMembers} style={menuItem}>👥 أعضاء الجروب</button>
+                {/* 🔓 (٢٧ أغسطس ٢٠٢٦) فك الإخفاء بعد الاتفاق — للفريق بس.
+
+                    قبل كده كان لازم يتعمل من الداتابيز يدوي. */}
+
+                {maskedRoom && iAmTeam && (
+
+                  <button onClick={unmaskRoom} style={{ ...menuItem, color: '#059669', fontWeight: 800 }}>
+
+                    🔓 تم الاتفاق — اعرض بيانات الطرفين
+
+                  </button>
+
+                )}
                 <button onClick={inviteLink} style={menuItem}>🔗 Invite بلينك</button>
                 {iAmOwner && <button onClick={addMember} style={menuItem}>➕ ضيف عضو</button>}
                 <div style={{ height: 1, background: '#eee' }} />
@@ -1122,7 +1164,7 @@ export default function TeamPage() {
                   <span style={{ fontSize: 11, fontWeight: 800, color: '#059669' }}>{sm.sender_name || 'عضو'}</span>
                   <span style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF' }}>{t(sm.created_at)}</span>
                 </div>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#14231E', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{sm.body || '📎 مرفق'}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#14231E', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{bodyOf(sm.body) || '📎 مرفق'}</div>
                 {active?.id === sm.room_id && (
                   <button onClick={() => { setShowStarred(false); jumpTo(sm.id) }} style={{ background: 'none', border: 'none', color: '#2FA084', fontSize: 11.5, fontWeight: 800, cursor: 'pointer', padding: '4px 0 0', fontFamily: 'inherit' }}>↗️ روح للرسالة</button>
                 )}
@@ -1207,7 +1249,7 @@ export default function TeamPage() {
               <div key={m.member_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 4px', borderBottom: '1px solid #f2f2f2' }}>
                 <div style={{ width: 40, height: 40, borderRadius: '50%', background: m.member_role === 'owner' ? '#0a7d6e' : '#128C7E', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 16, fontWeight: 700, flexShrink: 0 }}>{(m.member_name || 'م').trim()[0]}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.member_name}{m.is_me ? ' (انت)' : ''}</div>
+                  <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{maskedRoom && !iAmTeam && !m.is_me ? aliasOf(m.member_id, null) : m.member_name}{m.is_me ? ' (انت)' : ''}</div>
                   <div style={{ fontSize: 12, color: m.member_role === 'owner' ? '#0a7d6e' : '#888' }}>{m.member_role === 'owner' ? '👑 مالك الجروب' : 'عضو'}</div>
                 </div>
                 {iAmOwner && !m.is_me && (
@@ -1277,7 +1319,7 @@ export default function TeamPage() {
                   return (
                     <div style={{ borderInlineStart: `3px solid ${mine ? '#8FE3C8' : '#2FA084'}`, background: mine ? 'rgba(255,255,255,.14)' : '#F1EEE6', borderRadius: 8, padding: '5px 8px', marginBottom: 5, fontSize: 12, fontWeight: 600, opacity: 0.95 }}>
                       <div style={{ fontWeight: 800, fontSize: 10.5, color: mine ? '#CDEFE2' : '#059669', marginBottom: 1 }}>{src ? aliasOf(src.sender_id, src.sender_name) : 'رسالة'}</div>
-                      <div style={{ maxHeight: 32, overflow: 'hidden' }}>{src ? (src.deleted_at ? 'رسالة متحذفة' : (src.body || '📎 مرفق')) : 'الرسالة الأصلية مش ظاهرة'}</div>
+                      <div style={{ maxHeight: 32, overflow: 'hidden' }}>{src ? (src.deleted_at ? 'رسالة متحذفة' : (bodyOf(src.body) || '📎 مرفق')) : 'الرسالة الأصلية مش ظاهرة'}</div>
                     </div>
                   )
                 })()}
@@ -1352,7 +1394,13 @@ export default function TeamPage() {
                 {m.media_url && (
                   <button onClick={() => setForwardMsg(m)} title="تحويل لمحادثة تانية" style={{ display: 'block', marginBottom: 4, background: 'none', border: 'none', color: mine ? '#CDEFE2' : '#2FA084', cursor: 'pointer', fontSize: 12, padding: 0, fontFamily: 'inherit' }}>↗️ تحويل</button>
                 )}
-                {!['location', 'poll', 'contact'].includes(m.kind) && m.body}
+                {!['location', 'poll', 'contact'].includes(m.kind) && bodyOf(m.body)}
+            {/* 🔒 تنبيه لما وسيلة تواصل تتخفي في روم استفسار */}
+            {maskedRoom && !iAmTeam && m.body && hasContactInfo(m.body) && (
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: mine ? '#CDEFE2' : '#B78A12', marginTop: 4, lineHeight: 1.5 }}>
+                🔒 اتخفى رقم/وسيلة تواصل — التواصل من خلال مضمونة لحد ما يتم الاتفاق.
+              </div>
+            )}
                 {m.body && !['location', 'poll', 'contact'].includes(m.kind) && (
                   <button onClick={() => addTask(m)} title="حوّل الرسالة لمهمة" style={{ display: 'block', marginTop: 4, background: 'none', border: 'none', color: mine ? '#CDEFE2' : '#059669', cursor: 'pointer', fontSize: 11, padding: 0, fontWeight: 800, fontFamily: 'inherit' }}>➕ حوّل لمهمة</button>
                 )}
