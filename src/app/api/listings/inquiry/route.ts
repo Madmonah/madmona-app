@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from '@/lib/email'
 import { sendText } from '@/lib/whatsapp'
-import { postSalesInquiry, ensureInquiryRoom } from '@/lib/sales-inquiry-room'
+import { postSalesInquiry, ensureInquiryRoom, ALIAS_CUSTOMER } from '@/lib/sales-inquiry-room'
 
 export const runtime = 'nodejs'
 
@@ -156,7 +156,9 @@ export async function POST(req: NextRequest) {
         : ''
 
       await admin.from('chat_messages').insert({
-        room_id: roomId, sender_id: me.id, sender_kind: 'user', sender_name: inquirerName, kind: 'text',
+        room_id: roomId, sender_id: me.id, sender_kind: 'user',
+        // 🔒 في الروم الثلاثي بنكتب اللقب — الاسم الحقيقي للفريق بس
+        sender_name: triad ? ALIAS_CUSTOMER : inquirerName, kind: 'text',
         body: triad
           ? `مرحبا 👋 عندي استفسار بخصوص «${l.title}».`
           : `مرحبا 👋 عندي استفسار بخصوص «${l.title}».${ownerLine}`,

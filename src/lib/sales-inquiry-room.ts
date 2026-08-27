@@ -135,7 +135,7 @@ export async function postSalesInquiry(admin: AdminClient, i: SalesInquiryInput)
     if (ownerRoom) {
       await admin.from('chat_messages').insert({
         room_id: ownerRoom, sender_id: null, sender_kind: 'system', sender_name: 'مضمونة', kind: 'text',
-        body: `📩 فيه استفسار جديد على «${i.title}»${i.inquirerName ? ` من ${i.inquirerName}` : ''}. فريق مضمونة بيتابع معاك من هنا.`,
+        body: `📩 فيه استفسار جديد على «${i.title}». فريق مضمونة بيتابع معاك من هنا.`,
       })
       if (i.ownerProfileId) {
         await notify(admin, [i.ownerProfileId], 'استفسار على إعلانك 📩',
@@ -177,20 +177,29 @@ export async function ensureInquiryRoom(
     const name = `استفسار: ${opts.listingTitle}`.slice(0, 120)
 
     const { data: room } = await admin.from('chat_rooms')
-      .insert({ kind: 'group', name, marid_enabled: false, created_by: opts.inquirerId })
+      .insert({ kind: 'group', name, marid_enabled: false, created_by: opts.inquirerId, masked_identities: true })
       .select('id').single()
     const roomId = (room as { id: string } | null)?.id
     if (!roomId) return null
 
+    // 🔒 دور كل عضو متخزّن في role — الفرونت بيحوّله للقب المناسب في
+    //    الرومات المخفية: team → «فريق مضمونة» · owner_party → «صاحب الإعلان»
+    //    · customer → «العميل». من غير كده مش هنعرف نخفي مين بالظبط.
     const ids = [...new Set([opts.inquirerId, ...(opts.ownerProfileId ? [opts.ownerProfileId] : []), ...team])]
     await admin.from('chat_room_members').insert(
       ids.map((pid) => ({
         room_id: roomId,
         profile_id: pid,
-        role: team.includes(pid) ? 'admin' : 'member',
+        role: team.includes(pid) ? 'admin'
+          : pid === opts.ownerProfileId ? 'owner_party'
+          : 'customer',
       })),
     )
 
+    // 🔒 (٢٧ أغسطس ٢٠٢٦) محمد: «مش هنعرض الاسم ورقم التليفون إلا لما يتم
+    //    الاتفاق في حضور مضمونة». فالروم الثلاثي بيستخدم ألقاب بس —
+    //    مفيش اسم حقيقي ولا رقم موبايل لأي طرف. بيانات الطرفين الحقيقية
+    //    موجودة في روم الفريق و listing_inquiries (للفريق بس).
     const ownerLine = opts.ownerProfileId
       ? `صاحب الإعلان معانا هنا 👋`
       : `فريق مضمونة هيوصل صاحب الإعلان ويضمّه للشات.`
@@ -198,14 +207,15 @@ export async function ensureInquiryRoom(
     await admin.from('chat_messages').insert({
       room_id: roomId, sender_id: null, sender_kind: 'system', sender_name: 'مضمونة', kind: 'text',
       body: `شات استفسار «${opts.listingTitle}» 🟢\n`
-        + `${opts.inquirerName || 'العميل'} · ${ownerLine}\n`
+        + `العميل · ${ownerLine}\n`
+        + `🔒 الأسماء وأرقام التليفونات مخفية لحد ما يتم الاتفاق بحضور مضمونة.\n`
         + `فريق مضمونة معاكم لحد ما تخلص المعاملة — معاملاتك مضمونة.`,
     })
 
     // إشعار لصاحب الإعلان + الفريق
     const notifyIds = [...new Set([...(opts.ownerProfileId ? [opts.ownerProfileId] : []), ...team])]
     await notify(admin, notifyIds, 'استفسار جديد 📩',
-      `${opts.inquirerName || 'عميل'} مستفسر عن «${opts.listingTitle}».`,
+      `فيه عميل مستفسر عن «${opts.listingTitle}».`,
       `/chat/team?room=${roomId}`, { room_id: roomId, title: opts.listingTitle })
 
     return roomId
@@ -213,4 +223,21 @@ export async function ensureInquiryRoom(
     console.error('[ensureInquiryRoom] failed:', e)
     return null
   }
+}
+
+// ============================================================================
+// 🔒 ألقاب رومات الاستفسار — الاسم الحقيقي مايظهرش لغير فريق مضمونة لحد
+//    ما يتم الاتفاق (محمد، ٢٧ أغسطس ٢٠٢٦). بيتستخدم في الفرونت وفي أي
+//    مكان بيكتب رسالة في روم عليه masked_identities.
+// ============================================================================
+export const ALIAS_CUSTOMER = 'العميل'
+export const ALIAS_OWNER = 'صاحب الإعلان'
+export const ALIAS_TEAM = 'فريق مضمونة'
+
+/** اللقب المناسب حسب دور المتكلم في الروم */
+export function aliasFor(role: 'customer' | 'owner' | 'team' | 'system'): string {
+  if (role === 'owner') return ALIAS_OWNER
+  if (role === 'team') return ALIAS_TEAM
+  if (role === 'system') return 'مضمونة'
+  return ALIAS_CUSTOMER
 }

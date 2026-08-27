@@ -18,7 +18,7 @@ const NewGroupSheet = dynamic(() => import('@/components/NewGroupSheet'), { ssr:
 
 const EMOJIS = ['😀','😂','🥰','😍','👍','🙏','🔥','🎉','❤️','😅','😊','🤝','👌','💪','🙌','😎','🤔','😢','😮','🥳','😉','🫡','💯','✅','⭐','🎁','📦','🚗','🏠','🍔','☕','💰','📞','✍️','👏','😇','🤩','🌹','🙈','🤗']
 
-type Room = { id: string; name: string | null; marid_enabled: boolean; kind?: string | null; otherName?: string | null; role?: string | null; mutedUntil?: string | null; archivedAt?: string | null; roomPinnedAt?: string | null }
+type Room = { id: string; name: string | null; marid_enabled: boolean; masked?: boolean; kind?: string | null; otherName?: string | null; role?: string | null; mutedUntil?: string | null; archivedAt?: string | null; roomPinnedAt?: string | null }
 type CMsg = { id: string; room_id?: string; sender_id: string | null; sender_kind: string; sender_name: string | null; body: string | null; kind: string; media_url: string | null; created_at: string; reply_to?: string | null; reactions?: Record<string, string[]> | null; edited_at?: string | null; deleted_at?: string | null; lat?: number | null; lng?: number | null; pinned_at?: string | null; payload?: Record<string, unknown> | null }
 type Member = { member_id: string; member_name: string; member_role: string; is_me: boolean }
 
@@ -160,6 +160,22 @@ export default function TeamPage() {
   // chat_rooms_for_me() بترجّع الأربعة مع بعض (SECURITY INVOKER فالـRLS زي ما هي،
   // والترتيب - المثبّت الأول ثم الأحدث - بقى في SQL بدل ما يتعمل هنا).
   const router = useRouter()
+
+  // 🔒 (٢٧ أغسطس ٢٠٢٦) محمد: «مش هنعرض الاسم ورقم التليفون إلا لما يتم
+  //    الاتفاق في حضور مضمونة». رومات الاستفسار عليها masked_identities،
+  //    وكل عضو دوره متخزّن في chat_room_members.role
+  //    (admin = فريق مضمونة · owner_party = صاحب الإعلان · customer = العميل).
+  //    الفرونت بيعرض اللقب بدل الاسم الحقيقي لحد ما الفريق يفك الإخفاء.
+  const [maskedRoom, setMaskedRoom] = useState(false)
+  const [roleById, setRoleById] = useState<Record<string, string>>({})
+  const aliasOf = useCallback((senderId: string | null, fallback: string | null) => {
+    if (!maskedRoom) return fallback || 'عضو'
+    const r = senderId ? roleById[senderId] : null
+    if (r === 'admin') return 'فريق مضمونة'
+    if (r === 'owner_party') return 'صاحب الإعلان'
+    if (r === 'customer') return 'العميل'
+    return 'عضو'
+  }, [maskedRoom, roleById])
 
   const loadRooms = useCallback(async (_myId: string) => {
     const { data, error } = await supabaseBrowser.rpc('chat_rooms_for_me', { p_kind: 'group' })
@@ -392,6 +408,20 @@ export default function TeamPage() {
   }
 
   // ─── كارت جهة اتصال ───
+  useEffect(() => {
+    if (!active?.id) { setMaskedRoom(false); setRoleById({}); return }
+    ;(async () => {
+      const [{ data: room }, { data: mem }] = await Promise.all([
+        supabaseBrowser.from('chat_rooms').select('masked_identities').eq('id', active.id).maybeSingle(),
+        supabaseBrowser.from('chat_room_members').select('profile_id, role').eq('room_id', active.id),
+      ])
+      setMaskedRoom(!!(room as { masked_identities?: boolean } | null)?.masked_identities)
+      const map: Record<string, string> = {}
+      for (const m of ((mem || []) as { profile_id: string; role: string | null }[])) map[m.profile_id] = m.role || 'member'
+      setRoleById(map)
+    })()
+  }, [active?.id])
+
   const [contactDraft, setContactDraft] = useState<{ name: string; phone: string } | null>(null)
   async function sendContact() {
     const d = contactDraft
@@ -400,7 +430,7 @@ export default function TeamPage() {
     if (!d.name.trim() || phone.length < 10) { setToast('محتاج اسم ورقم صح'); setTimeout(() => setToast(''), 2200); return }
     setContactDraft(null)
     const { data: ins } = await supabaseBrowser.from('chat_messages').insert({
-      room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName,
+      room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: maskedRoom ? aliasOf(uid, null) : myName,
       body: `👤 ${d.name.trim()} — +${phone}`, kind: 'contact',
       payload: { name: d.name.trim(), phone: `+${phone}` },
     } as never).select('*').single()
@@ -525,7 +555,7 @@ export default function TeamPage() {
     try {
       const { data: ins } = await supabaseBrowser
         .from('chat_messages')
-        .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body: text, kind: 'text', reply_to: rt } as never)
+        .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: maskedRoom ? aliasOf(uid, null) : myName, body: text, kind: 'text', reply_to: rt } as never)
         .select('*').single()
       if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
       // المارد بيسمع اسمه: أي رسالة فيها «مارد» يرد عليها تلقائي (الرد بيوصل بالـrealtime)
@@ -616,7 +646,7 @@ export default function TeamPage() {
     setShowPlus(false); setShowEmoji(false)
     try {
       await supabaseBrowser.from('chat_messages').insert({
-        room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName,
+        room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: maskedRoom ? aliasOf(uid, null) : myName,
         body: video ? '🎥 بدأ مكالمة فيديو — اكبس زر الفيديو فوق علشان تنضم' : '📞 بدأ مكالمة صوتية — اكبس زر السماعة فوق علشان تنضم',
         kind: 'call',
       } as never)
@@ -638,7 +668,7 @@ export default function TeamPage() {
         const lat = pos.coords.latitude, lng = pos.coords.longitude
         const body = `📍 موقعي: https://maps.google.com/?q=${lat.toFixed(6)},${lng.toFixed(6)}`
         const { data: ins } = await supabaseBrowser.from('chat_messages')
-          .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body, kind: 'location', lat, lng } as never)
+          .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: maskedRoom ? aliasOf(uid, null) : myName, body, kind: 'location', lat, lng } as never)
           .select('*').single()
         if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
       },
@@ -651,7 +681,7 @@ export default function TeamPage() {
     if (!v || !active || !uid) return
     const body = `🗓️ أنا متاح: ${new Date(v).toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' })}`
     const { data: ins } = await supabaseBrowser.from('chat_messages')
-      .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body, kind: 'text' } as never)
+      .insert({ room_id: active.id, sender_id: uid, sender_kind: 'user', sender_name: maskedRoom ? aliasOf(uid, null) : myName, body, kind: 'text' } as never)
       .select('*').single()
     if (ins) setMessages((m) => (m.some((x) => x.id === (ins as CMsg).id) ? m : [...m, ins as CMsg]))
   }
@@ -664,7 +694,7 @@ export default function TeamPage() {
     try {
       const { data: ins } = await supabaseBrowser
         .from('chat_messages')
-        .insert({ room_id: room.id, sender_id: uid, sender_kind: 'user', sender_name: myName, body: m.body, kind: m.kind, media_url: m.media_url } as never)
+        .insert({ room_id: room.id, sender_id: uid, sender_kind: 'user', sender_name: maskedRoom ? aliasOf(uid, null) : myName, body: m.body, kind: m.kind, media_url: m.media_url } as never)
         .select('*').single()
       if (active && room.id === active.id && ins) setMessages((x) => (x.some((y) => y.id === (ins as CMsg).id) ? x : [...x, ins as CMsg]))
     } catch { /* الرد بيوصل بالـrealtime لو نفس الغرفة */ }
@@ -1240,13 +1270,13 @@ export default function TeamPage() {
                 onMouseDown={() => startPress(m)} onMouseUp={cancelPress} onMouseLeave={cancelPress}
                 onContextMenu={(e) => { e.preventDefault(); setMsgMenu(m) }}
                 style={{ maxWidth: '82%', background: mine ? 'linear-gradient(118deg,#059669,#34D399)' : (marid ? '#FFF7E0' : '#fff'), color: mine ? '#fff' : '#14231E', padding: '10px 14px', borderRadius: mine ? '18px 18px 5px 18px' : '18px 18px 18px 5px', boxShadow: mine ? '0 6px 16px -8px rgba(250, 129, 37,.45)' : '0 1px 2px rgba(20,35,30,.06)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14, fontWeight: 600, lineHeight: 1.65, position: 'relative', userSelect: 'none', WebkitUserSelect: 'none', opacity: m.deleted_at ? 0.75 : 1 }}>
-                {!mine && <div style={{ fontSize: 11, fontWeight: 800, color: marid ? '#B78A12' : '#2FA084', marginBottom: 2 }}>{marid ? '🧞 المارد' : (m.sender_name || 'عضو')}</div>}
+                {!mine && <div style={{ fontSize: 11, fontWeight: 800, color: marid ? '#B78A12' : '#2FA084', marginBottom: 2 }}>{marid ? '🧞 المارد' : (aliasOf(m.sender_id, m.sender_name) || 'عضو')}</div>}
                 {m.pinned_at && <div style={{ fontSize: 10, fontWeight: 800, color: mine ? '#CDEFE2' : '#B78A12', marginBottom: 3 }}>📌 مثبّتة</div>}
                 {m.reply_to && (() => {
                   const src = messages.find((x) => x.id === m.reply_to)
                   return (
                     <div style={{ borderInlineStart: `3px solid ${mine ? '#8FE3C8' : '#2FA084'}`, background: mine ? 'rgba(255,255,255,.14)' : '#F1EEE6', borderRadius: 8, padding: '5px 8px', marginBottom: 5, fontSize: 12, fontWeight: 600, opacity: 0.95 }}>
-                      <div style={{ fontWeight: 800, fontSize: 10.5, color: mine ? '#CDEFE2' : '#059669', marginBottom: 1 }}>{src?.sender_name || 'رسالة'}</div>
+                      <div style={{ fontWeight: 800, fontSize: 10.5, color: mine ? '#CDEFE2' : '#059669', marginBottom: 1 }}>{src ? aliasOf(src.sender_id, src.sender_name) : 'رسالة'}</div>
                       <div style={{ maxHeight: 32, overflow: 'hidden' }}>{src ? (src.deleted_at ? 'رسالة متحذفة' : (src.body || '📎 مرفق')) : 'الرسالة الأصلية مش ظاهرة'}</div>
                     </div>
                   )
