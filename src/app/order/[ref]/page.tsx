@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
+import { cityFor } from '@/lib/i18n/catName'
 import Link from 'next/link'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -66,17 +68,17 @@ interface OrderData {
 }
 
 // Status label + color + icon
-const STATUS_META: Record<OrderStatus, { label: string; color: string; icon: typeof Clock }> = {
-  pending_payment: { label: 'بانتظار الدفع', color: 'amber', icon: CreditCard },
-  paid: { label: 'الدفع تم', color: 'blue', icon: CheckCircle },
-  accepted: { label: 'تم القبول', color: 'blue', icon: CheckCircle },
-  preparing: { label: 'بيتجهّز', color: 'blue', icon: ChefHat },
-  ready: { label: 'جاهز', color: 'indigo', icon: Package },
-  out_for_delivery: { label: 'في الطريق', color: 'indigo', icon: Truck },
-  delivered: { label: 'وصل', color: 'green', icon: Home },
-  completed: { label: 'مكتمل', color: 'green', icon: CheckCircle },
-  cancelled: { label: 'متلغي', color: 'red', icon: X },
-  refunded: { label: 'مستردّ', color: 'red', icon: X },
+const STATUS_META: Record<OrderStatus, { key: string; color: string; icon: typeof Clock }> = {
+  pending_payment: { key: 'os.pending_payment', color: 'amber', icon: CreditCard },
+  paid: { key: 'os.paid', color: 'blue', icon: CheckCircle },
+  accepted: { key: 'os.accepted', color: 'blue', icon: CheckCircle },
+  preparing: { key: 'os.preparing', color: 'blue', icon: ChefHat },
+  ready: { key: 'os.ready', color: 'indigo', icon: Package },
+  out_for_delivery: { key: 'os.out_for_delivery', color: 'indigo', icon: Truck },
+  delivered: { key: 'os.delivered', color: 'green', icon: Home },
+  completed: { key: 'os.completed', color: 'green', icon: CheckCircle },
+  cancelled: { key: 'os.cancelled', color: 'red', icon: X },
+  refunded: { key: 'os.refunded', color: 'red', icon: X },
 }
 
 // Status flow for the timeline (excludes terminal cancelled/refunded)
@@ -98,6 +100,8 @@ const STATUS_TIMESTAMPS: Record<OrderStatus, keyof OrderData | null> = {
 }
 
 export default function OrderTrackingPage() {
+  const { t, locale } = useT()
+  const nf = (n: number) => n.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')
   const params = useParams()
   const search = useSearchParams()
   const ref = params?.ref as string
@@ -111,7 +115,7 @@ export default function OrderTrackingPage() {
 
   const load = useCallback(async () => {
     if (!orderId || !ref) {
-      setError('اللينك ناقص. لازم يبقى فيه id و reference code.')
+      setError(t('or.err_link'))
       setLoading(false)
       return
     }
@@ -121,19 +125,19 @@ export default function OrderTrackingPage() {
         p_reference_code: ref,
       })
       if (rpcError) {
-        setError(rpcError.message || 'حصل خطأ في تحميل الأوردر')
+        setError(rpcError.message || t('or.err_load'))
         setLoading(false)
         return
       }
       if (!data) {
-        setError('الأوردر مش موجود أو اللينك غلط')
+        setError(t('or.err_notfound'))
         setLoading(false)
         return
       }
       setOrder(data as OrderData)
     } catch (e) {
       console.error('[order/track] load error:', e)
-      setError(e instanceof Error ? e.message : 'حصل خطأ مش متوقع')
+      setError(e instanceof Error ? e.message : t('or.err_unexpected'))
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -174,13 +178,13 @@ export default function OrderTrackingPage() {
           <div className="w-16 h-16 mx-auto mb-4 bg-red-50 rounded-2xl flex items-center justify-center">
             <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
-          <h1 className="font-black text-xl mb-2">مش لاقي الأوردر</h1>
-          <p className="text-sm text-gray-500 mb-5">{error || 'الأوردر مش موجود'}</p>
+          <h1 className="font-black text-xl mb-2">{t('or.notfound_title')}</h1>
+          <p className="text-sm text-gray-500 mb-5">{error || t('or.err_notfound')}</p>
           <Link
             href="/marketplace"
             className="inline-flex items-center gap-2 bg-[#34D399] text-[#04352A] px-5 py-2.5 rounded-xl font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all"
           >
-            رجوع للماركت بليس
+            {t('or.back_market')}
           </Link>
         </div>
       </div>
@@ -201,7 +205,7 @@ export default function OrderTrackingPage() {
   const vodafoneCash = '01026222337'
   const madmonaPhone = '201002229982'
   const waEvidenceMessage = encodeURIComponent(
-    `السلام عليكم، أنا حوّلت فلوس أوردر رقم ${order.reference_code} (InstaPay/فودافون كاش). ده الإيصال:`
+    t('or.wa_receipt', { ref: order.reference_code })
   )
 
   return (
@@ -214,12 +218,12 @@ export default function OrderTrackingPage() {
           >
             <ArrowRight className="w-4 h-4 text-gray-700" />
           </Link>
-          <h1 className="text-sm font-bold text-gray-700 flex-1">تتبع الأوردر</h1>
+          <h1 className="text-sm font-bold text-gray-700 flex-1">{t('or.track')}</h1>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
             className="w-9 h-9 bg-white shadow-soft hover:shadow-card rounded-full flex items-center justify-center transition-all disabled:opacity-50"
-            title="حدّث الحالة"
+            title={t('or.refresh')}
           >
             <RefreshCw className={`w-4 h-4 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
@@ -236,7 +240,7 @@ export default function OrderTrackingPage() {
             meta.color === 'green' ? 'border-green-500' :
             'border-red-500'
           }`}>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">رقم الأوردر</p>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">{t('or.ref_no')}</p>
             <button
               onClick={() => copyToClipboard(order.reference_code, 'reference')}
               className="inline-flex items-center gap-2 group"
@@ -247,7 +251,7 @@ export default function OrderTrackingPage() {
               <Copy className="w-4 h-4 text-gray-400 group-hover:text-[#059669]" />
             </button>
             {copySuccess === 'reference' && (
-              <p className="text-[11px] text-green-600 font-bold mt-1">✓ تم النسخ</p>
+              <p className="text-[11px] text-green-600 font-bold mt-1">{t('or.copied')}</p>
             )}
             <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm" style={{
               backgroundColor: meta.color === 'amber' ? '#FEF3C7' :
@@ -260,7 +264,7 @@ export default function OrderTrackingPage() {
                       meta.color === 'green' ? '#065F46' : '#991B1B',
             }}>
               <StatusIcon className="w-4 h-4" />
-              {meta.label}
+              {t(meta.key)}
             </div>
           </div>
 
@@ -290,7 +294,7 @@ export default function OrderTrackingPage() {
                       </div>
                       <div className="flex-1">
                         <p className={`text-sm font-bold ${isCurrent ? 'text-[#059669]' : isPast ? 'text-gray-700' : 'text-gray-400'}`}>
-                          {stepMeta.label}
+                          {t(stepMeta.key)}
                         </p>
                         {ts && (
                           <p className="text-[11px] text-gray-400 tabular">
@@ -311,7 +315,7 @@ export default function OrderTrackingPage() {
           {/* Cancellation reason */}
           {isCancelled && order.cancellation_reason && (
             <div className="p-6 bg-red-50 border-t border-red-100">
-              <p className="text-xs font-bold text-red-700 mb-1">سبب الإلغاء:</p>
+              <p className="text-xs font-bold text-red-700 mb-1">{t('or.cancel_reason')}</p>
               <p className="text-sm text-red-900">{order.cancellation_reason}</p>
             </div>
           )}
@@ -323,10 +327,10 @@ export default function OrderTrackingPage() {
             <div className="bg-gradient-to-l from-amber-50 to-amber-100/30 p-5 border-b border-amber-200">
               <h3 className="text-base font-black text-amber-900 mb-1 flex items-center gap-2">
                 <Sparkles className="w-5 h-5" />
-                خطوات الدفع
+                {t('or.pay_steps')}
               </h3>
               <p className="text-xs text-amber-800">
-                حوّل المبلغ على InstaPay أو فودافون كاش اللي تحت، وبعدين ابعت إيصال على واتساب مضمونة
+                {t('or.pay_hint')}
               </p>
             </div>
             <div className="p-5 space-y-3">
@@ -342,31 +346,31 @@ export default function OrderTrackingPage() {
                   className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#059669] hover:text-[#059669] transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  {copySuccess === 'instapay' ? '✓ متنسخ' : 'انسخ'}
+                  {copySuccess === 'instapay' ? t('or.copied_short') : t('or.copy')}
                 </button>
               </div>
 
               {/* Vodafone Cash */}
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">فودافون كاش</p>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('or.vodafone')}</p>
                   <p className="text-lg font-black text-gray-900 tabular" dir="ltr">{vodafoneCash}</p>
-                  <p className="text-[11px] text-gray-500">محفظة · مضمونة</p>
+                  <p className="text-[11px] text-gray-500">{t('or.wallet_madmona')}</p>
                 </div>
                 <button
                   onClick={() => copyToClipboard(vodafoneCash, 'vodafone')}
                   className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#059669] hover:text-[#059669] transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  {copySuccess === 'vodafone' ? '✓ متنسخ' : 'انسخ'}
+                  {copySuccess === 'vodafone' ? t('or.copied_short') : t('or.copy')}
                 </button>
               </div>
 
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">المبلغ</p>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('or.amount')}</p>
                   <p className="text-lg font-black text-[#059669] tabular">
-                    {order.total_amount.toLocaleString('ar-EG')} <span className="text-sm">ج.م</span>
+                    {nf(order.total_amount)} <span className="text-sm">{t('cart.egp')}</span>
                   </p>
                 </div>
                 <button
@@ -374,7 +378,7 @@ export default function OrderTrackingPage() {
                   className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:border-[#059669] hover:text-[#059669] transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  {copySuccess === 'amount' ? '✓ متنسخ' : 'انسخ'}
+                  {copySuccess === 'amount' ? t('or.copied_short') : t('or.copy')}
                 </button>
               </div>
 
@@ -385,10 +389,10 @@ export default function OrderTrackingPage() {
                 className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-4 rounded-2xl font-bold shadow-elevated hover:shadow-luxe hover:-translate-y-0.5 transition-all no-underline"
               >
                 <MessageCircle className="w-5 h-5" />
-                ابعت إيصال على واتساب
+                {t('or.send_receipt')}
               </a>
               <p className="text-[11px] text-gray-500 text-center">
-                هنأكّد الدفع في خلال ٣٠ دقيقة، وبعدين المورد يبتدي يجهّز
+                {t('or.confirm_note')}
               </p>
             </div>
           </section>
@@ -402,9 +406,9 @@ export default function OrderTrackingPage() {
                 <Banknote className="w-5 h-5 text-amber-700" />
               </div>
               <div>
-                <p className="font-bold text-sm text-gray-900 mb-1">كاش عند الاستلام</p>
+                <p className="font-bold text-sm text-gray-900 mb-1">{t('or.cod')}</p>
                 <p className="text-xs text-gray-600 leading-relaxed">
-                  انتظر تأكيد المورد، وادفع المبلغ كامل وقت ما يوصلك الأوردر. جهّز <strong>{order.total_amount.toLocaleString('ar-EG')} ج.م</strong>.
+                  {t('or.cod_note_1')} <strong>{nf(order.total_amount)} {t('cart.egp')}</strong> {t('or.cod_note_2')}
                 </p>
               </div>
             </div>
@@ -416,7 +420,7 @@ export default function OrderTrackingPage() {
           <div className="p-5 border-b border-gray-100">
             <h3 className="text-sm font-black text-gray-900 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-[#059669]" />
-              الأصناف <span className="text-gray-400 tabular">({order.items.length})</span>
+              {t('or.items')} <span className="text-gray-400 tabular">({order.items.length})</span>
             </h3>
           </div>
           <div className="divide-y divide-gray-100">
@@ -433,18 +437,18 @@ export default function OrderTrackingPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm text-gray-900 line-clamp-2">{item.name}</p>
                   <p className="text-xs text-gray-500 tabular mt-0.5">
-                    {item.unit_price.toLocaleString('ar-EG')} ج.م × {item.quantity}
+                    {nf(item.unit_price)} {t('cart.egp')} × {item.quantity}
                   </p>
                   {item.item_notes && (
                     <p className="text-[11px] text-gray-500 italic mt-1">
-                      ملاحظة: {item.item_notes}
+                      {t('or.item_note')} {item.item_notes}
                     </p>
                   )}
                 </div>
                 <div className="text-left flex-shrink-0">
                   <p className="font-black text-sm text-[#059669] tabular">
                     {item.line_total.toLocaleString('ar-EG')}
-                    <span className="text-[10px] font-medium text-gray-500 ms-1">ج.م</span>
+                    <span className="text-[10px] font-medium text-gray-500 ms-1">{t('cart.egp')}</span>
                   </p>
                 </div>
               </div>
@@ -452,19 +456,19 @@ export default function OrderTrackingPage() {
           </div>
           <div className="bg-gradient-to-l from-[#34D399]/5 to-transparent border-t border-[#059669]/10 p-5 space-y-1.5">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">المجموع الفرعي</span>
-              <span className="font-bold tabular">{order.subtotal_amount.toLocaleString('ar-EG')} ج.م</span>
+              <span className="text-gray-500">{t('or.subtotal')}</span>
+              <span className="font-bold tabular">{nf(order.subtotal_amount)} {t('cart.egp')}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">التوصيل</span>
+              <span className="text-gray-500">{t('or.delivery')}</span>
               <span className="font-bold tabular text-gray-500">
-                {order.delivery_fee > 0 ? `${order.delivery_fee.toLocaleString('ar-EG')} ج.م` : 'مجاني'}
+                {order.delivery_fee > 0 ? `${nf(order.delivery_fee)} ${t('cart.egp')}` : t('or.free')}
               </span>
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-200">
-              <span className="text-sm font-black text-gray-900">الإجمالي</span>
+              <span className="text-sm font-black text-gray-900">{t('or.total')}</span>
               <span className="text-xl font-black text-[#059669] tabular">
-                {order.total_amount.toLocaleString('ar-EG')} ج.م
+                {nf(order.total_amount)} {t('cart.egp')}
               </span>
             </div>
           </div>
@@ -475,12 +479,12 @@ export default function OrderTrackingPage() {
           <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-300">
             <h3 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#059669]" />
-              العنوان
+              {t('or.address')}
             </h3>
             <p className="text-sm text-gray-700 leading-relaxed mb-1">{order.delivery_address}</p>
             {(order.delivery_district || order.delivery_city) && (
               <p className="text-xs text-gray-500">
-                {[order.delivery_district, order.delivery_city].filter(Boolean).join('، ')}
+                {[order.delivery_district, cityFor(order.delivery_city, locale)].filter(Boolean).join(locale.startsWith('ar') ? '، ' : ', ')}
               </p>
             )}
             {order.delivery_phone && (
@@ -491,7 +495,7 @@ export default function OrderTrackingPage() {
             )}
             {order.delivery_notes && (
               <div className="mt-3 p-3 bg-gray-50 rounded-xl text-xs text-gray-700">
-                <strong>ملاحظات:</strong> {order.delivery_notes}
+                <strong>{t('or.notes_label')}</strong> {order.delivery_notes}
               </div>
             )}
           </section>
@@ -499,10 +503,10 @@ export default function OrderTrackingPage() {
 
         {/* Supplier card */}
         <section className="bg-white rounded-3xl shadow-soft p-5 animate-slide-up delay-300">
-          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">المورد</p>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{t('or.supplier')}</p>
           <div className="flex items-center justify-between gap-3">
             <p className="font-bold text-gray-900 truncate flex-1">
-              {order.supplier.business_name || 'مورد مضمونة'}
+              {order.supplier.business_name || t('or.supplier_fallback')}
             </p>
             {supplierPhoneClean && order.status !== 'pending_payment' && (
               <a
@@ -512,7 +516,7 @@ export default function OrderTrackingPage() {
                 className="flex items-center gap-1.5 bg-[#25D366] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-soft hover:shadow-card transition-all no-underline"
               >
                 <MessageCircle className="w-4 h-4" />
-                كلّمه
+                {t('or.contact')}
               </a>
             )}
           </div>
@@ -520,9 +524,9 @@ export default function OrderTrackingPage() {
 
         {/* Save link tip for guests */}
         <div className="bg-gradient-to-l from-[#34D399]/5 to-transparent border border-[#059669]/10 rounded-2xl p-4">
-          <p className="text-xs font-bold text-gray-700 mb-1">💡 احفظ اللينك ده</p>
+          <p className="text-xs font-bold text-gray-700 mb-1">{t('or.save_link')}</p>
           <p className="text-[11px] text-gray-600 leading-relaxed">
-            ده اللينك الوحيد اللي بيوصّلك للأوردر. احفظه أو خد screenshot عشان تتابع منه أي وقت.
+            {t('or.save_link_note')}
           </p>
         </div>
       </main>
