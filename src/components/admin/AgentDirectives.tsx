@@ -67,7 +67,7 @@ export function AgentDirectives() {
         p_focus_areas: form.focus_areas || [],
         p_target_audience: form.target_audience || null,
         p_tips_text: form.tips_text || undefined,
-        p_excluded_categories: form.excluded_categories || ['coworking'],
+        p_excluded_categories: form.excluded_categories || [],
       })
       if (error) throw error
       setData(result as Directives)

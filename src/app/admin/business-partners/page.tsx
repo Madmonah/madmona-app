@@ -68,7 +68,7 @@ const INDUSTRY_LABELS: Record<string, string> = {
   retail_shop: 'محل تجزئة',
   spa: 'سبا',
   wedding_venue: 'قاعة أفراح',
-  coworking: 'مساحة عمل',
+  workspace: 'مساحة عمل',
   car_rental: 'تأجير سيارات',
   other: 'تاني',
 }

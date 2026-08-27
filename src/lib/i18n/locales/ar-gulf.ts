@@ -117,4 +117,23 @@ export const arGulf: Partial<Dict> = {
   'gate.err_otp': 'الكود غلط',
   'gate.resend': 'أعد إرسال الكود',
   'gate.secure_note': 'دخول آمن بكود لمرة واحدة على واتساب — بدون كلمة مرور. حساب مضمونة واحد يشتغل في كل مكان.',
+
+
+  // ---- mobile home ----
+  'mhome.ask_madmona_marid': 'اسأل مارد مضمونة… يرد عليك فورًا',
+  'mhome.ask': 'اسأل',
+  'mhome.choose_your_section': 'اختر قسمك',
+  'mhome.developer_projects_prices_of': 'مشاريع المطوّرين والأسعار والعروض',
+  'mhome.have_something_to_rent_or_se': 'عندك شي تأجّره أو تبيعه؟',
+  'mhome.list_it_free_in_2_minutes_we': 'أضفه مجانًا في دقيقتين — وإحنا نسوّق لك',
+  'mhome.orders_favorites_wallet': 'طلباتك ومفضلتك والمحفظة',
+  'mhome.add_a_listing': 'أضف إعلان',
+  'mhome.start_selling_or_renting': 'ابدأ تبيع أو تؤجّر على مضمونة',
+  'mhome.join_the_madmona_team': 'قدّم على فرص العمل في مضمونة',
+  'mhome.access_your_account': 'ادخل على حسابك',
+  'mhome.chat_with_us_now': 'كلّمنا مباشرة — رد فوري',
+  'mhome.h1_a': 'دوّر على أي شي —',
+  'mhome.v_business': 'بورصة رجال الأعمال',
+  'about.story_p1': 'مضمونة بدأت في مصر الجديدة بفكرة وحدة: إن أي إيجار أو بيع في مصر لازم يكون مضمون للطرفين — بحماية كاملة وثقة حقيقية.',
+  'about.cta_sub': 'ابدأ الحين — أجّر، اشترِ، أو احجز خدمة بحماية كاملة وبدون أي مخاطرة.',
 }

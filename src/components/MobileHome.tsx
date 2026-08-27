@@ -122,7 +122,7 @@ function buildGroups(cats: Category[]): CatGroup[] {
 }
 
 export default function MobileHome({ categories, liveCounts = {} }: { categories: Category[]; liveCounts?: Record<string, number> }) {
-  const { lang } = useT()
+  const { lang, t } = useT()
   const router = useRouter()
   const en = lang === 'en'
 
@@ -240,8 +240,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
         {/* تاب تحميل التطبيق - في نفس سطر العنوان على الشمال (30 Jul 2026) */}
         <div className="flex items-start justify-between gap-3 px-4 pt-3.5">
           <h1 className="text-[22px] font-black text-white leading-[1.25] flex-1 min-w-0">
-            {en ? <>Find anything —<br/>you&apos;re <span className="underline decoration-2 decoration-white/60 underline-offset-4">covered</span></>
-                : <>دوّر على أي حاجة —<br/>معاملاتك <span className="underline decoration-2 decoration-white/60 underline-offset-4">مضمونة</span></>}
+            {t('mhome.h1_a')}<br/>{t('mhome.h1_b')} <span className="underline decoration-2 decoration-white/60 underline-offset-4">{t('mhome.h1_c')}</span>
           </h1>
           <div className="flex-shrink-0 pt-1">
             <DownloadAppBig compact />
@@ -256,7 +255,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder={en ? 'Apartment · car · hall · service…' : 'شقة · عربية · قاعة · خدمة…'}
+            placeholder={t('mhome.apartment_car_hall_service')}
             className="flex-1 bg-transparent outline-none text-sm font-medium text-[#1A1A1A] placeholder:text-[#7C8A84] min-w-0"
           />
           <button type="submit" aria-label="بحث" className="w-[34px] h-[34px] -my-1.5 -ms-2 rounded-[10px] bg-[#34D399] flex items-center justify-center flex-shrink-0">
@@ -270,10 +269,10 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
           <input
             value={marid}
             onChange={e => setMarid(e.target.value)}
-            placeholder={en ? 'Ask Madmona Marid…' : 'اسأل مارد مضمونة… عايز إيه؟'}
+            placeholder={t('mhome.ask_madmona_marid')}
             className="flex-1 bg-transparent outline-none text-[13px] font-semibold text-[#1A1A1A] placeholder:text-[#4B5563] min-w-0"
           />
-          <button type="submit" aria-label={en ? 'Ask' : 'اسأل'} className="flex-shrink-0">
+          <button type="submit" aria-label={t('mhome.ask')} className="flex-shrink-0">
             <ArrowLeft className="w-4 h-4 text-[#059669] rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
           </button>
         </form>
@@ -291,8 +290,8 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
           ولا سوبر ماركت/صيدليات هنا خالص. */}
       <section className="pt-[22px]">
         <div className="flex items-baseline justify-between mb-3 px-4">
-          <h2 className="text-[17px] font-black text-[#0A0A0A]">{en ? 'Choose your section' : 'اختار قسمك'}</h2>
-          <Link href="/marketplace" className="text-xs font-extrabold text-[#059669] no-underline">{en ? 'See all ←' : 'شوف الكل ←'}</Link>
+          <h2 className="text-[17px] font-black text-[#0A0A0A]">{t('mhome.choose_your_section')}</h2>
+          <Link href="/marketplace" className="text-xs font-extrabold text-[#059669] no-underline">{t('mhome.see_all')}</Link>
         </div>
         <div className="flex flex-col gap-3 px-4">
           {VERTICALS.map(v => {
@@ -323,15 +322,15 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
                   </>
                 )}
                 <span className="absolute inset-x-0 bottom-0 p-4">
-                  <span className="block text-white text-xl font-black leading-tight">{en ? v.en : v.ar}</span>
-                  {st.cats > 0 && <span className="block text-white/75 text-[11px] font-bold mt-0.5">{st.cats} {en ? 'sections' : 'قسم'}</span>}
+                  <span className="block text-white text-xl font-black leading-tight">{t('mhome.v_' + v.key)}</span>
+                  {st.cats > 0 && <span className="block text-white/75 text-[11px] font-bold mt-0.5">{st.cats} {t('mhome.sections')}</span>}
                 </span>
                 {soon && (
                   <>
                     <span className="absolute inset-0 bg-black/45 backdrop-blur-[1px]" />
                     <span className="absolute inset-0 flex items-center justify-center">
                       <span className="bg-white/95 text-[#14231E] text-[12px] font-black px-3.5 py-1.5 rounded-full shadow">
-                        {en ? 'Coming soon' : 'قريبًا'} ✨
+                        {t('mhome.coming_soon')} ✨
                       </span>
                     </span>
                   </>
@@ -349,8 +348,8 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.82), rgba(10,25,20,.1) 60%)' }} />
             <span className="absolute top-4 left-4 text-[9px] font-bold text-[#8FE3C8] bg-white/10 px-2 py-1 rounded-full">LIVE</span>
             <span className="absolute inset-x-0 bottom-0 p-4">
-              <span className="block text-white text-xl font-black leading-tight">{en ? BOURSE_CARD.en : BOURSE_CARD.ar}</span>
-              <span className="block text-white/75 text-[11px] font-bold mt-0.5">{en ? 'Developer projects, prices & offers' : 'مشاريع المطوّرين وأسعارهم وعروضهم'}</span>
+              <span className="block text-white text-xl font-black leading-tight">{t('mhome.v_bourse')}</span>
+              <span className="block text-white/75 text-[11px] font-bold mt-0.5">{t('mhome.developer_projects_prices_of')}</span>
             </span>
           </Link>
 
@@ -363,8 +362,8 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.82), rgba(10,25,20,.1) 60%)' }} />
             <span className="absolute top-4 left-4 text-[9px] font-bold text-[#8FE3C8] bg-white/10 px-2 py-1 rounded-full">LIVE</span>
             <span className="absolute inset-x-0 bottom-0 p-4">
-              <span className="block text-white text-xl font-black leading-tight">{en ? BUSINESS_CARD.en : BUSINESS_CARD.ar}</span>
-              <span className="block text-white/75 text-[11px] font-bold mt-0.5">{en ? 'News, currency rates & gold prices' : 'أخبار + أسعار عملات وذهب لحظيًا'}</span>
+              <span className="block text-white text-xl font-black leading-tight">{t('mhome.v_business')}</span>
+              <span className="block text-white/75 text-[11px] font-bold mt-0.5">{t('mhome.news_currency_rates_gold_pri')}</span>
             </span>
           </Link>
         </div>
@@ -374,10 +373,10 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
       <section className="px-4 pt-6 pb-7">
         <div className="rounded-[20px] px-5 py-[18px] flex items-center gap-3" style={{ background: 'linear-gradient(118deg, #059669, #34D399)' }}>
           <span className="flex-1">
-            <span className="block text-white text-[15px] font-black">{en ? 'Have something to rent or sell?' : 'عندك حاجة تأجرها أو تبيعها؟'}</span>
-            <span className="block text-white/75 text-[11px] font-semibold mt-0.5">{en ? 'List it free in 2 minutes — we market it for you' : 'ضيفها مجاناً في دقيقتين — إحنا بنسوّقلك'}</span>
+            <span className="block text-white text-[15px] font-black">{t('mhome.have_something_to_rent_or_se')}</span>
+            <span className="block text-white/75 text-[11px] font-semibold mt-0.5">{t('mhome.list_it_free_in_2_minutes_we')}</span>
           </span>
-          <Link href={`/add-listing${addTrack}`} className="bg-white text-[#059669] rounded-xl px-4 py-2.5 text-[13px] font-black flex-shrink-0 no-underline">{en ? 'List ←' : 'ضيف ←'}</Link>
+          <Link href={`/add-listing${addTrack}`} className="bg-white text-[#059669] rounded-xl px-4 py-2.5 text-[13px] font-black flex-shrink-0 no-underline">{t('mhome.list')}</Link>
         </div>
       </section>
 
@@ -402,21 +401,21 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
               </button>
             </div>
             <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-              <DrawerLink href="/account" icon={<User className="w-5 h-5 text-gray-700" />} title={en ? 'Account' : 'حسابي'} desc={en ? 'Orders, favorites & wallet' : 'طلباتك ومفضّلتك والمحفظة'} onClose={() => setMenuOpen(false)} />
-              <DrawerLink href={`/add-listing${addTrack}`} icon={<Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />} iconBg="bg-[#d4a017]/10" title={en ? 'Add a listing' : 'ضيف المنتج'} desc={en ? 'Start selling or renting' : 'ابدأ تبيع أو تؤجّر على مضمونة'} onClose={() => setMenuOpen(false)} />
-              <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={en ? 'Careers' : 'التوظيف'} desc={en ? 'Join the Madmona team' : 'تقدّم لفرص العمل في مضمونة'} onClose={() => setMenuOpen(false)} />
+              <DrawerLink href="/account" icon={<User className="w-5 h-5 text-gray-700" />} title={t('mhome.account')} desc={t('mhome.orders_favorites_wallet')} onClose={() => setMenuOpen(false)} />
+              <DrawerLink href={`/add-listing${addTrack}`} icon={<Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />} iconBg="bg-[#d4a017]/10" title={t('mhome.add_a_listing')} desc={t('mhome.start_selling_or_renting')} onClose={() => setMenuOpen(false)} />
+              <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={t('mhome.careers')} desc={t('mhome.join_the_madmona_team')} onClose={() => setMenuOpen(false)} />
               {loggedIn ? (
                 <button type="button" onClick={signOut} className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 text-right">
                   <span className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0"><LogOut className="w-5 h-5 text-red-500" /></span>
-                  <span className="flex-1"><span className="block font-bold text-gray-900">{en ? 'Sign out' : 'تسجيل الخروج'}</span></span>
+                  <span className="flex-1"><span className="block font-bold text-gray-900">{t('mhome.sign_out')}</span></span>
                 </button>
               ) : (
-                <DrawerLink href="/auth/login" icon={<LogIn className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={en ? 'Log in' : 'تسجيل الدخول'} desc={en ? 'Access your account' : 'ادخل على حسابك'} onClose={() => setMenuOpen(false)} />
+                <DrawerLink href="/auth/login" icon={<LogIn className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={t('mhome.log_in')} desc={t('mhome.access_your_account')} onClose={() => setMenuOpen(false)} />
               )}
             </nav>
             <div className="p-4 border-t border-gray-100">
               <Link href="/chat" onClick={() => setMenuOpen(false)} className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3.5 rounded-2xl font-bold no-underline">
-                💬 {en ? 'Chat with us now' : 'كلّمنا مباشر — رد فوري'}
+                💬 {t('mhome.chat_with_us_now')}
               </Link>
             </div>
           </div>

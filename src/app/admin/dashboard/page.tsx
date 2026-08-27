@@ -48,7 +48,7 @@ function emojiFor(slug: string, name: string) {
   if (/rest|food|مطعم|مطاعم|طعام|كافيه|cafe/.test(s)) return '🍽️'
   if (/beauty|salon|spa|تجميل|صالون|سبا/.test(s)) return '💄'
   if (/propert|real|عقار|شق|فيلا|شاليه|chalet|apartment/.test(s)) return '🏠'
-  if (/space|cowork|office|مساح|مكتب|قاع|hall/.test(s)) return '🏢'
+  if (/space|office|مساح|مكتب|قاع|hall/.test(s)) return '🏢'
   if (/product|wholesale|منتج|جمل|بيع/.test(s)) return '🛍️'
   if (/clinic|medical|عياد|طب|صح/.test(s)) return '🏥'
   if (/boat|marine|yacht|بحر|قارب|يخت/.test(s)) return '⛵'
