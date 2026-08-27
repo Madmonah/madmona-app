@@ -74,7 +74,7 @@ interface ListingDetail {
   insurance_partners: string[] | null
   insurance_deposit_pct: number | string | null
   branches: { name?: string; city?: string; address?: string; phone?: string }[] | null
-  category: { name_ar: string; name_en?: string | null; name_i18n?: Record<string, string> | null; icon: string | null; track: string | null; order_mode?: string | null; slug?: string | null } | null
+  category: { name_ar: string; name_en?: string | null; name_i18n?: Record<string, string> | null; icon: string | null; track: string | null; order_mode?: string | null; slug?: string | null; group_slug?: string | null } | null
   supplier: {
     id: string
     business_name: string
@@ -184,7 +184,7 @@ export default function ListingDetailPage() {
             shipping_cost, wholesale_tiers, accepts_insurance, insurance_partners, insurance_deposit_pct,
             branches, booking_deposit_pct, is_directory, directory_source, price_egp, price_on_request,
             source_url, project_id,
-            category:categories(name_ar, name_en, name_i18n, icon, track, order_mode, slug)
+            category:categories(name_ar, name_en, name_i18n, icon, track, order_mode, slug, group_slug)
           `)
           .eq('slug', slug)
           .eq('status', 'published')
@@ -476,9 +476,19 @@ export default function ListingDetailPage() {
   // Real estate for sale (17 Jul 2026): properties are NOT cart products —
   // no add-to-cart; instead favorites + real-estate platform CTA
   const catSlug = listing.category?.slug ?? ''
-  const isRealEstate = isProduct && (catSlug.startsWith('sale-properties') || catSlug.startsWith('sale-tourism'))
+  // 🧹 (٢٧ أغسطس ٢٠٢٦) محمد: «الشاليه تحت قسم عقارات أيًا كان… ويتشال أصلاً
+  //    لأن الكلام ده بيعمل مشاكل بعدين».
+  //    كان الكود بيحدد «ده بيع عقار؟» بمقارنة **بادئة اسم التصنيف**
+  //    (sale-properties / sale-tourism) — وده هشّ: أي تصنيف جديد باسم
+  //    مختلف بيفلت من قاعدة إخفاء الأرقام من غير ما حد ياخد باله.
+  //    دلوقتي المصدر هو **المجموعة** (group_slug) — أي تصنيف عقار بيع
+  //    جديد بياخد الحماية تلقائيًا. البادئة سايبها كشبكة أمان بس.
+  const catGroup = listing.category?.group_slug ?? ''
+  const isSaleProperty = catGroup === 'sale-property' || catSlug.startsWith('sale-properties')
+  const isSaleVehicle = catGroup === 'sale-vehicles' || catSlug.startsWith('sale-vehicles')
+  const isRealEstate = isProduct && isSaleProperty
   // 18 Jul 2026 (Mohamed): لا معنى «للتوصيل» في العقارات والعربيات والمراكب
-  const noDelivery = isRealEstate || catSlug.startsWith('sale-vehicles') || catSlug.startsWith('sale-marine')
+  const noDelivery = isRealEstate || isSaleVehicle || catGroup === 'sale-marine' || catSlug.startsWith('sale-marine')
   // directory listings are reference-only: no buy / cart / booking / menu
   const isOrderable = (isRestaurant || isProduct) && !isDirectory && !isRealEstate
   const currentPhoto = sortedPhotos[photoIndex]
@@ -491,9 +501,7 @@ export default function ListingDetailPage() {
   //    على **رقم مضمونة** (INTAKE_WA — نفس رقم استقبال ملفات العملاء)
   //    برسالة فيها لينك الإعلان، والفريق بيكمّل في جروب الشات مع الطرفين.
   //    رقم المورد نفسه عمره ما بيوصل للمتصفح في الحالة دي.
-  const partyPhoneHidden = catSlug.startsWith('sale-properties')
-    || catSlug.startsWith('sale-vehicles')
-    || catSlug.startsWith('sale-tourism')
+  const partyPhoneHidden = isSaleProperty || isSaleVehicle
   const MADMONA_INTAKE = '201002229982'
   const phone = partyPhoneHidden
     ? MADMONA_INTAKE

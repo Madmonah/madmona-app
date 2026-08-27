@@ -215,7 +215,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
               <img src="/madmona-logo.png" alt="مضمونة" className="w-[30px] h-[30px] object-contain" />
             </span>
             <span className="leading-none">
-              <span className="block text-[15px] font-black text-white leading-none">مضمونة</span>
+              <span className="block text-[15px] font-black text-white leading-none">{t('tn.brand')}</span>
               <span className="block text-[8px] font-bold tracking-[0.25em] text-white/70 mt-0.5">MADMONA</span>
             </span>
           </Link>
@@ -392,7 +392,7 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
                   <img src="/madmona-logo.png" alt="مضمونة" className="w-9 h-9 object-contain" />
                 </span>
                 <span>
-                  <span className="block font-black text-[#059669]">مضمونة</span>
+                  <span className="block font-black text-[#059669]">{t('tn.brand')}</span>
                   <span className="block text-[9px] text-gray-500 font-bold tracking-[0.2em]">MADMONA</span>
                 </span>
               </div>

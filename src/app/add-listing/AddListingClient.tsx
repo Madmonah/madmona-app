@@ -2458,7 +2458,7 @@ function getProductFieldProfile(slug: string | null | undefined): ProductFieldPr
   if (slug === 'shop-pharmacy' || slug === 'shop-supermarket') return PROFILE_CONSUMABLE;
   if (slug === 'shop-produce') return PROFILE_FRESH;
   if (slug.startsWith('sale-vehicles')) return PROFILE_VEHICLE;
-  if (slug.startsWith('sale-properties') || slug.startsWith('sale-property') || slug.startsWith('sale-tourism')) return PROFILE_PROPERTY;
+  if (slug.startsWith('sale-properties') || slug.startsWith('sale-property')) return PROFILE_PROPERTY;
   return PROFILE_RETAIL;
 }
 

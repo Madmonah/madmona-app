@@ -290,7 +290,6 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     selectedGroupSlug === 'sale-property' || selectedGroupSlug === 'properties' ||
     (!!selectedCategorySlug && (
       selectedCategorySlug.startsWith('sale-properties') ||
-      selectedCategorySlug.startsWith('sale-tourism') ||
       selectedCategorySlug.startsWith('properties')
     ))
   const [cityFilter, setCityFilter] = useState<string | null>(null)
@@ -458,7 +457,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         query = query.eq('supplier_id', supplierFilter)
       }
       // 🏗️ بريمري/ريسيل — بس جوه عقارات البيع
-      const inSaleProperties = (activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism'))))
+      const inSaleProperties = (activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties'))))
       if (inSaleProperties && propertySource === 'primary') {
         query = query.not('project_id', 'is', null)
       } else if (inSaleProperties && propertySource === 'resale') {
@@ -912,7 +911,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           )}
 
           {/* 🏗️ (17 Jul 2026) بريمري/ريسيل — يظهر بس جوه عقارات البيع */}
-          {(activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties') || selectedCategorySlug.startsWith('sale-tourism')))) && (
+          {(activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties')))) && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
               {([
                 ['all', t('mk.f_all_props')],
