@@ -131,8 +131,11 @@ B2B) أو `individual` (فرد). تريجر `trg_listings_seller_kind` بيمل�
   `scripts/translate-listings.mjs` (هايكو) وبتتمسح بتريجر لو الأصل اتغيّر.
   الفرونت يقرا عبر `src/lib/i18n/catName.ts` (`catNameFor` · `groupNameFor` ·
   `listingTitleFor` · `listingDescriptionFor`) — ممنوع `name_ar`/`title`
-  مباشرة في العرض. الإعلانات الجديدة: شغّل السكريبت (مش جوب تحت المارد —
-  المارد توجيه بس).
+  مباشرة في العرض. ⚠️ **الترجمة بتتعمل في الشات مش بالـAPI** (٢٧/٨ — محمد:
+  «مش عايز آخد من رصيد الأنثروبك»): أي إعلان جديد ترجمه بنفسك هنا واكتبه في
+  ملف JSON وارفعه بـ`node scripts/apply-listing-i18n.mjs ملف.json` (صفر نداءات
+  AI). سكريبتات translate-listings / translate-categories-lang بتستهلك API
+  credits — **ممنوع** تشغيلها من غير إذن محمد نصًا.
 - **🌍 ٧ لغات في الفرونت (٢٧/٨)**: مصري (الافتراضي) · خليجي · English ·
   Українська · Русский · 日本語 · 中文 (zh). لغة جديدة = ٤ خطوات: `Locale` +
   `LOCALE_META` في dictionary.ts · `locales/xx.ts` · خريطة `H` في
