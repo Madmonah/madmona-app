@@ -5,6 +5,7 @@
 // الرصيد (كاش + كريدت) · شحن · تحويل · سحب · سجل المعاملات
 // =====================================================================
 import { useEffect, useState, useCallback } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import toast, { Toaster } from 'react-hot-toast'
@@ -23,6 +24,7 @@ type Stage = 'loading' | 'unauthenticated' | 'ready'
 type Modal = null | 'topup' | 'transfer' | 'withdraw'
 
 export default function WalletPage() {
+  const { t } = useT()
   const router = useRouter()
   const [stage, setStage] = useState<Stage>('loading')
   const [token, setToken] = useState<string>('')
@@ -33,7 +35,7 @@ export default function WalletPage() {
 
   const load = useCallback(async (accessToken: string) => {
     const res = await fetch('/api/wallet', { headers: { Authorization: `Bearer ${accessToken}` } })
-    if (!res.ok) { toast.error('تعذّر تحميل المحفظة'); return }
+    if (!res.ok) { toast.error(t('wl.err_load')); return }
     const json = await res.json()
     setWallet(json.wallet)
     setTxns(json.transactions || [])
@@ -61,9 +63,9 @@ export default function WalletPage() {
       <div dir="rtl" className="min-h-screen grid place-items-center bg-[#FAF7F2] px-6">
         <div className="text-center max-w-sm">
           <Wallet className="w-12 h-12 mx-auto text-[#059669] mb-3" />
-          <h1 className="text-xl font-bold mb-2">المحفظة الإلكترونية</h1>
-          <p className="text-gray-500 mb-5">لازم تسجّل الدخول الأول عشان تشوف رصيدك.</p>
-          <Link href="/login" className="inline-block bg-[#34D399] text-[#04352A] px-6 py-3 rounded-2xl font-bold no-underline">تسجيل الدخول</Link>
+          <h1 className="text-xl font-bold mb-2">{t('wl.title')}</h1>
+          <p className="text-gray-500 mb-5">{t('wl.login_note')}</p>
+          <Link href="/login" className="inline-block bg-[#34D399] text-[#04352A] px-6 py-3 rounded-2xl font-bold no-underline">{t('wl.login')}</Link>
         </div>
       </div>
     )
@@ -81,22 +83,22 @@ export default function WalletPage() {
       <div className="sticky top-0 z-30 bg-[#FAF7F2]/90 backdrop-blur border-b border-black/5">
         <div className="max-w-md mx-auto flex items-center gap-3 px-4 py-3">
           <button onClick={() => router.push('/account')} className="p-2 -mr-2 text-gray-600"><ArrowRight className="w-5 h-5" /></button>
-          <h1 className="font-bold text-lg flex items-center gap-2"><Wallet className="w-5 h-5 text-[#059669]" /> محفظتي</h1>
+          <h1 className="font-bold text-lg flex items-center gap-2"><Wallet className="w-5 h-5 text-[#059669]" /> {t('wl.my_wallet')}</h1>
         </div>
       </div>
 
       <div className="max-w-md mx-auto px-4 pt-4 space-y-4">
         {/* Balance card */}
         <div className="rounded-3xl p-5 text-white shadow-lg bg-gradient-to-br from-[#34D399] to-[#2FA084]">
-          <p className="text-white/80 text-sm mb-1">الرصيد المتاح</p>
+          <p className="text-white/80 text-sm mb-1">{t('wl.available')}</p>
           <p className="text-4xl font-black tracking-tight">{formatMoney(cash + credit, wallet?.currency)}</p>
           <div className="flex gap-4 mt-4 text-sm">
             <div className="flex-1 bg-white/10 rounded-2xl px-3 py-2">
-              <p className="text-white/70 text-xs">رصيد نقدي</p>
+              <p className="text-white/70 text-xs">{t('wl.cash')}</p>
               <p className="font-bold">{formatMoney(cash, wallet?.currency)}</p>
             </div>
             <div className="flex-1 bg-white/10 rounded-2xl px-3 py-2">
-              <p className="text-white/70 text-xs">كريدت / مكافآت</p>
+              <p className="text-white/70 text-xs">{t('wl.credit')}</p>
               <p className="font-bold">{formatMoney(credit, wallet?.currency)}</p>
             </div>
           </div>
@@ -104,19 +106,19 @@ export default function WalletPage() {
 
         {/* Actions */}
         <div className="grid grid-cols-3 gap-3">
-          <ActionBtn icon={<Plus className="w-5 h-5" />} label="شحن" onClick={() => setModal('topup')} />
-          <ActionBtn icon={<Send className="w-5 h-5" />} label="تحويل" onClick={() => setModal('transfer')} />
-          <ActionBtn icon={<ArrowDownToLine className="w-5 h-5" />} label="سحب" onClick={() => setModal('withdraw')} />
+          <ActionBtn icon={<Plus className="w-5 h-5" />} label={t('wl.topup')} onClick={() => setModal('topup')} />
+          <ActionBtn icon={<Send className="w-5 h-5" />} label={t('wl.transfer')} onClick={() => setModal('transfer')} />
+          <ActionBtn icon={<ArrowDownToLine className="w-5 h-5" />} label={t('wl.withdraw')} onClick={() => setModal('withdraw')} />
         </div>
 
         {/* Pending withdrawals */}
         {pendingWithdrawals.length > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-            <p className="text-sm font-bold text-amber-800 mb-2 flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> طلبات سحب قيد المراجعة</p>
+            <p className="text-sm font-bold text-amber-800 mb-2 flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> {t('wl.pending_wd')}</p>
             {pendingWithdrawals.map(w => (
               <div key={w.id} className="flex justify-between text-sm text-amber-900 py-1">
                 <span>{formatMoney(w.amount, w.currency)} · {WITHDRAW_METHODS[w.method] || w.method}</span>
-                <span className="text-amber-600">{w.status === 'approved' ? 'تمت الموافقة' : 'بانتظار المراجعة'}</span>
+                <span className="text-amber-600">{w.status === 'approved' ? t('wl.approved') : t('wl.pending_review')}</span>
               </div>
             ))}
           </div>
@@ -125,11 +127,11 @@ export default function WalletPage() {
         {/* Transactions */}
         <div className="bg-white rounded-3xl shadow-soft overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-            <p className="font-bold text-sm">آخر المعاملات</p>
-            <Link href="/account/wallet/history" className="text-xs text-[#059669] no-underline">عرض الكل</Link>
+            <p className="font-bold text-sm">{t('wl.recent')}</p>
+            <Link href="/account/wallet/history" className="text-xs text-[#059669] no-underline">{t('wl.view_all')}</Link>
           </div>
           {txns.length === 0 ? (
-            <p className="text-center text-gray-400 text-sm py-10">لا توجد معاملات بعد</p>
+            <p className="text-center text-gray-400 text-sm py-10">{t('wl.no_tx')}</p>
           ) : (
             <div className="divide-y divide-gray-50">
               {txns.map(t => <TxnRow key={t.id} t={t} currency={wallet?.currency} />)}
@@ -158,6 +160,7 @@ function ActionBtn({ icon, label, onClick }: { icon: React.ReactNode; label: str
 }
 
 function TxnRow({ t, currency }: { t: WalletTransaction; currency?: string }) {
+  const { t: tr } = useT()
   const isIn = t.direction === 'in'
   const Icon = t.type === 'credit_grant' ? Gift
     : t.type === 'withdrawal_refund' || t.type === 'refund' ? RotateCcw
@@ -171,8 +174,8 @@ function TxnRow({ t, currency }: { t: WalletTransaction; currency?: string }) {
         <p className="text-sm font-semibold text-gray-800 truncate">{t.description || TXN_LABELS[t.type]}</p>
         <p className="text-[11px] text-gray-400">
           {new Date(t.created_at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })}
-          {t.kind === 'credit' ? ' · كريدت' : ''}
-          {t.status === 'pending' ? ' · قيد التنفيذ' : t.status === 'reversed' ? ' · ملغاة' : ''}
+          {t.kind === 'credit' ? tr('wl.tx_credit') : ''}
+          {t.status === 'pending' ? tr('wl.tx_pending') : t.status === 'reversed' ? tr('wl.tx_reversed') : ''}
         </p>
       </div>
       <span className={`text-sm font-bold ${isIn ? 'text-emerald-600' : 'text-rose-500'}`}>
@@ -208,105 +211,109 @@ async function postJSON(url: string, token: string, body: unknown) {
 }
 
 const ERR_AR: Record<string, string> = {
-  insufficient_funds: 'الرصيد غير كافٍ',
-  invalid_amount: 'المبلغ غير صحيح',
-  invalid_phone: 'رقم الموبايل غير صحيح',
-  recipient_not_found: 'مفيش مستخدم بالرقم ده',
-  cannot_transfer_to_self: 'مينفعش تحوّل لنفسك',
-  invalid_method: 'اختر طريقة سحب صحيحة',
-  missing_payout_details: 'اكتب بيانات الاستلام',
-  amount_below_minimum: 'المبلغ أقل من الحد الأدنى',
-  topup_gateway_required: 'الشحن المباشر غير مفعّل حاليًا',
+  insufficient_funds: 'wl.e_funds',
+  invalid_amount: 'wl.e_amount',
+  invalid_phone: 'wl.e_phone',
+  recipient_not_found: 'wl.e_recipient',
+  cannot_transfer_to_self: 'wl.e_self',
+  invalid_method: 'wl.e_method',
+  missing_payout_details: 'wl.e_details',
+  amount_below_minimum: 'wl.e_min',
+  topup_gateway_required: 'wl.e_gateway',
 }
-const errAr = (code?: string) => (code && ERR_AR[code]) || 'حصل خطأ، حاول تاني'
+// 🌍 (٢٧ أغسطس ٢٠٢٦) الخريطة بقت مفاتيح ترجمة بدل نص عربي ثابت
+const errKey = (code?: string) => (code && ERR_AR[code]) || 'wl.e_generic'
 
 function TopUpModal({ token, onClose, onDone }: { token: string; onClose: () => void; onDone: () => void }) {
+  const { t } = useT()
   const [amount, setAmount] = useState('')
   const [busy, setBusy] = useState(false)
   const quick = [50, 100, 200, 500]
   const submit = async () => {
     const a = Number(amount)
-    if (!a || a <= 0) { toast.error('اكتب مبلغ صحيح'); return }
+    if (!a || a <= 0) { toast.error(t('wl.e_valid_amount')); return }
     setBusy(true)
     const { ok, json } = await postJSON('/api/wallet/topup', token, { amount: a, kind: 'cash' })
     setBusy(false)
-    if (ok) { toast.success('تم شحن المحفظة'); onDone() } else toast.error(errAr(json.error))
+    if (ok) { toast.success(t('wl.topped_up')); onDone() } else toast.error(t(errKey(json.error)))
   }
   return (
-    <Shell title="شحن المحفظة" onClose={onClose}>
+    <Shell title={t('wl.topup_title')} onClose={onClose}>
       <div className="flex gap-2 mb-3">
         {quick.map(q => (
           <button key={q} onClick={() => setAmount(String(q))} className="flex-1 py-2 rounded-xl border border-gray-200 text-sm font-bold hover:border-[#059669]">{q}</button>
         ))}
       </div>
       <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal"
-        placeholder="المبلغ بالجنيه" className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-2 outline-none focus:border-[#059669]" />
-      <p className="text-[11px] text-gray-400 mb-4">ملاحظة: الشحن حاليًا داخلي/تجريبي. هيتربط ببوابة دفع حقيقية لاحقًا.</p>
+        placeholder={t('wl.amount_egp')} className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-2 outline-none focus:border-[#059669]" />
+      <p className="text-[11px] text-gray-400 mb-4">{t('wl.topup_note')}</p>
       <button disabled={busy} onClick={submit} className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
-        {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />} اشحن الآن
+        {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />} {t('wl.topup_now')}
       </button>
     </Shell>
   )
 }
 
 function TransferModal({ token, max, onClose, onDone }: { token: string; max: number; onClose: () => void; onDone: () => void }) {
+  const { t } = useT()
   const [phone, setPhone] = useState('')
   const [amount, setAmount] = useState('')
   const [busy, setBusy] = useState(false)
   const submit = async () => {
     const a = Number(amount)
-    if (!a || a <= 0) { toast.error('اكتب مبلغ صحيح'); return }
-    if (a > max) { toast.error('الرصيد النقدي غير كافٍ'); return }
+    if (!a || a <= 0) { toast.error(t('wl.e_valid_amount')); return }
+    if (a > max) { toast.error(t('wl.e_cash_funds')); return }
     setBusy(true)
     const { ok, json } = await postJSON('/api/wallet/transfer', token, { phone, amount: a, kind: 'cash' })
     setBusy(false)
-    if (ok) { toast.success(`تم التحويل إلى ${json.recipient_name}`); onDone() } else toast.error(errAr(json.error))
+    if (ok) { toast.success(t('wl.transferred', { name: json.recipient_name })); onDone() } else toast.error(t(errKey(json.error)))
   }
   return (
-    <Shell title="تحويل رصيد" onClose={onClose}>
-      <label className="block text-xs font-bold text-gray-500 mb-1">رقم موبايل المستلم</label>
+    <Shell title={t('wl.transfer_title')} onClose={onClose}>
+      <label className="block text-xs font-bold text-gray-500 mb-1">{t('wl.recipient_phone')}</label>
       <input value={phone} onChange={e => setPhone(e.target.value)} inputMode="tel" placeholder="01xxxxxxxxx"
         className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-3 outline-none focus:border-[#059669]" />
-      <label className="block text-xs font-bold text-gray-500 mb-1">المبلغ (متاح {formatMoney(max)})</label>
-      <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" placeholder="المبلغ"
+      <label className="block text-xs font-bold text-gray-500 mb-1">{t('wl.amount_avail', { n: formatMoney(max) })}</label>
+      <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" placeholder={t('wl.amount')}
         className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-4 outline-none focus:border-[#059669]" />
       <button disabled={busy} onClick={submit} className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
-        {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />} حوّل الآن
+        {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />} {t('wl.transfer_now')}
       </button>
     </Shell>
   )
 }
 
 function WithdrawModal({ token, max, onClose, onDone }: { token: string; max: number; onClose: () => void; onDone: () => void }) {
+  const { t } = useT()
   const [amount, setAmount] = useState('')
   const [method, setMethod] = useState('instapay')
   const [details, setDetails] = useState('')
   const [busy, setBusy] = useState(false)
   const submit = async () => {
     const a = Number(amount)
-    if (!a || a <= 0) { toast.error('اكتب مبلغ صحيح'); return }
-    if (a > max) { toast.error('الرصيد النقدي غير كافٍ'); return }
+    if (!a || a <= 0) { toast.error(t('wl.e_valid_amount')); return }
+    if (a > max) { toast.error(t('wl.e_cash_funds')); return }
     setBusy(true)
     const { ok, json } = await postJSON('/api/wallet/withdraw', token, { amount: a, method, details })
     setBusy(false)
-    if (ok) { toast.success('تم إرسال طلب السحب'); onDone() }
-    else toast.error(json.error === 'amount_below_minimum' ? `الحد الأدنى للسحب ${json.min} ج.م` : errAr(json.error))
+    if (ok) { toast.success(t('wl.wd_sent')); onDone() }
+    else toast.error(json.error === 'amount_below_minimum' ? t('wl.wd_min', { n: json.min }) : t(errKey(json.error)))
   }
   return (
-    <Shell title="سحب رصيد" onClose={onClose}>
-      <label className="block text-xs font-bold text-gray-500 mb-1">المبلغ (متاح {formatMoney(max)})</label>
-      <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" placeholder="المبلغ"
+    <Shell title={t('wl.wd_title')} onClose={onClose}>
+      <label className="block text-xs font-bold text-gray-500 mb-1">{t('wl.amount_avail', { n: formatMoney(max) })}</label>
+      <input value={amount} onChange={e => setAmount(e.target.value.replace(/[^\d.]/g, ''))} inputMode="decimal" placeholder={t('wl.amount')}
         className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-lg font-bold mb-3 outline-none focus:border-[#059669]" />
-      <label className="block text-xs font-bold text-gray-500 mb-1">طريقة الاستلام</label>
+      <label className="block text-xs font-bold text-gray-500 mb-1">{t('wl.wd_method')}</label>
       <select value={method} onChange={e => setMethod(e.target.value)}
         className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-3 outline-none focus:border-[#059669] bg-white">
         {Object.entries(WITHDRAW_METHODS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
       </select>
-      <label className="block text-xs font-bold text-gray-500 mb-1">بيانات الاستلام (رقم محفظة / IBAN / حساب إنستاباي)</label>
-      <input value={details} onChange={e => setDetails(e.target.value)} placeholder="مثال: 01xxxxxxxxx"
+      <label className="block text-xs font-bold text-gray-500 mb-1">{t('wl.wd_details')}</label>
+      <input value={details} onChange={e => setDetails(e.target.value)} placeholder={t('wl.wd_details_ph')}
         className="w-full border border-gray-200 rounded-2xl px-4 py-3 mb-4 outline-none focus:border-[#059669]" />
       <button disabled={busy} onClick={submit} className="w-full bg-[#34D399] text-[#04352A] py-3 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-60">
-        {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowDownToLine className="w-5 h-5" />} اطلب السحب
+        {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowDownToLine className="w-5 h-5" />} {t('wl.wd_request')}
       </button>
     </Shell>
   )
