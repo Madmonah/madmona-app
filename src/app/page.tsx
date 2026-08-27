@@ -49,6 +49,8 @@ type DBCategory = {
   id: string
   name_ar: string
   name_en: string | null
+  name_i18n?: Record<string, string> | null
+  group_name_i18n?: Record<string, string> | null
   slug: string
   icon: string | null
   image_url: string | null
@@ -68,7 +70,7 @@ async function getRootCategories(): Promise<DBCategory[]> {
     )
     const { data } = await supabase
       .from('categories')
-      .select('id, name_ar, name_en, slug, icon, image_url, display_order, track, group_slug, group_name_ar, group_emoji, group_display_order')
+      .select('id, name_ar, name_en, name_i18n, slug, icon, image_url, display_order, track, group_slug, group_name_ar, group_name_i18n, group_emoji, group_display_order')
       .is('parent_id', null)
       .eq('is_active', true)
       .not('slug', 'eq', 'properties') // Hide legacy all-in-one properties cat

@@ -106,6 +106,24 @@ B2B) أو `individual` (فرد). تريجر `trg_listings_seller_kind` بيمل�
 > وتعليق في الكود بتاريخ وكلام محمد نصًا، وسطر هنا لو قاعدة جديدة.
 
 ## ٤.٢) قواعد اتقفلت خلاص — متفتحهاش تاني
+- **🧞 المارد = توجيه فقط لا غير (٢٧/٨)**: محمد «المارد عاكك الدنيا معايا…
+  عايز الوظيفة الأساسية ليه تكون توجيه فقط». المارد يرد ويوجّه ويحوّل
+  (forward_to_supplier) ويسجّل طلب مش متوفر — **ماينشئش** إعلان ولا مشروع
+  ولا تاسك ولا جروب ولا يدير طلب/معاد. الأدوات دي مطفية من `marid_tool_settings`
+  (create_listing_draft · add_menu_items · create_project · create_task ·
+  complete_task · create_supplier_group · manage_meeting · manage_order)
+  والجوبز اللي كانت بتنشئ إعلانات وقفت (`sync_bourse_to_ads` ·
+  `rescue-missed-listings`). **متفتحش أي منهم ولا تضيف أداة كتابة جديدة
+  للمارد** إلا بأمر صريح من محمد.
+- **🗂️ ترجمة داتا الداتابيز (٢٧/٨)**: `categories.name_i18n` /
+  `group_name_i18n` {en,uk,ru,ja} (٤٠٠/٤٠٠ مترجمين — المصدر
+  `sql/2026-08-27_category_i18n.cjs` + `scripts/apply-category-i18n.mjs`)
+  و`listings.i18n` {lang:{title,description}} بتتولد بـ
+  `scripts/translate-listings.mjs` (هايكو) وبتتمسح بتريجر لو الأصل اتغيّر.
+  الفرونت يقرا عبر `src/lib/i18n/catName.ts` (`catNameFor` · `groupNameFor` ·
+  `listingTitleFor` · `listingDescriptionFor`) — ممنوع `name_ar`/`title`
+  مباشرة في العرض. الإعلانات الجديدة: شغّل السكريبت (مش جوب تحت المارد —
+  المارد توجيه بس).
 - **🌍 ٦ لغات في الفرونت (٢٧/٨)**: مصري (الافتراضي) · خليجي · English ·
   Українська · Русский · 日本語. النظام هو `LanguageProvider` الموجود
   (كوكي/localStorage `madmona_lang`) — **مفيش** `[locale]` في الراوتات ولا

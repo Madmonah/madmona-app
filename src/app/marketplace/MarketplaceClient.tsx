@@ -13,12 +13,15 @@ import BottomNav from '@/components/BottomNav'
 import CartButton from '@/components/CartButton'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { catNameFor, groupNameFor, listingTitleFor } from '@/lib/i18n/catName'
 
 interface Category {
   id: string
   parent_id: string | null
   name_ar: string
   name_en?: string | null
+  name_i18n?: Record<string, string> | null
+  group_name_i18n?: Record<string, string> | null
   slug: string
   icon: string | null
   // 'sales' موجود في قيد الداتابيز (categories_track_check) و71 تصنيف بيستعمله.
@@ -35,6 +38,7 @@ interface Category {
 interface Listing {
   id: string
   title: string
+  i18n?: Record<string, { title?: string | null; description?: string | null } | null> | null
   slug: string
   city: string | null
   district: string | null
@@ -44,7 +48,7 @@ interface Listing {
   created_at: string
   requires_id_verification: boolean | null
   price_egp?: number | string | null
-  category: { name_ar: string; name_en: string | null; icon: string | null; slug: string } | null
+  category: { name_ar: string; name_en: string | null; name_i18n?: Record<string, string> | null; icon: string | null; slug: string } | null
   supplier: { id?: string | null; business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
   photos: { url: string; is_primary: boolean; quality_flag?: string | null; is_placeholder?: boolean | null }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
@@ -121,7 +125,7 @@ const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
 }
 
 function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listing[] }) {
-  const { t, lang, dir } = useT()
+  const { t, lang, dir, locale } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialCategorySlug = searchParams.get('category')
@@ -150,13 +154,14 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // renders tidy labeled clusters (e.g. خدمات → طبية وتجميل · منزلية · …)
   // instead of one flat wall of pills. Falls back to a single unnamed bucket.
   const rootGroups = (() => {
-    const map = new Map<string, { slug: string; name_ar: string; emoji: string; order: number; cats: Category[] }>()
+    const map = new Map<string, { slug: string; name_ar: string; name_i18n: Record<string, string> | null; emoji: string; order: number; cats: Category[] }>()
     for (const c of rootCategories) {
       const key = c.group_slug || '__ungrouped'
       if (!map.has(key)) {
         map.set(key, {
           slug: key,
           name_ar: c.group_name_ar || '',
+          name_i18n: c.group_name_i18n || null,
           emoji: c.group_emoji || '',
           order: c.group_display_order ?? 999,
           cats: [],
@@ -317,7 +322,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     const load = async () => {
       const { data } = await supabaseBrowser
         .from('categories')
-        .select('id, parent_id, name_ar, name_en, slug, icon, track, also_show_in, group_slug, group_name_ar, group_emoji, group_display_order')
+        .select('id, parent_id, name_ar, name_en, name_i18n, slug, icon, track, also_show_in, group_slug, group_name_ar, group_name_i18n, group_emoji, group_display_order')
         .eq('is_active', true)
         .order('display_order', { ascending: true })
       // الأنواع المولّدة بتقول `track: string | null` (Supabase مابيحوّلش قيود
@@ -427,8 +432,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       let query = supabaseBrowser
         .from('listings')
         .select(`
-          id, title, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification, price_egp,
-          category:categories(name_ar, name_en, icon, slug),
+          id, title, i18n, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification, price_egp,
+          category:categories(name_ar, name_en, name_i18n, icon, slug),
           supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status),
           photos:listing_photos(url, is_primary, quality_flag, is_placeholder),
           pricing:pricing_rules(price, is_active)
@@ -614,10 +619,13 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     : []
   const selectedCategoryNameRaw = allCategories.find(c => c.slug === selectedCategorySlug)
   const selectedCategoryName = selectedCategoryNameRaw
-    ? (lang === 'en' && selectedCategoryNameRaw.name_en ? selectedCategoryNameRaw.name_en : selectedCategoryNameRaw.name_ar)
+    ? catNameFor(selectedCategoryNameRaw, locale)
     : undefined
-  const catName = (c: { name_ar: string; name_en?: string | null }) =>
-    lang === 'en' && c.name_en ? c.name_en : c.name_ar
+  const catName = (c: { name_ar: string; name_en?: string | null; name_i18n?: Record<string, string> | null }) =>
+    catNameFor(c, locale)
+  // 🌍 اسم المجموعة (عقارات · مركبات ...) باللغة الحالية
+  const gName = (g: { name_ar: string; name_i18n?: Record<string, string> | null } | null | undefined) =>
+    g ? groupNameFor({ group_name_ar: g.name_ar, group_name_i18n: g.name_i18n }, locale) : ''
   const comingSoonLabel = lang === 'en' ? 'Coming soon' : 'قريباً'
   const hasFilters = selectedCategorySlug || searchQuery || cityFilter || sortBy !== 'newest'
   // عرض متجر محدد (/marketplace?supplier=...) — بانر باسم التاجر + تصنيفاته
@@ -747,7 +755,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   >
                     <span className="text-2xl">{g.emoji || '🏷️'}</span>
                     <span className="flex-1 min-w-0">
-                      <span className="block text-sm font-extrabold text-gray-800 leading-tight">{g.name_ar || t('market.track_all')}</span>
+                      <span className="block text-sm font-extrabold text-gray-800 leading-tight">{gName(g) || t('market.track_all')}</span>
                       <span className="block text-[10px] font-bold text-gray-400 mt-0.5">{g.cats.length} قسم</span>
                     </span>
                   </button>
@@ -765,9 +773,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   {(() => {
                     const g = rootGroups.find(x => x.slug === selectedGroupSlug) ||
                       rootGroups.find(x => x.cats.some(c => c.slug === selectedRootSlug))
-                    return g?.name_ar ? (
+                    return g && gName(g) ? (
                       <span className="flex-shrink-0 text-xs font-extrabold text-gray-700 flex items-center gap-1">
-                        {g.emoji && <span>{g.emoji}</span>}{g.name_ar}
+                        {g.emoji && <span>{g.emoji}</span>}{gName(g)}
                       </span>
                     ) : null
                   })()}
@@ -1306,7 +1314,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
               const startingPrice = minPrice !== Infinity ? minPrice : null
               const isFav = favorites.has(listing.id)
               const isDemo = isDemoListing(listing.title)
-              const displayTitle = cleanListingTitle(listing.title)
+              const displayTitle = cleanListingTitle(listingTitleFor(listing, locale))
 
               return (
                 <Link

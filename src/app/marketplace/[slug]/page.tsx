@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { catNameFor, listingTitleFor, listingDescriptionFor } from '@/lib/i18n/catName'
 import { RestaurantMenu, MartProductsCatalog, ProductBuyBox, CartCheckoutBar, type MenuItem, type MartProduct } from '@/components/OrderActions'
 import CartButton from '@/components/CartButton'
 import ListQuoteOrderBox from '@/components/ListQuoteOrderBox'
@@ -29,6 +30,7 @@ interface ListingDetail {
   title: string
   slug: string
   description: string | null
+  i18n?: Record<string, { title?: string | null; description?: string | null } | null> | null
   city: string | null
   district: string | null
   address: string | null
@@ -72,7 +74,7 @@ interface ListingDetail {
   insurance_partners: string[] | null
   insurance_deposit_pct: number | string | null
   branches: { name?: string; city?: string; address?: string; phone?: string }[] | null
-  category: { name_ar: string; name_en?: string | null; icon: string | null; track: string | null; order_mode?: string | null; slug?: string | null } | null
+  category: { name_ar: string; name_en?: string | null; name_i18n?: Record<string, string> | null; icon: string | null; track: string | null; order_mode?: string | null; slug?: string | null } | null
   supplier: {
     id: string
     business_name: string
@@ -127,7 +129,7 @@ interface Review {
 //    الشاشات (العرض والحجز وشاشة إضافة المورد).
 
 export default function ListingDetailPage() {
-  const { t, lang, dir } = useT()
+  const { t, lang, dir, locale } = useT()
   const params = useParams()
   const router = useRouter()
   // FIX (Jul 17 2026): السلجات العربية بتوصل مشفّرة من useParams — لازم فك تشفير
@@ -171,7 +173,7 @@ export default function ListingDetailPage() {
         const { data: l, error } = await supabaseBrowser
           .from('listings')
           .select(`
-            id, supplier_id, category_id, title, slug, description, status, country, city, district, address,
+            id, supplier_id, category_id, title, slug, description, i18n, status, country, city, district, address,
             latitude, longitude, min_booking_hours, max_booking_hours, advance_booking_days, cancellation_hours,
             auto_accept_bookings, requires_security_deposit, security_deposit_amount, rating, reviews_count,
             bookings_count, views_count, created_at, updated_at, published_at, requires_id_verification,
@@ -179,7 +181,7 @@ export default function ListingDetailPage() {
             shipping_cost, wholesale_tiers, accepts_insurance, insurance_partners, insurance_deposit_pct,
             branches, booking_deposit_pct, is_directory, directory_source, price_egp, price_on_request,
             source_url, project_id,
-            category:categories(name_ar, name_en, icon, track, order_mode, slug)
+            category:categories(name_ar, name_en, name_i18n, icon, track, order_mode, slug)
           `)
           .eq('slug', slug)
           .eq('status', 'published')
@@ -463,7 +465,7 @@ export default function ListingDetailPage() {
 
   const isDemo = isDemoListing(listing.title)
   const isDirectory = !!listing.is_directory
-  const displayTitle = cleanListingTitle(listing.title)
+  const displayTitle = cleanListingTitle(listingTitleFor(listing, locale))
   const track = listing.category?.track ?? null
   const isRestaurant = track === 'restaurants'
   const isProduct = track === 'products' || track === 'sales'
@@ -671,7 +673,7 @@ export default function ListingDetailPage() {
               {listing.category && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#34D399]/10 rounded-full mb-4">
                   <span className="text-sm">{listing.category.icon}</span>
-                  <span className="text-xs font-bold text-[#059669]">{lang === 'en' && listing.category.name_en ? listing.category.name_en : listing.category.name_ar}</span>
+                  <span className="text-xs font-bold text-[#059669]">{catNameFor(listing.category, locale)}</span>
                 </div>
               )}
               <h1 className="text-2xl md:text-4xl font-black text-gray-900 leading-tight mb-4 tracking-tight">
@@ -1112,14 +1114,14 @@ export default function ListingDetailPage() {
               <div className="p-6 md:p-8 animate-fade-in" key={activeTab}>
                 {activeTab === 'details' && (
                   <div className="space-y-6">
-                    {listing.description && (
+                    {listingDescriptionFor(listing, locale) && (
                       <div>
                         <h3 className="text-sm font-black text-gray-900 mb-3 flex items-center gap-2">
                           <Sparkles className="w-4 h-4 text-[#2FA084]" />
                           {t('listing.desc_title')}
                         </h3>
                         <p className="text-sm md:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {listing.description}
+                          {listingDescriptionFor(listing, locale)}
                         </p>
                       </div>
                     )}

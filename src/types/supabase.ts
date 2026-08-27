@@ -7230,6 +7230,7 @@ export type Database = {
           group_display_order: number | null
           group_emoji: string | null
           group_name_ar: string | null
+          group_name_i18n: Json
           group_slug: string | null
           icon: string | null
           id: string
@@ -7237,6 +7238,7 @@ export type Database = {
           is_active: boolean
           name_ar: string
           name_en: string | null
+          name_i18n: Json
           order_mode: string
           parent_id: string | null
           pricing_unit_label: string | null
@@ -7259,6 +7261,7 @@ export type Database = {
           group_display_order?: number | null
           group_emoji?: string | null
           group_name_ar?: string | null
+          group_name_i18n?: Json
           group_slug?: string | null
           icon?: string | null
           id?: string
@@ -7266,6 +7269,7 @@ export type Database = {
           is_active?: boolean
           name_ar: string
           name_en?: string | null
+          name_i18n?: Json
           order_mode?: string
           parent_id?: string | null
           pricing_unit_label?: string | null
@@ -7288,6 +7292,7 @@ export type Database = {
           group_display_order?: number | null
           group_emoji?: string | null
           group_name_ar?: string | null
+          group_name_i18n?: Json
           group_slug?: string | null
           icon?: string | null
           id?: string
@@ -7295,6 +7300,7 @@ export type Database = {
           is_active?: boolean
           name_ar?: string
           name_en?: string | null
+          name_i18n?: Json
           order_mode?: string
           parent_id?: string | null
           pricing_unit_label?: string | null
@@ -14453,6 +14459,7 @@ export type Database = {
           directory_source: string | null
           district: string | null
           id: string
+          i18n: Json | null
           insurance_deposit_pct: number | null
           insurance_partners: string[] | null
           is_directory: boolean
@@ -14508,6 +14515,7 @@ export type Database = {
           directory_source?: string | null
           district?: string | null
           id?: string
+          i18n?: Json | null
           insurance_deposit_pct?: number | null
           insurance_partners?: string[] | null
           is_directory?: boolean
@@ -14563,6 +14571,7 @@ export type Database = {
           directory_source?: string | null
           district?: string | null
           id?: string
+          i18n?: Json | null
           insurance_deposit_pct?: number | null
           insurance_partners?: string[] | null
           is_directory?: boolean

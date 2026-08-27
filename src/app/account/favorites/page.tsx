@@ -7,6 +7,7 @@ import {
   Heart, MapPin, Star, ImageIcon, Loader2, ArrowRight, Lock, Search,
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { catNameFor, listingTitleFor } from '@/lib/i18n/catName'
 
 // ============================================================================
 // /account/favorites
@@ -21,20 +22,21 @@ interface FavoriteListing {
   listing: {
     id: string
     title: string
+    i18n?: Record<string, { title?: string | null; description?: string | null } | null> | null
     slug: string
     city: string | null
     district: string | null
     rating: number | null
     reviews_count: number
     status: string
-    category: { name_ar: string; name_en?: string | null; icon: string | null } | null
+    category: { name_ar: string; name_en?: string | null; name_i18n?: Record<string, string> | null; icon: string | null } | null
     photos: { url: string; is_primary: boolean }[] | null
     pricing: { price: number | string; is_active: boolean }[] | null
   } | null
 }
 
 export default function FavoritesPage() {
-  const { t, lang, dir } = useT()
+  const { t, lang, dir, locale } = useT()
   const [stage, setStage] = useState<Stage>('loading')
   const [favorites, setFavorites] = useState<FavoriteListing[]>([])
   const [userId, setUserId] = useState<string | null>(null)
@@ -54,8 +56,8 @@ export default function FavoritesPage() {
         .select(`
           listing_id, created_at,
           listing:listings(
-            id, title, slug, city, district, rating, reviews_count, status,
-            category:categories(name_ar, name_en, icon),
+            id, title, i18n, slug, city, district, rating, reviews_count, status,
+            category:categories(name_ar, name_en, name_i18n, icon),
             photos:listing_photos(url, is_primary),
             pricing:pricing_rules(price, is_active)
           )
@@ -187,10 +189,10 @@ export default function FavoritesPage() {
                   <div className="p-4">
                     {listing.category && (
                       <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                        <span>{listing.category.icon}</span> {lang === 'en' && listing.category.name_en ? listing.category.name_en : listing.category.name_ar}
+                        <span>{listing.category.icon}</span> {catNameFor(listing.category, locale)}
                       </p>
                     )}
-                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{listing.title}</h3>
+                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-2">{listingTitleFor(listing, locale)}</h3>
                     {(listing.district || listing.city) && (
                       <p className="text-xs text-gray-500 flex items-center gap-1 mb-2">
                         <MapPin className="w-3 h-3" />

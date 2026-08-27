@@ -11,6 +11,7 @@ import {
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import BookingHelper from '@/components/BookingHelper'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { listingTitleFor } from '@/lib/i18n/catName'
 import { periodPer } from '@/lib/pricing-periods'
 
 // ============================================================================
@@ -104,7 +105,7 @@ type Stage =
   | 'submitting'
 
 export default function BookingPage() {
-  const { t, lang, dir } = useT()
+  const { t, lang, dir, locale } = useT()
   const params = useParams()
   const router = useRouter()
   // FIX (Jul 17 2026): السلجات العربية بتوصل مشفّرة من useParams — لازم فك تشفير
@@ -148,7 +149,7 @@ export default function BookingPage() {
       const { data: l, error: listingErr } = await supabaseBrowser
         .from('listings')
         .select(`
-          id, title, slug, city, district, status, requires_id_verification, available_addons,
+          id, title, i18n, slug, city, district, status, requires_id_verification, available_addons,
           supplier:marketplace_suppliers(id, business_name, commission_rate, kyc_status),
           photos:listing_photos(url, is_primary)
         `)
@@ -704,7 +705,7 @@ export default function BookingPage() {
             )}
           </div>
           <div className="flex-1 p-3 min-w-0">
-            <h2 className="font-bold text-gray-900 truncate">{listing.title}</h2>
+            <h2 className="font-bold text-gray-900 truncate">{listingTitleFor(listing, locale)}</h2>
             {listing.supplier && (
               <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                 <Building2 className="w-3 h-3" /> {listing.supplier.business_name}

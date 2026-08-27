@@ -9,11 +9,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { catNameFor, groupNameFor } from '@/lib/i18n/catName'
 
 type Category = {
   id: string
   name_ar: string
   name_en: string | null
+  name_i18n?: Record<string, string> | null
+  group_name_i18n?: Record<string, string> | null
   slug: string
   icon: string | null
   image_url: string | null
@@ -31,6 +34,7 @@ type Category = {
 type CatGroup = {
   key: string
   name_ar: string
+  name_i18n: Record<string, string> | null
   emoji: string | null
   image_url: string | null
   order: number
@@ -50,6 +54,7 @@ function buildGroups(cats: Category[]): CatGroup[] {
       map.set(key, {
         key,
         name_ar: c.group_name_ar || c.name_ar,
+        name_i18n: c.group_slug ? (c.group_name_i18n || null) : (c.name_i18n || null),
         emoji: c.group_emoji || c.icon,
         image_url: c.image_url,
         order: c.group_display_order ?? 999,
@@ -116,7 +121,9 @@ function IconTile({ cat, vkey }: { cat: Category; vkey: VKey }) {
 }
 
 export default function CategoryTrackTabs({ categories }: { categories: Category[] }) {
-  const { t, lang } = useT()
+  const { t, lang, locale } = useT()
+  // 🌍 اسم المجموعة باللغة الحالية
+  const gName = (g: CatGroup) => groupNameFor({ group_name_ar: g.name_ar, group_name_i18n: g.name_i18n }, locale)
 
   const groupOf = (tracks: string[]) => categories.filter(c => tracks.includes(c.track || ''))
   const firstNonEmpty = VERTICALS.find(v => groupOf(v.tracks).length > 0)?.key || 'products'
@@ -190,7 +197,7 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={g.image_url}
-                    alt={g.name_ar}
+                    alt={gName(g)}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     loading="lazy"
                   />
@@ -209,7 +216,7 @@ export default function CategoryTrackTabs({ categories }: { categories: Category
               <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-5">
                 <h3 className="font-black text-white leading-tight text-lg md:text-xl flex items-center gap-2">
                   {g.image_url && g.emoji && <span className="text-xl">{g.emoji}</span>}
-                  {g.name_ar}
+                  {gName(g)}
                 </h3>
                 <p className="text-white/70 text-[11px] font-bold mt-1">{g.count} قسم</p>
               </div>

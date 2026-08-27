@@ -6,6 +6,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { ArrowLeft, MapPin, Star, ImageIcon, Clock } from 'lucide-react'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { catNameFor, listingTitleFor } from '@/lib/i18n/catName'
 
 // ============================================================
 // FeaturedListings — "المختار بعناية"
@@ -16,12 +17,13 @@ import { useT } from '@/lib/i18n/LanguageProvider'
 interface Listing {
   id: string
   title: string
+  i18n?: Record<string, { title?: string | null; description?: string | null } | null> | null
   slug: string
   city: string | null
   district: string | null
   rating: number | null
   reviews_count: number
-  category: { name_ar: string; name_en?: string | null; icon: string | null } | null
+  category: { name_ar: string; name_en?: string | null; name_i18n?: Record<string, string> | null; icon: string | null } | null
   photos: { url: string; is_primary: boolean; quality_flag?: string | null; is_placeholder?: boolean | null }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
 }
@@ -39,7 +41,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export default function FeaturedListings() {
-  const { t, lang } = useT()
+  const { t, lang, locale } = useT()
   const [items, setItems] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const poolRef = useRef<Listing[]>([])
@@ -50,8 +52,8 @@ export default function FeaturedListings() {
       const { data } = await supabaseBrowser
         .from('listings')
         .select(`
-          id, title, slug, city, district, rating, reviews_count,
-          category:categories(name_ar, name_en, icon),
+          id, title, i18n, slug, city, district, rating, reviews_count,
+          category:categories(name_ar, name_en, name_i18n, icon),
           photos:listing_photos(url, is_primary, quality_flag, is_placeholder),
           pricing:pricing_rules(price, is_active)
         `)
@@ -172,7 +174,7 @@ export default function FeaturedListings() {
             .filter(p => p > 0)
           const startingPrice = activePrices.length > 0 ? Math.min(...activePrices) : null
           const isDemo = isDemoListing(listing.title)
-          const displayTitle = cleanListingTitle(listing.title)
+          const displayTitle = cleanListingTitle(listingTitleFor(listing, locale))
 
           return (
             <Link
@@ -207,7 +209,7 @@ export default function FeaturedListings() {
                 {listing.category && (
                   <div className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold text-gray-800">
                     <span>{listing.category.icon}</span>
-                    <span>{lang === 'en' && listing.category.name_en ? listing.category.name_en : listing.category.name_ar}</span>
+                    <span>{catNameFor(listing.category, locale)}</span>
                   </div>
                 )}
 
