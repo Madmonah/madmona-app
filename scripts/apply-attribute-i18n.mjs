@@ -3,19 +3,29 @@ import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
-const { A } = require('../sql/i18n/attr.cjs')
+const { A: A1 } = require('../sql/i18n/attr.cjs')
+const { A2 } = require('../sql/i18n/attr2.cjs')
+const A = { ...A1, ...A2 }
 const { O } = require('../sql/i18n/opt.cjs')
 const env = Object.fromEntries(fs.readFileSync('.env.local', 'utf8').split('\n').filter(l => /^[A-Z_]+=/.test(l)).map(l => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).trim().replace(/^"|"$/g, '')] }))
 const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 const L = ['en', 'uk', 'ru', 'ja', 'zh']
 const obj = (arr) => Object.fromEntries(L.map((l, i) => [l, arr[i]]))
-const { data: rows, error } = await sb.from('attributes').select('id,name_ar,options')
-if (error) { console.error(error.message); process.exit(1) }
+// ⚠️ (٢٧ أغسطس ٢٠٢٦) Supabase بترجّع ١٠٠٠ صف كحد أقصى في السيلكت الواحد —
+// من غير الـpagination دي كان ١١٤٠ خاصية بتتخطى بصمت.
+const rows = []
+for (let from = 0; ; from += 1000) {
+  const { data, error } = await sb.from('attributes').select('id,name_ar,options,options_i18n,name_i18n').range(from, from + 999)
+  if (error) { console.error(error.message); process.exit(1) }
+  rows.push(...data)
+  if (data.length < 1000) break
+}
+console.log('rows loaded:', rows.length)
 let n = 0, optN = 0, missName = new Set(), missOpt = new Set()
 for (const r of rows) {
   const nm = A[(r.name_ar || '').trim()]
   if (!nm) missName.add(r.name_ar)
-  const oi = {}
+  const oi = { ...(r.options_i18n || {}) }
   for (const o of (r.options || [])) {
     const hit = O[(o.label_ar || '').trim()]
     if (hit) { oi[o.key] = obj(hit); optN++ }
