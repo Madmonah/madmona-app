@@ -36,7 +36,7 @@ export const MADMONA_LINKS = {
   فريق_المورد: `${SITE}/supplier/team`,
   محاسبة_المورد: `${SITE}/supplier/erp/accounting`,
   بورصة_مضمونة_العقارية: `${SITE}/real-estate/market`,
-  الخدمات: `${SITE}/services`,
+  الخدمات: `${SITE}/marketplace`,
   عن_مضمونة: `${SITE}/about`,
 } as const
 

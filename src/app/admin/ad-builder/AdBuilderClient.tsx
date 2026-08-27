@@ -43,7 +43,7 @@ export default function AdBuilderClient({ listings }: { listings: ListingExtras[
 
   const generalLink = useMemo(() => {
     const cn = campaignName.trim() || 'general'
-    return `${SITE}/ad-landing?utm_source=${utmSource}&utm_campaign=${encodeURIComponent(cn)}`
+    return `${SITE}/marketplace?utm_source=${utmSource}&utm_campaign=${encodeURIComponent(cn)}`
   }, [campaignName, utmSource])
 
   const listingLink = useMemo(() => {

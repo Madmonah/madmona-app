@@ -355,7 +355,7 @@ a { text-decoration:none }
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Link className="rz-ghost" href="/auth/login" style={{ height: 42, padding: '0 18px', borderRadius: 999, border: '1.5px solid rgba(255,255,255,.6)', color: '#fff', fontWeight: 700, fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>دخول</Link>
-            <Link className="rz-gold" href="/list-your-asset" style={{ height: 42, padding: '0 22px', borderRadius: 999, background: GOLD, color: DARK, fontWeight: 900, fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>ضيف إعلانك</Link>
+            <Link className="rz-gold" href="/add-listing" style={{ height: 42, padding: '0 22px', borderRadius: 999, background: GOLD, color: DARK, fontWeight: 900, fontSize: 13, display: 'inline-flex', alignItems: 'center' }}>ضيف إعلانك</Link>
           </div>
         </div>
       </header>
@@ -518,7 +518,7 @@ a { text-decoration:none }
             <h2 style={{ margin: 0, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 42, lineHeight: 1.3, color: '#fff' }}>عندك منتج أو خدمة؟<br /><span style={{ color: GOLD }}>اعرضها مجاناً</span></h2>
             <p style={{ margin: '16px 0 0', fontSize: 15.5, lineHeight: 1.9, color: 'rgba(255,255,255,.72)' }}>افتح متجرك على مضمونة في دقيقتين، وإعلانك يوصل لعملاء جاهزين يشتروا.</p>
           </div>
-          <Link className="rz-lift" href="/list-your-asset" style={{ position: 'relative', padding: '19px 44px', borderRadius: 999, background: GOLD, color: DARK, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 17 }}>ابدأ دلوقتي ←</Link>
+          <Link className="rz-lift" href="/add-listing" style={{ position: 'relative', padding: '19px 44px', borderRadius: 999, background: GOLD, color: DARK, fontFamily: 'var(--font-alex), sans-serif', fontWeight: 900, fontSize: 17 }}>ابدأ دلوقتي ←</Link>
         </div>
       </section>
 

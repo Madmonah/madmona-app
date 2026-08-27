@@ -85,7 +85,7 @@ export default function SiteFooter() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
               <span style={{ fontWeight: 800, color: '#FFE9A8', fontSize: 12, letterSpacing: '0.1em' }}>{t('common.brand')}</span>
               <Link href="/about" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.about')}</Link>
-              <Link href="/list-your-asset" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.add_listing')}</Link>
+              <Link href="/add-listing" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.add_listing')}</Link>
               <Link href="/chat/marid" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.ask_marid')}</Link>
               <Link href="/careers" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.careers')}</Link>
               <a href="https://wa.me/201002229982" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(250,250,247,0.85)', textDecoration: 'none' }}>{t('sf.whatsapp')}</a>

@@ -731,7 +731,7 @@ export default function AdminDashboardV2() {
             <ToolCard href="/supplier/register" icon={<Plus />} title="إنشاء مورد" sub="Supplier register" />
             <ToolCard href="/supplier/signup" icon={<Plus />} title="تسجيل سريع" sub="Supplier signup" />
             <ToolCard href="/supplier/login" icon={<Lock />} title="دخول المورد" sub="Supplier login" />
-            <ToolCard href="/list-your-asset" icon={<Sparkles />} title="ضيف منتج" sub="الصفحة التعريفية" />
+            <ToolCard href="/add-listing" icon={<Sparkles />} title="ضيف منتج" sub="فورم الإضافة" />
           </div>
         </Section>
 

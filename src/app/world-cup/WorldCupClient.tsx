@@ -105,7 +105,7 @@ export default function WorldCupClient() {
       <header className="bg-gradient-to-l from-[#34D399] via-[#34D399] to-[#2FA084] text-white">
         <div className="max-w-3xl mx-auto px-5 pt-6 pb-7">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/pulse" className="w-9 h-9 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center transition">
+            <Link href="/marketplace" className="w-9 h-9 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center transition">
               <ArrowRight className="w-4 h-4" />
             </Link>
             <button
