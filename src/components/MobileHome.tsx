@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { useT } from '@/lib/i18n/LanguageProvider'
+import LanguageToggle from './LanguageToggle'
 import DownloadAppBig from '@/components/DownloadAppBig'
 
 type Category = {
@@ -219,6 +220,13 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
             </span>
           </Link>
           <div className="flex gap-2">
+            {/* 🌍 (٢٧ أغسطس ٢٠٢٦) محمد: «موجود الكلام ده في نسخة الموبايل؟» —
+                الهوم بتاعة الموبايل ماكانش فيها أي زرار لغة أصلًا. */}
+            <LanguageToggle
+              className="bg-white/15 h-10"
+              activeClass="bg-white text-[#059669]"
+              inactiveClass="bg-transparent text-white"
+            />
             <Link href="/account" aria-label="الإشعارات" className="relative w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center no-underline">
               <Bell className="w-[19px] h-[19px] text-white" strokeWidth={2} />
               <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#059669]" />
