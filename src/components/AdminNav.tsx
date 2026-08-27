@@ -55,6 +55,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/categories', label: 'الفئات' },
     { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
     { href: '/admin/marketplace-orders', label: 'الطلبات' },
+    { href: '/admin/payments', label: '💳 تأكيد التحويلات' },
     { href: '/admin/payouts', label: 'المدفوعات' },
     { href: '/admin/projects', label: 'المشاريع' },
     { href: '/admin/projects-media', label: 'ميديا المشاريع' },
