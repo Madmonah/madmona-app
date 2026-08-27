@@ -81,6 +81,18 @@ const nextConfig = {
       { source: '/list-your-asset', destination: '/add-listing', permanent: true },
     );
 
+    // 🧹 (٢٧ أغسطس ٢٠٢٦) محمد: «شيل فيكو الكوورك من ملفات الأبليكيشن — المشروع
+    //    مبقاش كووركينج». صفحات /coworking و /reserve/* كانت مجرد redirect
+    //    pages — اتشالت من src/app وبقت هنا عشان أي لينك قديم (واتساب/جوجل)
+    //    ما يرجّعش 404.
+    redirects.push(
+      { source: '/coworking', destination: '/', permanent: true },
+      { source: '/reserve/indoor-coworking', destination: '/marketplace?category=workspaces-hot-desk', permanent: true },
+      { source: '/reserve/meeting-room', destination: '/marketplace?category=workspaces-meeting', permanent: true },
+      { source: '/reserve/outdoor-garden', destination: '/marketplace?category=workspaces-outdoor', permanent: true },
+      { source: '/reserve/private-office', destination: '/marketplace?category=workspaces-office', permanent: true },
+    );
+
     for (const slug of CATEGORY_SLUGS) {
       // OLD: /categories/properties → /marketplace?category=properties
       redirects.push({

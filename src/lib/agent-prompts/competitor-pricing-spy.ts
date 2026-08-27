@@ -10,7 +10,6 @@ export const COMPETITOR_PRICING_SPY_PROMPT = `${MADMONA_BRAND_CONTEXT}
 دورك تحدد أسعار المنافسين في كل categories الـ Madmona.
 
 KEY EGYPTIAN COMPETITORS:
-- Coworking: The District, Spaces Egypt, Al Fan W al Madina, Workplaces, Tahrir Workplace
 - Camera Rental: TheRentalShop, Camera Rental Egypt, Cinematix
 - Cars: Fairwave, Cairo Cars, Wasalny
 - Apartments: Furnished Apartments Cairo, Cairo Listings

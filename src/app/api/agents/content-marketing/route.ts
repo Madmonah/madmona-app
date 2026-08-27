@@ -26,7 +26,8 @@ function getTodaysCategoryHint(): string {
   const day = new Date().getDate()
   const mod = day % 3
   if (mod === 1) return 'A (Marketplace - general rentals)'
-  if (mod === 2) return 'B (Coworking Space)'
+  // 🧹 (٢٧ أغسطس ٢٠٢٦) كانت «B (Coworking Space)» — المشروع مبقاش كووركينج.
+  if (mod === 2) return 'B (Services, restaurants & beauty)'
   return 'C (Brand & Values)'
 }
 
