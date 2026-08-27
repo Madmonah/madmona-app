@@ -14,14 +14,44 @@
 // Egyptian colloquial for Arabic, clean professional English for EN.
 // ============================================================
 
+// 🌍 (٢٧ أغسطس ٢٠٢٦) محمد: «محتاج أكتر من لغة: أوكراني/روسي، ياباني،
+//    إنجليزي، وعربي (مصري - خليجي)».
+//
+//    التصميم بيفرّق بين حاجتين عشان مانكسرش أي كود موجود:
+//      • `Lang`   = عائلة الكتابة (ar | en) — ٨٣ مكان في المشروع بيقارنوا
+//                   `lang === 'ar'` / `lang === 'en'`، كلهم شغالين زي ما هم.
+//      • `Locale` = اللغة الفعلية للنصوص (ar, ar-gulf, en, uk, ru, ja).
+//    الخليجي بيتعامل كـ ar (RTL + نفس الفروع)، والأوكراني/الروسي/الياباني
+//    بيتعاملوا كـ en (LTR + الفرع الإنجليزي لأي نص لسه مش مترجم).
+//    الترجمة: قاموس اللغة → قاموس العائلة → العربي (المرجع).
+//    قواميس اللغات الجديدة جزئية في ./locales/* — اللي مش مترجم بيرجع للعائلة.
+
 export type Lang = 'ar' | 'en'
+export type Locale = 'ar' | 'ar-gulf' | 'en' | 'uk' | 'ru' | 'ja'
 
 export const LANGS: Lang[] = ['ar', 'en']
+export const LOCALES: Locale[] = ['ar', 'ar-gulf', 'en', 'uk', 'ru', 'ja']
 export const DEFAULT_LANG: Lang = 'ar'
+export const DEFAULT_LOCALE: Locale = 'ar'
 export const LANG_STORAGE_KEY = 'madmona_lang'
-export const dirFor = (l: Lang): 'rtl' | 'ltr' => (l === 'ar' ? 'rtl' : 'ltr')
 
-type Dict = Record<string, string>
+export const LOCALE_META: Record<Locale, { native: string; short: string; base: Lang; htmlLang: string }> = {
+  'ar':      { native: 'عربي (مصري)',  short: 'مصري',  base: 'ar', htmlLang: 'ar-EG' },
+  'ar-gulf': { native: 'عربي (خليجي)', short: 'خليجي', base: 'ar', htmlLang: 'ar-SA' },
+  'en':      { native: 'English',       short: 'EN',    base: 'en', htmlLang: 'en' },
+  'uk':      { native: 'Українська',    short: 'UA',    base: 'en', htmlLang: 'uk' },
+  'ru':      { native: 'Русский',       short: 'RU',    base: 'en', htmlLang: 'ru' },
+  'ja':      { native: '日本語',         short: 'JA',    base: 'en', htmlLang: 'ja' },
+}
+
+export const isLocale = (v: unknown): v is Locale =>
+  typeof v === 'string' && (LOCALES as string[]).includes(v)
+export const baseLangOf = (l: Locale | string): Lang =>
+  isLocale(l) ? LOCALE_META[l].base : DEFAULT_LANG
+export const dirFor = (l: Lang | Locale): 'rtl' | 'ltr' =>
+  baseLangOf(l) === 'ar' ? 'rtl' : 'ltr'
+
+export type Dict = Record<string, string>
 
 const ar: Dict = {
   // ---- common ----
@@ -1500,3 +1530,29 @@ const en: Dict = {
 }
 
 export const translations: Record<Lang, Dict> = { ar, en }
+
+// 🌍 قواميس اللغات الإضافية (جزئية). المصري والإنجليزي = القواميس الكاملة فوق.
+import { arGulf } from './locales/ar-gulf'
+import { uk } from './locales/uk'
+import { ru } from './locales/ru'
+import { ja } from './locales/ja'
+
+export const localeTranslations: Record<Locale, Partial<Dict>> = {
+  'ar': ar,
+  'ar-gulf': arGulf,
+  'en': en,
+  'uk': uk,
+  'ru': ru,
+  'ja': ja,
+}
+
+// ترجمة مفتاح بسلسلة الرجوع: اللغة → العائلة → العربي → المفتاح نفسه
+export function translate(locale: Locale, key: string): string {
+  const base = baseLangOf(locale)
+  return (
+    localeTranslations[locale]?.[key] ??
+    translations[base][key] ??
+    translations[DEFAULT_LANG][key] ??
+    key
+  )
+}

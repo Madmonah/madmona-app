@@ -4,10 +4,17 @@ import { safeStorage } from '@/lib/safe-storage'
 // src/lib/i18n/LanguageProvider.tsx
 // ============================================================
 // Client-side language context for Madmona.
-// - Holds current language (ar | en)
+// - Holds current locale (ar | ar-gulf | en | uk | ru | ja)
+// - `lang` = base family (ar | en) — kept for backward compat, every
+//   `lang === 'en'` / `isRTL` check in the project keeps working.
 // - Persists choice to localStorage + cookie (so SSR can read it later)
 // - Switches <html lang> and <html dir> live (RTL <-> LTR)
-// - Exposes t(key, vars?) translation helper
+// - Exposes t(key, vars?) translation helper with fallback chain:
+//   locale → family (ar/en) → Arabic → raw key
+//
+// 🌍 (٢٧ أغسطس ٢٠٢٦) محمد: «محتاج أكتر من لغة: أوكراني/روسي/ياباني/إنجليزي
+//    وعربي (مصري - خليجي)». اتعمل على نفس النظام الموجود — من غير تغيير
+//    راوتات ولا middleware ولا PWA — عشان ما يتكسرش أي لينك أو شاشة.
 //
 // Mounted once in the root layout, wrapping the whole app.
 // ============================================================
@@ -16,36 +23,40 @@ import {
   createContext, useContext, useState, useEffect, useCallback, useMemo,
 } from 'react'
 import {
-  translations, DEFAULT_LANG, LANG_STORAGE_KEY, dirFor, type Lang,
+  translate, DEFAULT_LANG, DEFAULT_LOCALE, LANG_STORAGE_KEY, LOCALES, LOCALE_META,
+  dirFor, baseLangOf, isLocale, type Lang, type Locale,
 } from './dictionary'
 
 interface LanguageContextValue {
   lang: Lang
+  locale: Locale
   dir: 'rtl' | 'ltr'
   isRTL: boolean
   setLang: (l: Lang) => void
+  setLocale: (l: Locale) => void
   toggle: () => void
   t: (key: string, vars?: Record<string, string | number>) => string
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
-function applyToDocument(l: Lang) {
+function applyToDocument(l: Locale) {
   if (typeof document === 'undefined') return
-  document.documentElement.lang = l
+  document.documentElement.lang = LOCALE_META[l].htmlLang
   document.documentElement.dir = dirFor(l)
+  document.documentElement.dataset.locale = l
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(DEFAULT_LANG)
+  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE)
 
   // On mount, hydrate from stored preference (set pre-paint by the inline
   // script in <head>, so this just syncs React state — no flash).
   useEffect(() => {
     try {
-      const saved = safeStorage.get(LANG_STORAGE_KEY) as Lang | null
-      if (saved === 'ar' || saved === 'en') {
-        setLangState(saved)
+      const saved = safeStorage.get(LANG_STORAGE_KEY)
+      if (isLocale(saved)) {
+        setLocaleState(saved)
         applyToDocument(saved)
       }
     } catch {
@@ -53,8 +64,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const setLang = useCallback((l: Lang) => {
-    setLangState(l)
+  const setLocale = useCallback((l: Locale) => {
+    if (!isLocale(l)) return
+    setLocaleState(l)
     applyToDocument(l)
     try {
       safeStorage.set(LANG_STORAGE_KEY, l)
@@ -65,14 +77,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  // Backward compat: setLang('en') → 'en', setLang('ar') → Egyptian Arabic.
+  const setLang = useCallback((l: Lang) => {
+    setLocale(l === 'en' ? 'en' : DEFAULT_LOCALE)
+  }, [setLocale])
+
   const toggle = useCallback(() => {
-    setLang(lang === 'ar' ? 'en' : 'ar')
-  }, [lang, setLang])
+    setLocale(baseLangOf(locale) === 'ar' ? 'en' : DEFAULT_LOCALE)
+  }, [locale, setLocale])
 
   const t = useCallback(
     (key: string, vars?: Record<string, string | number>) => {
-      const dict = translations[lang] || translations[DEFAULT_LANG]
-      let str = dict[key] ?? translations[DEFAULT_LANG][key] ?? key
+      let str = translate(locale, key)
       if (vars) {
         for (const k of Object.keys(vars)) {
           str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(vars[k]))
@@ -80,18 +96,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
       return str
     },
-    [lang]
+    [locale]
   )
 
-  const value = useMemo<LanguageContextValue>(
-    () => ({ lang, dir: dirFor(lang), isRTL: lang === 'ar', setLang, toggle, t }),
-    [lang, setLang, toggle, t]
-  )
+  const value = useMemo<LanguageContextValue>(() => {
+    const lang = baseLangOf(locale)
+    return { lang, locale, dir: dirFor(locale), isRTL: lang === 'ar', setLang, setLocale, toggle, t }
+  }, [locale, setLang, setLocale, toggle, t])
 
   return (
     <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
   )
 }
+
+export { LOCALES, LOCALE_META }
 
 export function useT(): LanguageContextValue {
   const ctx = useContext(LanguageContext)
@@ -100,11 +118,13 @@ export function useT(): LanguageContextValue {
     // return Arabic with a no-op setter so the UI never crashes.
     return {
       lang: DEFAULT_LANG,
-      dir: dirFor(DEFAULT_LANG),
+      locale: DEFAULT_LOCALE,
+      dir: dirFor(DEFAULT_LOCALE),
       isRTL: DEFAULT_LANG === 'ar',
       setLang: () => {},
+      setLocale: () => {},
       toggle: () => {},
-      t: (key: string) => translations[DEFAULT_LANG][key] ?? key,
+      t: (key: string) => translate(DEFAULT_LOCALE, key),
     }
   }
   return ctx
