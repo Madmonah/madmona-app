@@ -972,74 +972,11 @@ function StepCategory({
           })}
         </div>
 
-        {/* ⚡ (٢٤ أغسطس ٢٦) محمد: «على قد ما تقدر خلي الإضافة لأي نوع بيزنس
-            تكون بدروب ليست علشان المستخدم ميحسش إن الموضوع طويل عليه».
-            دروب ليست واحدة بتوصل لأي تصنيف في ثانية — والكروت تحتها فضلت
-            زي ما هي للي يحب يتصفح (الاتنين بينادوا نفس onSelect — مفيش
-            مسار موازي). */}
-        {categories.length > 0 && (
-          <div className="mb-4">
-            <select
-              defaultValue=""
-              onChange={(e) => { if (e.target.value) onSelect(e.target.value) }}
-              className="w-full p-3.5 rounded-xl border border-[#E5E5E0] bg-white text-sm font-semibold text-gray-800"
-            >
-              <option value="" disabled>{t('al.quick_pick')}</option>
-              {/* 🧹 (٢٥ أغسطس ٢٦) محمد: «موضوع اختار نشاطك من القايمة ده في عك
-                  كتير وحاجات متكررة — نخليها بنفس النظام الي موجود علي الموبايل».
-                  المشكلة كانت: optgroup لكل تصنيف رئيسي (٦٥ مجموعة!)، والقسم
-                  اللي عنده also_show_in بيتكرر تحت كل أب، وتوائم البيع/الإيجار
-                  («شقة» بيع و«شقة» إيجار) جنب بعض من غير تمييز.
-                  دلوقتي: نفس نظام كروت الموبايل بالظبط — المجموعات
-                  (group_slug/group_name_ar) هي الـoptgroups، والمجموعة نفسها
-                  بتفصل البيع عن الإيجار، وdedupe عام بالـslug بيمنع أي تكرار. */}
-              {(() => {
-                type DDSub = { slug: string; emoji: string; name_ar: string };
-                type DDRoot = DDSub & { subs: DDSub[] };
-                const gm = new Map<string, { key: string; name: string; emoji: string; order: number; roots: DDRoot[] }>();
-                const seen = new Set<string>();
-                for (const c of categories) {
-                  const key = c.group_slug || c.slug;
-                  if (!gm.has(key)) {
-                    gm.set(key, {
-                      key,
-                      name: c.group_name_ar || c.name_ar,
-                      emoji: c.group_emoji || c.emoji || '🏷️',
-                      order: c.group_display_order ?? 999,
-                      roots: [],
-                    });
-                  }
-                  if (seen.has(c.slug)) continue;
-                  seen.add(c.slug);
-                  const subs: DDSub[] = [];
-                  for (const s of c.subs) {
-                    if (seen.has(s.slug)) continue;
-                    seen.add(s.slug);
-                    subs.push({ slug: s.slug, emoji: s.emoji, name_ar: s.name_ar });
-                  }
-                  gm.get(key)!.roots.push({ slug: c.slug, emoji: c.emoji, name_ar: c.name_ar, subs });
-                }
-                return Array.from(gm.values())
-                  .filter((g) => g.roots.length > 0)
-                  .sort((a, b) => a.order - b.order)
-                  .map((g) => (
-                    <optgroup key={g.key} label={`${g.emoji} ${g.name}`}>
-                      {g.roots.flatMap((r) => [
-                        <option key={r.slug} value={r.slug}>
-                          {r.emoji ? r.emoji + ' ' : ''}{r.name_ar}{r.subs.length > 0 ? ` (${t('al.general')})` : ''}
-                        </option>,
-                        ...r.subs.map((s) => (
-                          <option key={s.slug} value={s.slug}>
-                            {'   '}{s.emoji ? s.emoji + ' ' : ''}{s.name_ar}
-                          </option>
-                        )),
-                      ])}
-                    </optgroup>
-                  ));
-              })()}
-            </select>
-          </div>
-        )}
+        {/* 🧹 (٢٧ أغسطس ٢٠٢٦) محمد: «شيل موضوع اختار نشاطك من القايمة —
+            لما قلت دروب ليست كان قصدي السبسيفيكيشن والتفاصيل اللي جوّه
+            إضافة المنتج زي الماركة والموديل». القايمة المنسدلة للتصنيفات
+            اتشالت خالص؛ الاختيار بقى من الكروت بس (نفس نظام الماركت بليس).
+            **متضفهاش تاني.** */}
 
         {visibleMains.length === 0 ? (
           <div className="text-center py-12 text-sm text-gray-500">
@@ -2551,7 +2488,45 @@ function ProductDetailsStep({
   const [model, setModel] = useState<string>(existingDetails?.model || '');
   // 🚗 دروب ليست العربيات — الماركة من قايمة والسنة من قايمة
   const isVehicle = profile === PROFILE_VEHICLE;
+  // 🏷️ (٢٧ أغسطس ٢٠٢٦) محمد: «لما قلت دروب ليست كان قصدي السبسيفيكيشن
+//     والتفاصيل اللي جوّه إضافة المنتج زي الماركة والموديل — بس على مستوى
+//     الأبليكيشن». الماركة بقت قايمة منسدلة لكل عيلة منتجات (مش input حر)،
+//     مع «أخرى…» اللي بتفتح خانة كتابة — نفس بترون العربيات بالظبط.
+const BRANDS_BY_FAMILY: Record<string, string[]> = {
+  phones: ['Apple','Samsung','Xiaomi','Oppo','Realme','Huawei','Honor','Infinix','Tecno','Nokia','OnePlus','Google','Vivo','Nothing'],
+  computers: ['Apple','Dell','HP','Lenovo','Asus','Acer','MSI','Microsoft','Toshiba','Samsung','Huawei','Gigabyte'],
+  appliances: ['Samsung','LG','Toshiba','Sharp','Beko','Zanussi','Fresh','Kiriazi','White Whale','Unionaire','Bosch','Siemens','Ariston','Electrolux','Tornado','Panasonic','Philips','Braun','Kenwood','Moulinex','Black+Decker'],
+  electronics: ['Sony','Samsung','LG','JBL','Anker','Xiaomi','Philips','Panasonic','Canon','Nikon','GoPro','DJI','HyperX','Logitech'],
+  beauty: ['Cronier','Sheglam','Dr.pen','Philips','Braun','Remington','Babyliss','Kemei','Wahl','Moehair','Maxtop'],
+  furniture: ['Techwood','IKEA','Home Center','In House','Art House','El Helal','Damas','Royal Home'],
+  fashion: ['Nike','Adidas','Puma','Zara','H&M','Levi\'s','Tommy Hilfiger','Lacoste','Guess','Concrete','Town Team','Dice'],
+  baby: ['Pampers','Molfix','Huggies','Chicco','Avent','Nan','Bebelac','Similac','Nestle','Juhayna'],
+  food: ['Juhayna','Almarai','Domty','President','Lamar','Beyti','Americana','Halwani','Edita','Corona','Cadbury','Nestle'],
+  tools: ['Bosch','Makita','DeWalt','Stanley','Black+Decker','Total','Ingco','Einhell','Hilti','Karcher'],
+};
+// أي تصنيف → عيلة ماركات
+function brandFamilyFor(slug: string): string[] | null {
+  const x = (slug || '').toLowerCase();
+  if (/(phone|mobile|tablet|موبايل)/.test(x)) return BRANDS_BY_FAMILY.phones;
+  if (/(laptop|computer|pc|كمبيوتر)/.test(x)) return BRANDS_BY_FAMILY.computers;
+  if (/(appliance|kitchen-app|home-app|كهرباء)/.test(x)) return BRANDS_BY_FAMILY.appliances;
+  if (/(electronic|camera|audio|tv)/.test(x)) return BRANDS_BY_FAMILY.electronics;
+  if (/(beauty|cosmetic|personal-care|hair|skin)/.test(x)) return BRANDS_BY_FAMILY.beauty;
+  if (/(furniture|home-|decor|أثاث)/.test(x)) return BRANDS_BY_FAMILY.furniture;
+  if (/(fashion|cloth|shoe|bag|watch|jewel)/.test(x)) return BRANDS_BY_FAMILY.fashion;
+  if (/(baby|kids|child)/.test(x)) return BRANDS_BY_FAMILY.baby;
+  if (/(food|grocer|daily|super|drink)/.test(x)) return BRANDS_BY_FAMILY.food;
+  if (/(tool|equipment|hardware|plumb|build)/.test(x)) return BRANDS_BY_FAMILY.tools;
+  return null;
+}
+
   const vehicleBrands = /motorcycle|tuktuk/.test(draft.category_slug || '') ? MOTO_BRANDS : CAR_BRANDS;
+  const productBrands = brandFamilyFor(draft.category_slug || '');
+  const [prodBrandOther, setProdBrandOther] = useState<boolean>(() => {
+    const eb = existingDetails?.brand || '';
+    const list = brandFamilyFor(draft.category_slug || '');
+    return !!eb && !!list && !list.includes(eb);
+  });
   const [brandIsOther, setBrandIsOther] = useState<boolean>(() => {
     const eb = existingDetails?.brand || '';
     return !!eb && !CAR_BRANDS.includes(eb) && !MOTO_BRANDS.includes(eb);
@@ -2833,13 +2808,39 @@ function ProductDetailsStep({
 
       {profile.showBrand && !isVehicle && (
       <Field label={t('al.f_brand')}>
-        <input
-          type="text"
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-          placeholder={t('al.brand_ph')}
-          className={inputCls}
-        />
+        {productBrands && !prodBrandOther ? (
+          <select
+            value={productBrands.includes(brand) ? brand : ''}
+            onChange={(e) => {
+              if (e.target.value === '__other') { setProdBrandOther(true); setBrand(''); }
+              else setBrand(e.target.value);
+            }}
+            className={inputCls}
+          >
+            <option value="">{t('al.choose')}</option>
+            {productBrands.map((b) => <option key={b} value={b}>{b}</option>)}
+            <option value="__other">{t('al.other')}</option>
+          </select>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              placeholder={t('al.brand_ph')}
+              className={inputCls}
+            />
+            {productBrands && (
+              <button
+                type="button"
+                onClick={() => { setProdBrandOther(false); setBrand(''); }}
+                className="px-3 rounded-xl border border-[#E5E5E0] text-xs font-bold text-gray-600 whitespace-nowrap"
+              >
+                {t('al.back')}
+              </button>
+            )}
+          </div>
+        )}
       </Field>
       )}
 
