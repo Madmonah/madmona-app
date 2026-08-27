@@ -17,7 +17,7 @@
 // =====================================================================
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { DEVELOPER_DIRECTORY, findDeveloperBySlug, type LogoQuality } from '@/lib/developer-directory'
+import { DEVELOPER_DIRECTORY, findDeveloperBySlug } from '@/lib/developer-directory'
 import {
   ArrowRight, Building2, Search, X, MapPin, ChevronDown,
   FileText, PlayCircle, CalendarClock, Wallet, MessageCircle, Clock,
@@ -481,12 +481,6 @@ function ChipBtn({ active, onClick, children }: { active: boolean; onClick: () =
 // الفعلية (high/medium/low) — عشان لوجو منخفض الدقة ميتكبّرش ويبان مبكسل.
 // الضغط على أي لوجو بيفلتر نتايج نفس الصفحة (مش رابط لصفحة تانية).
 // =====================================================================
-const QUALITY_LOGO_BOX: Record<LogoQuality, string> = {
-  high: 'h-12',
-  medium: 'h-9',
-  low: 'h-6',
-}
-
 function DeveloperLogosGrid({ onSelect, activeSlug }: { onSelect: (slug: string) => void; activeSlug: string }) {
   return (
     <section className="px-4 pt-5">
@@ -506,15 +500,11 @@ function DeveloperLogosGrid({ onSelect, activeSlug }: { onSelect: (slug: string)
               type="button"
               onClick={() => onSelect(d.slug)}
               aria-label={`مشاريع ${d.name}`}
-              className={`bg-white rounded-2xl p-2.5 h-[72px] flex flex-col items-center justify-center gap-1 transition-colors ${
+              className={`bg-white rounded-2xl p-2.5 min-h-[56px] flex items-center justify-center transition-colors ${
                 active ? 'border-2 border-[#059669]' : 'border border-black/5'
               }`}
             >
-              <span className={`w-full flex items-center justify-center ${QUALITY_LOGO_BOX[d.quality]}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={d.logo} alt={d.name} className="max-h-full max-w-full object-contain" loading="lazy" draggable={false} />
-              </span>
-              <span className="text-[9px] font-bold text-[#7C8A84] text-center leading-tight line-clamp-1">{d.name}</span>
+              <span className="text-[11px] font-black text-[#14231E] text-center leading-tight line-clamp-2">{d.name}</span>
             </button>
           )
         })}

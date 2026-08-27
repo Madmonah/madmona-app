@@ -104,6 +104,9 @@ export default function TeamPage() {
   const [showFriends, setShowFriends] = useState(false)    // شيت الأصدقاء
   const [showBook, setShowBook] = useState(false)           // شيت دفتر مضمونة
   const [showNewGroup, setShowNewGroup] = useState(false)   // شيت جروب جديد
+  // 🔍 (٢٧ أغسطس ٢٠٢٦) محمد: «مش شايف السيرش نزل على مستوى الشات — نزل في
+  //    المحادثات بس وأنا عايزه ينزل في الجروبات». البحث بيدوّر في اسم الجروب.
+  const [groupQ, setGroupQ] = useState('')
   const [newMenu, setNewMenu] = useState(false)             // قايمة ➕ في هيدر قايمة المحادثات
   const incomingRingRef = useRef<{ stop: () => void } | null>(null)
 
@@ -949,10 +952,32 @@ export default function TeamPage() {
         {(() => {
           // الجروبات بس — المحادثات الفردية مكانها /chat (قرار محمد 30 يوليو)
           const groups = rooms.filter((r) => r.kind !== 'direct')
+          // 🏷️ (٢٧ أغسطس ٢٠٢٦) محمد: «عايز أميّز بين الجروبات والجروب».
+          //    الجروبات مابقتش نوع واحد: جروب فريق عادي · جروب استفسار (عميل
+          //    + صاحب إعلان + الفريق) · جروب مضمونة × صاحب إعلان. كلهم كانوا
+          //    بيتكتب تحتيهم «جروب» من غير أي تمييز.
+          const kindOf = (r: Room): { label: string; emoji: string; color: string } => {
+            const nm = r.name || ''
+            if (nm.startsWith('استفسار:')) return { label: 'استفسار — عميل وصاحب إعلان', emoji: '📩', color: '#B45309' }
+            if (nm.startsWith('مضمونة ×')) return { label: 'صاحب إعلان + الفريق', emoji: '🤝', color: '#1D4ED8' }
+            if (nm.includes('استفسارات البيع')) return { label: 'متابعة الفريق', emoji: '🗂️', color: '#059669' }
+            return { label: 'جروب', emoji: '👥', color: '#8A9690' }
+          }
+          const nq = groupQ.trim().toLowerCase()
           const archivedCount = groups.filter((r) => r.archivedAt).length
-          const shown = groups.filter((r) => (showArchived ? !!r.archivedAt : !r.archivedAt))
+          const shown = groups
+            .filter((r) => (showArchived ? !!r.archivedAt : !r.archivedAt))
+            .filter((r) => !nq || (r.name || '').toLowerCase().includes(nq))
           return (
             <>
+              {groups.length > 3 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F4F1E8', borderRadius: 12, padding: '9px 12px', marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, opacity: .6 }}>🔍</span>
+                  <input value={groupQ} onChange={(e) => setGroupQ(e.target.value)} placeholder="دوّر على جروب…"
+                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 13.5, fontWeight: 600, color: '#14231E', fontFamily: 'inherit' }} />
+                  {groupQ && <button onClick={() => setGroupQ('')} aria-label="مسح البحث" style={{ border: 'none', background: 'transparent', color: '#8A9690', fontSize: 15, cursor: 'pointer', lineHeight: 1 }}>✕</button>}
+                </div>
+              )}
               {archivedCount > 0 && (
                 <button onClick={() => setShowArchived((v) => !v)} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, background: showArchived ? '#EAE5D9' : '#fff', border: '1px solid #EAE5D9', borderRadius: 14, padding: '10px 12px', marginBottom: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <span style={{ fontSize: 17 }}>🗄️</span>
@@ -962,7 +987,7 @@ export default function TeamPage() {
               )}
               {shown.length === 0 && (
                 <div style={{ textAlign: 'center', color: '#5A6660', fontWeight: 600, marginTop: 40, fontSize: 13.5, lineHeight: 1.9, padding: '0 20px' }}>
-                  {showArchived ? 'الأرشيف فاضي.' : (
+                  {nq ? 'مفيش جروب بالاسم ده — جرّب كلمة تانية.' : showArchived ? 'الأرشيف فاضي.' : (
                     <>لسه مفيش جروبات.<br />اكبس ➕ واعمل جروب لفريقك أو لأصحابك.<br /><br />
                     <span style={{ fontSize: 12, color: '#8A9690' }}>المحادثات الفردية مكانها تاب 💬 محادثات</span></>
                   )}
@@ -977,7 +1002,7 @@ export default function TeamPage() {
                       <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name || 'جروب'}</span>
                       {isMuted(r) && <span title="مكتوم" style={{ fontSize: 12 }}>🔕</span>}
                     </div>
-                    <div style={{ fontSize: 12, color: '#8A9690', fontWeight: 600 }}>جروب</div>
+                    <div style={{ fontSize: 12, color: kindOf(r).color, fontWeight: 700 }}>{kindOf(r).emoji} {kindOf(r).label}</div>
                   </div>
                 </button>
               ))}
