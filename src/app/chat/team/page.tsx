@@ -112,6 +112,9 @@ export default function TeamPage() {
   //    مفيش سماع قبل الإرسال ولا إلغاء، وأي ضغطة غلط = رسالة محرجة
   //    اتبعتت للجروب. دلوقتي: معاينة + تشغيل + إلغاء + إرسال.
   const [voiceDraft, setVoiceDraft] = useState<{ url: string; file: File; secs: number } | null>(null)
+  // 😀 (٢٧ أغسطس ٢٠٢٦) الريأكشنز كانت بالضغط المطوّل بس — إيماءة مخفية
+  //    محدش بيكتشفها لوحده. دلوقتي شريط رد سريع بضغطة واحدة على الرسالة.
+  const [reactBar, setReactBar] = useState<string | null>(null)
   const [recSecs, setRecSecs] = useState(0)
   const recTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const [newMenu, setNewMenu] = useState(false)             // قايمة ➕ في هيدر قايمة المحادثات
@@ -1370,6 +1373,7 @@ export default function TeamPage() {
                 onTouchStart={() => startPress(m)} onTouchEnd={cancelPress} onTouchMove={cancelPress}
                 onMouseDown={() => startPress(m)} onMouseUp={cancelPress} onMouseLeave={cancelPress}
                 onContextMenu={(e) => { e.preventDefault(); setMsgMenu(m) }}
+                onClick={() => setReactBar((v) => (v === m.id ? null : m.id))}
                 style={{ maxWidth: '82%', background: mine ? 'linear-gradient(118deg,#059669,#34D399)' : (marid ? '#FFF7E0' : '#fff'), color: mine ? '#fff' : '#14231E', padding: '10px 14px', borderRadius: mine ? '18px 18px 5px 18px' : '18px 18px 18px 5px', boxShadow: mine ? '0 6px 16px -8px rgba(250, 129, 37,.45)' : '0 1px 2px rgba(20,35,30,.06)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14, fontWeight: 600, lineHeight: 1.65, position: 'relative', userSelect: 'none', WebkitUserSelect: 'none', opacity: m.deleted_at ? 0.75 : 1 }}>
                 {!mine && <div style={{ fontSize: 11, fontWeight: 800, color: marid ? '#B78A12' : '#2FA084', marginBottom: 2 }}>{marid ? '🧞 المارد' : (aliasOf(m.sender_id, m.sender_name) || 'عضو')}</div>}
                 {m.pinned_at && <div style={{ fontSize: 10, fontWeight: 800, color: mine ? '#CDEFE2' : '#B78A12', marginBottom: 3 }}>📌 مثبّتة</div>}
@@ -1464,6 +1468,17 @@ export default function TeamPage() {
                   <button onClick={() => addTask(m)} title="حوّل الرسالة لمهمة" style={{ display: 'block', marginTop: 4, background: 'none', border: 'none', color: mine ? '#CDEFE2' : '#059669', cursor: 'pointer', fontSize: 11, padding: 0, fontWeight: 800, fontFamily: 'inherit' }}>➕ حوّل لمهمة</button>
                 )}
                 </>
+                )}
+                {/* 😀 شريط الرد السريع — ضغطة واحدة على الرسالة */}
+                {reactBar === m.id && !m.deleted_at && (
+                  <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', gap: 2, marginTop: 6, padding: '4px 6px', borderRadius: 999, background: mine ? 'rgba(255,255,255,.16)' : '#F1EEE6', width: 'fit-content', flexWrap: 'wrap' }}>
+                    {QUICK_REACTIONS.map((emo) => (
+                      <button key={emo} onClick={() => { react(m, emo); setReactBar(null) }} title={`رد بـ ${emo}`} aria-label={`رد بـ ${emo}`}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 17, lineHeight: 1, padding: '3px 4px' }}>{emo}</button>
+                    ))}
+                    <button onClick={() => { setMsgMenu(m); setReactBar(null) }} title="خيارات أكتر" aria-label="خيارات أكتر"
+                      style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: '3px 6px', color: mine ? '#CDEFE2' : '#5A6660' }}>⋯</button>
+                  </div>
                 )}
                 {m.reactions && Object.keys(m.reactions).length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
@@ -1615,7 +1630,6 @@ export default function TeamPage() {
             onKeyDown={(e) => e.key === 'Enter' && sendMsg()}
             onFocus={() => { setShowEmoji(false); setShowPlus(false) }}
             placeholder={recording ? 'بسجّل…' : voiceDraft ? 'اسمعها الأول وابعتها…' : 'اكتب رسالتك…'}
-            disabled={!!voiceDraft}
             disabled={!!voiceDraft}
             style={{ flex: 1, minWidth: 0, border: 'none', background: 'transparent', fontSize: 13.5, fontWeight: 500, color: '#14231E', outline: 'none', fontFamily: 'inherit' }}
           />
