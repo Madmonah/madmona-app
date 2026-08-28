@@ -398,7 +398,7 @@ function MenuStep({ services, products, tab, setTab, cart, addToCart, updateQuan
                       <button onClick={() => updateQuantity(item.id, -1)} className="w-7 h-7 rounded-lg bg-white text-[#059669] grid place-items-center">
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="text-sm font-black text-[#059669] min-w-[20px] text-center">{qty}</span>
+                      <span className="text-sm font-black text-[#059669] min-w-[20px] text-center">{Number(qty) || 0}</span>
                       <button onClick={() => updateQuantity(item.id, 1)} className="w-7 h-7 rounded-lg bg-[#34D399] text-[#04352A] grid place-items-center">
                         <Plus className="w-3.5 h-3.5" />
                       </button>

@@ -43,6 +43,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/payroll', label: '💼 المرتبات والعمولات' },
     { href: '/admin/payments', label: '💳 تأكيد التحويلات' },
     { href: '/admin/payouts', label: 'مستحقات الموردين' },
+    { href: '/admin/voice', label: '📞 معمل المكالمات' },
   ] },
 
   // 👥 الموارد البشرية — الفريق وشغله

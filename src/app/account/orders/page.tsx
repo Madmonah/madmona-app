@@ -83,7 +83,7 @@ export default function CustomerOrdersPage() {
         .eq('customer_id', session.user.id)
         .order('created_at', { ascending: false })
 
-      const mapped: OrderSummary[] = (data || []).map((o: {
+      const mapped: OrderSummary[] = ((data || []) as unknown as Array<{
         id: string
         reference_code: string
         order_type: 'food' | 'product'
@@ -94,7 +94,7 @@ export default function CustomerOrdersPage() {
         created_at: string
         supplier: { id: string; business_name: string | null } | null
         items: { id: string }[]
-      }) => ({
+      }>).map((o) => ({
         id: o.id,
         reference_code: o.reference_code,
         order_type: o.order_type,

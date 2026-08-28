@@ -272,7 +272,7 @@ export default function SiteSettingsPage() {
 
     type Row = { key: string; value: string }
     const map: Record<string, string> = {}
-    ;(data || []).forEach((row: Row) => {
+    ;((data || []) as unknown as Row[]).forEach((row: Row) => {
       map[row.key] = row.value || ''
     })
     setSettings(map)
