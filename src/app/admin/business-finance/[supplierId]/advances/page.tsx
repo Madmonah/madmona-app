@@ -15,11 +15,16 @@ const STATUSES = [
   { value: 'repaid', label: 'مسددة',  color: 'bg-[#34D399]/10 text-[#059669]' },
 ]
 const sm = (s: string) => STATUSES.find((x) => x.value === s) || STATUSES[0]
-const emptyForm = { id: null as string | null, person_name: '', project_id: '', amount: '', repaid_amount: '', advance_date: '', reason: '', status: 'open', notes: '' }
+// 💼 (٢٧ أغسطس ٢٠٢٦) محمد: «لما جيت أضيف سلفة مظهرش السلفة دي لمين
+// بالظبط من الموظفين علشان تخصم بعدين من مرتبه».
+// كان اسم نصي حر → مستحيل تتخصم من المرتب. دلوقتي employee_id حقيقي،
+// و person_name بيفضل للسلف لغير الموظفين (صنايعية/موردين).
+const emptyForm = { id: null as string | null, employee_id: '', person_name: '', project_id: '', amount: '', repaid_amount: '', advance_date: '', reason: '', status: 'open', notes: '' }
 
 export default function AdvancesPage({ params }: { params: { supplierId: string } }) {
   const { supplierId } = params
   const [projects, setProjects] = useState<any[]>([])
+  const [employees, setEmployees] = useState<any[]>([])
   const [rows, setRows] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -30,6 +35,8 @@ export default function AdvancesPage({ params }: { params: { supplierId: string 
     setLoading(true)
     const { data: list } = await supabase.from('bz_projects').select('id, name').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setProjects(list || [])
+    const { data: emps } = await supabase.from('business_employees').select('id, full_name, role_ar').eq('supplier_id', supplierId).eq('status', 'active').order('full_name')
+    setEmployees(emps || [])
     const { data } = await supabase.from('bz_advances').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
     setRows(data || [])
     setLoading(false)
@@ -41,13 +48,18 @@ export default function AdvancesPage({ params }: { params: { supplierId: string 
   const openCount = rows.filter((r) => r.status === 'open').length
 
   function openAdd() { setForm({ ...emptyForm }); setShowForm(true) }
-  function openEdit(r: any) { setForm({ id: r.id, person_name: r.person_name || '', project_id: r.project_id || '', amount: String(r.amount ?? ''), repaid_amount: String(r.repaid_amount ?? ''), advance_date: r.advance_date || '', reason: r.reason || '', status: r.status || 'open', notes: r.notes || '' }); setShowForm(true) }
+  function openEdit(r: any) { setForm({ id: r.id, employee_id: r.employee_id || '', person_name: r.person_name || '', project_id: r.project_id || '', amount: String(r.amount ?? ''), repaid_amount: String(r.repaid_amount ?? ''), advance_date: r.advance_date || '', reason: r.reason || '', status: r.status || 'open', notes: r.notes || '' }); setShowForm(true) }
 
   async function save() {
-    if (!form.person_name.trim()) { alert('اكتب اسم الشخص'); return }
+    if (!form.employee_id && !form.person_name.trim()) { alert('اختار الموظف أو اكتب اسم الشخص'); return }
     setSaving(true)
     const payload: any = {
-      supplier_id: supplierId, project_id: form.project_id || null, person_name: form.person_name.trim(),
+      supplier_id: supplierId, project_id: form.project_id || null,
+      employee_id: form.employee_id || null,
+      // لو موظف متختار، بنخزّن اسمه كمان عشان الجداول القديمة والتقارير
+      person_name: form.employee_id
+        ? (employees.find((e) => e.id === form.employee_id)?.full_name || form.person_name.trim())
+        : form.person_name.trim(),
       amount: num(form.amount), repaid_amount: num(form.repaid_amount),
       advance_date: form.advance_date || null, reason: form.reason.trim() || null,
       status: form.status, notes: form.notes.trim() || null,
@@ -124,7 +136,20 @@ export default function AdvancesPage({ params }: { params: { supplierId: string 
       {showForm && (
         <Modal title={form.id ? 'تعديل سلفة' : 'سلفة جديدة'} onClose={() => setShowForm(false)} onSave={save} saving={saving} saveLabel={form.id ? 'حفظ' : 'إضافة'}>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="الاسم *"><input value={form.person_name} onChange={(e) => setForm({ ...form, person_name: e.target.value })} className={inputCls} /></Field>
+            <Field label="الموظف *">
+                <select value={form.employee_id} onChange={(e) => setForm({ ...form, employee_id: e.target.value, person_name: '' })} className={inputCls}>
+                  <option value="">— شخص من بره (مش موظف) —</option>
+                  {employees.map((e) => <option key={e.id} value={e.id}>{e.full_name}{e.role_ar ? ' · ' + e.role_ar : ''}</option>)}
+                </select>
+                <p className="text-[11px] text-gray-500 mt-1">
+                  {form.employee_id
+                    ? '✅ السلفة دي هتتخصم تلقائيًا من مرتب الموظف ده.'
+                    : '⚠️ من غير اختيار موظف، السلفة مش هتتخصم من أي مرتب.'}
+                </p>
+              </Field>
+              {!form.employee_id && (
+                <Field label="اسم الشخص (من بره) *"><input value={form.person_name} onChange={(e) => setForm({ ...form, person_name: e.target.value })} className={inputCls} placeholder="صنايعي · مورد · إلخ" /></Field>
+              )}
             <Field label="المشروع"><select value={form.project_id} onChange={(e) => setForm({ ...form, project_id: e.target.value })} className={inputCls}><option value="">عام (بدون مشروع)</option>{projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
           </div>
           <Field label="السبب"><input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} className={inputCls} placeholder="سلفة على الراتب / ظرف طارئ..." /></Field>
