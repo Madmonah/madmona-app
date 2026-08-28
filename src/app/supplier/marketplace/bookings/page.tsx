@@ -109,7 +109,7 @@ export default function SupplierBookingsPage() {
             setStage('no-permission')
             return
           }
-          sup = staff.supplier as typeof sup
+          sup = staff.supplier as unknown as typeof sup
           setIsStaff(true)
           setRoleLabel(staff.role_label)
         }

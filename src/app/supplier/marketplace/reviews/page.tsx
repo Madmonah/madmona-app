@@ -73,7 +73,7 @@ export default function SupplierReviewsPage() {
           .maybeSingle()
 
         if (staff && staff.supplier) {
-          sup = staff.supplier as typeof sup
+          sup = staff.supplier as unknown as typeof sup
           setIsStaff(true)
           setRoleLabel(staff.role_label)
           setCanRespond(!!staff.can_respond_reviews)

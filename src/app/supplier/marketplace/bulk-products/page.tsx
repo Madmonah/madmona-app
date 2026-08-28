@@ -92,7 +92,7 @@ export default function BulkProductsPage() {
         for (const c of (counts || []) as { listing_id: string }[]) {
           map.set(c.listing_id, (map.get(c.listing_id) || 0) + 1)
         }
-        for (const l of nonRest) l.products_count = map.get(l.id) || 0
+        for (const l of nonRest) (l as { products_count?: number }).products_count = map.get(l.id) || 0
       }
 
       setListings(nonRest)

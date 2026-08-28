@@ -48,7 +48,7 @@ export function AgentDirectives() {
       const { data: result, error } = await supabaseBrowser.rpc('get_agent_directives', { p_scope: 'global' })
       if (error) throw error
       setData(result as Directives)
-      setForm(result || {})
+      setForm((result as unknown as Directives) || {})
     } catch (e) {
       console.error('AgentDirectives load error:', e)
     } finally {
@@ -65,7 +65,7 @@ export function AgentDirectives() {
         p_scope: 'global',
         p_current_trend: form.current_trend || undefined,
         p_focus_areas: form.focus_areas || [],
-        p_target_audience: form.target_audience || null,
+        p_target_audience: form.target_audience || undefined,
         p_tips_text: form.tips_text || undefined,
         p_excluded_categories: form.excluded_categories || [],
       })

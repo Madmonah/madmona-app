@@ -118,7 +118,7 @@ export async function PATCH(request: Request) {
   // Pre-deploy bug discovered May 29 2026 — Supabase RPCs match by named arg.
   const { error: rpcError } = await supabase.rpc('set_order_status', {
     p_order_id: id,
-    p_new_status: targetStatus,
+    p_new_status: targetStatus as never,
     p_reason: reasonForCancel ?? undefined,
   })
 

@@ -98,7 +98,7 @@ export default function ClinicDemoPage() {
         })
         if (!alive) return
         if (rpcErr) throw rpcErr
-        setData(snap as Snapshot)
+        setData(snap as unknown as Snapshot)
         setLoading(false)
       } catch (e: unknown) {
         if (!alive) return

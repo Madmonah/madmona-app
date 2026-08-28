@@ -134,7 +134,7 @@ export default function SupplierOrderDetailPage() {
     if (!data) { setStage('not-found'); return }
     if (data.supplier_id !== supId) { setStage('wrong-supplier'); return }
 
-    setOrder(data as OrderFull)
+    setOrder(data as unknown as OrderFull)
     setSupplierNotes(data.supplier_notes || '')
     setStage('ready')
   }, [])
@@ -161,7 +161,7 @@ export default function SupplierOrderDetailPage() {
           .maybeSingle()
         if (staff && staff.supplier) {
           if (!staff.can_manage_bookings) { setStage('no-permission'); return }
-          sup = staff.supplier as typeof sup
+          sup = staff.supplier as unknown as typeof sup
         }
       }
 

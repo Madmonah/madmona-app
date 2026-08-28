@@ -134,7 +134,7 @@ export default function OrderTrackingPage() {
         setLoading(false)
         return
       }
-      setOrder(data as OrderData)
+      setOrder(data as unknown as OrderData)
     } catch (e) {
       console.error('[order/track] load error:', e)
       setError(e instanceof Error ? e.message : t('or.err_unexpected'))

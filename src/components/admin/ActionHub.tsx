@@ -48,7 +48,7 @@ export function ActionHub() {
     try {
       const { data: result, error } = await supabaseBrowser.rpc('get_admin_action_hub')
       if (error) throw error
-      setData(result as ActionHubData)
+      setData(result as unknown as ActionHubData)
     } catch (e) {
       console.error('ActionHub load error:', e)
     } finally {

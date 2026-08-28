@@ -216,7 +216,7 @@ function SupplierMarketplaceContent() {
           .maybeSingle()
 
         if (staff && staff.supplier) {
-          sup = staff.supplier as typeof sup
+          sup = staff.supplier as unknown as typeof sup
           staffPerms = {
             isOwner: false,
             isStaff: true,
