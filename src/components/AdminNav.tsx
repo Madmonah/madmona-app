@@ -44,6 +44,9 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/crm', label: 'الأرقام والتوزيع' },
     { href: '/admin/staff', label: 'الموظفين' },
     { href: '/admin/flow-tasks', label: 'كل التاسكات' },
+    { href: '/admin/task-review', label: '✅ مراجعة التاسكات' },
+    { href: '/admin/payroll', label: '💼 المرتبات والعمولات' },
+    { href: '/admin/commissions', label: '💰 عمولات مضمونة' },
   ] },
   { title: 'الماركت بليس', icon: ShoppingBag, items: [
     { href: '/admin/listings', label: 'الإعلانات' },
@@ -56,8 +59,6 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
     { href: '/admin/marketplace-orders', label: 'الطلبات' },
     { href: '/admin/payments', label: '💳 تأكيد التحويلات' },
-    { href: '/admin/payroll', label: '💼 اقتراح المرتبات' },
-    { href: '/admin/task-review', label: '✅ مراجعة التاسكات' },
     { href: '/admin/payouts', label: 'المدفوعات' },
     { href: '/admin/projects', label: 'المشاريع' },
     { href: '/admin/projects-media', label: 'ميديا المشاريع' },
