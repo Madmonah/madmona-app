@@ -32,7 +32,6 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/insights', label: 'رؤى وتحليلات' },
     { href: '/admin/ceo-briefs', label: 'تقارير الإدارة' },
     { href: '/admin/strategy', label: 'الاستراتيجية' },
-    { href: '/admin/overview', label: 'كل الأدوات (فهرس)' },
   ] },
 
   // 💼 ERP — كل الفلوس والموارد البشرية في مكان واحد

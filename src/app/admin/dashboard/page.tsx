@@ -28,6 +28,95 @@ const NUM = 'var(--font-inter), system-ui, sans-serif'
 const PALETTE = ['#059669', '#2FA084', '#D4A017', '#6FCF97', '#34D399', '#B8861A', '#CBD6D0', '#175C4F', '#E9C45A']
 const AR_MONTHS = ['ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون', 'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس']
 
+
+/* 🗂️ فهرس كل أدوات الأدمن — نفس تقسيم القايمة الجانبية بالظبط
+   عشان اللي بيدور يلاقي في نفس المكان اللي متعوّد عليه. */
+const ALL_TOOLS: { title: string; items: { href: string; label: string }[] }[] = [
+  { title: '🎯 القيادة', items: [
+    { href: '/admin/command-center', label: 'غرفة العمليات' },
+    { href: '/admin/insights', label: 'رؤى وتحليلات' },
+    { href: '/admin/ceo-briefs', label: 'تقارير الإدارة' },
+    { href: '/admin/strategy', label: 'الاستراتيجية' },
+    { href: '/admin/hq', label: 'المقر (HQ)' },
+  ] },
+  { title: '💼 إدارة مضمونة (ERP)', items: [
+    { href: '/admin/company', label: 'بيانات الشركة' },
+    { href: '/admin/commissions', label: '💰 العمولات' },
+    { href: '/admin/payroll', label: '💼 المرتبات والعمولات' },
+    { href: '/admin/payments', label: '💳 تأكيد التحويلات' },
+    { href: '/admin/payouts', label: 'مستحقات الموردين' },
+  ] },
+  { title: '👥 الموارد البشرية', items: [
+    { href: '/admin/staff', label: 'الموظفين' },
+    { href: '/admin/crm', label: 'الأرقام والتوزيع' },
+    { href: '/admin/flow-tasks', label: 'كل التاسكات' },
+    { href: '/admin/task-review', label: '✅ مراجعة التاسكات' },
+    { href: '/admin/crm/scripts', label: 'اسكريبتات المكالمات' },
+    { href: '/admin/permissions', label: 'الصلاحيات' },
+  ] },
+  { title: '⚙️ التشغيل', items: [
+    { href: '/admin/alerts', label: '🚨 التنبيهات' },
+    { href: '/admin/fraud-alerts', label: '🛡️ تنبيهات الاحتيال' },
+    { href: '/admin/qc-reports', label: 'تقارير الجودة' },
+    { href: '/admin/activity', label: 'سجل النشاط' },
+    { href: '/admin/agent-health', label: 'صحة الوكلاء' },
+    { href: '/admin/agent-runs', label: 'تشغيل الوكلاء' },
+    { href: '/admin/policy-rules', label: 'قواعد السياسات' },
+    { href: '/admin/runbook', label: 'دليل التشغيل' },
+  ] },
+  { title: '🛍️ الماركت بليس', items: [
+    { href: '/admin/listings', label: 'الإعلانات' },
+    { href: '/admin/drafts', label: 'الإعلانات الواقفة' },
+    { href: '/admin/listing-drafts', label: 'المسودّات' },
+    { href: '/admin/reattribute', label: 'نقل الملكية' },
+    { href: '/admin/categories', label: 'الفئات' },
+    { href: '/admin/marketplace-orders', label: 'الطلبات' },
+    { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
+    { href: '/admin/listing-performance', label: 'أداء الإعلانات' },
+    { href: '/admin/projects', label: 'المشاريع' },
+    { href: '/admin/projects/inquiries', label: 'استفسارات المشاريع' },
+  ] },
+  { title: '🏪 الموردين', items: [
+    { href: '/admin/sup', label: 'الموردين' },
+    { href: '/admin/supplier-posts', label: 'منشورات الموردين' },
+    { href: '/admin/photo-audit', label: 'مراجعة الصور' },
+    { href: '/admin/outreach-leads', label: 'موردين محتملين' },
+  ] },
+  { title: '🤝 شركاء B2B', items: [
+    { href: '/admin/business-partners', label: 'الشركاء' },
+    { href: '/admin/leads', label: 'Leads' },
+    { href: '/admin/partnerships', label: 'الشراكات' },
+  ] },
+  { title: '📣 ماركتنج', items: [
+    { href: '/admin/marketing-hq', label: 'مقر الماركتنج' },
+    { href: '/admin/ad-creatives', label: 'كرياتيف الإعلانات' },
+    { href: '/admin/sponsorships', label: 'الرعايات' },
+    { href: '/admin/funnel', label: 'قمع التحويل' },
+    { href: '/admin/traffic', label: 'الزيارات' },
+    { href: '/admin/demand-forecast', label: 'توقّع الطلب' },
+  ] },
+  { title: '🧞 AI / المارد', items: [
+    { href: '/admin/orchestrator', label: 'تحكم الكرونات' },
+    { href: '/admin/ai-assistant', label: 'المساعد الذكي' },
+    { href: '/admin/marid', label: 'المارد' },
+    { href: '/admin/marid-monitor', label: 'مراقبة المارد' },
+  ] },
+  { title: '💬 واتساب والرسائل', items: [
+    { href: '/admin/wa-queue', label: 'طابور الإرسال' },
+    { href: '/admin/wa-send', label: 'ابعت واتساب' },
+    { href: '/admin/wa-numbers', label: 'أرقام واتساب' },
+    { href: '/admin/wa-review', label: 'مراجعة واتساب' },
+    { href: '/admin/notifications', label: 'الإشعارات' },
+  ] },
+  { title: '⚙️ النظام', items: [
+    { href: '/admin/site-settings', label: 'إعدادات الموقع' },
+    { href: '/admin/email-templates', label: 'قوالب الإيميل' },
+    { href: '/admin/subscriptions', label: 'الاشتراكات' },
+    { href: '/admin/wallets', label: 'المحافظ' },
+    { href: '/admin/jobs', label: 'الوظائف' },
+  ] },
+]
+
 function monthAr(m: string) {
   const idx = parseInt((m || '').split('-')[1] || '1', 10) - 1
   return AR_MONTHS[idx] || ''
@@ -478,7 +567,31 @@ export default function AdminOverview() {
               </div>
             </section>
 
-            <footer>
+    
+        {/* 🗂️ (٢٨/٨) كل الأدوات — الأوفرفيو اتدمجت هنا */}
+        <section style={{ marginTop: 28 }}>
+          <h2 style={{ fontSize: 15, fontWeight: 900, color: '#14231E', marginBottom: 4 }}>كل الأدوات</h2>
+          <p style={{ fontSize: 12, color: '#8A9690', marginBottom: 14 }}>
+            كل شاشات الأدمن مقسّمة زي القايمة الجانبية بالظبط.
+          </p>
+          {ALL_TOOLS.map((sec) => (
+            <div key={sec.title} style={{ marginBottom: 16 }}>
+              <h3 style={{ fontSize: 12.5, fontWeight: 800, color: '#5A6660', marginBottom: 7 }}>{sec.title}</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(165px, 1fr))', gap: 7 }}>
+                {sec.items.map((it) => (
+                  <Link key={it.href} href={it.href}
+                    style={{ display: 'block', background: '#fff', border: '1px solid rgba(0,0,0,.07)',
+                      borderRadius: 12, padding: '10px 12px', fontSize: 12.5, fontWeight: 700,
+                      color: '#14231E', textDecoration: 'none' }}>
+                    {it.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <footer>
               <span><span className="sl">مضمونة</span> — احنا بتوع الإيجار · لوحة التحكم</span>
               <span>{demo ? 'عرض تجريبي · أرقام للعرض فقط' : 'بيانات حيّة من قاعدة البيانات'}</span>
             </footer>
