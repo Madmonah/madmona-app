@@ -190,11 +190,11 @@ function SupplierMarketplaceContent() {
 
       const userId = session.user.id
 
-      // First, try as owner
+      // 🏛️ (٢٨/٨) مصدر واحد — v_business بتجمع الجدولين في صف واحد
       let { data: sup } = await supabaseBrowser
-        .from('marketplace_suppliers')
-        .select('id, business_name, logo_url, kyc_status, kyc_rejection_reason')
-        .eq('profile_id', userId)
+        .from('v_business')
+        .select('id, business_name, logo_url, kyc_status, tracks')
+        .eq('owner_id', userId)
         .maybeSingle()
 
       let isOwner = !!sup
@@ -241,8 +241,8 @@ function SupplierMarketplaceContent() {
         const fallback = await resolveListingAccess(null)
         if (fallback.allowed && fallback.supplierId) {
           const { data: fsup } = await supabaseBrowser
-            .from('marketplace_suppliers')
-            .select('id, business_name, logo_url, kyc_status, kyc_rejection_reason')
+            .from('v_business')
+            .select('id, business_name, logo_url, kyc_status, tracks')
             .eq('id', fallback.supplierId).maybeSingle()
           if (fsup) {
             sup = fsup as unknown as typeof sup
