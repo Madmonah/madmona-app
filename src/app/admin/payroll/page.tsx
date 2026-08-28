@@ -18,6 +18,12 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env
 const money = (n: unknown) => Number(n || 0).toLocaleString('ar-EG', { maximumFractionDigits: 2 })
 const pct = (n: unknown) => `${Number(n || 0).toFixed(1)}%`
 
+type Attr = {
+  employee_id: string; full_name: string; role_ar: string | null
+  listings_added: number; orders_sold: number
+  commission_earned: number; commission_pending: number
+}
+
 type Row = {
   employee_id: string; full_name: string; department: string | null; base_salary: number
   expected_hours: number; actual_hours: number; attendance_pct: number; base_after_attendance: number
@@ -35,6 +41,7 @@ export default function PayrollPage() {
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
+  const [attr, setAttr] = useState<Attr[]>([])
 
   async function load() {
     setLoading(true); setErr(null)
@@ -43,6 +50,10 @@ export default function PayrollPage() {
     } as never)
     if (error) setErr(error.message)
     setRows((data as Row[]) || [])
+    // 📊 الإسناد: مين ضاف كام إعلان وباع كام أوردر — للتأكد إن التسجيل شغّال
+    const { data: a } = await supabase.from('v_employee_attribution')
+      .select('*').eq('supplier_id', MADMONA)
+    setAttr((a as Attr[]) || [])
     setLoading(false)
   }
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [year, month])
@@ -141,6 +152,37 @@ export default function PayrollPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* 📊 لوحة الإسناد — بتوضّح لو التسجيل مش شغّال */}
+          <div className="mt-5">
+            <h2 className="text-sm font-black text-gray-900 mb-2">📊 الإسناد — مين ضاف ومين باع</h2>
+            {attr.every((a) => !a.listings_added && !a.orders_sold) ? (
+              <div className="rounded-xl bg-amber-50 text-amber-900 text-xs font-bold p-3">
+                ⚠️ مفيش أي إعلان أو أوردر متسجّل عليه موظف لحد دلوقتي — يعني العمولة مش
+                هتتحسب لحد ما الفريق يبدأ يدخّل من حسابه هو. لو الإعلانات بتتضاف من
+                المورد نفسه، ده طبيعي ومفيش عمولة إضافة عليها.
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+                <table className="w-full text-xs">
+                  <thead className="bg-[#F5F4F0] text-gray-600">
+                    <tr><Th>الموظف</Th><Th>إعلانات ضافها</Th><Th>أوردرات باعها</Th><Th>عمولة مستحقة</Th><Th>لسه ما اتحصّلتش</Th></tr>
+                  </thead>
+                  <tbody>
+                    {attr.filter((a) => a.listings_added || a.orders_sold || Number(a.commission_earned)).map((a) => (
+                      <tr key={a.employee_id} className="border-t border-gray-100">
+                        <td className="px-2.5 py-2.5 font-bold text-gray-900">{a.full_name}</td>
+                        <td className="px-2.5 py-2.5 tabular">{a.listings_added}</td>
+                        <td className="px-2.5 py-2.5 tabular">{a.orders_sold}</td>
+                        <td className="px-2.5 py-2.5 tabular text-[#059669] font-bold">{money(a.commission_earned)}</td>
+                        <td className="px-2.5 py-2.5 tabular text-gray-400">{money(a.commission_pending)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           <p className="text-[11px] text-gray-400 mt-3 leading-relaxed">

@@ -164,6 +164,10 @@ export async function POST(req: NextRequest) {
       status: body.status || 'draft',
       ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null,
       user_agent: req.headers.get('user-agent') || null,
+      // 💼 (٢٧ أغسطس ٢٠٢٦) الموظف اللي دخّل المسودة — بينتقل للإعلان وقت
+      //     النشر وبيبقى أساس حصة «الإضافة» في العمولة (١٠٪ من ربح مضمونة).
+      //     null = المورد ضاف بنفسه، فمفيش عمولة إضافة.
+      created_by_employee_id: body.created_by_employee_id || null,
     };
 
     // Title is required at DB level — fall back to a placeholder for in-progress drafts

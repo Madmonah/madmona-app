@@ -310,6 +310,21 @@ function AddListingPageInner({
 
   const [step, setStep] = useState<Step>(1);
   const [draft, setDraft] = useState<DraftPayload>({ source: 'whatsapp_link' });
+  // 💼 (٢٧ أغسطس ٢٠٢٦) إسناد العمولة: لما موظف يدخّل إعلان نيابة عن مورد،
+  //     بنسجّل مين هو عشان ياخد حصة «الإضافة» (١٠٪ من ربح مضمونة ÷ ٢).
+  //     🔒 بيتاخد من **جلسة الموظف** مش من اختيار يدوي — عشان محدش ينسب
+  //        لنفسه شغل غيره.
+  const [staffEmployeeId, setStaffEmployeeId] = useState<string | null>(null);
+  useEffect(() => {
+    if (draft.utm_source !== 'crm') return;
+    (async () => {
+      try {
+        const r = await fetch('/api/me/employee', { cache: 'no-store' });
+        const j = await r.json();
+        if (j?.employee_id) setStaffEmployeeId(j.employee_id);
+      } catch { /* بدون إسناد — الإعلان بيتحفظ عادي */ }
+    })();
+  }, [draft.utm_source]);
   const [showBulkExcel, setShowBulkExcel] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -498,7 +513,10 @@ function AddListingPageInner({
   async function persist(patch: Partial<DraftPayload>): Promise<string | null> {
     setSaving(true);
     try {
-      const body = { ...draft, ...patch, current_step: step };
+      const body: Record<string, unknown> = { ...draft, ...patch, current_step: step };
+      // 💼 (٢٧ أغسطس ٢٠٢٦) إسناد الإضافة للموظف — بس لو ده إدخال من الفريق
+      //     (utm_source=crm). المورد اللي بيضيف بنفسه مفيش عمولة إضافة عليه.
+      if (staffEmployeeId) body.created_by_employee_id = staffEmployeeId;
       const res = await fetch('/api/listing-drafts' + (token ? `?token=${token}` : ''), {
         method: token ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
