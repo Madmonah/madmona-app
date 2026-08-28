@@ -25,65 +25,100 @@ import {
 const MADMONA_ERP = '/admin/business-finance/c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
 
 const NAV: { title: string; icon: typeof Menu; items: { href: string; label: string }[] }[] = [
+  // 🎯 القيادة — الصورة الكبيرة وأرقام القرار
   { title: 'القيادة', icon: LayoutDashboard, items: [
     { href: '/admin/dashboard', label: 'لوحة القيادة' },
-    { href: '/admin/overview', label: 'كل الأدوات' },
-    { href: '/admin/company', label: 'الشركة' },
-    { href: '/admin/permissions', label: 'الصلاحيات' },
     { href: '/admin/command-center', label: 'غرفة العمليات' },
-    { href: '/admin/hq', label: 'المقر (HQ)' },
     { href: '/admin/insights', label: 'رؤى وتحليلات' },
-    { href: '/admin/funnel', label: 'قمع التحويل' },
-    { href: '/admin/traffic', label: 'الزيارات' },
-    { href: '/admin/listing-performance', label: 'أداء الإعلانات' },
     { href: '/admin/ceo-briefs', label: 'تقارير الإدارة' },
     { href: '/admin/strategy', label: 'الاستراتيجية' },
+    { href: '/admin/overview', label: 'كل الأدوات (فهرس)' },
   ] },
+
+  // 💼 ERP — كل الفلوس والموارد البشرية في مكان واحد
+  //    (كانت متفرقة بين «الماركت بليس» و«CRM» ومحمد مالقاهاش)
   { title: 'إدارة مضمونة (ERP)', icon: Wallet, items: [
     { href: MADMONA_ERP, label: 'الإدارة الكاملة' },
+    { href: '/admin/company', label: 'بيانات الشركة' },
     { href: '/admin/commissions', label: '💰 العمولات' },
     { href: '/admin/payroll', label: '💼 المرتبات والعمولات' },
     { href: '/admin/payments', label: '💳 تأكيد التحويلات' },
     { href: '/admin/payouts', label: 'مستحقات الموردين' },
   ] },
-  { title: 'شركاء B2B', icon: Building2, items: [
-    { href: '/admin/business-partners', label: 'الشركاء' },
-    { href: '/admin/leads', label: 'Leads' },
-  ] },
-  // 📇 (٢١ أغسطس ٢٠٢٦) تتبّع شغل الفريق — محمد: «عايزين نعمل نظام يعمل تراك
-  //    لموظفين مضمونة … الليد يتوزّع عليهم … وكله يكون ظاهر».
-  { title: 'فريق مضمونة (CRM)', icon: Headphones, items: [
-    { href: '/admin/crm', label: 'الأرقام والتوزيع' },
-    { href: '/admin/crm/scripts', label: 'اسكريبتات المكالمات' },
+
+  // 👥 الموارد البشرية — الفريق وشغله
+  { title: 'الموارد البشرية', icon: Headphones, items: [
     { href: '/admin/staff', label: 'الموظفين' },
+    { href: '/admin/crm', label: 'الأرقام والتوزيع' },
     { href: '/admin/flow-tasks', label: 'كل التاسكات' },
     { href: '/admin/task-review', label: '✅ مراجعة التاسكات' },
+    { href: '/admin/crm/scripts', label: 'اسكريبتات المكالمات' },
+    { href: '/admin/permissions', label: 'الصلاحيات' },
   ] },
+
+  // ⚙️ التشغيل — المراقبة والجودة والأمان
+  { title: 'التشغيل', icon: Settings, items: [
+    { href: '/admin/alerts', label: '🚨 التنبيهات' },
+    { href: '/admin/fraud-alerts', label: '🛡️ تنبيهات الاحتيال' },
+    { href: '/admin/qc-reports', label: 'تقارير الجودة' },
+    { href: '/admin/activity', label: 'سجل النشاط' },
+    { href: '/admin/agent-health', label: 'صحة الوكلاء' },
+    { href: '/admin/agent-runs', label: 'تشغيل الوكلاء' },
+    { href: '/admin/policy-rules', label: 'قواعد السياسات' },
+    { href: '/admin/runbook', label: 'دليل التشغيل' },
+  ] },
+
+  // 🛍️ الماركت بليس
   { title: 'الماركت بليس', icon: ShoppingBag, items: [
     { href: '/admin/listings', label: 'الإعلانات' },
-    // ⏸️ (٢١ أغسطس ٢٠٢٦) شاشة «الإعلانات الواقفة» — مسودة · موقوف · مرفوض
-    //    وليه واقف. كانت مبنية ومش موصولة بأي تنقّل.
     { href: '/admin/drafts', label: 'الإعلانات الواقفة' },
     { href: '/admin/listing-drafts', label: 'المسودّات' },
     { href: '/admin/reattribute', label: 'نقل ملكية الإعلانات' },
     { href: '/admin/categories', label: 'الفئات' },
-    { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
     { href: '/admin/marketplace-orders', label: 'الطلبات' },
+    { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
+    { href: '/admin/listing-performance', label: 'أداء الإعلانات' },
     { href: '/admin/projects', label: 'المشاريع' },
     { href: '/admin/projects-media', label: 'ميديا المشاريع' },
     { href: '/admin/projects/inquiries', label: 'استفسارات المشاريع' },
   ] },
+
+  // 🏪 الموردين
   { title: 'الموردين', icon: Users, items: [
     { href: '/admin/sup', label: 'الموردين' },
     { href: '/admin/supplier-posts', label: 'منشورات الموردين' },
     { href: '/admin/photo-audit', label: 'مراجعة الصور' },
     { href: '/admin/outreach-leads', label: 'موردين محتملين' },
   ] },
+
+  // 🤝 شركاء B2B
+  { title: 'شركاء B2B', icon: Building2, items: [
+    { href: '/admin/business-partners', label: 'الشركاء' },
+    { href: '/admin/leads', label: 'Leads' },
+    { href: '/admin/partnerships', label: 'الشراكات' },
+  ] },
+
+  // 📣 ماركتنج
+  { title: 'ماركتنج', icon: Megaphone, items: [
+    { href: '/admin/news', label: 'الأخبار' },
+    { href: '/admin/social-groups', label: 'الجروبات' },
+    { href: '/admin/social-packs', label: 'الباقات' },
+    { href: '/admin/reels', label: 'الريلز' },
+    { href: '/admin/collaborations', label: 'التعاونات' },
+    { href: '/admin/ad-review', label: 'مراجعة الإعلانات' },
+    { href: '/admin/ad-builder', label: 'منشئ الإعلانات' },
+    { href: '/admin/marketing-hq', label: 'مقر الماركتنج' },
+    { href: '/admin/ad-creatives', label: 'كرياتيف الإعلانات' },
+    { href: '/admin/sponsorships', label: 'الرعايات' },
+    { href: '/admin/funnel', label: 'قمع التحويل' },
+    { href: '/admin/traffic', label: 'الزيارات' },
+    { href: '/admin/demand-forecast', label: 'توقّع الطلب' },
+  ] },
+
   { title: 'AI / المارد', icon: Bot, items: [
     { href: '/admin/orchestrator', label: 'تحكم الكرونات 🧞' },
     { href: '/admin/ai-assistant', label: 'المساعد الذكي' },
     { href: '/admin/ai-os', label: 'AI OS' },
-    { href: '/admin/agent-health', label: 'صحة الوكلاء' },
     { href: '/admin/pipelines', label: 'Pipelines' },
     { href: '/admin/prompt-versions', label: 'Prompts' },
     { href: '/admin/marid', label: 'المارد' },
@@ -101,28 +136,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/welcome-messages', label: 'رسائل الترحيب' },
     { href: '/admin/notifications', label: 'الإشعارات' },
   ] },
-  { title: 'ماركتنج', icon: Megaphone, items: [
-    { href: '/admin/marketing-hq', label: 'مقر الماركتنج' },
-    { href: '/admin/ad-creatives', label: 'كرياتيف الإعلانات' },
-    { href: '/admin/sponsorships', label: 'الرعايات' },
-    { href: '/admin/partnerships', label: 'الشراكات' },
-    { href: '/admin/demand-forecast', label: 'توقّع الطلب' },
-    { href: '/admin/news', label: 'الأخبار' },
-    { href: '/admin/social-groups', label: 'الجروبات' },
-    { href: '/admin/social-packs', label: 'الباقات' },
-    { href: '/admin/reels', label: 'الريلز' },
-    { href: '/admin/collaborations', label: 'التعاونات' },
-    { href: '/admin/ad-review', label: 'مراجعة الإعلانات' },
-    { href: '/admin/ad-builder', label: 'منشئ الإعلانات' },
-  ] },
   { title: 'النظام', icon: Settings, items: [
-    { href: '/admin/alerts', label: '🚨 التنبيهات' },
-    { href: '/admin/fraud-alerts', label: '🛡️ تنبيهات الاحتيال' },
-    { href: '/admin/activity', label: 'سجل النشاط' },
-    { href: '/admin/agent-runs', label: 'تشغيل الوكلاء' },
-    { href: '/admin/qc-reports', label: 'تقارير الجودة' },
-    { href: '/admin/policy-rules', label: 'قواعد السياسات' },
-    { href: '/admin/runbook', label: 'دليل التشغيل' },
     { href: '/admin/site-settings', label: 'إعدادات الموقع' },
     { href: '/admin/email-queue', label: 'طابور الإيميل' },
     { href: '/admin/email-templates', label: 'قوالب الإيميل' },
