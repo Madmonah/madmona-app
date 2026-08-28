@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { canEditListings } from '@/lib/listing-edit-access'
 import {
   ArrowRight, Loader2, AlertCircle, Plus, Edit3, Trash2, ToggleLeft, ToggleRight,
   ChefHat, Image as ImageIcon, X, CheckCircle, GripVertical, FileSpreadsheet,
@@ -111,26 +112,10 @@ export default function SupplierMenuPage() {
         return
       }
 
-      // Ownership check: either supplier owner OR staff with can_manage_listings
-      const { data: ownerSup } = await supabaseBrowser
-        .from('marketplace_suppliers')
-        .select('id')
-        .eq('profile_id', session.user.id)
-        .eq('id', l.supplier_id)
-        .maybeSingle()
-
-      let allowed = !!ownerSup
-      if (!allowed) {
-        const { data: staff } = await supabaseBrowser
-          .from('supplier_staff')
-          .select('can_manage_listings, supplier_id')
-          .eq('profile_id', session.user.id)
-          .eq('supplier_id', l.supplier_id)
-          .eq('is_active', true)
-          .maybeSingle()
-        if (staff?.can_manage_listings) allowed = true
-      }
-
+      // 🔓 (٢٨/٨) الفحص من الداتابيز — نفس الدالة اللي الـRLS بتستخدمها.
+      //    القديم كان بيسأل supplier_staff بس، وموظف مضمونة صلاحياته في
+      //    business_employees فماكانش بيلاقي له صف ويتقفل في وشّه.
+      const allowed = await canEditListings(l.supplier_id)
       if (!allowed) { setStage('no-permission'); return }
 
       setListing({ id: l.id, title: l.title, supplier_id: l.supplier_id, track })

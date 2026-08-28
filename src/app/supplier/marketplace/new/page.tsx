@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { resolveListingAccess } from '@/lib/listing-edit-access'
 import ListingForm from '@/components/marketplace/ListingForm'
 import {
   ArrowRight, Loader2, AlertCircle, Lock, Users, ShieldCheck, Building2, ChevronDown, Clock,
@@ -106,37 +107,23 @@ export default function NewListingPage() {
       }
       setUserId(session.user.id)
 
-      // Owner check
-      let { data: sup } = await supabaseBrowser
-        .from('marketplace_suppliers')
-        .select('id, kyc_status')
-        .eq('profile_id', session.user.id)
-        .maybeSingle()
-
-      if (sup) {
-        setMode('owner')
-      } else {
-        // 3. Staff check
-        const { data: staff } = await supabaseBrowser
-          .from('supplier_staff')
-          .select(`
-            role_label, can_manage_listings,
-            supplier:marketplace_suppliers(id, kyc_status)
-          `)
-          .eq('profile_id', session.user.id)
-          .eq('is_active', true)
-          .eq('can_view', true)
+      // 🔓 (٢٨/٨) الصلاحية بتتسأل من الداتابيز — نفس دالة الـRLS.
+      //    القديم كان بيسأل supplier_staff بشرط can_view زيادة، وموظف
+      //    مضمونة صلاحياته في business_employees فكان بيتقفل في وشّه.
+      const access = await resolveListingAccess()
+      let sup: { id: string; kyc_status: string } | null = null
+      if (access.allowed && access.supplierId) {
+        const { data: srow } = await supabaseBrowser
+          .from('marketplace_suppliers')
+          .select('id, kyc_status')
+          .eq('id', access.supplierId)
           .maybeSingle()
-
-        if (staff && staff.supplier) {
-          if (!staff.can_manage_listings) {
-            setStage('no-permission')
-            return
-          }
-          sup = staff.supplier as typeof sup
-          setMode('staff')
-          setRoleLabel(staff.role_label)
-        }
+        sup = (srow as { id: string; kyc_status: string } | null) ?? null
+        setMode(access.mode === 'owner' ? 'owner' : 'staff')
+        setRoleLabel(access.roleLabel)
+      } else if (access.supplierId) {
+        setStage('no-permission')
+        return
       }
 
       if (!sup) {
