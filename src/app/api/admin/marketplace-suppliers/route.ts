@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     if (!VALID_STATUSES.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
-    query = query.eq('kyc_status', status)
+    query = query.eq('kyc_status', status as never)
   }
 
   const { data, error } = await query.limit(500)
@@ -128,7 +128,7 @@ export async function PATCH(request: Request) {
 
   const { error } = await supabaseAdmin
     .from('marketplace_suppliers')
-    .update(update)
+    .update(update as never)
     .eq('id', id)
 
   if (error) {

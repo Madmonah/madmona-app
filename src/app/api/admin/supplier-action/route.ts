@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('marketplace_suppliers')
-    .update(updateData)
+    .update(updateData as never)
     .eq('id', body.supplier_id)
     .select('id, business_name, kyc_status')
     .single()

@@ -229,7 +229,7 @@ function BookingDetailContent() {
     // Single roundtrip: UPDATE + return enriched row via .select()
     const { data: refreshed, error: updateErr } = await supabaseBrowser
       .from('marketplace_bookings')
-      .update(update)
+      .update(update as never)
       .eq('id', booking.id)
       .select(`
         *,

@@ -215,7 +215,7 @@ export default function SupplierProductsPage() {
       }
       const { data, error } = await supabaseBrowser.rpc('supplier_bulk_import_products', {
         p_listing_id: listingId,
-        p_items: [item],
+        p_items: [item] as never,
       })
       if (error) throw error
       const res = data as { ok: boolean; errors: { error: string }[] }

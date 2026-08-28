@@ -101,7 +101,7 @@ export default function SupplierBookingsPage() {
       .order('created_at', { ascending: false })
 
     if (currentFilter !== 'all') {
-      query = query.eq('status', currentFilter)
+      query = query.eq('status', currentFilter as never)
     }
 
     const { data } = await query

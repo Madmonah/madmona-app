@@ -246,52 +246,52 @@ export default function OperationsHub({
       {modal === 'walk_in_booking' && (
         <WalkInBookingModal
           supplierId={supplierId} branches={branches} services={services} employees={employees}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'tip' && isSalon && (
         <TipModal supplierId={supplierId} branches={branches} employees={employees}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'withdrawal' && (
         <WithdrawalModal supplierId={supplierId} branches={branches} employees={employees}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'advance' && (
         <AdvanceModal employees={employees}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'bill_pay' && (
         <BillPayModal bills={bills}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'purchase' && (
         <PurchaseModal supplierId={supplierId} items={items} vendors={vendors}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)}
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)}
           onAddItem={() => setModal('add_item')} onAddVendor={() => setModal('add_vendor')} />
       )}
       {modal === 'transfer' && (
         <TransferModal supplierId={supplierId} items={items} branches={branches}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'consumption' && (
         <ConsumptionModal supplierId={supplierId} items={items} branches={branches}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'pay_salary' && (
         <PaySalaryModal employees={employees} isElite={isSalon}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'add_service' && (
         <AddServiceModal supplierId={supplierId}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'add_item' && (
         <AddItemModal supplierId={supplierId}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
       {modal === 'add_vendor' && (
         <AddVendorModal supplierId={supplierId}
-          onClose={() => setModal(null)} onSaved={(msg) => onSaved(msg)} />
+          onClose={() => setModal(null)} onSaved={(msg: string) => onSaved(msg)} />
       )}
     </div>
   )

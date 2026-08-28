@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     .limit(500)
 
   if (statusFilter) {
-    query = query.eq('status', statusFilter)
+    query = query.eq('status', statusFilter as never)
   }
 
   const { data, error } = await query

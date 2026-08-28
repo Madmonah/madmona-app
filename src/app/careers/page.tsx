@@ -111,11 +111,11 @@ export default function CareersPage() {
         p_email: email.trim() || undefined,
         p_position: position,
         p_city: city.trim() || undefined,
-        p_experience_years: experience ? parseInt(experience, 10) : null,
+        p_experience_years: experience ? parseInt(experience, 10) : undefined,
         p_why_join: whyJoin.trim() || undefined,
         p_cv_url: cvUrl.trim() || undefined,
-        p_last_salary_egp: lastSalary ? parseInt(lastSalary, 10) : null,
-        p_expected_salary_egp: expectedSalary ? parseInt(expectedSalary, 10) : null,
+        p_last_salary_egp: lastSalary ? parseInt(lastSalary, 10) : undefined,
+        p_expected_salary_egp: expectedSalary ? parseInt(expectedSalary, 10) : undefined,
       })
 
       if (rpcErr) throw rpcErr

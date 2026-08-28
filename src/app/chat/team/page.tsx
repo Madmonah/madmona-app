@@ -352,7 +352,7 @@ export default function TeamPage() {
 
   async function muteRoom(r: Room, hours: number | null) {
     setMenuOpen(false)
-    const { error } = await supabaseBrowser.rpc('chat_room_mute', { p_room: r.id, p_hours: hours })
+    const { error } = await supabaseBrowser.rpc('chat_room_mute', { p_room: r.id, p_hours: hours ?? undefined })
     if (error) { setToast('الكتم مش راضي'); setTimeout(() => setToast(''), 2500); return }
     const val = hours === null ? 'infinity' : (hours <= 0 ? null : new Date(Date.now() + hours * 3600_000).toISOString())
     setRooms((list) => list.map((x) => (x.id === r.id ? { ...x, mutedUntil: val } : x)))
