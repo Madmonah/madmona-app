@@ -57,6 +57,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/marketplace-orders', label: 'الطلبات' },
     { href: '/admin/payments', label: '💳 تأكيد التحويلات' },
     { href: '/admin/payroll', label: '💼 اقتراح المرتبات' },
+    { href: '/admin/task-review', label: '✅ مراجعة التاسكات' },
     { href: '/admin/payouts', label: 'المدفوعات' },
     { href: '/admin/projects', label: 'المشاريع' },
     { href: '/admin/projects-media', label: 'ميديا المشاريع' },
