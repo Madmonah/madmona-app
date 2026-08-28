@@ -30,9 +30,21 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/overview', label: 'كل الأدوات' },
     { href: '/admin/company', label: 'الشركة' },
     { href: '/admin/permissions', label: 'الصلاحيات' },
+    { href: '/admin/command-center', label: 'غرفة العمليات' },
+    { href: '/admin/hq', label: 'المقر (HQ)' },
+    { href: '/admin/insights', label: 'رؤى وتحليلات' },
+    { href: '/admin/funnel', label: 'قمع التحويل' },
+    { href: '/admin/traffic', label: 'الزيارات' },
+    { href: '/admin/listing-performance', label: 'أداء الإعلانات' },
+    { href: '/admin/ceo-briefs', label: 'تقارير الإدارة' },
+    { href: '/admin/strategy', label: 'الاستراتيجية' },
   ] },
   { title: 'إدارة مضمونة (ERP)', icon: Wallet, items: [
     { href: MADMONA_ERP, label: 'الإدارة الكاملة' },
+    { href: '/admin/commissions', label: '💰 العمولات' },
+    { href: '/admin/payroll', label: '💼 المرتبات والعمولات' },
+    { href: '/admin/payments', label: '💳 تأكيد التحويلات' },
+    { href: '/admin/payouts', label: 'مستحقات الموردين' },
   ] },
   { title: 'شركاء B2B', icon: Building2, items: [
     { href: '/admin/business-partners', label: 'الشركاء' },
@@ -42,11 +54,10 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
   //    لموظفين مضمونة … الليد يتوزّع عليهم … وكله يكون ظاهر».
   { title: 'فريق مضمونة (CRM)', icon: Headphones, items: [
     { href: '/admin/crm', label: 'الأرقام والتوزيع' },
+    { href: '/admin/crm/scripts', label: 'اسكريبتات المكالمات' },
     { href: '/admin/staff', label: 'الموظفين' },
     { href: '/admin/flow-tasks', label: 'كل التاسكات' },
     { href: '/admin/task-review', label: '✅ مراجعة التاسكات' },
-    { href: '/admin/payroll', label: '💼 المرتبات والعمولات' },
-    { href: '/admin/commissions', label: '💰 عمولات مضمونة' },
   ] },
   { title: 'الماركت بليس', icon: ShoppingBag, items: [
     { href: '/admin/listings', label: 'الإعلانات' },
@@ -58,14 +69,15 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/categories', label: 'الفئات' },
     { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
     { href: '/admin/marketplace-orders', label: 'الطلبات' },
-    { href: '/admin/payments', label: '💳 تأكيد التحويلات' },
-    { href: '/admin/payouts', label: 'المدفوعات' },
     { href: '/admin/projects', label: 'المشاريع' },
     { href: '/admin/projects-media', label: 'ميديا المشاريع' },
+    { href: '/admin/projects/inquiries', label: 'استفسارات المشاريع' },
   ] },
   { title: 'الموردين', icon: Users, items: [
     { href: '/admin/sup', label: 'الموردين' },
     { href: '/admin/supplier-posts', label: 'منشورات الموردين' },
+    { href: '/admin/photo-audit', label: 'مراجعة الصور' },
+    { href: '/admin/outreach-leads', label: 'موردين محتملين' },
   ] },
   { title: 'AI / المارد', icon: Bot, items: [
     { href: '/admin/orchestrator', label: 'تحكم الكرونات 🧞' },
@@ -78,6 +90,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/marid-monitor', label: 'مراقبة المارد' },
   ] },
   { title: 'واتساب والرسائل', icon: MessageSquare, items: [
+    { href: '/admin/wa-queue', label: 'طابور الإرسال' },
     // 🔗 (١٥ أغسطس ٢٠٢٦) الشاشتين دول كانوا مبنيين وشغّالين ومش موصولين
     //    بأي تنقّل — الطريقة الوحيدة توصلهم كانت إنك تكتب اللينك بإيدك.
     { href: '/admin/send', label: 'ابعت واتساب' },
@@ -89,6 +102,11 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/notifications', label: 'الإشعارات' },
   ] },
   { title: 'ماركتنج', icon: Megaphone, items: [
+    { href: '/admin/marketing-hq', label: 'مقر الماركتنج' },
+    { href: '/admin/ad-creatives', label: 'كرياتيف الإعلانات' },
+    { href: '/admin/sponsorships', label: 'الرعايات' },
+    { href: '/admin/partnerships', label: 'الشراكات' },
+    { href: '/admin/demand-forecast', label: 'توقّع الطلب' },
     { href: '/admin/news', label: 'الأخبار' },
     { href: '/admin/social-groups', label: 'الجروبات' },
     { href: '/admin/social-packs', label: 'الباقات' },
@@ -98,6 +116,13 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/ad-builder', label: 'منشئ الإعلانات' },
   ] },
   { title: 'النظام', icon: Settings, items: [
+    { href: '/admin/alerts', label: '🚨 التنبيهات' },
+    { href: '/admin/fraud-alerts', label: '🛡️ تنبيهات الاحتيال' },
+    { href: '/admin/activity', label: 'سجل النشاط' },
+    { href: '/admin/agent-runs', label: 'تشغيل الوكلاء' },
+    { href: '/admin/qc-reports', label: 'تقارير الجودة' },
+    { href: '/admin/policy-rules', label: 'قواعد السياسات' },
+    { href: '/admin/runbook', label: 'دليل التشغيل' },
     { href: '/admin/site-settings', label: 'إعدادات الموقع' },
     { href: '/admin/email-queue', label: 'طابور الإيميل' },
     { href: '/admin/email-templates', label: 'قوالب الإيميل' },
