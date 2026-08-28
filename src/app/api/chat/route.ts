@@ -49,7 +49,9 @@ async function ensureAccount(phone20: string, fullName: string | null) {
     const { data: created, error } = await admin.auth.admin.createUser({
       email,
       email_confirm: true,
-      user_metadata: { phone: local, full_name: fullName || undefined, via: 'chat' },
+      // 🔒 (٢٨/٨) الصيغة الدولية في كل حتة — الصيغة المحلية كانت بتعمل
+    //    حساب تاني لنفس الشخص لو سجّل عادي بعد كده.
+    user_metadata: { phone: phone20, full_name: fullName || undefined, via: 'chat' },
     })
     let userId = created?.user?.id
     if (error && /already|exists/i.test(error.message)) {
@@ -61,7 +63,7 @@ async function ensureAccount(phone20: string, fullName: string | null) {
     if (!userId) return
     await admin
       .from('profiles')
-      .upsert({ id: userId, phone: local, full_name: fullName, role: 'customer' } as never, { onConflict: 'id' })
+      .upsert({ id: userId, phone: phone20, full_name: fullName, role: 'customer' } as never, { onConflict: 'id' })
   } catch {
     /* best-effort — مايوقفش الرد */
   }

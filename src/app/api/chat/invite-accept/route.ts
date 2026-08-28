@@ -60,7 +60,7 @@ async function ensureProfile(
   const { data: created, error: createErr } = await sb.auth.admin.createUser({
     email,
     email_confirm: true,
-    user_metadata: { phone: local, via: 'chat_invite' },
+    user_metadata: { phone: phone20, via: 'chat_invite' },
   })
 
   let userId = created?.user?.id || null

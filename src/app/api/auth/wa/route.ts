@@ -152,7 +152,8 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
     const { data: prof } = await sb.from('profiles').select('id, phone, full_name').eq('id', userId).maybeSingle()
     if (!prof) {
       await sb.from('profiles').insert({
-        id: userId, phone: local, full_name: displayName, role: 'customer',
+        // 🔒 (٢٨/٨) الصيغة الدولية — المحلية كانت بتعمل حساب مكرر
+        id: userId, phone: normalized || local, full_name: displayName, role: 'customer',
       } as never)
     } else {
       // بنكمّل الناقص بس — عمرنا ما ندهس اسم أو رقم العميل كتبه بنفسه.

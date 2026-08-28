@@ -133,7 +133,7 @@ async function ensureProfile(supa: ReturnType<typeof sb>, rawPhone: string) {
 
   const email = phoneToEmail(normalized)
   const { data: created, error } = await supa.auth.admin.createUser({
-    email, email_confirm: true, user_metadata: { phone: local, via: 'auto-publish' },
+    email, email_confirm: true, user_metadata: { phone: normalized, via: 'auto-publish' },
   })
   let userId = created?.user?.id
   if (error && /already|exists/i.test(error.message)) {
@@ -141,7 +141,8 @@ async function ensureProfile(supa: ReturnType<typeof sb>, rawPhone: string) {
     userId = link?.user?.id
   } else if (error) return null
   if (!userId) return null
-  await supa.from('profiles').upsert({ id: userId, phone: local, role: 'customer' } as never, { onConflict: 'id' })
+  // 🔒 (٢٨/٨) الصيغة الدولية عشان مايتعملش حساب مكرر لنفس المورد
+  await supa.from('profiles').upsert({ id: userId, phone: normalized, role: 'customer' } as never, { onConflict: 'id' })
   return { id: userId, local }
 }
 
