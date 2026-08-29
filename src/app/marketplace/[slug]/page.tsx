@@ -335,7 +335,35 @@ export default function ListingDetailPage() {
             .eq('listing_id', l.id)
             .eq('is_available', true)
             .order('display_order', { ascending: true })
-          setMartProducts(((mp || []) as MartProduct[]).map((p) => ({ ...p, price: Number(p.price), compare_at_price: p.compare_at_price != null ? Number(p.compare_at_price) : null })))
+          const martRows = ((mp || []) as MartProduct[]).map((p) => ({ ...p, price: Number(p.price), compare_at_price: p.compare_at_price != null ? Number(p.compare_at_price) : null }))
+
+          // 🔗 (٢٨/٨) خدمات البيزنس — كانت مخفية تمامًا عن العميل
+          let serviceRows: MartProduct[] = []
+          if (l.supplier_id) {
+            const { data: sv } = await supabaseBrowser
+              .from('services_catalog')
+              .select('id, name_ar, name_en, description, price_egp, duration_minutes, category, status')
+              .eq('supplier_id', l.supplier_id)
+              .eq('status', 'active')
+              .order('category', { ascending: true })
+            serviceRows = ((sv || []) as unknown as Array<{
+              id: string; name_ar: string; name_en: string | null; description: string | null
+              price_egp: number | null; duration_minutes: number | null; category: string | null
+            }>).map((x) => ({
+              id: x.id,
+              name_ar: x.name_ar,
+              name_en: x.name_en,
+              // ⏱️ المدة جزء من قرار العميل — بتظهر مع الوصف
+              description_ar: [x.description, x.duration_minutes ? `المدة: ${x.duration_minutes} دقيقة` : null]
+                .filter(Boolean).join(' · ') || null,
+              price: Number(x.price_egp || 0),
+              compare_at_price: null,
+              unit: null, brand: null,
+              category: x.category,
+              photo_url: null, in_stock: true, display_order: 0,
+            })) as unknown as MartProduct[]
+          }
+          setMartProducts([...martRows, ...serviceRows])
         }
       } catch (e) {
         console.error('[listing/detail] load error:', e)
