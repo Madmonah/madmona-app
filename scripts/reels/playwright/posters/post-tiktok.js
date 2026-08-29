@@ -141,24 +141,42 @@ async function main() {
     }
   }
 
+  // 💾 نحفظ درافت بدل ما نسيب الصفحة وفيها زرار Post جاهز.
+  // ليه (٢٩/٨/٢٠٢٦): أول تشغيل الفيديو اتنشر فعلًا وهو صامت — وتيك توك
+  // **مابيسمحش تغيّر الصوت بعد النشر** (الإجراء الوحيد للبوست المنشور
+  // هو Analytics). يعني نشر بالغلط = الفيديو محروق ولازم يتمسح ويترفع
+  // تاني. الدرافت بيخلّي الحالة الافتراضية آمنة.
+  let saved = false
+  const draftBtn = page.locator('button:has-text("Save draft"), div[role="button"]:has-text("Save draft")').first()
+  if (await draftBtn.count()) {
+    console.log('[tt] saving draft…')
+    await draftBtn.click({ timeout: 15000 }).catch(e => console.log('[tt] ⚠️ الحفظ فشل:', e.message))
+    await page.waitForTimeout(5000)
+    saved = true
+  } else {
+    console.log('[tt] ⚠️ مالقيتش زرار Save draft — سايب الصفحة زي ما هي')
+  }
+
   const shotDir = path.join(__dirname, '..', 'diag', 'post-tiktok')
   fs.mkdirSync(shotDir, { recursive: true })
   const shot = path.join(shotDir, `${Date.now()}.png`)
   await page.screenshot({ path: shot }).catch(() => {})
 
   console.log(`
-[tt] ✅ الفيديو اترفع والكابشن اتكتب.
+[tt] ${saved ? '💾 اتحفظ كدرافت' : '⚠️ ماتحفظش — راجع الصفحة'}
 [tt] 📸 ${shot}
 
-⛔ السكريبت وقف هنا عن قصد — مانشرش حاجة.
+⛔ مانشرش حاجة — ومش هينشر أبدًا. السكريبت ده عمره ما بيدوس Post.
 
-الخطوتين الباقيين بإيدك في التبويبة المفتوحة:
-  ١. اختار الصوت من مكتبة الأصوات في الصفحة
-     (لو الحساب تجاري، خد من Commercial Music Library — غير كده
-      تيك توك ممكن يشيل الصوت من الفيديو)
-  ٢. راجع الكابشن ودوس Post
+⚠️ الصوت لازم يتحط **قبل** النشر. تيك توك مابيسمحش تغيّره بعد كده
+   (الإجراء الوحيد لفيديو منشور هو Analytics) — يعني لو اتنشر صامت،
+   الحل الوحيد إنه يتمسح ويترفع من الأول.
 
-التبويبة سايبة مفتوحة.`)
+افتح الدرافت من TikTok Studio ← Drafts، وبعدين:
+  ١. Edit ← Sounds ← اختار من Royalty-free sounds
+     (الحساب التجاري مقيّد بالمكتبة دي — أي أغنية من بره ممكن تتشال)
+  ٢. راجع الكابشن
+  ٣. دوس Post بإيدك`)
 
   // مابنقفلش الصفحة ولا المتصفح — محمد محتاجها مفتوحة
   await browser.close().catch(() => {})
