@@ -263,6 +263,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   const [furnishedFilter, setFurnishedFilter] = useState<'all' | 'furnished' | 'unfurnished'>('all')
   // 📄 بيجينيشن «حمّل المزيد» — كان محدود بـ60 إعلان بس. بيكبر بـ60 كل ضغطة،
   //    وبيرجع 60 أول ما أي فلتر يتغيّر (تحت). loadSeqRef بيضمن إن آخر ردّ بس هو اللي يتطبّق.
+  // 🧢 (٢٨/٨) حد أقصى للتحميل — من غيره الصفحة كانت بتقع («أوه سناب»)
+  //    لأن كل دفعة بتعيد جلب كل الإعلانات بصورها من الأول.
+  const MAX_VISIBLE = 300
   const [visibleLimit, setVisibleLimit] = useState(60)
   // 🔢 العدد الإجمالي الحقيقي لكل الإعلانات المطابقة (مش المُحمّل) — عشان العدّاد
   //    فوق يقول الرقم الصح (272 مثلًا) مش 60 (عدد أول دفعة).
@@ -439,7 +442,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         `, { count: 'exact' })
         .eq('status', 'published')
         .eq('is_directory', false)
-        .limit(visibleLimit)
+        .limit(Math.min(visibleLimit, MAX_VISIBLE))
 
       if (sortBy === 'rating') {
         query = query.order('rating', { ascending: false, nullsFirst: false })
@@ -507,10 +510,11 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   //    (الزرار موجود كمان كخطة بديلة للأجهزة اللي مابتدعمش IntersectionObserver.)
   useEffect(() => {
     if (listings.length < visibleLimit) return // كله اتحمّل — مفيش أكتر
+    if (visibleLimit >= MAX_VISIBLE) return     // 🧢 وصلنا الحد — بلاش الصفحة تقع
     const el = loadMoreRef.current
     if (!el || typeof IntersectionObserver === 'undefined') return
     const io = new IntersectionObserver(
-      (entries) => { if (entries[0]?.isIntersecting) setVisibleLimit((v) => v + 60) },
+      (entries) => { if (entries[0]?.isIntersecting) setVisibleLimit((v) => Math.min(v + 60, MAX_VISIBLE)) },
       { rootMargin: '600px' }
     )
     io.observe(el)
@@ -1467,16 +1471,26 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
 
           {/* 📄 حمّل المزيد — بيظهر طول ما الصفحة رجعت كاملة (يعني غالبًا فيه أكتر) */}
-          {listings.length >= visibleLimit && (
+          {listings.length >= visibleLimit && visibleLimit < MAX_VISIBLE && (
             <div ref={loadMoreRef} className="mt-8 text-center">
               <button
-                onClick={() => setVisibleLimit((v) => v + 60)}
+                onClick={() => setVisibleLimit((v) => Math.min(v + 60, MAX_VISIBLE))}
                 disabled={loading}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#059669] border border-[#059669]/30 rounded-2xl text-sm font-bold shadow-soft hover:shadow-card hover:-translate-y-0.5 transition-all disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 {loading ? t('common.loading') : t('market.load_more')}
               </button>
+            </div>
+          )}
+
+          {/* 🧢 (٢٨/٨) وصلنا الحد — نوجّه العميل للفلاتر بدل ما الصفحة تقع */}
+          {visibleLimit >= MAX_VISIBLE && listings.length >= MAX_VISIBLE && (
+            <div className="mt-8 text-center px-4">
+              <p className="text-sm font-bold text-gray-700">وصلت لآخر {MAX_VISIBLE} إعلان</p>
+              <p className="text-xs text-gray-500 mt-1">
+                استخدم البحث أو الفلاتر عشان توصل للي انت عايزه بسرعة.
+              </p>
             </div>
           )}
           </>
