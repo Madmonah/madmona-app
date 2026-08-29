@@ -22,24 +22,36 @@ const LOGO = 'data:image/png;base64,' +
 
 const esc = s => String(s == null ? '' : s)
 
+// خلفية صورة لأي مشهد: بتتحوّل data URI عشان الملف يفضل مستقل
+const BG = {}
+function bgUri(name) {
+  if (!name) return null
+  if (!BG[name]) {
+    const p = path.join(__dirname, 'bg', name)
+    BG[name] = 'data:image/jpeg;base64,' + fs.readFileSync(p).toString('base64')
+  }
+  return BG[name]
+}
+
 // ---------------------------------------------------------------- scenes
 function renderScene(sc, i, t) {
-  const cls = `sc s${i}`
+  const cls = `sc s${i}${sc.bg ? ' has-bg' : ''}`
+  const bg = sc.bg ? `<span class="bgimg"><img src="${bgUri(sc.bg)}" alt=""></span>` : ''
   switch (sc.type) {
     case 'chat':
-      return `<div class="${cls} chat">
+      return `<div class="${cls} chat">${bg}
 ${sc.bubbles.map(b => `    <div class="bub ${b.who}">${esc(b.text)}</div>`).join('\n')}
 ${sc.ask ? `    <div class="ask">${esc(sc.ask)}</div>` : ''}
   </div>`
 
     case 'big':
-      return `<div class="${cls} mid-c">
+      return `<div class="${cls} mid-c">${bg}
     <p class="big">${esc(sc.text)}${sc.em ? `<em>${esc(sc.em)}</em>` : ''}</p>
 ${sc.note ? `    <p class="note">${esc(sc.note)}</p>` : ''}
   </div>`
 
     case 'parties':
-      return `<div class="${cls} party-sc">
+      return `<div class="${cls} party-sc">${bg}
     <p class="head">${esc(sc.head)}</p>
     <div class="parties">
       <div class="party"><span>${esc(sc.leftIcon || '🏭')}</span>${esc(sc.left)}</div>
@@ -52,7 +64,7 @@ ${sc.foot ? `    <p class="head">${esc(sc.foot)}</p>` : ''}
   </div>`
 
     case 'rows':
-      return `<div class="${cls}">
+      return `<div class="${cls}">${bg}
 ${sc.cap ? `    <p class="cap">${esc(sc.cap)}</p>` : ''}
     <div class="rows">
 ${sc.items.map(it => `      <div class="row ${sc.tone || 'good'}"><span class="tk">${sc.tone === 'bad' ? '✕' : '✓'}</span>${esc(it)}</div>`).join('\n')}
@@ -129,6 +141,18 @@ body{background:var(--ink);display:grid;place-items:center;direction:rtl;overflo
 body.go .sc{animation-name:fade;animation-fill-mode:both;animation-timing-function:cubic-bezier(.3,.8,.3,1)}
 @keyframes fade{0%{opacity:0;transform:translateY(2.6cqw)}8%{opacity:1;transform:none}
                 91%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-1.4cqw)}}
+
+/* خلفية صورة — زووم بطيء والنص فوقها بتدرّج غامق */
+.has-bg{color:#F3F0EC}
+.bgimg{position:absolute;inset:0;overflow:hidden;z-index:0}
+.bgimg img{width:100%;height:100%;object-fit:cover;transform-origin:58% 45%}
+.bgimg::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top, rgba(8,10,9,.92) 0%, rgba(8,10,9,.66) 45%, rgba(8,10,9,.34) 100%)}
+.has-bg > *:not(.bgimg){position:relative;z-index:1}
+.has-bg .big em,.has-bg .head em,.has-bg .cap{color:var(--mint)}
+.has-bg .note{color:#C8CFCB}
+body.go .has-bg .bgimg img{animation:kenburns 15s linear both}
+@keyframes kenburns{from{transform:scale(1.04)}to{transform:scale(1.20)}}
 
 /* chat */
 .chat{justify-content:flex-end;padding-bottom:22cqw}

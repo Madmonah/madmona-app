@@ -128,9 +128,13 @@ async function main() {
   ff.push('-vf', vf, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20')
   if (audioFile) {
     const fadeStart = Math.max(0, durationSec - 2)
-    ff.push('-af', `afade=t=out:st=${fadeStart}:d=2`, '-c:a', 'aac', '-b:a', '192k', '-shortest')
+    // ⚠️ من غير -shortest: لو الصوت أقصر من الفيديو، -shortest بيقص
+    // الفيديو على طول الصوت وبيأكل كارت النهاية. الفيديو هو اللي بيحدد
+    // الطول (إحنا صوّرنا بالظبط عدد الفريمات المطلوب)، و-t بتضمن كده
+    // حتى لو الصوت أطول. (٢٩/٨/٢٠٢٦)
+    ff.push('-af', `afade=t=out:st=${fadeStart}:d=2`, '-c:a', 'aac', '-b:a', '192k')
   }
-  ff.push('-movflags', '+faststart', outMp4)
+  ff.push('-t', String(durationSec), '-movflags', '+faststart', outMp4)
 
   await new Promise((resolve, reject) => {
     const p = spawn(ffmpegPath, ff, { stdio: 'inherit' })
