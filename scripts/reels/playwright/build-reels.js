@@ -151,6 +151,11 @@ body.go .sc{animation-name:fade;animation-fill-mode:both;animation-timing-functi
 .has-bg > *:not(.bgimg){position:relative;z-index:1}
 .has-bg .big em,.has-bg .head em,.has-bg .cap{color:var(--mint)}
 .has-bg .note{color:#C8CFCB}
+/* 🐞 (٢٩/٨) .has-bg بتخلي لون النص فاتح للنص اللي فوق الصورة مباشرة —
+   بس .row و.bub خلفيتهم بيضا، فكان أبيض على أبيض ومش باين خالص.
+   الصفوف والفقاعات بيرجعوا للون الغامق لأن أرضيتهم فاتحة. */
+.has-bg .row,.has-bg .bub.them{color:var(--ink)}
+.has-bg .row{background:rgba(255,255,255,.96);border-color:rgba(255,255,255,.5)}
 body.go .has-bg .bgimg img{animation:kenburns 15s linear both}
 @keyframes kenburns{from{transform:scale(1.04)}to{transform:scale(1.20)}}
 
