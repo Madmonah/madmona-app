@@ -1,5 +1,18 @@
 import { supabaseBrowser } from './supabase-browser'
 
+/** 🔧 v_business لسه مش في الأنواع المولّدة — عميل غير مقيّد للاستعلامات دي */
+type LooseQuery = {
+  from: (t: string) => {
+    select: (c: string) => {
+      eq: (col: string, val: unknown) => {
+        limit: (n: number) => { maybeSingle: () => Promise<{ data: unknown }> }
+        maybeSingle: () => Promise<{ data: unknown }>
+      }
+    }
+  }
+}
+const db = supabaseBrowser as unknown as LooseQuery
+
 /* ============================================================================
    business-access — باب واحد للسؤال: أنا مين، وأقدر أعمل إيه؟
    ============================================================================
@@ -88,7 +101,7 @@ export async function resolveBusiness(preferId?: string | null): Promise<Busines
   }
 
   // ② بيزنس اليوزر كمالك
-  const { data: owned } = await supabaseBrowser
+  const { data: owned } = await db
     .from('v_business').select('*').eq('owner_id', uid).limit(1).maybeSingle()
   if (owned) {
     return { business: owned as unknown as Business, mode: 'owner', roleLabel: null, canEdit: true }
@@ -130,6 +143,6 @@ export async function canEditBusiness(businessId: string): Promise<boolean> {
 }
 
 async function fetchBusiness(id: string): Promise<Business | null> {
-  const { data } = await supabaseBrowser.from('v_business').select('*').eq('id', id).maybeSingle()
+  const { data } = await db.from('v_business').select('*').eq('id', id).maybeSingle()
   return (data as unknown as Business) ?? null
 }
