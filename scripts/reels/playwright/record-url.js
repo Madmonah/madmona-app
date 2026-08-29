@@ -82,18 +82,36 @@ async function main() {
   }).catch(() => false)
   console.log(replayed
     ? '[url] __replay() اتنادت — الأنيميشن من الثانية صفر'
-    : '[url] ⚠️ الصفحة مافيهاش __replay() — التسجيل هيبدأ من نص الأنيميشن')
+    : '[url] ⚠️ الصفحة مافيهاش __replay()')
+
+  // 🔑 الخطو بالفريم (٢٩/٨/٢٠٢٦):
+  // captureScreenshot بياخد أكتر من 40ms للفريم، فلو سيبنا الأنيميشن
+  // ماشي بالساعة الحقيقية بيخلص وإحنا لسه بنصوّر — الفيديو بيطلع
+  // مستعجل وآخره فريمات فاضية. الحل: نوقّف كل الأنيميشنز ونحرّكها
+  // إحنا لكل فريم، فالنتيجة مظبوطة مهما كان التصوير بطيء.
+  await page.evaluate(() => {
+    window.__seek = function (ms) {
+      document.getAnimations().forEach(function (a) {
+        try { a.pause(); a.currentTime = ms } catch (e) {}
+      })
+    }
+  })
+  console.log('[url] وضع الخطو بالفريم شغّال — التوقيت مش معتمد على سرعة التصوير')
 
   console.log(`[url] capturing ${totalFrames} frames @ ${FPS} fps for ${durationSec}s…`)
   const t0 = Date.now()
   for (let i = 0; i < totalFrames; i++) {
-    const target = t0 + i * intervalMs
-    const wait = target - Date.now()
-    if (wait > 0) await new Promise(r => setTimeout(r, wait))
     try {
-      const { data } = await client.send('Page.captureScreenshot', {
-        format: 'jpeg', quality: 90, captureBeyondViewport: false,
-      })
+      await page.evaluate(ms => window.__seek && window.__seek(ms), i * intervalMs)
+      // تايم-أوت لكل فريم: captureScreenshot بيعلّق للأبد لو نافذة كروم
+      // اتغطّت أو اتصغّرت (الرندرر بيبطّل يرسم) — من غير السباق ده
+      // التسجيل بيقف ساكت في نص الطريق. (٢٩/٨/٢٠٢٦)
+      const { data } = await Promise.race([
+        client.send('Page.captureScreenshot', {
+          format: 'jpeg', quality: 90, captureBeyondViewport: false,
+        }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('capture timeout')), 4000)),
+      ])
       fs.writeFileSync(path.join(FRAMES_DIR, `f${String(i).padStart(6, '0')}.jpg`), Buffer.from(data, 'base64'))
       if (i % 25 === 0) process.stdout.write('.')
     } catch (e) {

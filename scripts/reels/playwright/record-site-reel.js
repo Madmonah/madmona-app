@@ -277,9 +277,15 @@ async function main() {
     const wait = target - Date.now()
     if (wait > 0) await new Promise(r => setTimeout(r, wait))
     try {
-      const { data } = await client.send('Page.captureScreenshot', {
-        format: 'jpeg', quality: 90, captureBeyondViewport: false,
-      })
+      // تايم-أوت لكل فريم: captureScreenshot بيعلّق للأبد لو نافذة كروم
+      // اتغطّت أو اتصغّرت (الرندرر بيبطّل يرسم) — من غير السباق ده
+      // التسجيل بيقف ساكت في نص الطريق. (٢٩/٨/٢٠٢٦)
+      const { data } = await Promise.race([
+        client.send('Page.captureScreenshot', {
+          format: 'jpeg', quality: 90, captureBeyondViewport: false,
+        }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('capture timeout')), 4000)),
+      ])
       fs.writeFileSync(path.join(FRAMES_DIR, `f${String(i).padStart(6, '0')}.jpg`), Buffer.from(data, 'base64'))
       if (i % 25 === 0) process.stdout.write('.')
     } catch (e) {
