@@ -212,7 +212,9 @@ async function main() {
   const args = process.argv.slice(2)
   const audioIdx = args.indexOf('--audio')
   const audioFile = audioIdx > -1 ? args[audioIdx + 1] : null
-  const positional = args.filter((a, i) => i !== audioIdx && i !== audioIdx + 1)
+  const positional = audioIdx > -1
+    ? args.filter((a, i) => i !== audioIdx && i !== audioIdx + 1)
+    : args
 
   const slug = positional[0]
   const durationSec = Number(positional[1] || 24)
