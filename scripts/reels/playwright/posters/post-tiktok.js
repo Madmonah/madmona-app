@@ -116,28 +116,52 @@ async function main() {
   // كل الكليكات — لازم تتقفل الأول وإلا الكتابة في الكابشن مابتوصلش.
   await dismissTour(page)
 
-  // الكابشن — نمسح اللي تيك توك بيحطه (اسم الملف) وبعدين نكتب
+  // الكابشن — بمحاولات وتحقق بعد كل واحدة.
+  // 🐞 (٢٩/٨) أول مرة الكابشن طلع **فاضي تمامًا**: الكليك على المحرر
+  //    مابيضمنش إن الفوكس راح له فعلًا، فـinsertText بيروح في الفراغ.
+  //    الحل: نتأكد من document.activeElement قبل الكتابة، ونتحقق من
+  //    النتيجة بعدها، ونعيد لحد ٣ مرات.
   if (caption && await editor.count()) {
-    console.log('[tt] writing caption…')
-    await editor.click()
-    await page.keyboard.press('Control+A')
-    await page.keyboard.press('Backspace')
-    // ⚠️ ممنوع keyboard.type هنا. محرر تيك توك (DraftJS) مع العربي RTL
-    // بيقلب ترتيب الحروف لما تتكتب واحد واحد — أول تجربة طلعت
-    // «مابنخصممش من لالبايع» و«مضمونة سفي النص». insertText بيدخّل
-    // النص مرة واحدة كحدث beforeinput فالترتيب بيفضل سليم. (٢٩/٨/٢٠٢٦)
-    await page.keyboard.insertText(caption)
-    await page.waitForTimeout(1200)
-
-    // تحقق: نقرا اللي اتكتب فعلًا ونقارنه
-    const got = (await editor.innerText().catch(() => '')).replace(/\s+/g, ' ').trim()
     const want = caption.replace(/\s+/g, ' ').trim()
-    if (got === want) {
-      console.log('[tt] ✅ الكابشن اتكتب مظبوط (اتقارن حرف بحرف)')
-    } else {
-      console.log('[tt] ⚠️ الكابشن اللي في الصفحة مش مطابق — راجعه بنفسك قبل النشر')
-      console.log('[tt]    المطلوب:', want.slice(0, 90))
-      console.log('[tt]    الموجود:', got.slice(0, 90))
+    let ok = false
+
+    for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
+      console.log(`[tt] writing caption… (محاولة ${attempt})`)
+
+      // نودّي الفوكس للمحرر من جوّه الصفحة — أضمن من الكليك
+      const focused = await page.evaluate(() => {
+        const el = document.querySelector('div[contenteditable="true"]')
+        if (!el) return false
+        el.focus()
+        const r = document.createRange(); r.selectNodeContents(el)
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r)
+        return document.activeElement === el || el.contains(document.activeElement)
+      }).catch(() => false)
+
+      if (!focused) { await editor.click({ timeout: 8000 }).catch(() => {}) }
+      await page.waitForTimeout(600)
+
+      await page.keyboard.press('Control+A')
+      await page.keyboard.press('Backspace')
+      await page.waitForTimeout(400)
+      await page.keyboard.insertText(caption)
+      await page.waitForTimeout(1800)
+
+      const got = (await editor.innerText().catch(() => '')).replace(/\s+/g, ' ').trim()
+      if (got === want) {
+        ok = true
+        console.log('[tt] ✅ الكابشن اتكتب مظبوط (اتقارن حرف بحرف)')
+      } else if (got && got.length > want.length * 0.6) {
+        ok = true
+        console.log('[tt] ⚠️ الكابشن اتكتب بس مش مطابق ١٠٠٪ — راجعه قبل النشر')
+        console.log('[tt]    الموجود:', got.slice(0, 80))
+      } else {
+        console.log(`[tt] ⚠️ الكابشن فاضي أو ناقص (${got.length} حرف) — بعيد`)
+      }
+    }
+
+    if (!ok) {
+      console.log('[tt] ❌ الكابشن مااتكتبش بعد ٣ محاولات — الصقه بإيدك من الكونفيج')
     }
   }
 
