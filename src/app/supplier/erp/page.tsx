@@ -37,12 +37,13 @@ const MODULE_UI: Record<string, { label: string; desc: string; icon: typeof Pack
   reviews:         { label: 'التقييمات', desc: 'آراء العملاء', icon: Star, href: '/supplier/marketplace/reviews' },
   team:            { label: 'الفريق', desc: 'الموظفين وصلاحياتهم', icon: Users, href: '/supplier/team' },
   accounting:      { label: 'الحسابات', desc: 'الإيرادات والمستحقات', icon: Wallet, href: '/supplier/erp/accounting' },
+  crm:             { label: 'عملائي', desc: 'العملاء وتعاملاتهم معاك', icon: Users, href: '/supplier/erp/crm' },
   bulk_products:   { label: 'المنتجات بالجملة', desc: 'إضافة وتعديل منتجات كتير مرة واحدة', icon: Package, href: '/supplier/marketplace/bulk-products' },
   // 🏭 موديول المصنع
   production:      { label: 'أوامر التشغيل', desc: 'الأوامر الجارية ومراحلها', icon: Factory, href: '/supplier/erp/production' },
   materials:       { label: 'الخامات', desc: 'المخزون الخام وحد إعادة الطلب', icon: Boxes, href: '/supplier/erp/materials' },
-  stages:          { label: 'مراحل الإنتاج', desc: 'تتبّع الشغل جوّه المصنع', icon: Workflow, href: '/supplier/erp/production', soon: true },
-  inventory:       { label: 'المخزون', desc: 'الجاهز للبيع', icon: Warehouse, href: '/supplier/erp/materials', soon: true },
+  stages:          { label: 'مراحل الإنتاج', desc: 'تتبّع الشغل جوّه المصنع', icon: Workflow, href: '/supplier/erp/production' },
+  inventory:       { label: 'المخزون', desc: 'الجاهز للبيع', icon: Warehouse, href: '/supplier/erp/materials' },
   // مطعم
   menu:            { label: 'المنيو', desc: 'الأصناف والأسعار', icon: UtensilsCrossed, href: '/supplier/dashboard' },
   tables:          { label: 'الطاولات', desc: 'إدارة الصالة', icon: ClipboardList, href: '/supplier/dashboard', soon: true },
