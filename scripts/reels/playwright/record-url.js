@@ -26,11 +26,20 @@ const CDP_URL = process.env.CDP_URL || 'http://localhost:9222'
 const FPS = 25
 
 async function main() {
-  const url = process.argv[2]
-  const durationSec = Number(process.argv[3] || 24)
+  const args = process.argv.slice(2)
+  const audioIdx = args.indexOf('--audio')
+  const audioFile = audioIdx > -1 ? args[audioIdx + 1] : null
+  const positional = args.filter((a, i) => i !== audioIdx && i !== audioIdx + 1)
+  const url = positional[0]
+  const durationSec = Number(positional[1] || 24)
+
+  if (audioFile && !fs.existsSync(audioFile)) {
+    console.error(`ملف الصوت مش موجود: ${audioFile}`)
+    process.exit(1)
+  }
 
   if (!url) {
-    console.error('الاستخدام: node record-url.js "<URL>" [ثواني]')
+    console.error('الاستخدام: node record-url.js "<URL>" [ثواني] [--audio ملف]')
     process.exit(1)
   }
 
@@ -93,16 +102,18 @@ async function main() {
 
   const outMp4 = path.join(OUTPUT_DIR, `${slug}-${stamp}.mp4`)
   console.log(`[url] ffmpeg → ${outMp4}`)
+  const vf = 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,format=yuv420p'
+  const ff = ['-y', '-framerate', String(FPS), '-i', path.join(FRAMES_DIR, 'f%06d.jpg')]
+  if (audioFile) ff.push('-i', audioFile)
+  ff.push('-vf', vf, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20')
+  if (audioFile) {
+    const fadeStart = Math.max(0, durationSec - 2)
+    ff.push('-af', `afade=t=out:st=${fadeStart}:d=2`, '-c:a', 'aac', '-b:a', '192k', '-shortest')
+  }
+  ff.push('-movflags', '+faststart', outMp4)
+
   await new Promise((resolve, reject) => {
-    const p = spawn(ffmpegPath, [
-      '-y',
-      '-framerate', String(FPS),
-      '-i', path.join(FRAMES_DIR, 'f%06d.jpg'),
-      '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,format=yuv420p',
-      '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20',
-      '-movflags', '+faststart',
-      outMp4,
-    ], { stdio: 'inherit' })
+    const p = spawn(ffmpegPath, ff, { stdio: 'inherit' })
     p.on('exit', c => (c === 0 ? resolve() : reject(new Error(`ffmpeg exit ${c}`))))
   })
 
