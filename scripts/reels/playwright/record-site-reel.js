@@ -2,7 +2,7 @@
 //
 // ليه اتعمل (٢٩/٨/٢٠٢٦): محمد: «عايزين نخليها من صفحة عالنت».
 // التصميم المرسوم مهما اتظبط بيفضل موك-أب. ده بيفتح الإعلان الحقيقي
-// بصوره ومقاسه وسعره واسم المعرض، وبيحط رسالة الحملة فوقه — فاللي
+// بصوره ومقاسه وسعره واسم المصنع، وبيحط رسالة الحملة فوقه — فاللي
 // المشاهد بيشوفه هو الموقع نفسه مش رسمة.
 //
 // الرسالة (قاعدة مقفولة): مضمونة **في النص مش طرف**.
@@ -126,14 +126,14 @@ function overlay(logoUrl) {
   <div class="ly l1">
     <div class="bub them">شوفت الدولاب ده؟</div>
     <div class="bub me">من فين؟</div>
-    <div class="bub them">معرض مش عارفه</div>
+    <div class="bub them">صفحة على النت</div>
     <div class="ask">هي مضمونة؟</div>
   </div>
 
   <div class="ly l2">
     <p class="head">من غير حد <em>في النص</em></p>
     <div class="parties">
-      <div class="party"><span>🏬</span>المعرض</div>
+      <div class="party"><span>🏭</span>المصنع</div>
       <div class="gapx"><i></i>مفيش</div>
       <div class="party"><span>🙋</span>إنت</div>
     </div>
@@ -143,7 +143,7 @@ function overlay(logoUrl) {
   <div class="ly l3">
     <p class="head">إحنا <em>مابنبعش</em>.</p>
     <div class="parties">
-      <div class="party"><span>🏬</span>المعرض</div>
+      <div class="party"><span>🏭</span>المصنع</div>
       <div class="mid"><i></i><span class="mark"><img src="${logoUrl}" alt="مضمونة"></span><b>مضمونة</b></div>
       <div class="party"><span>🙋</span>إنت</div>
     </div>
