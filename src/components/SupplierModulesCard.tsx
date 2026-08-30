@@ -19,7 +19,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   LayoutGrid, Package, Wrench, Store, ShoppingBag, CalendarDays, Star,
   Users, Wallet, Factory, Boxes, UtensilsCrossed, KeyRound, Tag,
-  ClipboardCheck, ShieldCheck, ChevronLeft, Loader2,
+  ClipboardCheck, ShieldCheck, ChevronLeft, Loader2, Building2,
 } from 'lucide-react'
 
 type Mod = { label: string; sub: string; href: string; icon: typeof Package; bg: string }
@@ -27,6 +27,7 @@ type Mod = { label: string; sub: string; href: string; icon: typeof Package; bg:
 /** 🧩 خريطة الموديول → شكله في «حسابي» */
 const MAP: Record<string, Mod> = {
   listings:   { label: 'إعلاناتي', sub: 'كل الإعلانات — إضافة وتعديل', href: '/supplier/marketplace', icon: LayoutGrid, bg: 'bg-[#34D399]/10 text-[#059669]' },
+  projects:   { label: 'مشاريعي', sub: 'مشاريعك في البورصة — السداد والتسليم', href: '/supplier/erp/projects', icon: Building2, bg: 'bg-cyan-50 text-cyan-700' },
   products:   { label: 'منتجاتي', sub: 'المصدر — تعدّل هنا فيتغيّر في الماركت بليس', href: '/supplier/erp/products', icon: Package, bg: 'bg-emerald-50 text-emerald-600' },
   materials:  { label: 'المواد والأدوات', sub: 'مخزونك الداخلي وحد إعادة الطلب', href: '/supplier/erp/materials', icon: Wrench, bg: 'bg-amber-50 text-amber-600' },
   catalog:    { label: 'العرض في الماركت بليس', sub: 'إيه اللي يشوفه العملاء', href: '/supplier/erp/catalog', icon: Store, bg: 'bg-teal-50 text-teal-600' },
@@ -47,7 +48,7 @@ const MAP: Record<string, Mod> = {
 }
 
 /** الترتيب: الأهم يوميًا الأول */
-const ORDER = ['listings', 'products', 'catalog', 'menu', 'orders', 'bookings',
+const ORDER = ['listings', 'projects', 'products', 'catalog', 'menu', 'orders', 'bookings',
   'production', 'materials', 'inventory', 'batches', 'quality_control',
   'units', 'services_catalog', 'crm', 'reviews', 'team', 'accounting']
 

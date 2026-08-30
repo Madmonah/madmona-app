@@ -20,6 +20,7 @@ import {
   Loader2, LayoutGrid, Package, ShoppingCart, CalendarDays, Users, Wallet,
   Star, Store, UtensilsCrossed, KeyRound, Tag, ArrowLeft, Factory, Boxes,
   Workflow, Warehouse, FileText, Wrench, ClipboardList, Percent, AlertCircle,
+  Building2,
 } from 'lucide-react'
 
 type Modules = {
@@ -37,6 +38,7 @@ const MODULE_UI: Record<string, { label: string; desc: string; icon: typeof Pack
   reviews:         { label: 'التقييمات', desc: 'آراء العملاء', icon: Star, href: '/supplier/marketplace/reviews' },
   team:            { label: 'الفريق', desc: 'الموظفين وصلاحياتهم', icon: Users, href: '/supplier/team' },
   accounting:      { label: 'الحسابات', desc: 'الإيرادات والمستحقات', icon: Wallet, href: '/supplier/erp/accounting' },
+  projects:        { label: 'مشاريعي', desc: 'مشاريعك في البورصة — السداد والتسليم', icon: Building2, href: '/supplier/erp/projects' },
   products:        { label: 'منتجاتي', desc: 'المصدر — تعدّل هنا فيتغيّر في الماركت بليس', icon: Package, href: '/supplier/erp/products' },
   catalog:         { label: 'العرض في الماركت بليس', desc: 'إيه اللي يشوفه العملاء وإيه اللي يفضل داخلي', icon: Store, href: '/supplier/erp/catalog' },
   crm:             { label: 'عملائي', desc: 'العملاء وتعاملاتهم معاك', icon: Users, href: '/supplier/erp/crm' },
@@ -57,7 +59,6 @@ const MODULE_UI: Record<string, { label: string; desc: string; icon: typeof Pack
   // خدمات
   services_catalog:{ label: 'الخدمات', desc: 'الخدمات المعروضة وأسعارها', icon: Tag, href: '/supplier/marketplace' },
   schedule:        { label: 'الجدول', desc: 'مواعيد الخدمات', icon: CalendarDays, href: '/supplier/marketplace/bookings' },
-  projects:        { label: 'المشاريع', desc: 'المشاريع الجارية', icon: ClipboardList, href: '/supplier/marketplace', soon: true },
   leads:           { label: 'العملاء المحتملين', desc: 'الاستفسارات', icon: Users, href: '/supplier/marketplace', soon: true },
   promotions:      { label: 'العروض', desc: 'الخصومات والعروض', icon: Percent, href: '/supplier/marketplace', soon: true },
 }
