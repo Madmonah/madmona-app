@@ -12,6 +12,7 @@ import {
   BarChart3, Wallet, UtensilsCrossed, Star, PlusCircle, Users, Smartphone, Mail,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
+import SupplierModulesCard from '@/components/SupplierModulesCard'
 import PushNotificationCard from '@/components/PushNotificationCard'
 import AccountSwitcher from '@/components/AccountSwitcher'
 import MyAssetsCard from '@/components/MyAssetsCard'
@@ -469,89 +470,12 @@ export default function AccountPage() {
           <PushNotificationCard />
         </div>
 
-        {/* Supplier section — shown only if user IS a supplier */}
-        {(isApprovedSupplier || isPendingSupplier || isRejectedSupplier) && (
-          <div className="bg-white rounded-3xl shadow-soft overflow-hidden animate-slide-up delay-200">
-            <div className="px-6 py-3 border-b border-gray-100">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('account.section_supplier')}</p>
-            </div>
-            <SectionLink
-              href="/supplier/marketplace"
-              icon={<Building2 className="w-5 h-5" />}
-              iconBg="bg-[#34D399]/10 text-[#059669]"
-              title={t('account.supplier_dashboard')}
-              subtitle={t('account.supplier_dashboard_sub')}
-            />
-
-            {/* 🍽️ صاحب مطعم → المنيو على طول.
-                ده أكتر تاب بيدخله يوميًا (سعر اتغيّر · صنف خلص)،
-                فماينفعش يلف عليه من جوّه الماركتبليس كل مرة. */}
-            {restaurantListingId && (
-              <>
-                <div className="h-px bg-gray-100 mx-6" />
-                <SectionLink
-                  href={`/supplier/marketplace/${restaurantListingId}/menu`}
-                  icon={<UtensilsCrossed className="w-5 h-5" />}
-                  iconBg="bg-orange-50 text-orange-600"
-                  title="منيو المطعم"
-                  subtitle="الأصناف والأسعار — عدّل أو وقّف صنف"
-                />
-              </>
-            )}
-
-            {/* باقي التابات — كانت كلها موجودة بس محدش بيوصلها
-                غير لو عرف يلف عليها من جوّه الماركتبليس */}
-            <div className="h-px bg-gray-100 mx-6" />
-            <SectionLink
-              href="/supplier/marketplace/orders"
-              icon={<ShoppingBag className="w-5 h-5" />}
-              iconBg="bg-blue-50 text-blue-600"
-              title="الطلبات"
-              subtitle="الطلبات الجديدة والجارية"
-            />
-            <div className="h-px bg-gray-100 mx-6" />
-            <SectionLink
-              href="/supplier/marketplace/bookings"
-              icon={<Calendar className="w-5 h-5" />}
-              iconBg="bg-purple-50 text-purple-600"
-              title="الحجوزات"
-              subtitle="مواعيد عملائك"
-            />
-            <div className="h-px bg-gray-100 mx-6" />
-            <SectionLink
-              href="/supplier/marketplace/reviews"
-              icon={<Star className="w-5 h-5" />}
-              iconBg="bg-amber-50 text-amber-600"
-              title="التقييمات"
-              subtitle="رأي العملاء في شغلك"
-            />
-            <div className="h-px bg-gray-100 mx-6" />
-            {/* (22 يوليو 2026) وحّدنا فورم الإضافة: التاب ده بقى يفتح /add-listing
-                نفسه (الفورم الكامل بخطوة اختيار مسطّحة one-tap + بيلدر المنيو)
-                بدل /supplier/marketplace/new — عشان مفيش فورمين مختلفين يعملوا كونفلكت. */}
-            <SectionLink
-              href="/add-listing"
-              icon={<PlusCircle className="w-5 h-5" />}
-              iconBg="bg-green-50 text-green-600"
-              title="أضف إعلان"
-              subtitle="منتج أو خدمة جديدة"
-            />
-            <div className="h-px bg-gray-100 mx-6" />
-            <SectionLink
-              href="/supplier/team"
-              icon={<Users className="w-5 h-5" />}
-              iconBg="bg-slate-50 text-slate-600"
-              title="الفريق"
-              subtitle="ضيف موظفين يشتغلوا معاك"
-            />
-            <div className="h-px bg-gray-100 mx-6" />
-            <SectionLink
-              href="/supplier/erp/accounting"
-              icon={<BarChart3 className="w-5 h-5" />}
-              iconBg="bg-teal-50 text-teal-600"
-              title="الحسابات"
-              subtitle="مبيعاتك ومستحقاتك"
-            />
+        {/* 🧩 (٢٨/٨) تابات لوحة المورد — بتقرا من business_modules()
+            بدل قايمة ثابتة، فالمورد يشوف تاباته هو حسب نشاطه،
+            والقايمة بتتحدّث لوحدها لما نضيف موديول جديد. */}
+        {supplier && (isApprovedSupplier || isPendingSupplier) && (
+          <div className="animate-slide-up delay-200">
+            <SupplierModulesCard supplierId={supplier.id} />
           </div>
         )}
 
