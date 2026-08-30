@@ -19,6 +19,9 @@ type Prospect = {
   booth_number: string | null; contact_phone: string | null; industry_slug: string | null
   status: string; claim_token: string; sample_products: { name: string; description?: string }[]
   presented_at: string | null; claimed_at: string | null
+  priority_tier: number | null; data_score: number | null
+  brand: { logo?: string; primary?: string } | null
+  description: string | null
 }
 type Industry = { slug: string; name_ar: string }
 
@@ -38,10 +41,12 @@ export default function ProspectsPage() {
   const [productsText, setProductsText] = useState('')
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
+  // 🎯 (٢٨/٨) فلتر الأولوية — الافتراضي الـ٣٨ المهمين
+  const [tier, setTier] = useState<'top' | 'all'>('top')
 
   const db = supabaseBrowser as unknown as {
     from: (t: string) => {
-      select: (c: string) => { order: (c: string, o?: unknown) => Promise<{ data: unknown }> }
+      select: (c: string) => { order: (c: string, o?: unknown) => { order: (c: string, o?: unknown) => Promise<{ data: unknown }> } & Promise<{ data: unknown }> }
       insert: (v: unknown) => Promise<{ error: { message: string } | null }>
       update: (v: unknown) => { eq: (a: string, b: unknown) => Promise<{ error: { message: string } | null }> }
     }
@@ -49,7 +54,7 @@ export default function ProspectsPage() {
 
   const load = useCallback(async () => {
     const [{ data: p }, { data: i }] = await Promise.all([
-      db.from('prospect_businesses').select('*').order('created_at', { ascending: false }),
+      db.from('prospect_businesses').select('*').order('priority_tier').order('data_score', { ascending: false }),
       db.from('industry_profiles').select('slug, name_ar').order('sort_order'),
     ])
     setRows((p as Prospect[]) || [])
@@ -98,7 +103,9 @@ export default function ProspectsPage() {
 
   if (loading) return <div className="py-24 text-center"><Loader2 className="w-7 h-7 animate-spin mx-auto text-gray-400" /></div>
 
-  const shown = q.trim() ? rows.filter((r) => r.business_name.includes(q.trim())) : rows
+  const shown = rows
+    .filter((r) => tier === 'all' || (r.priority_tier ?? 3) <= 2)
+    .filter((r) => !q.trim() || r.business_name.includes(q.trim()))
   const stats = {
     total: rows.length,
     claimed: rows.filter((r) => r.status === 'claimed').length,
@@ -115,6 +122,16 @@ export default function ProspectsPage() {
           className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black flex items-center gap-1.5">
           <Plus className="w-4 h-4" /> شركة جديدة
         </button>
+      </div>
+
+      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
+        {([['top', '🎯 الأولوية'], ['all', 'الكل']] as const).map(([k, l]) => (
+          <button key={k} onClick={() => setTier(k)}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${
+              tier === k ? 'bg-[#04352A] text-white' : 'bg-[#F1EEE6] text-gray-600'}`}>
+            {l}
+          </button>
+        ))}
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
@@ -146,11 +163,19 @@ export default function ProspectsPage() {
             return (
               <div key={r.id} className="rounded-2xl border border-gray-200 bg-white p-3.5">
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="min-w-0">
-                    <p className="font-black text-sm text-gray-900">{r.business_name}</p>
+                  {/* 🎨 (٢٨/٨) لوجو الشركة من موقعها */}
+                  {r.brand?.logo && (
+                    <img src={r.brand.logo} alt="" className="w-9 h-9 rounded-lg object-contain bg-white border border-gray-100 shrink-0"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-black text-sm text-gray-900 flex items-center gap-1.5">
+                      {r.priority_tier === 1 && <span title="أولوية قصوى">🎯</span>}
+                      {r.business_name}
+                    </p>
                     <p className="text-[11px] text-gray-500 mt-0.5">
                       {r.booth_number ? `استاند ${r.booth_number} · ` : ''}
-                      {r.sample_products?.length || 0} منتج
+                      {r.sample_products?.length || 0} منتج · جاهز {r.data_score ?? 0}٪
                       {r.contact_phone ? ` · ${r.contact_phone}` : ''}
                     </p>
                   </div>
