@@ -49,6 +49,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
   // 👥 الموارد البشرية — الفريق وشغله
   { title: 'الموارد البشرية', icon: Headphones, items: [
     { href: '/admin/staff', label: 'الموظفين' },
+    { href: '/admin/employee-portfolio', label: '👤 محفظة كل موظف' },
     { href: '/admin/crm', label: 'الأرقام والتوزيع' },
     { href: '/admin/flow-tasks', label: 'كل التاسكات' },
     { href: '/admin/task-review', label: '✅ مراجعة التاسكات' },
@@ -87,6 +88,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
   { title: 'الموردين', icon: Users, items: [
     { href: '/admin/sup', label: 'الموردين' },
     { href: '/admin/supplier-posts', label: 'منشورات الموردين' },
+    { href: '/admin/supplier-catalog', label: '🛠️ كتالوج الموردين' },
     { href: '/admin/photo-audit', label: 'مراجعة الصور' },
     { href: '/admin/outreach-leads', label: 'موردين محتملين' },
     { href: '/admin/prospects', label: '🎪 تجهيز المعارض' },
