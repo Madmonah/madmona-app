@@ -1252,7 +1252,7 @@ export async function POST(request: NextRequest) {
       // 🔍 الرصيد · الحد · الضغط · الانقطاع — كلها بتتعالج بنفس الطريقة
       console.warn('[marid] الدماغ مش متاح — بنرد من المكتبة:', em.slice(0, 140))
       try {
-        const { data: lib } = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: unknown }>)('marid_offline_reply', { p_text: body.text || '' })
+        const { data: lib } = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: unknown }>)('marid_offline_reply', { p_text: body.text || '', p_phone: phone })
         raw = (typeof lib === 'string' && lib.trim())
           ? JSON.stringify({ reply: lib.trim() })
           : ''
@@ -1397,7 +1397,7 @@ export async function POST(request: NextRequest) {
         //    والمحادثة تكمل. بنعرف السبب من الرسالة عشان التنبيه بس.
         let offlineReply: string | null = null
         try {
-          const { data: lib } = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: unknown }>)('marid_offline_reply', { p_text: body.text || '' })
+          const { data: lib } = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: unknown }>)('marid_offline_reply', { p_text: body.text || '', p_phone: phone })
           if (typeof lib === 'string' && lib.trim()) offlineReply = lib.trim()
         } catch { /* المكتبة نفسها فشلت — تحت فيه رد أخير */ }
 
