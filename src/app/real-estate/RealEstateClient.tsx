@@ -19,6 +19,7 @@ import Link from 'next/link'
 import {
   ShieldCheck, Banknote, Headphones, Building2, KeyRound,
   Sparkles, MessageCircle, CheckCircle2, Users, LayoutDashboard, TrendingUp,
+  MessageSquare,
 } from 'lucide-react'
 import TopNav from '@/components/TopNav'
 
@@ -162,6 +163,29 @@ export default function RealEstateClient() {
             <span className="text-white font-bold text-xl shrink-0">←</span>
           </Link>
         </section>
+
+        {/* 📢 (٢٨ أغسطس ٢٠٢٦) محمد: «تاب في بورصة العقارات اسمه طلبات
+            مفتوحة، أي طلب يتعرض فيه والتواصل عن طريق مضمونة بس». */}
+        <section className="mb-10">
+          <Link
+            href="/real-estate/requests"
+            className="flex items-center justify-between gap-3 bg-[#04352A] rounded-2xl p-5 md:p-6 hover:opacity-95 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center shrink-0">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white">طلبات مفتوحة</h3>
+                <p className="text-sm text-white/80">
+                  عملاء بيدوّروا على وحدات دلوقتي — عندك اللي بيدوّروا عليه؟
+                </p>
+              </div>
+            </div>
+            <span className="text-white font-bold text-xl shrink-0">←</span>
+          </Link>
+        </section>
+
 
         {/* إزاي بتشتغل */}
         <section className="bg-white rounded-2xl border border-gray-100 p-6 md:p-8 mb-10">
