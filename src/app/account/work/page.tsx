@@ -11,6 +11,8 @@ import BottomNav from '@/components/BottomNav'
 import AttendancePulse from '@/components/AttendancePulse'
 import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
 import { useTasksLive, pingTasksChanged } from '@/lib/useTasksLive'
+// 📋 (٢٨/٨) شغلي أنا — الإعلانات والبيزنس اللي الموظف ضافهم بنفسه
+import MyWorkCard from '@/components/MyWorkCard'
 
 /* ============================================================================
    /account/work — «شغلي» — كل الإداريات جوّه الأبليكيشن
@@ -304,6 +306,9 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
           </p>
         </div>
       </div>
+
+      {/* 📋 (٢٨/٨) شغلي أنا — بيخفي نفسه لو الموظف مالوش شغل مسند */}
+      <MyWorkCard />
 
       {/* ⏱️ الحضور والانصراف — للموظف بس (المالك مالوش سجل حضور) */}
       {b.employee_id && (
