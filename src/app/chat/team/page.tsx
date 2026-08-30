@@ -152,6 +152,38 @@ export default function TeamPage() {
   const [showArchived, setShowArchived] = useState(false)
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const QUICK_REACTIONS = ['👍', '❤️', '😂', '😮', '🙏', '🔥']
+
+/* 🔗 (٢٨/٨) بتحوّل الروابط والأرقام في نص الرسالة لعناصر قابلة للضغط.
+   · الروابط تفتح في تاب جديد بـnoreferrer (أمان)
+   · أرقام الموبايل المصرية تفتح الاتصال مباشرة
+   ⚠️ بتشتغل على النص **بعد** التقنيع، فمابتكسرش إخفاء البيانات
+      في الغرف اللي لسه ماتمّش فيها اتفاق. */
+const LINK_RE = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+|\b(?:\+?20|0)1[0125]\d{8}\b)/g
+
+function linkifyText(text: string): React.ReactNode {
+  if (!text || !LINK_RE.test(text)) return text
+  LINK_RE.lastIndex = 0
+  const out: React.ReactNode[] = []
+  let last = 0, m: RegExpExecArray | null, k = 0
+  while ((m = LINK_RE.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index))
+    const tok = m[0]
+    const isPhone = /^(\+?20|0)1[0125]\d{8}$/.test(tok)
+    const href = isPhone ? `tel:${tok}` : (tok.startsWith('http') ? tok : `https://${tok}`)
+    out.push(
+      <a key={`lk${k++}`} href={href}
+        target={isPhone ? undefined : '_blank'}
+        rel={isPhone ? undefined : 'noreferrer noopener'}
+        onClick={(e) => e.stopPropagation()}
+        style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 2, wordBreak: 'break-all' }}>
+        {tok}
+      </a>,
+    )
+    last = m.index + tok.length
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return out
+}
   // ── بحث + منشن ──
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQ, setSearchQ] = useState('')
@@ -187,8 +219,8 @@ export default function TeamPage() {
   const iAmTeam = !!(uid && roleById[uid] === 'admin')
   const bodyOf = useCallback((text: string | null | undefined) => {
     if (!text) return text || ''
-    if (!maskedRoom || iAmTeam) return text
-    return maskContacts(text)
+    const safe = (!maskedRoom || iAmTeam) ? text : maskContacts(text)
+    return linkifyText(safe)
   }, [maskedRoom, iAmTeam])
 
   const aliasOf = useCallback((senderId: string | null, fallback: string | null) => {
@@ -1476,6 +1508,11 @@ export default function TeamPage() {
                       <button key={emo} onClick={() => { react(m, emo); setReactBar(null) }} title={`رد بـ ${emo}`} aria-label={`رد بـ ${emo}`}
                         style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 17, lineHeight: 1, padding: '3px 4px' }}>{emo}</button>
                     ))}
+                    {/* ↩️ (٢٨/٨) الرد بضغطة واحدة — كان مدفون في قايمة الخيارات */}
+                    <button onClick={() => { setReplyTo(m); setEditing(null); setReactBar(null) }}
+                      title="رد على الرسالة" aria-label="رد على الرسالة"
+                      style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 15, lineHeight: 1,
+                        padding: '3px 5px', color: mine ? '#CDEFE4' : '#5A6660' }}>↩️</button>
                     <button onClick={() => { setMsgMenu(m); setReactBar(null) }} title="خيارات أكتر" aria-label="خيارات أكتر"
                       style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 15, lineHeight: 1, padding: '3px 6px', color: mine ? '#CDEFE2' : '#5A6660' }}>⋯</button>
                   </div>
