@@ -52,6 +52,27 @@ interface Listing {
   supplier: { id?: string | null; business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
   photos: { url: string; is_primary: boolean; quality_flag?: string | null; is_placeholder?: boolean | null }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
+  // 💰 (٢٨/٨) نظام السداد — المقدم والتقسيط للعقارات
+  payment?: { down_payment_pct: number | null; years: number | null; monthly_egp: number | null; active: boolean }[] | null
+}
+
+/* 💰 (٢٨ أغسطس ٢٠٢٦) محمد: «اعرض في الماركت بليس المقدم والقسط لكل
+   مشروع أو وحدة طبقًا للبيانات اللي عندك».
+   بترجّع نص زي «مقدم ١٠٪ · ٨ سنين · ٣٦٥١٠ ج/شهر».
+   القسط بيتحسب لو مش مكتوب: (السعر − المقدم) ÷ الشهور. */
+function paymentLabel(l: Listing): string | null {
+  const p = (l.payment || []).find((x) => x?.active)
+  if (!p) return null
+  const parts: string[] = []
+  if (p.down_payment_pct != null) {
+    parts.push(`مقدم ${Number(p.down_payment_pct).toLocaleString('ar-EG')}٪`)
+  }
+  if (p.years) parts.push(`${Number(p.years).toLocaleString('ar-EG')} سنين`)
+  const price = Number(l.price_egp)
+  const monthly = p.monthly_egp
+    ?? (price && p.years ? Math.round((price * (1 - (p.down_payment_pct ?? 0) / 100)) / (p.years * 12)) : null)
+  if (monthly) parts.push(`${Number(monthly).toLocaleString('ar-EG')} ج/شهر`)
+  return parts.length ? parts.join(' · ') : null
 }
 
 type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'rating'
@@ -1457,6 +1478,10 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                           </>
                         ) : (
                           <p className="text-xs text-gray-400 font-medium">{t('market.price_on_request')}</p>
+                        )}
+                        {/* 💰 المقدم والقسط (٢٨/٨) — للعقارات اللي ليها نظام سداد */}
+                        {paymentLabel(listing) && (
+                          <p className="text-[10.5px] text-[#2FA084] font-bold mt-1 leading-tight">{paymentLabel(listing)}</p>
                         )}
                       </div>
                       <div className="inline-flex items-center gap-1 text-[#059669] font-bold text-xs group-hover:gap-2 transition-all">

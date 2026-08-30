@@ -323,22 +323,8 @@ export default function MarketExplorer({
             <ChevronDown className="w-3 h-3 text-[#7C8A84] absolute left-3.5 pointer-events-none" strokeWidth={2.5} />
           </label>
 
-          <label className="relative flex items-center">
-            <Building2 className="w-3.5 h-3.5 text-[#7A4FA3] absolute right-3.5 pointer-events-none" strokeWidth={2.5} />
-            <select
-              value={devF}
-              onChange={(e) => setDevF(e.target.value)}
-              aria-label={t('bo.developer')}
-              disabled={developers.length < 2}
-              className="w-full appearance-none bg-white border-[1.5px] border-[#E5DFD3] rounded-full py-[9px] pr-9 pl-8 text-[12px] font-extrabold text-[#1A1A1A] cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#7A4FA3]/25"
-            >
-              <option value="all">{t('bo.all_devs', { n: arNum(developers.length) })}</option>
-              {developers.map((d) => (
-                <option key={d.name} value={d.name}>{d.name} ({arNum(d.count)})</option>
-              ))}
-            </select>
-            <ChevronDown className="w-3 h-3 text-[#7C8A84] absolute left-3.5 pointer-events-none" strokeWidth={2.5} />
-          </label>
+            {/* 🧹 (٢٨/٨) اتشال فلتر الشركات — العميل بيدوّر على منطقة وسعر
+                ونظام سداد، مش على اسم شركة. والبحث بيغطي اسم المطوّر أصلاً. */}
         </div>
 
         <div className={`flex gap-2 mt-2.5 overflow-x-auto pb-0.5 ${HS}`}>
