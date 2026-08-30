@@ -43,7 +43,7 @@ const MODULE_UI: Record<string, { label: string; desc: string; icon: typeof Pack
   bulk_products:   { label: 'المنتجات بالجملة', desc: 'إضافة وتعديل منتجات كتير مرة واحدة', icon: Package, href: '/supplier/marketplace/bulk-products' },
   // 🏭 موديول المصنع
   production:      { label: 'أوامر التشغيل', desc: 'الأوامر الجارية ومراحلها', icon: Factory, href: '/supplier/erp/production' },
-  materials:       { label: 'الخامات', desc: 'المخزون الخام وحد إعادة الطلب', icon: Boxes, href: '/supplier/erp/materials' },
+  materials:       { label: 'المواد والأدوات', desc: 'مخزونك الداخلي — بتستهلكه في شغلك مش بتبيعه', icon: Boxes, href: '/supplier/erp/materials' },
   stages:          { label: 'مراحل الإنتاج', desc: 'تتبّع الشغل جوّه المصنع', icon: Workflow, href: '/supplier/erp/production' },
   inventory:       { label: 'المخزون', desc: 'الجاهز للبيع', icon: Warehouse, href: '/supplier/erp/materials' },
   // مطعم
@@ -101,7 +101,7 @@ export default function SupplierErpPage() {
 
   const list = mods?.modules?.length
     ? [...new Set(mods.modules)]
-    : ['listings', 'products', 'orders', 'bookings', 'reviews', 'catalog', 'crm', 'team', 'accounting']
+    : ['listings', 'products', 'materials', 'catalog', 'orders', 'bookings', 'reviews', 'crm', 'team', 'accounting']
   const emp = mods?.employees
 
   return (
