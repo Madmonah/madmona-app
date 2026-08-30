@@ -1192,20 +1192,50 @@ export async function POST(request: NextRequest) {
       ? `سياق المحادثة السابقة:\n${historyText}\n\n---\nرسالة العميل الحالية:\n${userText}`
       : userText
 
-    const raw = await callMaridWithTools({
-      // البرومبت الأساسي + سياق الرقم (لو موجود) — كل رقم بشخصيته/سياقه
-      systemPrompt: (await withLiveCommission(CUSTOMER_CONCIERGE_PROMPT)) + numberPromptSection(numberCfg),
-      userMessage,
-      mediaBlocks,
-      senderPhone: phone,
-      senderName: body.name ?? null,
-      savedMediaUrl,
-      photoAttach,
-      admin: senderIsAdmin,
-      // 📊 للقياس بس (٣ أغسطس ٢٠٢٦) — مالهمش أي أثر على البرومبت ولا الرد
-      channel: 'whatsapp',
-      conversationId,
-    })
+    // 📚 (٢٨/٨) محمد: «خليه يتعامل مع محادثة جديدة بدل ما يقول عطل فني».
+    //    أخطاء الرصيد والضغط بتروح للمكتبة هنا — مابتوصلش للـcatch الخارجي.
+    let maridApiFailed = false
+    let raw = ''
+    try {
+      raw = await callMaridWithTools({
+        // البرومبت الأساسي + سياق الرقم (لو موجود) — كل رقم بشخصيته/سياقه
+        systemPrompt: (await withLiveCommission(CUSTOMER_CONCIERGE_PROMPT)) + numberPromptSection(numberCfg),
+        userMessage,
+        mediaBlocks,
+        senderPhone: phone,
+        senderName: body.name ?? null,
+        savedMediaUrl,
+        photoAttach,
+        admin: senderIsAdmin,
+        // 📊 للقياس بس (٣ أغسطس ٢٠٢٦) — مالهمش أي أثر على البرومبت ولا الرد
+        channel: 'whatsapp',
+        conversationId,
+      })
+    } catch (brainErr) {
+      maridApiFailed = true
+      const em = brainErr instanceof Error ? brainErr.message : String(brainErr)
+      // 🔍 الرصيد · الحد · الضغط · الانقطاع — كلها بتتعالج بنفس الطريقة
+      console.warn('[marid] الدماغ مش متاح — بنرد من المكتبة:', em.slice(0, 140))
+      try {
+        const { data: lib } = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: unknown }>)('marid_offline_reply', { p_text: body.text || '' })
+        raw = (typeof lib === 'string' && lib.trim())
+          ? JSON.stringify({ reply: lib.trim() })
+          : ''
+      } catch { raw = '' }
+      if (!raw) {
+        raw = JSON.stringify({ reply:
+          'أنا معاك 🌟\nمضمونة فيها عقارات · سيارات · مطاعم · خدمات · أثاث — ومعاملاتك مضمونة.\n'
+          + 'قولّي محتاج إيه بالظبط وأنا أساعدك: https://madmonacairo.com/marketplace' })
+      }
+      // 🔔 تنبيه محمد — العميل ماشافش أي عطل، بس إحنا لازم نعرف
+      try {
+        await supabaseAdmin.rpc('fire_admin_alert', {
+          p_title: '🧞 المارد رد من المكتبة (الدماغ مش متاح)',
+          p_body: em.slice(0, 300),
+          p_severity: 'warning',
+        })
+      } catch { /* التنبيه مايوقفش الرد */ }
+    }
 
     // البرومبت بيطلب JSON — بنفك بأمان ولو فشل نستخدم النص كما هو
     let parsed: ConciergeReply = {}
@@ -1328,6 +1358,14 @@ export async function POST(request: NextRequest) {
         const msg = err instanceof Error ? err.message : 'unknown'
         console.error('[baileys webhook bg]', msg)
 
+        // 📚 (٢٨/٨) رد من المكتبة بدل إعلان العطل — العميل ياخد قيمة
+        //    والمحادثة تكمل. بنعرف السبب من الرسالة عشان التنبيه بس.
+        let offlineReply: string | null = null
+        try {
+          const { data: lib } = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: unknown }>)('marid_offline_reply', { p_text: body.text || '' })
+          if (typeof lib === 'string' && lib.trim()) offlineReply = lib.trim()
+        } catch { /* المكتبة نفسها فشلت — تحت فيه رد أخير */ }
+
         // 🛟 شبكة أمان — استثناء غير متوقع حصل قبل ما نرد على العميل خالص.
         //    بدون كده العميل بيفضل ساكت من غير أي أثر ومحمد ماعندوش أي فكرة
         //    (السبب اللي اكتشفناه في محادثة ٩٠٠٢٦٥٦c يوم ١٩ أغسطس). كل
@@ -1338,7 +1376,10 @@ export async function POST(request: NextRequest) {
               to: phone,
               jid: replyJid,
               session: body.session_id,
-              body: 'حصل خلل تقني بسيط وأنا بشوفه دلوقتي — ابعتلي تفاصيلك تاني كمان شوية لو ماردّيتش عليك 🙏',
+              // 📚 المكتبة أولًا — ولو فشلت، رد عام مفيد **من غير ذكر أي عطل**
+              body: offlineReply
+                || 'أنا معاك 🌟\nمضمونة فيها عقارات · سيارات · مطاعم · خدمات · أثاث — ومعاملاتك مضمونة.\n'
+                 + 'قولّي محتاج إيه بالظبط وأنا أساعدك، أو اتفرج على المعروض من هنا:\nhttps://madmonacairo.com/marketplace',
               conversationId,
               agentName: 'المارد',
               aiGenerated: false,
