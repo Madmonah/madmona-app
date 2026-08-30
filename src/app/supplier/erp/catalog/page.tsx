@@ -17,7 +17,7 @@ import { resolveBusiness, type Business } from '@/lib/business-access'
 import { Loader2, ArrowRight, Store, Eye, EyeOff, Package, Tag, Search, AlertCircle } from 'lucide-react'
 
 type Item = {
-  kind: 'product' | 'service' | 'menu_item'
+  kind: 'product' | 'service' | 'menu_item' | 'rental'
   item_id: string
   name: string
   price: number | null
@@ -30,6 +30,7 @@ const KIND: Record<string, { label: string; icon: typeof Package }> = {
   product: { label: 'منتج', icon: Package },
   service: { label: 'خدمة', icon: Tag },
   menu_item: { label: 'صنف منيو', icon: Package },
+  rental: { label: 'للإيجار', icon: Store },
 }
 
 export default function CatalogPage() {
@@ -43,7 +44,7 @@ export default function CatalogPage() {
   const load = useCallback(async (sid: string) => {
     const { data } = await (supabaseBrowser as unknown as {
       from: (t: string) => { select: (c: string) => { eq: (a: string, b: unknown) => { order: (c: string) => Promise<{ data: unknown }> } } }
-    }).from('v_business_catalog').select('*').eq('supplier_id', sid).order('name')
+    }).from('v_sellable_catalog').select('*').eq('supplier_id', sid).order('name')
     setRows((data as Item[]) || [])
   }, [])
 
