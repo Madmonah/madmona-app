@@ -5,8 +5,10 @@
 // (٢٨ أغسطس ٢٠٢٦) محمد: «عايز أعرف منين أجيب مين اللي ضاف الإعلان،
 //   أنا عايزها تظهر في شاشة الإعلان».
 //
-// 🔐 الدالة نفسها بترجّع null لغير فريق مضمونة — فحتى لو الكومبوننت
-//    اترندر لعميل عادي، مش هيشوف حاجة. الحماية في الداتابيز مش في الواجهة.
+// 👁️ مين يشوف (٢٨/٨): الأدمن يشوف الكل · الموظف يشوف اللي هو ضافه ·
+//    صاحب البيزنس يشوف مين من فريق مضمونة بيتابعه · العميل العادي لأ.
+// 🔐 الحماية في الداتابيز — الدالة بترجّع null لغير المصرّح لهم، فحتى
+//    لو الكومبوننت اترندر لأي حد مش هيشوف حاجة.
 // ============================================================================
 import { useEffect, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -18,6 +20,7 @@ type Info = {
   employee_role: string | null
   added_at: string | null
   supplier_added_by: string | null
+  is_mine: boolean | null
 }
 
 export default function ListingAddedBy({ listingId }: { listingId: string }) {
@@ -58,7 +61,7 @@ export default function ListingAddedBy({ listingId }: { listingId: string }) {
   return (
     <div className="rounded-2xl bg-[#34D399]/10 border border-[#34D399]/30 p-3 mt-3" dir="rtl">
       <p className="text-[11px] font-black text-[#059669] flex items-center gap-1.5 mb-1">
-        <UserCircle2 className="w-3.5 h-3.5" /> بيانات الفريق
+        <UserCircle2 className="w-3.5 h-3.5" /> {info.is_mine ? 'ده شغلك ✋' : 'بيانات الفريق'}
       </p>
       {info.employee_name && (
         <p className="text-[11.5px] text-gray-800">
