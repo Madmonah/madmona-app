@@ -115,6 +115,10 @@ export default function TeamPage() {
   // 😀 (٢٧ أغسطس ٢٠٢٦) الريأكشنز كانت بالضغط المطوّل بس — إيماءة مخفية
   //    محدش بيكتشفها لوحده. دلوقتي شريط رد سريع بضغطة واحدة على الرسالة.
   const [reactBar, setReactBar] = useState<string | null>(null)
+  // 👆 (٢٨/٨) السحب للرد زي واتساب
+  const [swipeId, setSwipeId] = useState<string | null>(null)
+  const [swipeDx, setSwipeDx] = useState(0)
+  const swipeRef = useRef<{ x: number; y: number; id: string; locked: 'h' | 'v' | null } | null>(null)
   const [recSecs, setRecSecs] = useState(0)
   const recTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const [newMenu, setNewMenu] = useState(false)             // قايمة ➕ في هيدر قايمة المحادثات
@@ -217,6 +221,44 @@ function linkifyText(text: string): React.ReactNode {
   // 🔒 نص الرسالة نفسه: بنخفي أي رقم/إيميل/يوزر في الرومات المخفية.
   //    الفريق (admin) بيشوف النص الأصلي عشان يقدر يتابع.
   const iAmTeam = !!(uid && roleById[uid] === 'admin')
+  /* 👆 (٢٨/٨) سحب الفقاعة للرد — الحد ٥٠ بكسل زي واتساب.
+     بنقفل الاتجاه بعد ١٠ بكسل: أفقي = رد، رأسي = تمرير عادي. */
+  const SWIPE_TRIGGER = 50
+  const onSwipeStart = useCallback((m: CMsg, e: React.TouchEvent) => {
+    const t = e.touches[0]
+    if (!t || m.deleted_at) return
+    swipeRef.current = { x: t.clientX, y: t.clientY, id: m.id, locked: null }
+  }, [])
+
+  const onSwipeMove = useCallback((e: React.TouchEvent) => {
+    const r = swipeRef.current
+    const t = e.touches[0]
+    if (!r || !t) return
+    const dx = t.clientX - r.x
+    const dy = t.clientY - r.y
+    if (!r.locked) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+      r.locked = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'
+    }
+    if (r.locked !== 'h') return
+    const d = Math.max(-70, Math.min(0, dx))   // 🔒 لليسار بس (RTL)
+    setSwipeId(r.id); setSwipeDx(d)
+  }, [])
+
+  const onSwipeEnd = useCallback(() => {
+    const r = swipeRef.current
+    const passed = r?.locked === 'h' && Math.abs(swipeDx) >= SWIPE_TRIGGER
+    if (passed && r) {
+      const m = messages.find((x) => x.id === r.id)
+      if (m) {
+        setReplyTo(m); setEditing(null); setReactBar(null)
+        navigator.vibrate?.(12)   // 📳 إحساس بالتفعيل
+      }
+    }
+    swipeRef.current = null
+    setSwipeId(null); setSwipeDx(0)
+  }, [swipeDx, messages])
+
   const bodyOf = useCallback((text: string | null | undefined) => {
     if (!text) return text || ''
     const safe = (!maskedRoom || iAmTeam) ? text : maskContacts(text)
@@ -1399,14 +1441,27 @@ function linkifyText(text: string): React.ReactNode {
           const mine = m.sender_id === uid
           const marid = m.sender_kind === 'marid'
           return (
-            <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-start' : 'flex-end', marginBottom: 9 }}>
+            <div key={m.id} style={{ display: 'flex', justifyContent: mine ? 'flex-start' : 'flex-end', marginBottom: 9, position: 'relative' }}>
+              {/* 👆 (٢٨/٨) أيقونة الرد بتظهر ورا الفقاعة وهي بتتزحلق — زي واتساب */}
+              {swipeId === m.id && swipeDx < -8 && (
+                <div className="swipe-hint" style={{
+                  position: 'absolute', top: '50%', transform: 'translateY(-50%)',
+                  [mine ? 'left' : 'right']: 6,
+                  opacity: Math.min(1, Math.abs(swipeDx) / 50),
+                  fontSize: 17, pointerEvents: 'none',
+                } as React.CSSProperties}>↩️</div>
+              )}
               <div
                 id={`msg-${m.id}`}
-                onTouchStart={() => startPress(m)} onTouchEnd={cancelPress} onTouchMove={cancelPress}
+                onTouchStart={(e) => { startPress(m); onSwipeStart(m, e) }}
+                onTouchEnd={() => { cancelPress(); onSwipeEnd() }}
+                onTouchMove={(e) => { cancelPress(); onSwipeMove(e) }}
                 onMouseDown={() => startPress(m)} onMouseUp={cancelPress} onMouseLeave={cancelPress}
                 onContextMenu={(e) => { e.preventDefault(); setMsgMenu(m) }}
                 onClick={() => setReactBar((v) => (v === m.id ? null : m.id))}
-                style={{ maxWidth: '82%', background: mine ? 'linear-gradient(118deg,#059669,#34D399)' : (marid ? '#FFF7E0' : '#fff'), color: mine ? '#fff' : '#14231E', padding: '10px 14px', borderRadius: mine ? '18px 18px 5px 18px' : '18px 18px 18px 5px', boxShadow: mine ? '0 6px 16px -8px rgba(250, 129, 37,.45)' : '0 1px 2px rgba(20,35,30,.06)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14, fontWeight: 600, lineHeight: 1.65, position: 'relative', userSelect: 'none', WebkitUserSelect: 'none', opacity: m.deleted_at ? 0.75 : 1 }}>
+                style={{ transform: swipeId === m.id ? `translateX(${swipeDx}px)` : undefined,
+                  transition: swipeId === m.id ? 'none' : 'transform .18s ease-out',
+                  maxWidth: '82%', background: mine ? 'linear-gradient(118deg,#059669,#34D399)' : (marid ? '#FFF7E0' : '#fff'), color: mine ? '#fff' : '#14231E', padding: '10px 14px', borderRadius: mine ? '18px 18px 5px 18px' : '18px 18px 18px 5px', boxShadow: mine ? '0 6px 16px -8px rgba(250, 129, 37,.45)' : '0 1px 2px rgba(20,35,30,.06)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14, fontWeight: 600, lineHeight: 1.65, position: 'relative', userSelect: 'none', WebkitUserSelect: 'none', opacity: m.deleted_at ? 0.75 : 1 }}>
                 {!mine && <div style={{ fontSize: 11, fontWeight: 800, color: marid ? '#B78A12' : '#2FA084', marginBottom: 2 }}>{marid ? '🧞 المارد' : (aliasOf(m.sender_id, m.sender_name) || 'عضو')}</div>}
                 {m.pinned_at && <div style={{ fontSize: 10, fontWeight: 800, color: mine ? '#CDEFE2' : '#B78A12', marginBottom: 3 }}>📌 مثبّتة</div>}
                 {m.reply_to && (() => {
