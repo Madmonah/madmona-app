@@ -1057,3 +1057,8 @@ git add sql/ && git commit
 - مودال «ضيف إعلان» بياخد حقول التصنيف من `/api/listing-drafts/attributes` (بقى يقبل `category_id` أو `slug`) والقيم بتتكتب في `listing_values` عبر `admin_add_listing(p_attributes)` — نفس مصدر الويزارد والتعديل، ممنوع فورم أتربيوتات موازي.
 - إشعارات المهام مصدرها **تريجرات داتابيز بس**: `trg_notify_new_daily_task` (توليد أوتوماتيك = ملخص واحد بديدوب العنوان الثابت · يدوي = باسم المهمة · `madmona.skip_task_notify=1` بيسكّته للإضافة الذاتية) و`trg_notify_new_flow_task` — متضيفش إشعار مهمة من كود التطبيق تاني.
 - مراقبة الواتساب: `trg_notify_owner_every_wa_message` بيبعت لمحمد (profile 147cd904) كل رسالة صادرة/واردة — الحملات (template_name أو agent_name فيه campaign) مستثناة عمدًا.
+
+
+## 📞 التحكم في تليفون المكالمات من اللوحة (٣٠ أغسطس ٢٠٢٦)
+- محمد: «تفعيل التليفون madmona-voice عايزين له مكان في الأدمن بانل». المعمارية: اللوحة بتكتب أمر في `voice_commands` وبتقرا `voice_status` (RPCs: voice_status_get / voice_command_request — كوكي اللوحة بس)؛ عميل ويندوز `D:\voice\voice-agent.ps1` (Scheduled Task «MadmonaVoiceAgent» كل دقيقة) بينفذ بـVBoxManage ويرفع الحالة (الماكينة + بلوتوث الأيتل + جاهزية أستريسك عبر plink على 2222، باسورد الجيست في السكريبت).
+- **درس ٣٠/٨**: الماكينة بتقع أحيانًا في `gurumeditation` — التشغيل لازم يسبقه `controlvm poweroff` في الحالة دي (العميل بيعملها لوحده). وssh.exe بتاع ويندوز مبيشتغلش من شِل من غير كونسول (بيموت صامت) — استخدم `D:\voice\plink.exe` دايمًا.
