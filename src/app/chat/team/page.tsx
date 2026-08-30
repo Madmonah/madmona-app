@@ -165,7 +165,12 @@ export default function TeamPage() {
 const LINK_RE = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+|\b(?:\+?20|0)1[0125]\d{8}\b)/g
 
 function linkifyText(text: string): React.ReactNode {
-  if (!text || !LINK_RE.test(text)) return text
+  // 🐞 (٢٨/٨) الـregex عليه /g، و test() بيحرّك lastIndex — فكان
+  //    بيخلي اللينكات تشتغل بالتناوب (رسالة تظهر ورسالة لأ).
+  //    الصح: نصفّر المؤشر **قبل** أي استخدام.
+  if (!text) return text
+  LINK_RE.lastIndex = 0
+  if (!LINK_RE.test(text)) return text
   LINK_RE.lastIndex = 0
   const out: React.ReactNode[] = []
   let last = 0, m: RegExpExecArray | null, k = 0
