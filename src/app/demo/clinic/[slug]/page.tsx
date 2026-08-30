@@ -305,7 +305,7 @@ export default function ClinicDemoPage() {
           <h2 className="text-3xl font-black mb-4">سعرنا واضح</h2>
           <div className="bg-white/10 backdrop-blur rounded-2xl p-8 border border-white/20">
             <div className="text-5xl font-black mb-2">١٠٪</div>
-            <p className="text-lg text-white/90 mb-4">عمولة على كل حجز فعلي بس</p>
+            <p className="text-lg text-white/90 mb-4">السعر اللي بتطلبه هو اللي بتاخده</p>
             <ul className="text-right space-y-2 text-white/90 text-sm">
               <li className="flex gap-2"><CheckCircle2 className="w-5 h-5 text-[#FFD700] flex-shrink-0" /> بدون رسوم اشتراك</li>
               <li className="flex gap-2"><CheckCircle2 className="w-5 h-5 text-[#FFD700] flex-shrink-0" /> بدون التزام طويل المدى</li>
