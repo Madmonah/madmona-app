@@ -14,6 +14,8 @@ import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { catNameFor, listingTitleFor, listingDescriptionFor, cityFor, attrNameFor, optionLabelFor } from '@/lib/i18n/catName'
 import { RestaurantMenu, MartProductsCatalog, ProductBuyBox, CartCheckoutBar, type MenuItem, type MartProduct } from '@/components/OrderActions'
+// 👤 (٢٨/٨) مين ضاف الإعلان — لفريق مضمونة بس (الحماية في الداتابيز)
+import ListingAddedBy from '@/components/ListingAddedBy'
 import CartButton from '@/components/CartButton'
 import ListQuoteOrderBox from '@/components/ListQuoteOrderBox'
 import { periodLabel } from '@/lib/pricing-periods'
@@ -1057,7 +1059,10 @@ export default function ListingDetailPage() {
               />
             )}
 
-            {!isRestaurant && !isDirectory && listing.supplier && martProducts.length > 0 && (
+            {/* 👤 (٢٨/٨) بيانات الفريق — مين ضاف الإعلان (فريق مضمونة بس) */}
+        <ListingAddedBy listingId={listing.id} />
+
+        {!isRestaurant && !isDirectory && listing.supplier && martProducts.length > 0 && (
               /* 💅 (٢٥/٨/٢٠٢٦) محمد: «التجميل والمطاعم لازم نظام عرض واقعي» —
                  لإعلانات التجميل والخدمات، الكتالوج ده هو قايمة الخدمات
                  بأسعارها، فالعنوان «الخدمات والأسعار» بدل «المنتجات». */
