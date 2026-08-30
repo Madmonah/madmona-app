@@ -89,6 +89,7 @@ const NAV: { title: string; icon: typeof Menu; items: { href: string; label: str
     { href: '/admin/supplier-posts', label: 'منشورات الموردين' },
     { href: '/admin/photo-audit', label: 'مراجعة الصور' },
     { href: '/admin/outreach-leads', label: 'موردين محتملين' },
+    { href: '/admin/prospects', label: '🎪 تجهيز المعارض' },
   ] },
 
   // 🤝 شركاء B2B
