@@ -37,6 +37,7 @@ const MODULE_UI: Record<string, { label: string; desc: string; icon: typeof Pack
   reviews:         { label: 'التقييمات', desc: 'آراء العملاء', icon: Star, href: '/supplier/marketplace/reviews' },
   team:            { label: 'الفريق', desc: 'الموظفين وصلاحياتهم', icon: Users, href: '/supplier/team' },
   accounting:      { label: 'الحسابات', desc: 'الإيرادات والمستحقات', icon: Wallet, href: '/supplier/erp/accounting' },
+  catalog:         { label: 'العرض في الماركت بليس', desc: 'إيه اللي يشوفه العملاء وإيه اللي يفضل داخلي', icon: Store, href: '/supplier/erp/catalog' },
   crm:             { label: 'عملائي', desc: 'العملاء وتعاملاتهم معاك', icon: Users, href: '/supplier/erp/crm' },
   bulk_products:   { label: 'المنتجات بالجملة', desc: 'إضافة وتعديل منتجات كتير مرة واحدة', icon: Package, href: '/supplier/marketplace/bulk-products' },
   // 🏭 موديول المصنع
@@ -99,7 +100,7 @@ export default function SupplierErpPage() {
 
   const list = mods?.modules?.length
     ? [...new Set(mods.modules)]
-    : ['listings', 'orders', 'bookings', 'reviews', 'team', 'accounting']
+    : ['listings', 'orders', 'bookings', 'reviews', 'catalog', 'crm', 'team', 'accounting']
   const emp = mods?.employees
 
   return (
