@@ -11,17 +11,52 @@
 // ⚠️ الشاشة دي **عرض وتوثيق** — التحكم الفعلي في الماكينة نفسها،
 //    لأن الأستريسك شغّال على لاب مضمونة مش على السيرفر.
 // ============================================================================
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { Phone, Loader2, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { Phone, Loader2, RefreshCw, AlertTriangle, CheckCircle2, Power, RotateCcw, Square } from 'lucide-react'
+// 📞 (٣٠ أغسطس ٢٠٢٦) محمد: «تفعيل التليفون madmona-voice عايزين له مكان في
+// الأدمن بانل». التحكم بيمشي عبر voice_commands/voice_status في الداتابيز —
+// عميل على لاب مضمونة (MadmonaVoiceAgent، كل دقيقة) بينفذ ويرفع الحالة.
+import { adminRpc } from '@/lib/adminRpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 type Lead = { id: string; phone: string | null; source: string | null; topic: string | null; created_at: string }
 
+type VoiceStatus = {
+  vm_state: string | null; bt_connected: boolean | null
+  asterisk_connected: boolean | null; asterisk_state: string | null
+  agent_seen_at: string | null; agent_alive: boolean
+  last_command: { command: string; status: string; result: string | null; created_at: string } | null
+}
+
 export default function VoiceLabPage() {
   const [calls, setCalls] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
+  // 📞 حالة التليفون + أوامر التشغيل
+  const [vs, setVs] = useState<VoiceStatus | null>(null)
+  const [cmdBusy, setCmdBusy] = useState(false)
+  const [cmdMsg, setCmdMsg] = useState<string | null>(null)
+
+  const loadStatus = useCallback(async () => {
+    try { setVs(await adminRpc<VoiceStatus>('voice_status_get')) } catch { /* اللوحة بس */ }
+  }, [])
+  useEffect(() => {
+    loadStatus()
+    const t = setInterval(loadStatus, 15000) // كل ١٥ ثانية — العميل بيحدث كل دقيقة
+    return () => clearInterval(t)
+  }, [loadStatus])
+
+  const sendCmd = useCallback(async (cmd: 'start' | 'stop' | 'restart') => {
+    if (cmd !== 'start' && !confirm(cmd === 'stop' ? 'هتقفل تليفون المكالمات؟' : 'هتعيد تشغيل تليفون المكالمات؟')) return
+    setCmdBusy(true); setCmdMsg(null)
+    try {
+      const r = await adminRpc<{ ok: boolean; error?: string; note?: string }>('voice_command_request', { p_command: cmd })
+      setCmdMsg(r.ok ? `✅ ${r.note || 'الأمر اتسجل'}` : `⚠️ ${r.error}`)
+      await loadStatus()
+    } catch (e) { setCmdMsg(`⚠️ ${e instanceof Error ? e.message : 'فشل'}`) }
+    finally { setCmdBusy(false) }
+  }, [loadStatus])
 
   async function load() {
     setLoading(true)
@@ -50,6 +85,67 @@ export default function VoiceLabPage() {
         <button onClick={load} className="px-3 py-2 rounded-xl bg-[#F1EEE6] text-sm font-bold flex items-center gap-1.5">
           <RefreshCw className="w-4 h-4" /> حدّث
         </button>
+      </div>
+
+      {/* 📞 (٣٠/٨) التحكم في التليفون — محمد: «تفعيل madmona-voice له مكان في اللوحة» */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 mb-4">
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+          <h2 className="font-black text-sm text-gray-900 flex items-center gap-2">
+            <Power className="w-4 h-4 text-[#059669]" /> تليفون المكالمات (madmona-voice)
+          </h2>
+          {vs && (
+            <span className={`text-[11px] font-black px-2 py-1 rounded-full ${vs.agent_alive ? 'bg-[#34D399]/10 text-[#059669]' : 'bg-red-50 text-red-600'}`}>
+              {vs.agent_alive ? '🟢 اللاب متوصل' : '🔴 اللاب مش بيرد — افتح لاب مضمونة'}
+            </span>
+          )}
+        </div>
+
+        {!vs ? <p className="text-xs text-gray-500">بيحمّل الحالة…</p> : (
+          <>
+            <div className="grid grid-cols-3 gap-2 mb-3 text-center">
+              <div className={`rounded-xl px-2 py-2.5 ${vs.vm_state === 'running' ? 'bg-[#34D399]/10' : 'bg-red-50'}`}>
+                <p className="text-[13px] font-black">{vs.vm_state === 'running' ? '🟢 شغالة' : `🔴 ${vs.vm_state || '؟'}`}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">الماكينة</p>
+              </div>
+              <div className={`rounded-xl px-2 py-2.5 ${vs.bt_connected ? 'bg-[#34D399]/10' : 'bg-red-50'}`}>
+                <p className="text-[13px] font-black">{vs.bt_connected ? '🟢 متوصل' : '🔴 مفصول'}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">بلوتوث الأيتل</p>
+              </div>
+              <div className={`rounded-xl px-2 py-2.5 ${vs.asterisk_connected ? 'bg-[#34D399]/10' : 'bg-red-50'}`}>
+                <p className="text-[13px] font-black">
+                  {vs.asterisk_connected ? (vs.asterisk_state === 'Busy' ? '📞 في مكالمة' : '🟢 جاهز للمكالمات') : '🔴 مش شايف التليفون'}
+                </p>
+                <p className="text-[10px] text-gray-500 mt-0.5">خط المكالمات</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={() => sendCmd('start')} disabled={cmdBusy || !vs.agent_alive}
+                className="flex-1 min-w-[110px] px-3 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-[13px] font-black disabled:opacity-40 flex items-center justify-center gap-1.5">
+                <Power className="w-4 h-4" /> شغّل
+              </button>
+              <button onClick={() => sendCmd('restart')} disabled={cmdBusy || !vs.agent_alive}
+                className="flex-1 min-w-[110px] px-3 py-2.5 rounded-xl bg-white border-2 border-[#34D399] text-[#04352A] text-[13px] font-black disabled:opacity-40 flex items-center justify-center gap-1.5">
+                <RotateCcw className="w-4 h-4" /> أعد التشغيل
+              </button>
+              <button onClick={() => sendCmd('stop')} disabled={cmdBusy || !vs.agent_alive}
+                className="flex-1 min-w-[110px] px-3 py-2.5 rounded-xl bg-white border border-gray-200 text-red-600 text-[13px] font-black disabled:opacity-40 flex items-center justify-center gap-1.5">
+                <Square className="w-4 h-4" /> اقفل
+              </button>
+            </div>
+
+            {cmdMsg && <p className="text-[11.5px] font-bold mt-2">{cmdMsg}</p>}
+            {vs.last_command && (
+              <p className="text-[10.5px] text-gray-500 mt-2">
+                آخر أمر: {vs.last_command.command === 'start' ? 'تشغيل' : vs.last_command.command === 'stop' ? 'إيقاف' : 'إعادة تشغيل'}
+                {' — '}{vs.last_command.status === 'done' ? 'اتنفذ ✓' : vs.last_command.status === 'failed' ? 'فشل ✗' : 'بيتنفذ…'}
+              </p>
+            )}
+            <p className="text-[10px] text-gray-400 mt-1">
+              الأمر بيتنفذ على لاب مضمونة خلال دقيقة، والحالة بتتحدث لوحدها. آخر نبضة: {vs.agent_seen_at ? new Date(vs.agent_seen_at).toLocaleTimeString('ar-EG') : '—'}
+            </p>
+          </>
+        )}
       </div>
 
       {/* ✅ اللي اشتغل */}
