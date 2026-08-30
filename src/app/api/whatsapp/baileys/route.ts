@@ -414,6 +414,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, skipped: skipReason })
     }
 
+    // ── ٠ح) 🤝 موظف بشري بيتعامل مع المحادثة؟ (٢٨/٨) ──────────────────
+    //    الرسالة بتتسجّل عادي، بس المارد مايردّش عشان مايقاطعش الموظف.
+    {
+      const cid = await upsertConversation({
+        phone, name: body.name ?? undefined, agentName: 'المارد', session: body.session_id,
+      })
+      if (cid) {
+        let humanBusy = false
+        let why = ''
+        try {
+          const { data: gate } = await (supabaseAdmin.rpc as unknown as (
+            f: string, a: Record<string, unknown>,
+          ) => Promise<{ data: unknown }>)('marid_should_reply', { p_conversation_id: cid })
+          const g = gate as { should_reply?: boolean; reason?: string } | null
+          if (g && g.should_reply === false
+              && (g.reason === 'human_handling' || g.reason === 'human_recently_active')) {
+            humanBusy = true
+            why = g.reason || ''
+          }
+        } catch { /* لو الفحص فشل، المارد يرد عادي — السكوت أوحش */ }
+
+        if (humanBusy) {
+          console.warn('[wa] موظف بشري بيتعامل مع المحادثة — المارد ساكت', { from: phone, why })
+          await logInboundMessage({
+            conversationId: cid,
+            wa_message_id: body.message_id,
+            body: body.text || `[${body.type}]`,
+            messageType: body.type,
+            session: body.session_id,
+          })
+          return NextResponse.json({ ok: true, skipped: 'human_handling' })
+        }
+      }
+    }
+
     // ── ٠ق) مفتاح الطوارئ ──────────────────────────────────────────────
     // إيقاف كامل للرد. **ماينفعش يتشغّل إلا في حالة قصوى** —
     // العميل بيستنى رد ومش بيوصله حاجة.
