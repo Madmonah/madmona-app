@@ -628,9 +628,10 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
             <span className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.72),rgba(0,0,0,.08)_55%)]" />
             <span className="absolute bottom-0 inset-x-0 p-3">
               <span className="block text-white text-[16px] font-black leading-[1.3] line-clamp-2">{it.title}</span>
-              {(it.developer || it.district) && (
+              {/* 🧹 (٢٨/٨) اسم المطوّر اتشال من الكارت */}
+              {it.district && (
                 <span className="block text-white/85 text-[10.5px] font-semibold mt-0.5 truncate">
-                  {[it.developer, it.district].filter(Boolean).join(' · ')}
+                  {it.district}
                 </span>
               )}
             </span>
@@ -643,7 +644,7 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
             />
             <Building2 className="w-[30px] h-[30px] text-white/90 relative" strokeWidth={1.5} />
             <span className="relative text-white text-[15px] font-black leading-[1.35] line-clamp-2">{it.title}</span>
-            {it.developer && <span className="relative text-white/75 text-[11px] font-semibold">{it.developer}</span>}
+            {it.district && <span className="relative text-white/75 text-[11px] font-semibold">{it.district}</span>}
           </span>
         )}
 
