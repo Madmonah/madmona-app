@@ -11,6 +11,8 @@ import { trackEvent } from '@/components/AnalyticsTracker';
 import BulkExcelDrafts from '@/components/BulkExcelDrafts';
 import SiteFooter from '@/components/SiteFooter';
 import LocationPicker from '@/components/marketplace/LocationPicker';
+// ⚡ (٢٨ أغسطس ٢٠٢٦) محمد: «خليت الإضافة خطوة واحدة ولا لسه؟»
+import QuickAddListing from '@/components/QuickAddListing'
 
 // ============================================================================
 // Madmona "Add Listing First" — public, no-auth multi-step form
@@ -308,6 +310,8 @@ function AddListingPageInner({
   const router = useRouter();
   const params = useSearchParams();
 
+  // ⚡ (٢٨/٨) المسار السريع
+  const [quickMode, setQuickMode] = useState(false)
   const [step, setStep] = useState<Step>(1);
   const [draft, setDraft] = useState<DraftPayload>({ source: 'whatsapp_link' });
   // 💼 (٢٧ أغسطس ٢٠٢٦) إسناد العمولة: لما موظف يدخّل إعلان نيابة عن مورد،
@@ -678,6 +682,15 @@ function AddListingPageInner({
                 من الشات. المارد عنده أداة create_listing_draft فبيقدر يكمّل
                 الإعلان من كلام عادي أو صور منيو/بروشور. */}
             <div className="flex gap-2 mb-6 p-1 rounded-2xl bg-[#F5F4F0] border border-[#E5E5E0]">
+              {/* ⚡ (٢٨/٨) خطوة واحدة بدل خمسة */}
+              <button
+                type="button"
+                onClick={() => setQuickMode((v) => !v)}
+                className={`flex-1 text-center py-2.5 px-3 rounded-xl text-sm font-bold transition-colors ${
+                  quickMode ? 'bg-[#34D399] text-[#04352A] shadow-sm' : 'text-[#059669]'}`}
+              >
+                ⚡ سريع
+              </button>
               <span
                 className="flex-1 text-center py-2.5 px-3 rounded-xl bg-white text-[#1A2E26] text-sm font-bold shadow-sm cursor-default"
                 aria-current="page"
@@ -701,6 +714,13 @@ function AddListingPageInner({
             </p>
 
             {/* 🧹 (٢٩ يوليو ٢٠٢٦ — محمد) شريط «ارفع إعلاناتك بالجملة» اتشال من فوق خالص. */}
+            {/* ⚡ (٢٨/٨) المسار السريع — بيفهم الوصف الحر ويسجّل الإعلان */}
+            {quickMode ? (
+              <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                <QuickAddListing />
+              </div>
+            ) : (
+            <>
             <StepCategory
               value={draft.category_slug}
               categories={dbExtraCategories}
@@ -712,6 +732,8 @@ function AddListingPageInner({
                 if (t) next();
               }}
             />
+            </>
+            )}
           </>
         )}
 
