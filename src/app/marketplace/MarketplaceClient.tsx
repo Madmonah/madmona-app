@@ -357,7 +357,15 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       if (initialCategorySlug && data) {
         const cat = (data as Category[]).find(c => c.slug === initialCategorySlug)
         const root = cat?.parent_id ? (data as Category[]).find(c => c.id === cat.parent_id) : cat
-        if (root?.track) setActiveTrack(root.track as TrackTab)
+        if (root?.track) {
+          // 🔧 (١ سبتمبر ٢٠٢٦) محمد: «لما باجي أختار سيارات التاب بيفضل
+          //    معلّق على الكل». تصنيفات البيع مسارها 'sales' بس التاب
+          //    المعروض اسمه 'products' — فمفيش تاب كان بيتفعّل.
+          const t = root.track === 'sales' ? 'products'
+                  : root.track === 'hybrid' ? 'rentals'
+                  : root.track
+          setActiveTrack(t as TrackTab)
+        }
       }
 
       // Published-listing counts per category (RPC) — sections with zero data
