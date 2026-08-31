@@ -35,6 +35,39 @@ import { supabaseUntyped as db } from '@/lib/supabase'
      • 'claude-sonnet-4-5' → أذكى بس ٣× أغلى
      • فاضي/غير موجود      → سونيت (السلوك القديم) */
 let _cachedModel: { value: string; at: number } | null = null
+/**
+ * 🔀 (٢٨ أغسطس ٢٠٢٦) محمد: «عايز موديول المارد يشتغل على جوجل ستوديو».
+ *
+ * نفس واجهة `anthropic.messages.create` — بس بتوجّه لجيميناي لما
+ * `AI_PROVIDER=gemini` (أو لما مفتاح جيميناي موجود والأنثروبيك لأ).
+ *
+ * 💰 والمكسب: جيميناي مجاني في حدود استخدامنا الحالي.
+ * 🛟 ولو جيميناي فشل، بنرجع للأنثروبيك تلقائيًا — الرد مايقفش.
+ */
+async function callModel(args: {
+  model: string
+  max_tokens: number
+  system?: unknown
+  tools?: unknown
+  messages: unknown
+}) {
+  const provider = (process.env.AI_PROVIDER || '').toLowerCase()
+  const useGemini = provider === 'gemini'
+    || (provider !== 'anthropic' && !!process.env.GEMINI_API_KEY)
+
+  if (useGemini) {
+    try {
+      return await geminiMessagesCreate(args as never) as never
+    } catch (e) {
+      // 🛟 جيميناي وقع؟ الأنثروبيك احتياطي — بس بنسجّل عشان نعرف
+      console.warn('[marid] جيميناي فشل، بنجرّب الأنثروبيك:',
+        e instanceof Error ? e.message.slice(0, 140) : e)
+      if (!process.env.ANTHROPIC_API_KEY) throw e
+    }
+  }
+  return await anthropic.messages.create(args as never)
+}
+
 async function getMaridModel(): Promise<string> {
   if (_cachedModel && Date.now() - _cachedModel.at < 5 * 60_000) return _cachedModel.value
   try {
@@ -49,6 +82,7 @@ async function getMaridModel(): Promise<string> {
 import { MARID_TOOLS, runMaridTool, MADMONA_LINKS } from '@/lib/marid-tools'
 import { ADMIN_TOOLS, runAdminTool, ADMIN_PROMPT } from '@/lib/marid-admin'
 import { filterEnabledTools, getDisabledMaridTools, maridDisabledToolsPrompt } from '@/lib/marid-tool-settings'
+import { geminiMessagesCreate } from '@/lib/gemini-bridge'
 
 // 🛡️ (١٩ أغسطس ٢٠٢٦ — محمد: «فيه اعلانات اتبعتت للمارد وبرضو مش شغال»)
 //
@@ -381,7 +415,7 @@ ${Object.entries(MADMONA_LINKS)
     let res
     const _t0 = Date.now()
     try {
-      res = await anthropic.messages.create({
+      res = await callModel({
         model: await getMaridModel(),
         // 💸 (١٦ أغسطس ٢٠٢٦ — محمد: «تكلفة المارد عالية شوية»)
         //
@@ -504,7 +538,7 @@ ${Object.entries(MADMONA_LINKS)
   finalSystem.push({ type: 'text', text: 'خلاص كفاية أدوات — رد على العميل دلوقتي باللي عندك.' })
 
   const _tf = Date.now()
-  const final = await anthropic.messages.create({
+  const final = await callModel({
     model: await getMaridModel(),
     max_tokens: 1024,
     system: finalSystem as never,
