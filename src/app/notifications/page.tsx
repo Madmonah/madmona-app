@@ -161,6 +161,13 @@ export default function NotificationsPage() {
           </div>
         )}
 
+        {!loading && signedIn && items.filter((n) => !n.read_at).length === 0 && items.length > 0 && (
+          <div className="rounded-2xl bg-[#34D399]/8 border border-[#34D399]/30 p-6 text-center">
+            <CheckCheck className="w-8 h-8 text-[#059669] mx-auto mb-2" />
+            <p className="font-bold text-gray-900 text-[13.5px]">قريت كل حاجة ✅</p>
+          </div>
+        )}
+
         {!loading && signedIn && items.length === 0 && (
           <div className="rounded-2xl bg-white border border-gray-200 p-10 text-center">
             <Inbox className="w-9 h-9 text-gray-300 mx-auto mb-3" />
@@ -171,8 +178,16 @@ export default function NotificationsPage() {
           </div>
         )}
 
+        {/* 🆕 (٢٨/٨) الجديد أولًا — محمد: «الإشعارات مش بتبيّن الجديد
+            من القديم وفاتحة كله على بعضه». */}
+        {unread > 0 && (
+          <p className="text-[11px] font-black text-[#059669] mb-2 px-1">
+            🆕 الجديد اللي لسه ماشوفتوش ({unread})
+          </p>
+        )}
+
         <div className="space-y-2">
-          {items.map((n) => {
+          {items.filter((n) => !n.read_at).map((n) => {
             const { Icon, tint, bg } = styleFor(n.type)
             const href = hrefFor(n)
             const card = (
@@ -200,6 +215,40 @@ export default function NotificationsPage() {
               : <div key={n.id}>{card}</div>
           })}
         </div>
+
+        {/* 📦 (٢٨/٨) المقروء مطوي — مش فاتح على بعضه */}
+        {items.some((n) => n.read_at) && (
+          <details className="mt-4 rounded-2xl border border-gray-200 bg-white overflow-hidden group">
+            <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
+              <span className="text-[12.5px] font-bold text-gray-600">
+                اللي قريته قبل كده ({items.filter((n) => n.read_at).length})
+              </span>
+              <span className="text-gray-400 text-lg font-black transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <div className="px-2 pb-2 space-y-2 border-t border-gray-100 pt-2">
+              {items.filter((n) => n.read_at).map((n) => {
+                const { Icon, tint, bg } = styleFor(n.type)
+                const href = hrefFor(n)
+                const card = (
+                  <div className="rounded-2xl border border-gray-200 bg-white p-3.5 flex gap-3 opacity-70">
+                    <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
+                      <Icon className={`w-4 h-4 ${tint}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-[12.5px] font-bold text-gray-700 leading-snug">{n.title}</p>
+                        <span className="text-[10.5px] text-gray-400 shrink-0 mt-0.5">{ago(n.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+                return href
+                  ? <Link key={n.id} href={href} className="block no-underline">{card}</Link>
+                  : <div key={n.id}>{card}</div>
+              })}
+            </div>
+          </details>
+        )}
       </div>
     </div>
   )
