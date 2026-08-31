@@ -6,11 +6,14 @@ import { callMaridWithTools } from '@/lib/marid-brain'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
 // 💰 (١٦ أغسطس ٢٠٢٦) أرقام العمولة بتتحقن من الداتابيز وقت الرد — مش مكتوبة في البرومبت.
 import { withLiveCommission } from '@/lib/commission'
+import { supabaseUntyped } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
+  // 🛟 (٢٨/٨) نحفظ الرسالة عشان المكتبة ترد بيها لو حصل خطأ
+  let safeMsg = ''
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '').trim()
   let body: { roomId?: string; text?: string }
   try { body = await request.json() } catch { return NextResponse.json({ ok: false, error: 'bad json' }, { status: 400 }) }
@@ -59,6 +62,22 @@ export async function POST(request: NextRequest) {
     await admin.from('chat_messages').insert({ room_id: roomId, sender_id: null, sender_kind: 'marid', sender_name: 'المارد', body: reply, kind: 'text' })
     return NextResponse.json({ ok: true, reply })
   } catch (err) {
-    return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : 'unknown' }, { status: 500 })
+    // 🛟 (٢٨/٨) المكتبة بترد بدل رسالة الخطأ — العميل مايشوفش
+    //    «مفيش رصيد» ولا أي تفصيلة تقنية أبدًا.
+    try {
+      const { data } = await (supabaseUntyped.rpc as unknown as (
+        f: string, a: Record<string, unknown>,
+      ) => Promise<{ data: unknown }>)('marid_offline_reply', {
+        p_text: safeMsg || '', p_phone: null,
+      })
+      const lib = typeof data === 'string' ? data.trim() : ''
+      if (lib.length > 5) return NextResponse.json({ ok: true, reply: lib, source: 'library' })
+    } catch { /* المكتبة كمان فشلت */ }
+    // 🙊 ومهما حصل، مفيش تفاصيل تقنية للعميل
+    console.error('[team/marid]', err instanceof Error ? err.message : err)
+    return NextResponse.json({
+      ok: true,
+      reply: 'ثانية واحدة 🙏 ممكن تبعت طلبك تاني؟',
+    })
   }
 }
