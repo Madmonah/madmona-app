@@ -1246,6 +1246,21 @@ export async function POST(request: NextRequest) {
         channel: 'whatsapp',
         conversationId,
       })
+      // 🧠 (٢٨/٨) الرد نجح؟ نعلّمه للمكتبة — كنسخة احتياطية للمرة
+      //    الجاية لو الدماغ مش متاح. محمد: «أي رد متفعّل يتضاف
+      //    للمكتبة».
+      try {
+        const parsed = JSON.parse(raw || '{}') as { reply?: string }
+        if (parsed?.reply && parsed.reply.length > 15) {
+          void (supabaseAdmin.rpc as unknown as (
+            f: string, a: Record<string, unknown>,
+          ) => Promise<unknown>)('marid_learn', {
+            p_question: userMessage,
+            p_reply: parsed.reply,
+            p_source: 'brain',
+          })
+        }
+      } catch { /* التعلّم تحسين مش شرط */ }
     } catch (brainErr) {
       maridApiFailed = true
       const em = brainErr instanceof Error ? brainErr.message : String(brainErr)
