@@ -36,36 +36,19 @@ import { supabaseUntyped as db } from '@/lib/supabase'
      • فاضي/غير موجود      → سونيت (السلوك القديم) */
 let _cachedModel: { value: string; at: number } | null = null
 /**
- * 🔀 (٢٨ أغسطس ٢٠٢٦) محمد: «عايز موديول المارد يشتغل على جوجل ستوديو».
+ * 🧞 (٢٨ أغسطس ٢٠٢٦) محمد: «لا أنا عايز تحويل المارد، مش عايز جسر».
  *
- * نفس واجهة `anthropic.messages.create` — بس بتوجّه لجيميناي لما
- * `AI_PROVIDER=gemini` (أو لما مفتاح جيميناي موجود والأنثروبيك لأ).
- *
- * 💰 والمكسب: جيميناي مجاني في حدود استخدامنا الحالي.
- * 🛟 ولو جيميناي فشل، بنرجع للأنثروبيك تلقائيًا — الرد مايقفش.
+ * المارد بقى على **جوجل ستوديو بالكامل** — الدالة دي بتتكلم لغة
+ * جيميناي أصلًا (contents · parts · functionCall)، مش بتترجم من
+ * الأنثروبيك.
  */
 async function callModel(args: {
-  model: string
-  max_tokens: number
-  system?: unknown
-  tools?: unknown
-  messages: unknown
+  system?: string
+  contents: GeminiContent[]
+  tools?: Array<{ name: string; description: string; parameters: Record<string, unknown> }>
+  maxTokens?: number
 }) {
-  const provider = (process.env.AI_PROVIDER || '').toLowerCase()
-  const useGemini = provider === 'gemini'
-    || (provider !== 'anthropic' && !!process.env.GEMINI_API_KEY)
-
-  if (useGemini) {
-    try {
-      return await geminiMessagesCreate(args as never) as never
-    } catch (e) {
-      // 🛟 جيميناي وقع؟ الأنثروبيك احتياطي — بس بنسجّل عشان نعرف
-      console.warn('[marid] جيميناي فشل، بنجرّب الأنثروبيك:',
-        e instanceof Error ? e.message.slice(0, 140) : e)
-      if (!process.env.ANTHROPIC_API_KEY) throw e
-    }
-  }
-  return await anthropic.messages.create(args as never)
+  return callGeminiNative(args)
 }
 
 async function getMaridModel(): Promise<string> {
@@ -82,7 +65,8 @@ async function getMaridModel(): Promise<string> {
 import { MARID_TOOLS, runMaridTool, MADMONA_LINKS } from '@/lib/marid-tools'
 import { ADMIN_TOOLS, runAdminTool, ADMIN_PROMPT } from '@/lib/marid-admin'
 import { filterEnabledTools, getDisabledMaridTools, maridDisabledToolsPrompt } from '@/lib/marid-tool-settings'
-import { geminiMessagesCreate } from '@/lib/gemini-bridge'
+import { callGeminiNative, toGeminiSchema } from '@/lib/gemini-native'
+import type { GeminiContent, GeminiPart } from '@/lib/gemini-native'
 
 // 🛡️ (١٩ أغسطس ٢٠٢٦ — محمد: «فيه اعلانات اتبعتت للمارد وبرضو مش شغال»)
 //
@@ -396,6 +380,22 @@ ${Object.entries(MADMONA_LINKS)
         ]
       : [{ type: 'text', text: _sp.join('') }]
 
+  // 🧞 (٢٨ أغسطس ٢٠٢٦) جيميناي بياخد التعليمات **نص واحد** —
+  //    مفيش بلوكات ولا cache_control زي الأنثروبيك.
+  const systemText = system
+    .map((b) => (typeof b.text === 'string' ? b.text : ''))
+    .filter(Boolean)
+    .join('\n\n')
+
+  // 🔧 والأدوات: input_schema → parameters (بأنواع كابيتال)
+  const geminiTools = (tools as Array<{
+    name: string; description?: string; input_schema?: unknown
+  }>).map((t) => ({
+    name: t.name,
+    description: t.description || t.name,
+    parameters: toGeminiSchema(t.input_schema),
+  }))
+
   const messages: Array<{ role: 'user' | 'assistant'; content: unknown }> = [
     {
       role: 'user',
@@ -416,7 +416,8 @@ ${Object.entries(MADMONA_LINKS)
     const _t0 = Date.now()
     try {
       res = await callModel({
-        model: await getMaridModel(),
+        // 🧞 (٢٨/٨) جيميناي أصلي — مفيش model هنا، الدالة بتختار
+        //    وبتجرّب البدايل لو الحصة خلصت.
         // 💸 (١٦ أغسطس ٢٠٢٦ — محمد: «تكلفة المارد عالية شوية»)
         //
         //    الإخراج أغلى توكن عندنا ($15/مليون مقابل $3 للإدخال و$0.30
@@ -429,10 +430,10 @@ ${Object.entries(MADMONA_LINKS)
         //
         // ⚠️ مانزلناش أكتر من كده عن قصد: أدوار استخدام الأدوات بتحتاج
         //    مساحة للـinputs، وقصّها بيكسر النداء مش بس يقصّر الرد.
-        max_tokens: 1200,
-        system: system as never,
-        tools: tools as never,
-        messages: messages as never,
+        system: systemText,
+        tools: geminiTools,
+        contents: messages as unknown as GeminiContent[],
+        maxTokens: 1200,
       })
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -463,17 +464,17 @@ ${Object.entries(MADMONA_LINKS)
       usage: res.usage as never,
     })
 
-    const toolUses = res.content.filter((c) => c.type === 'tool_use')
+    // 🔧 (٢٨/٨) جيميناي بيرجّع calls جاهزة — مفيش فلترة على type
+    const toolUses = res.calls
 
     if (!toolUses.length) {
-      const textPart = res.content.find((c) => c.type === 'text')
-      const finalText = textPart && textPart.type === 'text' ? textPart.text : ''
+      const finalText = res.text
 
       if (!listingPersisted && looksLikeFakeListingConfirmation(finalText)) {
         const isMeeting = MEETING_CLAIM_RE.test(finalText)
         // لسه فيه لفّات فاضية — نرجّعله يصحّح بنفسه وينادي الأداة فعلًا.
         if (turn < MAX_TURNS - 1) {
-          messages.push({ role: 'assistant', content: res.content })
+          messages.push({ role: 'model', parts: res.parts } as never)
           messages.push({ role: 'user', content: buildGuardCorrection(isMeeting, listingToolOff) })
           continue
         }
@@ -485,16 +486,15 @@ ${Object.entries(MADMONA_LINKS)
       return finalText
     }
 
-    messages.push({ role: 'assistant', content: res.content })
+    messages.push({ role: 'model', parts: res.parts } as never)
 
     const results = []
     for (const tu of toolUses) {
-      if (tu.type !== 'tool_use') continue
       const isAdminTool = ADMIN_TOOLS.some((t) => t.name === tu.name)
 
       // 📸 ضمان حفظ صورة العميل في مسودة الإعلان (حتى لو المارد نسي يمرّرها)
       //    عشان الإعلان ينزل الماركتبليس مش يعلق بلا صورة.
-      let toolInput = tu.input as Record<string, unknown>
+      let toolInput = tu.args as Record<string, unknown>
       if (tu.name === 'create_listing_draft' && opts.savedMediaUrl) {
         const existing = Array.isArray(toolInput.image_urls) ? (toolInput.image_urls as string[]) : []
         if (!existing.length) toolInput = { ...toolInput, image_urls: [opts.savedMediaUrl] }
@@ -513,13 +513,16 @@ ${Object.entries(MADMONA_LINKS)
       ) {
         listingPersisted = true
       }
+      // 📤 (٢٨/٨) جيميناي بيتوقع functionResponse باسم الأداة —
+      //    مش tool_use_id زي الأنثروبيك.
       results.push({
-        type: 'tool_result',
-        tool_use_id: tu.id,
-        content: JSON.stringify(out),
+        functionResponse: {
+          name: tu.name,
+          response: { result: JSON.stringify(out) },
+        },
       })
     }
-    messages.push({ role: 'user', content: results })
+    messages.push({ role: 'user', parts: results } as never)
   }
 
   // خلصت اللفّات ولسه بيطلب أدوات — نطلب رد نهائي من غير أدوات
@@ -534,15 +537,14 @@ ${Object.entries(MADMONA_LINKS)
   //    بنبعت البلوكات زي ما هي + التعليمة كبلوك أخير. وبنشيل cache_control
   //    لأن النداء ده من غير أدوات فبادئته مختلفة عن المكاشة أصلاً — كتابة
   //    كاش هنا هتتدفع وماحدش هيقراها.
-  const finalSystem = system.map((b) => ({ type: 'text', text: b.text }))
-  finalSystem.push({ type: 'text', text: 'خلاص كفاية أدوات — رد على العميل دلوقتي باللي عندك.' })
+  // 🧞 (٢٨/٨) جيميناي بياخد التعليمات نص واحد — مفيش بلوكات
+  const finalSystem = `${systemText}\n\nخلاص كفاية أدوات — رد على العميل دلوقتي باللي عندك.`
 
   const _tf = Date.now()
   const final = await callModel({
-    model: await getMaridModel(),
-    max_tokens: 1024,
-    system: finalSystem as never,
-    messages: messages as never,
+    system: finalSystem,
+    contents: messages as unknown as GeminiContent[],
+    maxTokens: 1024,
   })
 
   logAiUsage({
@@ -557,8 +559,7 @@ ${Object.entries(MADMONA_LINKS)
     usage: final.usage as never,
   })
 
-  const t = final.content.find((c) => c.type === 'text')
-  const finalText = t && t.type === 'text' ? t.text : ''
+  const finalText = final.text
 
   // هنا مفيش تولز أصلًا (النداء الأخير من غير tools) — مقدرش أرجّعه ينادي
   // الأداة تاني. لو لسه بيوعد بتسجيل من غير ما حصل، رد صادق بدل الكدب.
