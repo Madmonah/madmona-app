@@ -424,6 +424,8 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
               <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={t('mhome.careers')} desc={t('mhome.join_the_madmona_team')} onClose={() => setMenuOpen(false)} />
               {/* 🔔 (٢٨/٨) الإشعارات */}
               {/* 🚗 (٢٨/٨) السيارات — ٤٢ إعلان منشور وماكانش ليها رابط في الموبايل */}
+              {/* 🏠 (٢٨/٨) طلبات العقارات المفتوحة */}
+              <DrawerLink href="/real-estate/requests" icon={<Search className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title="طلبات العقارات" desc="مين بيدوّر على إيه — قدّم عرضك" onClose={() => setMenuOpen(false)} />
               <DrawerLink href="/cars" icon={<Car className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title="سيارات" desc="زيرو ومستعمل من معارض وأفراد" onClose={() => setMenuOpen(false)} />
               {/* 📦 (٢٨/٨) طلباتي */}
               <DrawerLink href="/my-orders" icon={<Package className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title="طلباتي" desc="حجوزاتك وطلباتك" onClose={() => setMenuOpen(false)} />

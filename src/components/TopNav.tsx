@@ -272,6 +272,20 @@ export default function TopNav() {
               {/* 🔔 (٢٨ أغسطس ٢٠٢٦) محمد: «تاب النوتيفيكيشن مش بيعرض الإشعارات».
                   زرار الجرس فوق بيفعّل الـpush بس — ده الرابط للشاشة الحقيقية. */}
               {/* 🚗 (٢٨/٨) صفحة السيارات كانت موجودة من غير أي رابط */}
+              {/* 🏠 (٢٨/٨) طلبات العقارات المفتوحة */}
+              <Link
+                href="/real-estate/requests"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-[#34D399]/12 flex items-center justify-center shrink-0">
+                  <Briefcase className="w-[18px] h-[18px] text-[#059669]" />
+                </div>
+                <div className="flex-1 text-right">
+                  <p className="font-bold text-gray-900">طلبات العقارات</p>
+                  <p className="text-xs text-gray-500 mt-0.5">مين بيدوّر على إيه — قدّم عرضك</p>
+                </div>
+              </Link>
               <Link
                 href="/cars"
                 onClick={() => setMobileOpen(false)}
