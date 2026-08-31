@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { DEVELOPER_DIRECTORY, findDeveloperBySlug } from '@/lib/developer-directory'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ArrowRight, Building2, Search, X, MapPin, ChevronDown,
   FileText, PlayCircle, CalendarClock, Wallet, MessageCircle, Clock,
@@ -155,6 +156,8 @@ export default function MarketExplorer({
   const [q, setQ] = useState('')
   const [areaF, setAreaF] = useState<'all' | string>('all')
   const [devF, setDevF] = useState<'all' | string>('all')
+  // 📢 (٢٨/٨) عدّاد الطلبات المفتوحة — بيتجاب مرة عند الفتح
+  const [openRequests, setOpenRequests] = useState(0)
   const [chip, setChip] = useState<Chip>('all')
   const [videoOpen, setVideoOpen] = useState<Item | null>(null)
   // 🔗 فلتر لوجو المطوّر (?dev=slug) — جاي من رصّة اللوجوهات في هوم الموبايل (29 Jul 2026)
@@ -183,6 +186,20 @@ export default function MarketExplorer({
   const nq = norm(q.trim())
 
   // 🏗️ البورصة = مشاريع المطوّرين بس (قرار منتج — الهاندأوف 3a)
+  // 📢 (٢٨/٨) كام طلب مفتوح؟
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        const { count } = await (supabaseBrowser as unknown as {
+          from: (t: string) => { select: (c: string, o: { count: 'exact'; head: boolean }) => Promise<{ count: number | null }> }
+        }).from('v_open_property_requests').select('id', { count: 'exact', head: true })
+        if (alive && typeof count === 'number') setOpenRequests(count)
+      } catch { /* البانر مايبانش */ }
+    })()
+    return () => { alive = false }
+  }, [])
+
   const devItems = useMemo(() => items.filter((it) => it.segment === 'developer'), [items])
 
   // 🔑 المناطق ديناميك من الداتا — الأكتر مشاريع الأول
@@ -320,6 +337,20 @@ export default function MarketExplorer({
                 <option key={a.label} value={a.label}>{a.label} ({arNum(a.count)})</option>
               ))}
             </select>
+
+            {/* 🔽 (٢٨/٨) فلتر المطوّرين رجع — بديل رصّة اللوجوهات */}
+            <select
+              value={devF}
+              onChange={(e) => setDevF(e.target.value)}
+              className="flex-1 min-w-0 rounded-xl border border-white/15 bg-white/10 px-3 py-2.5 text-[12.5px] font-bold text-white outline-none"
+            >
+              <option value="all" style={{ color: '#1A2E26' }}>كل المطوّرين ({arNum(developers.length)})</option>
+              {developers.map((d) => (
+                  <option key={d.name} value={d.name}>
+                    {d.name} ({arNum(d.count)})
+                </option>
+              ))}
+            </select>
             <ChevronDown className="w-3 h-3 text-[#7C8A84] absolute left-3.5 pointer-events-none" strokeWidth={2.5} />
           </label>
 
@@ -350,7 +381,31 @@ export default function MarketExplorer({
           (بتفلتر نتايج نفس الصفحة). كل لوجو ياخد مساحة عرض تناسب جودة
           الملف الفعلية (quality في developer-directory.ts) بدل ما نكبّر
           لوجو منخفض الدقة ويبان مبكسل. */}
-      <DeveloperLogosGrid onSelect={selectDeveloper} activeSlug={devSlug} />
+      {/* 🧹 (٢٨ أغسطس ٢٠٢٦) رصّة لوجوهات الشركات اتشالت من البورصة —
+          محمد: «شيلت التابات بتاعت الشركات المحطوطة في بورصة
+          العقارات نسخة الموبايل؟». الفلتر الدروبليست بديلها. */}
+
+      {/* 📢 (٢٨/٨) طلبات حية — عملاء بيدوّروا على وحدات دلوقتي */}
+      {openRequests > 0 && (
+        <Link
+          href="/real-estate/requests"
+          className="mx-4 mb-3 flex items-center gap-3 rounded-2xl bg-[#34D399]/12 border border-[#34D399]/35 px-4 py-3 no-underline"
+        >
+          <span className="relative flex h-2.5 w-2.5 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#34D399]" />
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[13px] font-black text-white">
+              {arNum(openRequests)} طلب مفتوح دلوقتي
+            </span>
+            <span className="block text-[11px] text-white/70 mt-0.5">
+              عملاء بيدوّروا على وحدات — قدّم عرضك
+            </span>
+          </span>
+          <span className="text-[#34D399] text-lg font-black">←</span>
+        </Link>
+      )}
 
       {/* 🔗 بادج فلتر المطوّر الجاي من رصّة اللوجوهات (?dev=) */}
       {devSlug && findDeveloperBySlug(devSlug) && (
