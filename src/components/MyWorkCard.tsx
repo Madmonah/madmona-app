@@ -17,6 +17,8 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, LayoutGrid, Store, ChevronLeft } from 'lucide-react'
 
 type Row = {
+  // 🔗 (٢٨/٨) الرابط الصح بيستخدم slug مش id
+  slug?: string | null
   kind: 'listing' | 'business'
   id: string
   name: string | null
@@ -78,7 +80,7 @@ export default function MyWorkCard() {
           const Icon = r.kind === 'listing' ? LayoutGrid : Store
           return (
             <Link key={r.kind + r.id}
-              href={r.kind === 'listing' ? `/l/${r.id}` : '/supplier/erp'}
+              href={r.kind === 'listing' ? `/marketplace/${r.slug || r.id}` : '/supplier/erp'}
               className="flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white p-2.5 active:bg-gray-50">
               <Icon className="w-4 h-4 text-gray-400 shrink-0" />
               <div className="min-w-0 flex-1">
