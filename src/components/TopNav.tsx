@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import SupplierModulesInline from '@/components/SupplierModulesInline'
-import { Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
+import { Bell, Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
@@ -213,30 +213,24 @@ export default function TopNav() {
 
               {/* 🧹 (٢٨ أغسطس ٢٠٢٦) «ضيف المنتج» اتشالت من هنا —
                   موجودة في ٦ مكان تاني وفي الشريط السفلي. */}
-              {false && (
+              {/* 🧹 (٢٨ أغسطس ٢٠٢٦) «ضيف المنتج» اتشالت من القايمة خالص —
+                  موجودة في ٦ مكان تاني وفي الشريط السفلي. */}
+
+              {/* 🔔 (٢٨ أغسطس ٢٠٢٦) محمد: «تاب النوتيفيكيشن مش بيعرض الإشعارات».
+                  زرار الجرس فوق بيفعّل الـpush بس — ده الرابط للشاشة الحقيقية. */}
               <Link
-                href="/add-listing"
-                onClick={(e) => {
-                  setMobileOpen(false)
-                  try {
-                    const tr = new URLSearchParams(window.location.search).get('track')
-                    if (tr) {
-                      e.preventDefault()
-                      window.location.assign(`/add-listing?track=${encodeURIComponent(tr)}`)
-                    }
-                  } catch { /* fall through */ }
-                }}
-                className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
+                href="/notifications"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#d4a017]/10 flex items-center justify-center flex-shrink-0">
-                  <Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />
+                <div className="w-10 h-10 rounded-2xl bg-[#34D399]/12 flex items-center justify-center shrink-0">
+                  <Bell className="w-[18px] h-[18px] text-[#059669]" />
                 </div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900">{t('tn.add_product')}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{t('tn.add_product_sub')}</p>
+                <div className="flex-1 text-right">
+                  <p className="font-bold text-gray-900">الإشعارات</p>
+                  <p className="text-xs text-gray-500 mt-0.5">كل اللي جالك في مكان واحد</p>
                 </div>
               </Link>
-              )}
 
               {/* 🧩 (٢٨/٨) محمد: «راجع التابات بتاعت نظام إدارة بيزنسك
                   وانقلها برّه أول ما تدوس على الـ٣ شرط» — المورد بقى
