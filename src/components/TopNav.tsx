@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import SupplierModulesInline from '@/components/SupplierModulesInline'
+import WorkspaceMenu from '@/components/WorkspaceMenu'
 import { LayoutDashboard, Car, Package, Bell, Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import NotificationButton from './NotificationButton'
@@ -144,21 +144,6 @@ export default function TopNav() {
                 كان زرار تفعيل push بس ومابيعرضش حاجة */}
             {/* 📊 (٢٨ أغسطس ٢٠٢٦) محمد: «لوحة الإدارة مش ظاهرة في الـ٣ شرط».
                 بتبان لموظفي مضمونة بس — الزائر والمورد مايشوفوهاش. */}
-            {isStaff && (
-              <Link
-                href="/admin"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
-              >
-                <div className="w-10 h-10 rounded-2xl bg-[#04352A] flex items-center justify-center shrink-0">
-                  <LayoutDashboard className="w-[18px] h-[18px] text-[#34D399]" />
-                </div>
-                <div className="flex-1 text-right">
-                  <p className="font-bold text-gray-900">لوحة الإدارة</p>
-                  <p className="text-xs text-gray-500 mt-0.5">كل النظام في مكان واحد</p>
-                </div>
-              </Link>
-            )}
 
             <Link
               href="/notifications"
@@ -272,20 +257,6 @@ export default function TopNav() {
               {/* 🔔 (٢٨ أغسطس ٢٠٢٦) محمد: «تاب النوتيفيكيشن مش بيعرض الإشعارات».
                   زرار الجرس فوق بيفعّل الـpush بس — ده الرابط للشاشة الحقيقية. */}
               {/* 🚗 (٢٨/٨) صفحة السيارات كانت موجودة من غير أي رابط */}
-              {/* 🏠 (٢٨/٨) طلبات العقارات المفتوحة */}
-              <Link
-                href="/real-estate/requests"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
-              >
-                <div className="w-10 h-10 rounded-2xl bg-[#34D399]/12 flex items-center justify-center shrink-0">
-                  <Briefcase className="w-[18px] h-[18px] text-[#059669]" />
-                </div>
-                <div className="flex-1 text-right">
-                  <p className="font-bold text-gray-900">طلبات العقارات</p>
-                  <p className="text-xs text-gray-500 mt-0.5">مين بيدوّر على إيه — قدّم عرضك</p>
-                </div>
-              </Link>
 
               {/* 📦 (٢٨/٨) طلباتي — كانت من غير رابط كمان */}
               <Link
@@ -316,10 +287,14 @@ export default function TopNav() {
                 </div>
               </Link>
 
-              {/* 🧩 (٢٨/٨) محمد: «راجع التابات بتاعت نظام إدارة بيزنسك
-                  وانقلها برّه أول ما تدوس على الـ٣ شرط» — المورد بقى
-                  يوصل لموديولاته من هنا على طول. */}
-              <SupplierModulesInline onNavigate={() => setMobileOpen(false)} />
+              {/* 🎛️ (٢٨ أغسطس ٢٠٢٦) **لوحة واحدة** بدل اتنين — محمد:
+
+
+                  «مش هيظهر ليا ٢ لوحة تحكم مفصولين عن بعض».
+
+
+                  أدمن مضمونة → لوحة المنصة · صاحب بيزنس → موديولات نشاطه */}
+              <WorkspaceMenu onNavigate={() => setMobileOpen(false)} />
 
               <Link
                 href="/careers"

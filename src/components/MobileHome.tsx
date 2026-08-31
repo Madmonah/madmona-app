@@ -24,7 +24,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import LanguageToggle from './LanguageToggle'
 import DownloadAppBig from '@/components/DownloadAppBig'
-import SupplierModulesInline from '@/components/SupplierModulesInline'
+import WorkspaceMenu from '@/components/WorkspaceMenu'
 
 type Category = {
   id: string
@@ -424,19 +424,21 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
               <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={t('mhome.careers')} desc={t('mhome.join_the_madmona_team')} onClose={() => setMenuOpen(false)} />
               {/* 🔔 (٢٨/٨) الإشعارات */}
               {/* 🚗 (٢٨/٨) السيارات — ٤٢ إعلان منشور وماكانش ليها رابط في الموبايل */}
-              {/* 🏠 (٢٨/٨) طلبات العقارات المفتوحة */}
-              <DrawerLink href="/real-estate/requests" icon={<Search className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title="طلبات العقارات" desc="مين بيدوّر على إيه — قدّم عرضك" onClose={() => setMenuOpen(false)} />
               {/* 📦 (٢٨/٨) طلباتي */}
               <DrawerLink href="/my-orders" icon={<Package className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title="طلباتي" desc="حجوزاتك وطلباتك" onClose={() => setMenuOpen(false)} />
               <DrawerLink href="/notifications" icon={<Bell className="w-5 h-5 text-[#059669]" />} title="الإشعارات" desc="كل اللي جالك في مكان واحد" onClose={() => setMenuOpen(false)} />
 
-              {/* 📊 (٢٨/٨) لوحة الإدارة — لموظفي مضمونة بس */}
-              {isStaff && (
-                <DrawerLink href="/admin" icon={<LayoutDashboard className="w-5 h-5 text-[#059669]" />} title="لوحة الإدارة" desc="كل النظام في مكان واحد" onClose={() => setMenuOpen(false)} />
-              )}
 
-              {/* 🧩 (٢٨/٨) موديولات نظام إدارة البيزنس — للمورد */}
-              <SupplierModulesInline onNavigate={() => setMenuOpen(false)} />
+              {/* 🎛️ (٢٨ أغسطس ٢٠٢٦) **لوحة واحدة** بدل اتنين — محمد:
+
+
+
+                  «مش هيظهر ليا ٢ لوحة تحكم مفصولين عن بعض».
+
+
+
+                  أدمن مضمونة → لوحة المنصة · صاحب بيزنس → موديولات نشاطه */}
+              <WorkspaceMenu onNavigate={() => setMenuOpen(false)} />
               {loggedIn ? (
                 <button type="button" onClick={signOut} className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 text-right">
                   <span className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0"><LogOut className="w-5 h-5 text-red-500" /></span>
