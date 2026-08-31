@@ -4,22 +4,61 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "outputDirectory": ".next",
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "crons": [
-    { "path": "/api/agents/generate-tasks", "schedule": "0 4-9 * * *" },
-    { "path": "/api/cron/render-reels", "schedule": "30 5 * * *" },
-    { "path": "/api/cron/publish-drafts", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/email-outbox", "schedule": "*/10 * * * *" },
-
-    { "path": "/api/push/process-queue", "schedule": "* 5-22 * * *" },
-    { "path": "/api/push/process-queue", "schedule": "*/5 23,0-4 * * *" },
-
-    { "path": "/api/integrations/dispatch", "schedule": "* 5-22 * * *" },
-    { "path": "/api/integrations/dispatch", "schedule": "*/5 23,0-4 * * *" },
-
-    { "path": "/api/cron/wa-queue-send", "schedule": "*/2 * * * *" },
-    { "path": "/api/cron/wa-sync", "schedule": "*/10 * * * *" },
-    { "path": "/api/cron/wa-paced-send", "schedule": "*/3 * * * *" },
-    { "path": "/api/cron/social-daily", "schedule": "0 8,13,17 * * *" }
+    {
+      "path": "/api/agents/generate-tasks",
+      "schedule": "0 4-9 * * *"
+    },
+    {
+      "path": "/api/cron/render-reels",
+      "schedule": "30 5 * * *"
+    },
+    {
+      "path": "/api/cron/publish-drafts",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/email-outbox",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/push/process-queue",
+      "schedule": "* 5-22 * * *"
+    },
+    {
+      "path": "/api/push/process-queue",
+      "schedule": "*/5 23,0-4 * * *"
+    },
+    {
+      "path": "/api/integrations/dispatch",
+      "schedule": "* 5-22 * * *"
+    },
+    {
+      "path": "/api/integrations/dispatch",
+      "schedule": "*/5 23,0-4 * * *"
+    },
+    {
+      "path": "/api/cron/wa-queue-send",
+      "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/cron/wa-sync",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/wa-paced-send",
+      "schedule": "*/3 * * * *"
+    },
+    {
+      "path": "/api/cron/social-daily",
+      "schedule": "0 8,13,17 * * *"
+    },
+    {
+      "path": "/api/vision/process?limit=10",
+      "schedule": "*/15 5-22 * * *"
+    }
   ]
 }
