@@ -5,19 +5,16 @@
  * (٢٨ أغسطس ٢٠٢٦) محمد: «ليه كل الشغل نص شغل؟ ممكن الشغل يبقى مكتمل
  *   وفعّال؟»
  *
- * 🐞 النمط اللي اتكرر: أبني دالة أو مسار أو مكوّن **وأنساه من غير
- *    ما أوصّله**. أمثلة حصلت فعلًا:
- *    · ٥ دوال تاسكات (تايم لاين · إشعارات · متابعة · تقييم · تلاعب)
- *      اتبنوا **من غير كرون** — ٧٥ تاسك وصفر إشعار.
- *    · أداة add_listing_oneshot اتبنت في الداتابيز **من غير ما
- *      المارد ياخدها**.
- *    · شاشة إشعارات **مش موجودة** رغم إن ٤٤٦١ إشعار متسجّلين.
- *    · مسارات كرون **مابتقبلش Bearer** فبتتصد بـ401.
+ * 🐞 النمط اللي اتكرر: أبني حاجة **وأنساها من غير ما أوصّلها**:
+ *    · ٥ دوال تاسكات من غير كرون → ٧٥ تاسك وصفر إشعار
+ *    · أداة إضافة الإعلان من غير ما المارد ياخدها
+ *    · ٤٤٦١ إشعار من غير شاشة تعرضهم
  *
- * ✅ الفحص ده بيسأل عن كل حاجة جديدة: **مين بينده عليها؟**
- *    ولو محدش — بيقول بصوت عالي قبل الكوميت.
- *
- * الاستخدام: node scripts/check-wiring.cjs
+ * 🐞 وباج في الفحص نفسه (٢٨/٨): كان بيدوّر على `@/components/<اسم>`
+ *    بس — فالمكوّنات جوّه مجلدات فرعية (analytics/ · payment/)
+ *    كانت بتطلع «موقوفة» وهي مستوردة فعلًا. **جوجل أناليتكس طلع
+ *    شغّال وأنا قلت إنه واقف** — فالفحص الغلط أسوأ من مفيش فحص.
+ *    ✅ دلوقتي بيطابق **المسار الكامل** ومسارات نسبية وimport ديناميكي.
  */
 const fs = require('fs')
 const path = require('path')
@@ -34,40 +31,55 @@ function walk(dir, out = []) {
 }
 
 const files = walk('src')
-const allCode = files.map((f) => fs.readFileSync(f, 'utf8')).join('\n')
+const cache = new Map()
+const read = (f) => {
+  if (!cache.has(f)) cache.set(f, fs.readFileSync(f, 'utf8'))
+  return cache.get(f)
+}
+const allCode = files.map(read).join('\n')
 const problems = []
 
-// ─── ① كل مكوّن في src/components مستورد في مكان؟ ─────────────
+// ─── ① مكوّنات مش مستوردة ─────────────────────────────────────
 for (const f of files) {
   if (!f.startsWith('src/components/')) continue
   const name = path.basename(f).replace(/\.tsx?$/, '')
-  // بيتستورد في أي ملف تاني؟
-  const imported = files.some((o) =>
-    o !== f && new RegExp(`from ['"]@/components/${name}['"]|from ['"]\\./${name}['"]`).test(
-      fs.readFileSync(o, 'utf8')))
+  const rel = f.replace('src/components/', '').replace(/\.tsx?$/, '')
+
+  // بندوّر بكل الصيغ الممكنة
+  const patterns = [
+    `@/components/${rel}`,   // المسار الكامل
+    `@/components/${name}`,  // الاسم لوحده (لو في الجذر)
+    `/${name}'`,             // مسار نسبي
+    `/${name}"`,
+  ]
+  const imported = files.some((o) => {
+    if (o === f) return false
+    const c = read(o)
+    return patterns.some((p) => c.includes(p))
+  })
+
   if (!imported) {
-    problems.push(`🧩 ${f.replace('src/', '')} — مكوّن مش مستورد في أي مكان (شغل واقف)`)
+    problems.push(`🧩 ${f.replace('src/', '')} — مكوّن مش مستورد في أي مكان`)
   }
 }
 
-// ─── ② كل مسار API فيه GET أو POST؟ ───────────────────────────
+// ─── ② مسارات API من غير handler ──────────────────────────────
 for (const f of files) {
   if (!/\/route\.ts$/.test(f)) continue
-  const c = fs.readFileSync(f, 'utf8')
-  if (!/export async function (GET|POST|PUT|PATCH|DELETE)/.test(c)) {
-    problems.push(`🔌 ${f.replace('src/app/', '')} — مسار من غير أي handler`)
+  if (!/export async function (GET|POST|PUT|PATCH|DELETE)|export const (GET|POST)/.test(read(f))) {
+    problems.push(`🔌 ${f.replace('src/app/', '')} — مسار من غير handler`)
   }
 }
 
-// ─── ③ كل صفحة جديدة موصولة برابط؟ ────────────────────────────
+// ─── ③ صفحات من غير رابط ──────────────────────────────────────
 for (const f of files) {
   const m = f.match(/^src\/app\/([^/]+)\/page\.tsx$/)
   if (!m) continue
-  const route = `/${m[1]}`
-  if (['admin', 'api', 'auth'].includes(m[1])) continue
-  const linked = new RegExp(`href=["'\`]${route}`).test(allCode)
-  if (!linked) {
-    problems.push(`🔗 ${route} — صفحة موجودة بس مفيش أي رابط ليها`)
+  const seg = m[1]
+  if (['admin', 'api', 'auth', 'demo'].includes(seg) || seg.startsWith('[')) continue
+  if (!new RegExp(`href=["'\`]/${seg}`).test(allCode)
+    && !new RegExp(`push\\(['"\`]/${seg}`).test(allCode)) {
+    problems.push(`🔗 /${seg} — صفحة من غير أي رابط ليها`)
   }
 }
 
@@ -80,6 +92,5 @@ if (problems.length === 0) {
 
 console.log(`⚠️ ${problems.length} حاجة محتاجة توصيل:\n`)
 problems.forEach((p) => console.log('  ' + p))
-console.log('\n💡 ده تنبيه مش خطأ — راجعهم وقرّر.')
-// مابنفشلش البناء — ممكن يكون فيه حالات مقصودة
+console.log('\n💡 تنبيه مش خطأ — فيه حالات مقصودة (مكوّن محضّر لصفحة جاية).')
 process.exit(0)

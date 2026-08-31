@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import SupplierModulesInline from '@/components/SupplierModulesInline'
-import { Bell, Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
+import { Car, Package, Bell, Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
@@ -218,6 +218,36 @@ export default function TopNav() {
 
               {/* 🔔 (٢٨ أغسطس ٢٠٢٦) محمد: «تاب النوتيفيكيشن مش بيعرض الإشعارات».
                   زرار الجرس فوق بيفعّل الـpush بس — ده الرابط للشاشة الحقيقية. */}
+              {/* 🚗 (٢٨/٨) صفحة السيارات كانت موجودة من غير أي رابط */}
+              <Link
+                href="/cars"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-[#34D399]/12 flex items-center justify-center shrink-0">
+                  <Car className="w-[18px] h-[18px] text-[#059669]" />
+                </div>
+                <div className="flex-1 text-right">
+                  <p className="font-bold text-gray-900">سيارات</p>
+                  <p className="text-xs text-gray-500 mt-0.5">زيرو ومستعمل من معارض وأفراد</p>
+                </div>
+              </Link>
+
+              {/* 📦 (٢٨/٨) طلباتي — كانت من غير رابط كمان */}
+              <Link
+                href="/my-orders"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-[#34D399]/12 flex items-center justify-center shrink-0">
+                  <Package className="w-[18px] h-[18px] text-[#059669]" />
+                </div>
+                <div className="flex-1 text-right">
+                  <p className="font-bold text-gray-900">طلباتي</p>
+                  <p className="text-xs text-gray-500 mt-0.5">حجوزاتك وطلباتك</p>
+                </div>
+              </Link>
+
               <Link
                 href="/notifications"
                 onClick={() => setMobileOpen(false)}
