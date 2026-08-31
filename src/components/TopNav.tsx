@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import SupplierModulesInline from '@/components/SupplierModulesInline'
-import { Car, Package, Bell, Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
+import { LayoutDashboard, Car, Package, Bell, Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
@@ -23,6 +23,28 @@ export default function TopNav() {
   //    وعشان موظفين مضمونة يفضل قدامهم «حسابي» بعد ما التاب السفلي بقى شغلي.
   const staff = useMadmonaStaff()
   const [mobileOpen, setMobileOpen] = useState(false)
+  // 🔢 (٢٨/٨) عدّاد الإشعارات غير المقروءة
+  const [unreadCount, setUnreadCount] = useState(0)
+  // 👤 (٢٨/٨) موظف مضمونة؟ — لوحة الإدارة بتبان له بس
+  const [isStaff, setIsStaff] = useState(false)
+
+  // 🔢 (٢٨/٨) العدّاد بيتجاب مرة عند الفتح
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        const { data } = await (supabaseBrowser.rpc as unknown as (
+          f: string,
+        ) => Promise<{ data: unknown }>)('my_unread_notifications')
+        if (alive && typeof data === 'number') setUnreadCount(data)
+      const { data: staff } = await (supabaseBrowser.rpc as unknown as (
+        f: string,
+      ) => Promise<{ data: unknown }>)('is_madmona_staff')
+      if (alive && staff === true) setIsStaff(true)
+      } catch { /* مش مسجّل دخول — العدّاد يفضل صفر */ }
+    })()
+    return () => { alive = false }
+  }, [])
   const [scrolled, setScrolled] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
 
@@ -118,7 +140,38 @@ export default function TopNav() {
               activeClass="bg-white text-[#059669]"
               inactiveClass="bg-transparent text-white"
             />
-            <NotificationButton variant="icon-only" />
+            {/* 🔔 (٢٨/٨) الجرس بقى يودّي شاشة الإشعارات —
+                كان زرار تفعيل push بس ومابيعرضش حاجة */}
+            {/* 📊 (٢٨ أغسطس ٢٠٢٦) محمد: «لوحة الإدارة مش ظاهرة في الـ٣ شرط».
+                بتبان لموظفي مضمونة بس — الزائر والمورد مايشوفوهاش. */}
+            {isStaff && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
+              >
+                <div className="w-10 h-10 rounded-2xl bg-[#04352A] flex items-center justify-center shrink-0">
+                  <LayoutDashboard className="w-[18px] h-[18px] text-[#34D399]" />
+                </div>
+                <div className="flex-1 text-right">
+                  <p className="font-bold text-gray-900">لوحة الإدارة</p>
+                  <p className="text-xs text-gray-500 mt-0.5">كل النظام في مكان واحد</p>
+                </div>
+              </Link>
+            )}
+
+            <Link
+              href="/notifications"
+              aria-label="الإشعارات"
+              className="relative w-11 h-11 bg-white/15 hover:bg-white/25 hover:-translate-y-0.5 rounded-2xl flex items-center justify-center transition-all no-underline"
+            >
+              <Bell className="w-5 h-5 text-white" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#34D399] text-[#04352A] text-[10px] font-black flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Link>
             <CartButton
               className="w-11 h-11 bg-white/15 hover:bg-white/25 hover:-translate-y-0.5 rounded-2xl"
               iconColorClass="text-white"

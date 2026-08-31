@@ -11,6 +11,9 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, TrendingUp, Coins } from 'lucide-react'
 import CompactNewsTabs from '@/components/CompactNewsTabs'
+import NewsStories from '@/components/NewsStories'
+import NewsTabsSection from '@/components/NewsTabsSection'
+import FinancialTicker from '@/components/FinancialTicker'
 
 interface FinData {
   ok: boolean
@@ -72,6 +75,9 @@ export default function BusinessLoungeClient() {
       </div>
 
       {/* ─── لوحة الأسعار: عملات + ذهب ─── */}
+      {/* 📈 (٢٨/٨) الشريط المالي اللحظي — كان متبني وواقف */}
+      <FinancialTicker />
+
       <section className="px-4 pt-3 max-w-5xl mx-auto">
         <div className="flex items-center gap-2 mb-2.5">
           <TrendingUp className="w-4 h-4 text-[#059669]" />
@@ -116,6 +122,16 @@ export default function BusinessLoungeClient() {
       <section className="px-4 pt-6 max-w-5xl mx-auto">
         <h2 className="text-[13px] font-black text-[#0A0A0A] mb-2.5">أخبار مضمونة</h2>
         <CompactNewsTabs />
+
+        {/* 📰 (٢٨/٨) ستوريز الأخبار — كانت متبنية وواقفة */}
+        <div className="mt-6">
+          <NewsStories />
+        </div>
+
+        {/* 📊 (٢٨/٨) الأخبار الاقتصادية بالتفصيل */}
+        <div className="mt-6">
+          <NewsTabsSection />
+        </div>
       </section>
     </main>
   )
