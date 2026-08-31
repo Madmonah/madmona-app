@@ -658,6 +658,9 @@ function RequestForm({ supplierId, onDone }: { supplierId: string; onDone: () =>
 function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  // 📎 (٢٨/٨) نوع الإثبات المطلوب لما الداتابيز ترفض الإقفال
+  const [needsProof, setNeedsProof] = useState<string | null>(null)
+  const [proofText, setProofText] = useState('')
   // 📋 عرض التفاصيل الحية (أرقام المكالمات · اسكريبت البوست …)
   const [showDetail, setShowDetail] = useState(false)
 
@@ -667,15 +670,27 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
      التحديث (كانت بتكتب status='done' وdaily_tasks مابتقبلش الكلمة دي)،
      الشاشة كانت بتعمل refresh والمهمة بتفضل مكانها — والمستخدم شايف إن
      الدوسة مش بتعمل حاجة. دلوقتي: بنقرا الخطأ وبنوريه للمستخدم. */
-  const complete = async () => {
+  const complete = async (proof?: string, proofUrl?: string) => {
     setBusy(true); setErr(null)
     try {
       const { data, error } = await (supabaseBrowser.rpc as unknown as (
         fn: string, args: Record<string, unknown>,
-      ) => Promise<{ data: { ok?: boolean; error?: string } | null; error: { message: string } | null }>)(
-        'complete_my_task', { p_task_id: t.id, p_source: t.source },
+      ) => Promise<{ data: { ok?: boolean; error?: string; needs_proof?: string; hint?: string } | null; error: { message: string } | null }>)(
+        'complete_my_task', {
+          p_task_id: t.id,
+          p_source: t.source,
+          p_proof: proof ?? null,
+          p_proof_url: proofUrl ?? null,
+        },
       )
       if (error) { setErr('مقدرناش نقفل المهمة — جرّب تاني'); return }
+
+      // 📎 (٢٨/٨) محتاج إثبات؟ نفتح الخانة بدل ما نقول «مقدرناش»
+      if (data && data.ok === false && data.needs_proof) {
+        setNeedsProof(data.needs_proof)
+        setErr(data.error || null)
+        return
+      }
       if (data && data.ok === false) { setErr(data.error || 'مقدرناش نقفل المهمة'); return }
       pingTasksChanged()          // 🔔 قول لتاب Task في الشات
       onDone()
@@ -692,7 +707,7 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
     }`}>
       <button
         type="button"
-        onClick={complete}
+        onClick={() => complete(proofText || undefined)}
         disabled={busy}
         className="w-6 h-6 rounded-lg border-2 border-gray-300 hover:border-[#059669] hover:bg-[#34D399]/10 flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors"
         aria-label="خلّصت المهمة"
@@ -729,6 +744,36 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
         {t.description}
       </div>
     )}
+    {/* 📎 (٢٨ أغسطس ٢٠٢٦) محمد: «باجي أقفل التاسك بيقولي مقدرناش
+        نقفل المهمة» — التاسك محتاج إثبات، فبنطلبه هنا بدل
+        ما نقول «مقدرناش» وخلاص. */}
+    {needsProof === 'text' && (
+      <div className="mt-2 space-y-2">
+        <textarea
+          value={proofText}
+          onChange={(e) => setProofText(e.target.value)}
+          rows={2}
+          autoFocus
+          className="w-full border border-[#34D399] rounded-xl px-3 py-2 text-[12.5px]"
+          placeholder="اكتب إيه اللي عملته — مثال: كلمت المورد واتفقنا يبعت الصور بكرة"
+        />
+        <button
+          type="button"
+          disabled={busy || proofText.trim().length < 15}
+          onClick={() => complete(proofText)}
+          className="w-full py-2.5 rounded-xl bg-[#34D399] text-[#04352A] text-[12.5px] font-black disabled:opacity-40"
+        >
+          {proofText.trim().length < 15 ? `كمّل ${15 - proofText.trim().length} حرف` : 'اقفل التاسك ✅'}
+        </button>
+      </div>
+    )}
+
+    {needsProof && needsProof !== 'text' && (
+      <p className="mt-2 text-[11.5px] text-amber-700 font-bold">
+        📎 التاسك ده محتاج {needsProof === 'photo' ? 'صورة' : needsProof === 'screenshot' ? 'اسكرينشوت' : needsProof === 'link' ? 'لينك' : 'مكالمة موثّقة'} — ارفعه من صفحة التاسك.
+      </p>
+    )}
+
     {err && (
       <p className="text-[11px] font-bold text-red-600 px-3 pt-1">{err}</p>
     )}
