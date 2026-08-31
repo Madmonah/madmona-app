@@ -1672,7 +1672,8 @@ function StepBasics({
             {t('al.extra_sub')}{' '}
             <span className="text-[#059669] font-medium">{t('al.starred_required')}</span>
           </p>
-          {attributes.map(attr => (
+          {/* ⭐ الإلزامي بس هو اللي بيبان — ده اللي يمنع النشر */}
+          {attributes.filter(a => a.is_required).map(attr => (
             <AttributeFieldRenderer
               key={attr.id}
               attr={attr}
@@ -1681,6 +1682,34 @@ function StepBasics({
               error={errors[`attr_${attr.field_key}`]}
             />
           ))}
+
+          {/* 📦 (٢٨/٨) الاختياري كله مطوي — المورد الزهقان ينشر من غيره */}
+          {attributes.some(a => !a.is_required) && (
+            <details className="mt-4 rounded-2xl border border-[#E5E5E0] bg-[#FAFAF7] overflow-hidden group">
+              <summary className="cursor-pointer list-none px-4 py-3.5 flex items-center justify-between">
+                <span className="flex-1">
+                  <span className="block text-sm font-bold text-gray-900">
+                    بيانات إضافية — تساعدنا نرشّح إعلانك أكتر
+                  </span>
+                  <span className="block text-[11px] text-gray-500 mt-0.5">
+                    {attributes.filter(a => !a.is_required).length} حاجة اختيارية · تقدر تنشر من غيرها
+                  </span>
+                </span>
+                <span className="text-[#059669] text-lg font-black transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <div className="px-4 pb-4 pt-1 border-t border-[#E5E5E0] bg-white">
+                {attributes.filter(a => !a.is_required).map(attr => (
+                  <AttributeFieldRenderer
+                    key={attr.id}
+                    attr={attr}
+                    value={attrValues[attr.field_key]}
+                    onChange={(v) => setAttrValues(prev => ({ ...prev, [attr.field_key]: v }))}
+                    error={errors[`attr_${attr.field_key}`]}
+                  />
+                ))}
+              </div>
+            </details>
+          )}
         </div>
       )}
 
