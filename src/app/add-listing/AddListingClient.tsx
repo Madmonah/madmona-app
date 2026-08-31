@@ -611,7 +611,8 @@ function AddListingPageInner({
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  const progress = (step / 5) * 100;
+  // 📊 (٢٨/٨) شريط التقدّم اتشال — الإضافة خطوة واحدة، مفيش تقدّم يتعرض
+  const progress = 100;
 
   return (
     <div dir="rtl" lang="ar" className="min-h-screen bg-[#FAFAF7] text-[#1A2E26]">
@@ -676,66 +677,11 @@ function AddListingPageInner({
           />
         )}
 
-        {step === 1 && (
-          <>
-            {/* 🧞 (٦ أغسطس ٢٠٢٦ — محمد) تابين: يكتب بنفسه، أو يسيب المارد يعملهاله
-                من الشات. المارد عنده أداة create_listing_draft فبيقدر يكمّل
-                الإعلان من كلام عادي أو صور منيو/بروشور. */}
-            <div className="flex gap-2 mb-6 p-1 rounded-2xl bg-[#F5F4F0] border border-[#E5E5E0]">
-              {/* ⚡ (٢٨/٨) خطوة واحدة بدل خمسة */}
-              <button
-                type="button"
-                onClick={() => setQuickMode((v) => !v)}
-                className={`flex-1 text-center py-2.5 px-3 rounded-xl text-sm font-bold transition-colors ${
-                  quickMode ? 'bg-[#34D399] text-[#04352A] shadow-sm' : 'text-[#059669]'}`}
-              >
-                ⚡ سريع
-              </button>
-              <span
-                className="flex-1 text-center py-2.5 px-3 rounded-xl bg-white text-[#1A2E26] text-sm font-bold shadow-sm cursor-default"
-                aria-current="page"
-              >
-                {t('al.self')}
-              </span>
-              <a
-                href="/chat/marid?intent=add-listing"
-                onClick={() => trackEvent({ event_type: 'add_listing_via_marid_click', metadata: { step } })}
-                className="flex-1 text-center py-2.5 px-3 rounded-xl text-[#059669] text-sm font-bold no-underline hover:bg-white/70 transition-colors"
-              >
-                {t('al.marid')}
-              </a>
-            </div>
-            <p className="text-xs text-gray-500 -mt-4 mb-6 text-center">
-              {t('al.marid_hint_1')}{' '}
-              <a href="/chat/marid?intent=add-listing" className="text-[#059669] font-bold underline">
-                {t('al.marid_chat')}
-              </a>{' '}
-              {t('al.marid_hint_2')}
-            </p>
-
-            {/* 🧹 (٢٩ يوليو ٢٠٢٦ — محمد) شريط «ارفع إعلاناتك بالجملة» اتشال من فوق خالص. */}
-            {/* ⚡ (٢٨/٨) المسار السريع — بيفهم الوصف الحر ويسجّل الإعلان */}
-            {quickMode ? (
-              <div className="rounded-2xl border border-gray-200 bg-white p-4">
-                <QuickAddListing />
-              </div>
-            ) : (
-            <>
-            <StepCategory
-              value={draft.category_slug}
-              categories={dbExtraCategories}
-              initialTrack={params.get('track')}
-              resetSignal={resetCategoryView}
-              onSelect={async (slug) => {
-                // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
-                const t = await persist({ category_slug: slug });
-                if (t) next();
-              }}
-            />
-            </>
-            )}
-          </>
-        )}
+        {/* ⚡ (٢٨ أغسطس ٢٠٢٦) محمد: «أنا مش عايز الويزارد الطويل».
+            الإضافة بقت **خطوة واحدة وبس** — المورد بيكتب وصف حر
+            ويرفع صور، والنظام يفهم النوع والتصنيف والسعر والمنطقة.
+            الويزارد الخماسي اتشال من الواجهة بالكامل. */}
+        {step === 1 && <QuickAddListing />}
 
         {showBulkExcel && (
           <BulkExcelDrafts
@@ -746,54 +692,7 @@ function AddListingPageInner({
           />
         )}
 
-        {step === 2 && (
-          <StepBasics
-            draft={draft}
-            errors={errors}
-            setErrors={setErrors}
-            categories={dbExtraCategories}
-            onSubmit={async (patch) => {
-              // Phase F (May 18 2026): validation moved INTO StepBasics so it
-              // can also enforce required category-specific attributes.
-              // Parent only persists + advances when child says patch is ready.
-              const ok = await persist(patch);
-              if (ok) next();
-            }}
-            onBack={back}
-            onChangeCategory={() => {
-              // Phase G+ (May 18 2026): explicit category change should land
-              // on the mains list, not the sub list of the previous selection.
-              setResetCategoryView((n) => n + 1);
-              setStep(1);
-            }}
-            saving={saving}
-          />
-        )}
 
-        {step === 3 && (
-          <StepPricing
-            draft={draft}
-            errors={errors}
-            categories={dbExtraCategories}
-            token={token}
-            beautySchemas={beautySchemas}
-            onSubmit={async (patch) => {
-              if (!patch.price || patch.price <= 0) {
-                setErrors({ price: t('al.err_price') });
-                return;
-              }
-              // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
-              const ok = await persist(patch);
-              if (ok) next();
-            }}
-            onBack={back}
-            onChangeCategory={() => {
-              setResetCategoryView((n) => n + 1);
-              setStep(1);
-            }}
-            saving={saving}
-          />
-        )}
 
         {/* 🐛 (٢٥ يوليو ٢٠٢٦) خطوة الصور كانت بتاخد `categories={categories}` —
             والمتغيّر ده **مش موجود** في السكوب ده أصلاً (اسمه `dbExtraCategories`
@@ -802,55 +701,7 @@ function AddListingPageInner({
             next.config بيخلّي البيلد يعدّي والخطأ يوصل للمتصفح.
             `StepPhotos` بتستخدمها في `getCategoryTrack` عشان تظبط كلام خطوة
             الصور لمسار الخدمات. */}
-        {step === 4 && (
-          <StepPhotos
-            draft={draft}
-            categories={dbExtraCategories}
-            token={token}
-            onSubmit={async (photos) => {
-              // CRITICAL FIX (May 13 2026): only advance if persist actually succeeded.
-              const t = await persist({ photos });
-              if (t) next();
-            }}
-            onUpload={async (photos) => {
-              // AUTO-SAVE (May 13 2026 fix for photo data-loss):
-              // محمد طاهر complaint: "رفعت الصور مرات كتير، فيه مشكلة عندكم"
-              // Root cause: local component state held the uploaded photos
-              // but draft.photos in DB stayed empty until user clicked Continue.
-              // If they closed the page or refreshed first, photos were lost.
-              // Now every successful upload persists immediately — no
-              // Continue click needed for the photos to survive.
-              await persist({ photos });
-            }}
-            onBack={back}
-            saving={saving}
-          />
-        )}
 
-        {step === 5 && (
-          <StepContact
-            draft={draft}
-            errors={errors}
-            onSubmit={async (patch) => {
-              const ok = validateContact(patch, setErrors);
-              if (!ok) return;
-              const t = await persist({ ...patch, status: 'submitted' });
-              if (t) {
-                trackEvent({
-                  event_type: 'wizard_submit',
-                  category: draft.category_slug,
-                  metadata: { category_slug: draft.category_slug ?? null },
-                });
-                // NOTE: we do NOT clear localStorage here. That used to cause
-                // duplicate drafts on accidental return visits. The success
-                // page now clears it after a short delay (or on signup).
-                router.push(`/add-listing/success?token=${t}`);
-              }
-            }}
-            onBack={back}
-            saving={saving}
-          />
-        )}
       </main>
 
       {/* شريط الضمانات السريع فضل زي ما هو، وتحته الفوتر الموحّد (١١ أغسطس ٢٠٢٦) */}
