@@ -12,7 +12,6 @@ import {
   BarChart3, Wallet, UtensilsCrossed, Star, PlusCircle, Users, Smartphone, Mail,
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
-import SupplierModulesCard from '@/components/SupplierModulesCard'
 import PushNotificationCard from '@/components/PushNotificationCard'
 import AccountSwitcher from '@/components/AccountSwitcher'
 import MyAssetsCard from '@/components/MyAssetsCard'
@@ -475,7 +474,8 @@ export default function AccountPage() {
             والقايمة بتتحدّث لوحدها لما نضيف موديول جديد. */}
         {supplier && (isApprovedSupplier || isPendingSupplier) && (
           <div className="animate-slide-up delay-200">
-            <SupplierModulesCard supplierId={supplier.id} />
+            {/* 🧹 (١ سبتمبر ٢٠٢٦) «نظام إدارة بيزنسك» اتشال من هنا —
+                البروتوكول: اللوحة في قايمة الـ٣ شرط بس (WorkspaceMenu) */}
           </div>
         )}
 

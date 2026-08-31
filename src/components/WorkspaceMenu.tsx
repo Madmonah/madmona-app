@@ -2,27 +2,15 @@
 // ============================================================================
 // 🎛️ WorkspaceMenu — لوحة تحكم واحدة في قايمة الـ٣ شرط
 //
-// (٢٨ أغسطس ٢٠٢٦) محمد:
-//   «لوحة التحكم المحطوطة دي خاصة بالبيزنس اللي B2B واللي مربوط
-//    بالأكونت واللي بيتم عرض المنتج أو الخدمة بتاعتهم في الماركت بليس.
-//    ليه بقى بيظهر ليا تاب صيانة وده برّه الموديل؟ ومش عارف شايف تاب
-//    تاني مكتوب عليه نظام إدارة بيزنسك مع إنك عارف إني أدمن منصة
-//    مضمونة… وحتى أنا لو صاحب بيزنس B2B مش هيظهر ليا ٢ لوحة تحكم
-//    مفصولين عن بعض. أنا عايز أدمج نظام الB2B بالماركت بليس بتاع
-//    مضمونة وبورصة العقارات — مش عايز كل واحد فيهم في اتجاه.
-//    ولوحة الإدارة الكاملة سواء لمضمونة أو صاحب البيزنس تظهر في
-//    التاب اللي فيها ٣ شرط».
+// (١ سبتمبر ٢٠٢٦) البروتوكول — محمد:
+//   «في التاب اللي فيه الـ٣ شرط في الموبايل يتحط لوحة التحكم بتاعت
+//    الفينانس، وإعلاناته تكون محطوطة كمنتج أو خدمة أو إيجار أو منيو
+//    المطعم أو الوحدة لو مطوّر عقاري (في حالة المطوّر ينزل له موديل
+//    شركة المقاولات كامل). شيل تاب نظام إدارة بيزنسك من حسابي.
+//    وبالنسبة لموديل مضمونة نفس النظام».
 //
-// 🐞 اللي كان غلط:
-//   ① **لوحتين منفصلتين**: «لوحة الإدارة» + «نظام إدارة بيزنسك»
-//   ② **الموديولات بتظهر للكل** من غير شرط
-//   ③ **«صيانة» بتظهر لمضمونة** لأن حسابها متسجّل `model: rentals`
-//      — ومضمونة **منصة** مش شركة إيجارات
-//
-// ✅ الحل: **لوحة واحدة**، محتواها بيتحدد من مين أنت:
-//   · أدمن مضمونة → لوحة المنصة (كل النظام)
-//   · صاحب بيزنس  → موديولات نشاطه هو
-//   · زائر         → مايشوفش حاجة
+// 🎯 القاعدة: **الفينانس أولًا** — لكل بيزنس (مضمونة أو مورد أو مطوّر)،
+//    وبعدها موديولات نشاطه اللي بتعرض إعلاناته بالشكل المناسب.
 // ============================================================================
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -31,38 +19,62 @@ import {
   LayoutDashboard, LayoutGrid, Package, Boxes, ShoppingCart, CalendarDays,
   Star, Users, Wallet, UtensilsCrossed, KeyRound, Factory, Workflow,
   Warehouse, Building2, Wrench, ClipboardList, ChevronLeft, Tag, Megaphone,
+  TrendingUp, Receipt, HardHat, Ruler, FileText,
 } from 'lucide-react'
 
 type Mod = { key: string; label: string; href: string; icon: React.ElementType }
 
-/** 🗂️ موديولات البيزنس — نفس أسماء business_modules() */
+/** 💰 الفينانس — أول حاجة لكل بيزنس */
+// 🔗 (١/٩) الصفحات الموجودة فعلًا: accounting هي الفينانس —
+//    الباقي تابات جوّاها بالـhash.
+const FINANCE: Mod[] = [
+  { key: 'overview',  label: 'الأوفرفيو',  href: '/supplier/erp/accounting',           icon: TrendingUp },
+  { key: 'income',    label: 'الإيرادات',  href: '/supplier/erp/accounting#income',    icon: Wallet },
+  { key: 'expenses',  label: 'المصروفات',  href: '/supplier/erp/accounting#expenses',  icon: Receipt },
+  { key: 'invoices',  label: 'الفواتير',   href: '/supplier/erp/accounting#invoices',  icon: FileText },
+]
+
+/** 🗂️ موديولات النشاط — بتعرض الإعلانات بالشكل المناسب لكل مسار */
 const BUSINESS: Record<string, Omit<Mod, 'key'>> = {
-  listings:         { label: 'إعلاناتي',      href: '/supplier/erp/listings',    icon: LayoutGrid },
-  projects:         { label: 'مشاريعي',       href: '/supplier/erp/projects',    icon: Building2 },
+  // 🛍️ بيع — الإعلانات كمنتجات
   products:         { label: 'منتجاتي',       href: '/supplier/erp/products',    icon: Package },
-  materials:        { label: 'الخامات',       href: '/supplier/erp/materials',   icon: Boxes },
-  inventory:        { label: 'المخزون',       href: '/supplier/erp/inventory',   icon: Warehouse },
+  inventory:        { label: 'المخزون',       href: '/supplier/erp/products#inventory',   icon: Warehouse },
   catalog:          { label: 'الكتالوج',      href: '/supplier/erp/catalog',     icon: Tag },
-  orders:           { label: 'الطلبات',       href: '/supplier/erp/orders',      icon: ShoppingCart },
-  bookings:         { label: 'الحجوزات',      href: '/supplier/erp/bookings',    icon: CalendarDays },
-  reviews:          { label: 'التقييمات',     href: '/supplier/erp/reviews',     icon: Star },
-  crm:              { label: 'عملائي',        href: '/supplier/erp/crm',         icon: Users },
-  team:             { label: 'فريقي',         href: '/supplier/erp/team',        icon: Users },
-  accounting:       { label: 'حساباتي',       href: '/supplier/erp/accounting',  icon: Wallet },
-  menu:             { label: 'المنيو',        href: '/supplier/erp/menu',        icon: UtensilsCrossed },
-  tables:           { label: 'الطاولات',      href: '/supplier/erp/tables',      icon: UtensilsCrossed },
-  kitchen:          { label: 'المطبخ',        href: '/supplier/erp/kitchen',     icon: UtensilsCrossed },
-  units:            { label: 'الوحدات',       href: '/supplier/erp/units',       icon: KeyRound },
-  contracts:        { label: 'العقود',        href: '/supplier/erp/contracts',   icon: ClipboardList },
-  maintenance:      { label: 'الصيانة',       href: '/supplier/erp/maintenance', icon: Wrench },
+  orders:           { label: 'الطلبات',       href: '/supplier/erp/crm#orders',      icon: ShoppingCart },
+  // 🔑 إيجار — الإعلانات كوحدات
+  units:            { label: 'الوحدات',       href: '/supplier/erp/products#units',       icon: KeyRound },
+  bookings:         { label: 'الحجوزات',      href: '/supplier/erp/crm#bookings',    icon: CalendarDays },
+  contracts:        { label: 'العقود',        href: '/supplier/erp/crm#contracts',   icon: ClipboardList },
+  maintenance:      { label: 'الصيانة',       href: '/supplier/erp/products#maintenance', icon: Wrench },
+  // 💇 خدمات — الإعلانات كخدمات
+  services_catalog: { label: 'خدماتي',        href: '/supplier/erp/catalog',    icon: Wrench },
+  schedule:         { label: 'المواعيد',      href: '/supplier/erp/crm#schedule',    icon: CalendarDays },
+  // 🍽️ مطاعم — الإعلانات كمنيو
+  menu:             { label: 'المنيو',        href: '/supplier/erp/catalog',        icon: UtensilsCrossed },
+  tables:           { label: 'الطاولات',      href: '/supplier/erp/catalog#tables',      icon: UtensilsCrossed },
+  kitchen:          { label: 'المطبخ',        href: '/supplier/erp/production',     icon: UtensilsCrossed },
+  // 🏗️ مطوّر — موديل المقاولات كامل
+  projects:         { label: 'مشاريعي',       href: '/supplier/erp/projects',    icon: Building2 },
+  stages:           { label: 'مراحل التنفيذ', href: '/supplier/erp/production',      icon: Workflow },
+  materials:        { label: 'الخامات',       href: '/supplier/erp/materials',   icon: Boxes },
   production:       { label: 'أوامر التشغيل', href: '/supplier/erp/production',  icon: Factory },
-  stages:           { label: 'المراحل',       href: '/supplier/erp/stages',      icon: Workflow },
-  services_catalog: { label: 'خدماتي',        href: '/supplier/erp/services',    icon: Wrench },
-  schedule:         { label: 'المواعيد',      href: '/supplier/erp/schedule',    icon: CalendarDays },
-  leads:            { label: 'الليدز',        href: '/supplier/erp/leads',       icon: Users },
+  contractors:      { label: 'المقاولين',     href: '/supplier/erp/projects#contractors', icon: HardHat },
+  surveys:          { label: 'المساحات',      href: '/supplier/erp/projects#surveys',     icon: Ruler },
+  // 👥 مشترك
+  listings:         { label: 'إعلاناتي',      href: '/supplier/erp/products',    icon: LayoutGrid },
+  crm:              { label: 'عملائي',        href: '/supplier/erp/crm',         icon: Users },
+  leads:            { label: 'الليدز',        href: '/supplier/erp/crm#leads',       icon: Users },
+  team:             { label: 'فريقي',         href: '/supplier/erp/crm#team',        icon: Users },
+  reviews:          { label: 'التقييمات',     href: '/supplier/erp/crm#reviews',     icon: Star },
 }
 
-/** 🏛️ لوحة مضمونة — المنصة كلها في مكان واحد */
+/** 🏗️ موديل المقاولات الكامل للمطوّر */
+const DEVELOPER_MODULES = [
+  'projects', 'stages', 'materials', 'production', 'contractors', 'surveys',
+  'units', 'contracts', 'listings', 'crm', 'leads', 'team',
+]
+
+/** 🏛️ لوحة مضمونة — نفس النظام: فينانس أولًا */
 const PLATFORM: Mod[] = [
   { key: 'admin',     label: 'الإدارة',       href: '/admin',                  icon: LayoutDashboard },
   { key: 'listings',  label: 'الإعلانات',     href: '/admin/listings',         icon: LayoutGrid },
@@ -71,10 +83,16 @@ const PLATFORM: Mod[] = [
   { key: 'suppliers', label: 'الموردين',      href: '/admin/suppliers',        icon: Users },
   { key: 'team',      label: 'الفريق',        href: '/admin/team',             icon: Users },
   { key: 'crm',       label: 'مكالماتي',      href: '/crm',                    icon: Users },
-  { key: 'finance',   label: 'الحسابات',      href: '/admin/business-finance', icon: Wallet },
+]
+
+const PLATFORM_FINANCE: Mod[] = [
+  { key: 'fin',       label: 'الفينانس',      href: '/admin/business-finance', icon: TrendingUp },
+  { key: 'payroll',   label: 'المرتبات',      href: '/admin/payroll',          icon: Wallet },
+  { key: 'commission',label: 'العمولات',      href: '/admin/commissions',      icon: Receipt },
 ]
 
 export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void }) {
+  const [finance, setFinance] = useState<Mod[]>([])
   const [mods, setMods] = useState<Mod[]>([])
   const [title, setTitle] = useState('')
   const [href, setHref] = useState('')
@@ -86,7 +104,7 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (!session?.user) return
 
-        // 🏛️ أدمن مضمونة؟ → لوحة المنصة
+        // 🏛️ أدمن مضمونة → لوحة المنصة (فينانس أولًا)
         const { data: staff } = await (supabaseBrowser.rpc as unknown as (
           f: string,
         ) => Promise<{ data: unknown }>)('is_madmona_staff')
@@ -95,64 +113,87 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
           if (!alive) return
           setTitle('لوحة مضمونة')
           setHref('/admin')
+          setFinance(PLATFORM_FINANCE)
           setMods(PLATFORM)
           return
         }
 
-        // 🏪 صاحب بيزنس؟ → موديولات نشاطه هو
+        // 🏪 صاحب بيزنس → فينانس + موديولات نشاطه
         const { data: sup } = await (supabaseBrowser as unknown as {
           from: (t: string) => { select: (c: string) => { eq: (a: string, b: unknown) => { limit: (n: number) => Promise<{ data: unknown }> } } }
-        }).from('marketplace_suppliers').select('id, business_name')
-          .eq('profile_id', session.user.id).limit(1)
+        }).from('suppliers').select('id, business_name, industry')
+          .eq('auth_user_id', session.user.id).limit(1)
 
-        const s = (sup as { id: string; business_name: string }[])?.[0]
+        const s = (sup as { id: string; business_name: string; industry?: string }[])?.[0]
         if (!s || !alive) return
 
+        setTitle(s.business_name || 'بيزنسي')
+        setHref('/supplier/erp')
+        setFinance(FINANCE)
+
+        // 🏗️ مطوّر عقاري → موديل المقاولات الكامل
+        if (s.industry === 'مطوّر عقاري') {
+          setMods(DEVELOPER_MODULES.filter((k) => BUSINESS[k]).map((k) => ({ key: k, ...BUSINESS[k] })))
+          return
+        }
+
+        // 🗂️ غيره → موديولات نشاطه من business_modules
         const { data } = await (supabaseBrowser.rpc as unknown as (
           f: string, a: Record<string, unknown>,
         ) => Promise<{ data: unknown }>)('business_modules', { p_supplier_id: s.id })
 
         const keys = ((data as { modules?: string[] })?.modules) || []
         if (!alive) return
-        setTitle(s.business_name || 'بيزنسي')
-        setHref('/supplier/erp')
         setMods(keys.filter((k) => BUSINESS[k]).map((k) => ({ key: k, ...BUSINESS[k] })))
       } catch { /* مش مسجّل — مايظهرش حاجة */ }
     })()
     return () => { alive = false }
   }, [])
 
-  // 🙈 زائر عادي؟ مايشوفش حاجة
-  if (mods.length === 0) return null
+  if (mods.length === 0 && finance.length === 0) return null
+
+  const Grid = ({ items }: { items: Mod[] }) => (
+    <div className="grid grid-cols-4 gap-1 px-1">
+      {items.map((m) => {
+        const Icon = m.icon
+        return (
+          <Link key={m.key} href={m.href} onClick={onNavigate}
+            className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-[#FAFAF7] no-underline">
+            <div className="w-9 h-9 rounded-xl bg-[#34D399]/12 flex items-center justify-center">
+              <Icon className="w-[17px] h-[17px] text-[#059669]" />
+            </div>
+            <span className="text-[10px] font-bold text-gray-700 text-center leading-tight">{m.label}</span>
+          </Link>
+        )
+      })}
+    </div>
+  )
 
   return (
     <div className="pt-3 mt-2 border-t border-gray-100">
       <div className="flex items-center justify-between px-3 mb-2">
-        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-          {title}
-        </p>
+        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{title}</p>
         <Link href={href} onClick={onNavigate}
           className="text-[10.5px] font-bold text-[#059669] flex items-center gap-0.5 no-underline">
           الكل <ChevronLeft className="w-3 h-3" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-4 gap-1 px-1">
-        {mods.map((m) => {
-          const Icon = m.icon
-          return (
-            <Link key={m.key} href={m.href} onClick={onNavigate}
-              className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-[#FAFAF7] no-underline">
-              <div className="w-9 h-9 rounded-xl bg-[#34D399]/12 flex items-center justify-center">
-                <Icon className="w-[17px] h-[17px] text-[#059669]" />
-              </div>
-              <span className="text-[10px] font-bold text-gray-700 text-center leading-tight">
-                {m.label}
-              </span>
-            </Link>
-          )
-        })}
-      </div>
+      {/* 💰 الفينانس أولًا — البروتوكول */}
+      {finance.length > 0 && (
+        <>
+          <p className="text-[9.5px] font-bold text-gray-400 px-3 mb-1">💰 الفينانس</p>
+          <Grid items={finance} />
+        </>
+      )}
+
+      {/* 🗂️ موديولات النشاط */}
+      {mods.length > 0 && (
+        <>
+          <p className="text-[9.5px] font-bold text-gray-400 px-3 mt-3 mb-1">🗂️ الإدارة</p>
+          <Grid items={mods} />
+        </>
+      )}
     </div>
   )
 }
