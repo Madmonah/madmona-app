@@ -18,7 +18,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   Search, Bell, Menu, X, ArrowLeft, User, LogIn, LogOut, Briefcase, Plus,
-  LayoutDashboard,
+  LayoutDashboard, Car, Package,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { useT } from '@/lib/i18n/LanguageProvider'
@@ -423,6 +423,10 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
               <DrawerLink href={`/add-listing${addTrack}`} icon={<Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />} iconBg="bg-[#d4a017]/10" title={t('mhome.add_a_listing')} desc={t('mhome.start_selling_or_renting')} onClose={() => setMenuOpen(false)} />
               <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={t('mhome.careers')} desc={t('mhome.join_the_madmona_team')} onClose={() => setMenuOpen(false)} />
               {/* 🔔 (٢٨/٨) الإشعارات */}
+              {/* 🚗 (٢٨/٨) السيارات — ٤٢ إعلان منشور وماكانش ليها رابط في الموبايل */}
+              <DrawerLink href="/cars" icon={<Car className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title="سيارات" desc="زيرو ومستعمل من معارض وأفراد" onClose={() => setMenuOpen(false)} />
+              {/* 📦 (٢٨/٨) طلباتي */}
+              <DrawerLink href="/my-orders" icon={<Package className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title="طلباتي" desc="حجوزاتك وطلباتك" onClose={() => setMenuOpen(false)} />
               <DrawerLink href="/notifications" icon={<Bell className="w-5 h-5 text-[#059669]" />} title="الإشعارات" desc="كل اللي جالك في مكان واحد" onClose={() => setMenuOpen(false)} />
 
               {/* 📊 (٢٨/٨) لوحة الإدارة — لموظفي مضمونة بس */}
