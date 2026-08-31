@@ -1615,6 +1615,8 @@ function linkifyText(text: string): React.ReactNode {
         <div style={{ display: 'flex', gap: 10, padding: 12, background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)', overflowX: 'auto' }}>
           <button onClick={() => { setShowPlus(false); fileRef.current?.click() }} style={sheetBtn}>🖼️<div style={sheetLbl}>صورة/فيديو</div></button>
           <button onClick={() => { setShowPlus(false); docRef.current?.click() }} style={sheetBtn}>📎<div style={sheetLbl}>ملف/مستند</div></button>
+          {/* ➕ (٢٨ أغسطس ٢٠٢٦) ضيف إعلان — من الجروب على طول */}
+          <button onClick={() => { setShowPlus(false); window.location.assign('/add-listing') }} style={sheetBtn}>📢<div style={sheetLbl}>ضيف إعلان</div></button>
           <button onClick={sendLocation} style={sheetBtn}>📍<div style={sheetLbl}>موقعي</div></button>
           <button onClick={() => { const el = calRef.current; if (el) { try { el.showPicker() } catch { el.click() } } }} style={sheetBtn}>🗓️<div style={sheetLbl}>ميعاد</div></button>
           <button onClick={() => { setShowPlus(false); setContactDraft({ name: '', phone: '' }) }} style={sheetBtn}>👤<div style={sheetLbl}>جهة اتصال</div></button>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Search as SearchIcon, MoreVertical, ChevronDown, Pin,
@@ -114,7 +115,8 @@ export default function ChatPage() {
   const [authChecked, setAuthChecked] = useState(false)
   const [authedNoPhone, setAuthedNoPhone] = useState(false) // داخل بحساب مضمونة بس لسه مفيش رقم واتساب متسجّل (جوجل مثلًا)
   const [messages, setMessages] = useState<Msg[]>([])
-  const [input, setInput] = useState('')
+    const router = useRouter()
+const [input, setInput] = useState('')
   const [pendingQ, setPendingQ] = useState<string | null>(null)   // سؤال جاي من هوم «اسأل المارد» (?q=)
   const [attach, setAttach] = useState<Attach | null>(null)
   const [sending, setSending] = useState(false)
@@ -706,6 +708,8 @@ export default function ChatPage() {
       {showPlus && (
         <div style={{ display: 'flex', gap: 10, padding: 12, background: '#fff', borderTop: '1px solid rgba(0,0,0,.05)' }}>
           <button onClick={() => fileRef.current?.click()} style={sheetBtn}>🖼️<div style={sheetLbl}>صورة/ملف</div></button>
+          {/* ➕ (٢٨/٨) ضيف إعلان — أسرع طريق من الشات للإضافة */}
+          <button onClick={() => { setShowPlus(false); router.push('/add-listing') }} style={sheetBtn}>📢<div style={sheetLbl}>ضيف إعلان</div></button>
           <button onClick={sendLocation} style={sheetBtn}>📍<div style={sheetLbl}>موقعي</div></button>
           <button onClick={() => { const el = calRef.current; if (el) { try { el.showPicker() } catch { el.click() } } }} style={sheetBtn}>🗓️<div style={sheetLbl}>ميعاد</div></button>
         </div>
