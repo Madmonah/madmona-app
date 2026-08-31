@@ -182,6 +182,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // 🛟 (٢٨/٨) نحفظهم هنا عشان المكتبة تقدر ترد لو حصل خطأ تحت
+  let safeMessage = ''
+  let safePhone = ''
   let body: { phone?: string; name?: string; message?: string; media?: MediaInput; summon?: boolean }
   try {
     body = await request.json()
@@ -318,12 +321,33 @@ export async function POST(request: NextRequest) {
       ? `سياق المحادثة السابقة:\n${historyText}\n\n---\nرسالة العميل الحالية:\n${effectiveText}`
       : effectiveText
 
+    // 🛟 (٢٨/٨) للاحتياطي — المكتبة بترد بيهم لو حصل خطأ تحت
+    safeMessage = userMessage || ''
+    safePhone = phone || ''
     // ── ٥) رد المارد ────────────────────────────────────────────────────
     // 🧞 نفس مخ الواتساب بالظبط (`lib/marid-brain`) — نسخة واحدة لكل الماردة.
     //    والسياق الخاص بالمارد ده بيتقري من نفس المكان اللي أرقام الواتساب
     //    بتقرا منه (`wa_number_configs`)، فأي تعليمة جديدة للمارد الرسمي
     //    تتحط في صف واحد من غير أي نشر.
     const maridCfg = await getNumberConfig(WEB_MARID_SESSION)
+
+    // 🛟 (٢٨/٨) رد المكتبة — بيشتغل لو الأنثروبيك فشل لأي سبب
+    //    (رصيد خلص · انقطاع · تجاوز الحد). المكتبة بتعرف ٤١٤ فئة
+    //    وبترشّح من الإعلانات الحية وبتعرف بتكلم مين.
+    const libraryReply = async (): Promise<string | null> => {
+      try {
+        const { data } = await (supabaseUntyped.rpc as unknown as (
+          f: string, a: Record<string, unknown>,
+        ) => Promise<{ data: unknown }>)('marid_offline_reply', {
+          p_text: userMessage, p_phone: phone,
+        })
+        const t = typeof data === 'string' ? data.trim() : ''
+        return t.length > 5 ? t : null
+      } catch {
+        return null
+      }
+    }
+
     const raw = await callMaridWithTools({
       systemPrompt: (await withLiveCommission(CUSTOMER_CONCIERGE_PROMPT)) + numberPromptSection(maridCfg),
       userMessage,
@@ -341,6 +365,13 @@ export async function POST(request: NextRequest) {
       reply = (raw || '').trim()
     }
     if (!reply && raw.trim().length > 10) reply = raw.trim().slice(0, 1200)
+
+    // 🛟 (٢٨/٨) الأنثروبيك مارجعش رد؟ المكتبة بترد بدله — العميل
+    //    مايشوفش «مفيش رصيد» ولا رسالة خطأ أبدًا.
+    if (!reply) {
+      const fromLib = await libraryReply()
+      if (fromLib) reply = fromLib
+    }
     if (!reply) reply = 'ثانية واحدة — ممكن تعيد صياغة طلبك؟'
     reply = reply.replace(/\*\*([\s\S]+?)\*\*/g, '$1').replace(/^#{1,6}\s+/gm, '').replace(/\n{3,}/g, '\n\n').trim()
 
@@ -373,6 +404,32 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'unknown'
     console.error('[chat]', msg)
-    return NextResponse.json({ ok: false, error: msg }, { status: 500 })
+
+    // 🛟 (٢٨ أغسطس ٢٠٢٦) محمد: «المارد اللي في شات مضمونة بيرد يقول
+    //    مفيش رصيد» — كان بيرجّع **نص الخطأ الخام** للعميل.
+    //    دلوقتي المكتبة بترد بدله: ٤١٤ فئة · ترشيح من الإعلانات
+    //    الحية · وبتعرف بتكلم مين. والعميل مايشوفش كلمة «رصيد» أبدًا.
+    try {
+      // 📌 الرسالة والرقم اتحفظوا من أول ما اتقروا — الـbody
+      //    مايتقراش مرتين في الويب.
+      if (safeMessage) {
+        const { data } = await (supabaseUntyped.rpc as unknown as (
+          f: string, a: Record<string, unknown>,
+        ) => Promise<{ data: unknown }>)('marid_offline_reply', {
+          p_text: safeMessage,
+          p_phone: safePhone || null,
+        })
+        const fallback = typeof data === 'string' ? data.trim() : ''
+        if (fallback.length > 5) {
+          return NextResponse.json({ ok: true, reply: fallback, source: 'library' })
+        }
+      }
+    } catch { /* المكتبة كمان فشلت — نرجّع رد عام */ }
+
+    // 🙊 ومهما حصل، العميل مايشوفش تفاصيل تقنية
+    return NextResponse.json({
+      ok: true,
+      reply: 'ثانية واحدة 🙏 ممكن تبعت طلبك تاني؟ ولو مستعجل كلّمنا على 01002229982.',
+    })
   }
 }
