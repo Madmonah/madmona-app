@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import SupplierModulesInline from '@/components/SupplierModulesInline'
 import { Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import NotificationButton from './NotificationButton'
@@ -210,19 +211,20 @@ export default function TopNav() {
                 </div>
               </Link>
 
+              {/* 🧹 (٢٨ أغسطس ٢٠٢٦) «ضيف المنتج» اتشالت من هنا —
+                  موجودة في ٦ مكان تاني وفي الشريط السفلي. */}
+              {false && (
               <Link
                 href="/add-listing"
                 onClick={(e) => {
                   setMobileOpen(false)
-                  // FIX (Jul 17 2026): لو المستخدم واقف على تاب (?track=) —
-                  // مطاعم مثلاً — نفتح الويزارد على نفس التاب مش الديفولت.
                   try {
                     const tr = new URLSearchParams(window.location.search).get('track')
                     if (tr) {
                       e.preventDefault()
                       window.location.assign(`/add-listing?track=${encodeURIComponent(tr)}`)
                     }
-                  } catch { /* fall through to plain link */ }
+                  } catch { /* fall through */ }
                 }}
                 className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
               >
@@ -234,6 +236,12 @@ export default function TopNav() {
                   <p className="text-xs text-gray-500 mt-0.5">{t('tn.add_product_sub')}</p>
                 </div>
               </Link>
+              )}
+
+              {/* 🧩 (٢٨/٨) محمد: «راجع التابات بتاعت نظام إدارة بيزنسك
+                  وانقلها برّه أول ما تدوس على الـ٣ شرط» — المورد بقى
+                  يوصل لموديولاته من هنا على طول. */}
+              <SupplierModulesInline onNavigate={() => setMobileOpen(false)} />
 
               <Link
                 href="/careers"
