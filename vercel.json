@@ -59,6 +59,10 @@
     {
       "path": "/api/vision/process?limit=10",
       "schedule": "*/15 5-22 * * *"
+    },
+    {
+      "path": "/api/i18n/translate?limit=5",
+      "schedule": "*/30 5-23 * * *"
     }
   ]
 }

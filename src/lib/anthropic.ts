@@ -3,6 +3,9 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { logAiUsage } from './ai-usage'
+// 🔀 (٢٨ أغسطس ٢٠٢٦) محمد: «عطّل الأنثروبيك شوية لحد ما يبقى معايا فلوس».
+//    كل الوكلاء (٢٣ ملف) بيعدّوا من callClaude، فالتحويل هنا بيغطّيهم كلهم.
+import { callGemini, currentProvider } from './ai-provider'
 
 export const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -25,6 +28,35 @@ export async function callClaude(opts: {
   agentName?: string
 }): Promise<string> {
   const _t0 = Date.now()
+
+  // 🔀 (٢٨/٨) التوجيه حسب AI_PROVIDER — جيميناي مجاني لحد ١٥٠٠ نداء/يوم.
+  //    الاسم فضل callClaude عشان الـ٢٣ ملف مايتغيّروش.
+  const provider = currentProvider()
+  if (provider === 'gemini' || provider === 'auto') {
+    try {
+      const text = await callGemini({
+        systemPrompt: opts.systemPrompt,
+        userMessage: opts.userMessage,
+        maxTokens: opts.maxTokens,
+        temperature: opts.temperature,
+      })
+      logAiUsage({
+        agentName: opts.agentName ?? 'backend-agent-غير-مسمّى',
+        channel: 'backend',
+        model: 'gemini-3.6-flash',
+        turn: 0,
+        latencyMs: Date.now() - _t0,
+        usage: undefined as never,
+      })
+      return text
+    } catch (e) {
+      // 🛟 في auto بس بنرجع لكلود — في gemini بنرمي الخطأ عشان
+      //    مانصرفش على الأنثروبيك من غير ما محمد يعرف.
+      if (provider === 'gemini') throw e
+      if (!process.env.ANTHROPIC_API_KEY) throw e
+    }
+  }
+
   const response = await anthropic.messages.create({
     model: CLAUDE_MODEL,
     // Bumped to 8192 (was 4096) to prevent JSON truncation across all agents.
