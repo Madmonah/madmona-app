@@ -285,6 +285,36 @@ export default function CrmMobilePage() {
 
   useEffect(() => { load() }, [load])
 
+  /* 🎯 (٢٨ أغسطس ٢٠٢٦) خطة اليوم — بدل ما الموظفة تفتح ١٥٠٠ رقم
+     وماتعرفش تبدأ منين: المتابعات اللي معادها حان الأول، وبعدين
+     أرقام جديدة بحد يومي. */
+  const [plan, setPlan] = useState<{
+    due_today: number; new_available: number; called_today: number
+    target_today: number; hint: string
+  } | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        const { data } = await (supabaseBrowser.rpc as unknown as (
+          f: string,
+        ) => Promise<{ data: { ok?: boolean; due_today?: number; new_available?: number
+          called_today?: number; target_today?: number; hint?: string } | null }>)('my_call_plan')
+        if (alive && data?.ok) {
+          setPlan({
+            due_today: data.due_today || 0,
+            new_available: data.new_available || 0,
+            called_today: data.called_today || 0,
+            target_today: data.target_today || 20,
+            hint: data.hint || '',
+          })
+        }
+      } catch { /* الخطة تحسين مش شرط */ }
+    })()
+    return () => { alive = false }
+  }, [])
+
   /* 🗣️ (٢٤ أغسطس ٢٠٢٦) الاسكريبت والنموذج بيتحمّلوا من `crm_scripts` مرة
      واحدة. أي عطل هنا مايأثّرش على حاجة — النصوص اللي في `crmScripts.ts`
      بتفضل هي الافتراضي. */
@@ -556,6 +586,41 @@ export default function CrmMobilePage() {
               }}>{label}</button>
           ))}
         </div>
+
+        {/* 🎯 (٢٨ أغسطس ٢٠٢٦) خطة النهاردة — محمد: القايمة بقت مخزون
+            مش شغل يوم (١٤٣٨ رقم عند موظفة واحدة). الشريط ده بيقول
+            تبدأي منين وكام فاضل. */}
+        {plan && tab === 'calls' && (
+          <div style={{
+            padding: '10px 14px', borderTop: `1px solid ${C.line}`,
+            background: plan.due_today > 0 ? 'rgba(52,211,153,.10)' : '#FAFAF7',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 12.5, fontWeight: 800, color: C.ink }}>
+                🎯 خطة النهاردة
+              </span>
+              <span style={{ fontSize: 11.5, color: C.sub }}>{plan.hint}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 14, marginTop: 7 }}>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: plan.due_today > 0 ? C.green : C.sub }}>
+                📞 متابعات: {plan.due_today}
+              </span>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: C.sub }}>
+                ✅ اتكلّمتي: {plan.called_today} / {plan.target_today}
+              </span>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: C.sub }}>
+                🆕 جديد متاح: {plan.new_available}
+              </span>
+            </div>
+            {/* 📊 شريط التقدّم */}
+            <div style={{ marginTop: 7, height: 5, borderRadius: 4, background: '#E8EBE7', overflow: 'hidden' }}>
+              <div style={{
+                width: `${Math.min(100, Math.round(100 * plan.called_today / Math.max(plan.target_today, 1)))}%`,
+                height: '100%', background: C.green, transition: 'width .3s',
+              }} />
+            </div>
+          </div>
+        )}
       </header>
 
       <main style={{ padding: 12 }}>
