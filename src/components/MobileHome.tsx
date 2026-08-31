@@ -18,11 +18,13 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   Search, Bell, Menu, X, ArrowLeft, User, LogIn, LogOut, Briefcase, Plus,
+  LayoutDashboard,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import LanguageToggle from './LanguageToggle'
 import DownloadAppBig from '@/components/DownloadAppBig'
+import SupplierModulesInline from '@/components/SupplierModulesInline'
 
 type Category = {
   id: string
@@ -130,6 +132,22 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
   // (سايبينها متغير عشان `groups` و`addTrack` تحت يفضلوا زي ما هما).
   const active: 'all' | VKey = 'all'
   const [menuOpen, setMenuOpen] = useState(false)
+  // 👤 (٢٨/٨) موظف مضمونة؟ — لوحة الإدارة بتبان له بس
+  const [isStaff, setIsStaff] = useState(false)
+
+  // 👤 (٢٨/٨) موظف مضمونة؟ — لوحة الإدارة بتبان له بس
+  useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        const { data } = await (supabaseBrowser.rpc as unknown as (
+          f: string,
+        ) => Promise<{ data: unknown }>)('is_madmona_staff')
+        if (alive && data === true) setIsStaff(true)
+      } catch { /* مش موظف — الرابط مايبانش */ }
+    })()
+    return () => { alive = false }
+  }, [])
   const [loggedIn, setLoggedIn] = useState(false)
   const [q, setQ] = useState('')
   const [marid, setMarid] = useState('')
@@ -404,6 +422,16 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
               <DrawerLink href="/account" icon={<User className="w-5 h-5 text-gray-700" />} title={t('mhome.account')} desc={t('mhome.orders_favorites_wallet')} onClose={() => setMenuOpen(false)} />
               <DrawerLink href={`/add-listing${addTrack}`} icon={<Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />} iconBg="bg-[#d4a017]/10" title={t('mhome.add_a_listing')} desc={t('mhome.start_selling_or_renting')} onClose={() => setMenuOpen(false)} />
               <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={t('mhome.careers')} desc={t('mhome.join_the_madmona_team')} onClose={() => setMenuOpen(false)} />
+              {/* 🔔 (٢٨/٨) الإشعارات */}
+              <DrawerLink href="/notifications" icon={<Bell className="w-5 h-5 text-[#059669]" />} title="الإشعارات" desc="كل اللي جالك في مكان واحد" onClose={() => setMenuOpen(false)} />
+
+              {/* 📊 (٢٨/٨) لوحة الإدارة — لموظفي مضمونة بس */}
+              {isStaff && (
+                <DrawerLink href="/admin" icon={<LayoutDashboard className="w-5 h-5 text-[#059669]" />} title="لوحة الإدارة" desc="كل النظام في مكان واحد" onClose={() => setMenuOpen(false)} />
+              )}
+
+              {/* 🧩 (٢٨/٨) موديولات نظام إدارة البيزنس — للمورد */}
+              <SupplierModulesInline onNavigate={() => setMenuOpen(false)} />
               {loggedIn ? (
                 <button type="button" onClick={signOut} className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 text-right">
                   <span className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0"><LogOut className="w-5 h-5 text-red-500" /></span>
