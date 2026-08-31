@@ -681,7 +681,100 @@ function AddListingPageInner({
             الإضافة بقت **خطوة واحدة وبس** — المورد بيكتب وصف حر
             ويرفع صور، والنظام يفهم النوع والتصنيف والسعر والمنطقة.
             الويزارد الخماسي اتشال من الواجهة بالكامل. */}
-        {step === 1 && <QuickAddListing />}
+        {/* ⚡ (٢٨ أغسطس ٢٠٢٦) محمد: «عايز نضغط الـ٥ خطوات لخطوة واحدة
+            فيها كل التفاصيل» — نفس مكوّنات الويزارد الخمسة بحقولها
+            الكاملة، بس **معروضة مع بعض في شاشة واحدة** بدل ما المورد
+            يعدّي عليها واحدة واحدة. مفيش «التالي» ولا شريط تقدّم —
+            بيملا اللي قدامه بأي ترتيب ويدوس انشر مرة واحدة. */}
+        <div className="space-y-5">
+          {/* 🗂️ ① التصنيف */}
+          <section>
+            <h2 className="text-sm font-black text-gray-900 mb-2">١. إيه اللي بتعرضه؟</h2>
+            <StepCategory
+              value={draft.category_slug}
+              categories={dbExtraCategories}
+              initialTrack={params.get('track')}
+              resetSignal={resetCategoryView}
+              onSelect={async (slug) => { await persist({ category_slug: slug }); }}
+            />
+          </section>
+
+          {/* 📝 ② البيانات — بتظهر بعد ما يختار التصنيف */}
+          {draft.category_slug && (
+            <section className="pt-4 border-t border-gray-100">
+              <h2 className="text-sm font-black text-gray-900 mb-2">٢. التفاصيل</h2>
+              <StepBasics
+                draft={draft}
+                errors={errors}
+                setErrors={setErrors}
+                categories={dbExtraCategories}
+                onSubmit={async (patch) => { await persist(patch); }}
+
+              onBack={() => {}}
+              onChangeCategory={() => setResetCategoryView((n) => n + 1)}
+              saving={saving}
+              />
+            </section>
+          )}
+
+          {/* 💰 ③ السعر */}
+          {draft.category_slug && (
+            <section className="pt-4 border-t border-gray-100">
+              <h2 className="text-sm font-black text-gray-900 mb-2">٣. السعر</h2>
+              <StepPricing
+                draft={draft}
+                errors={errors}
+                categories={dbExtraCategories}
+                token={token}
+                beautySchemas={beautySchemas}
+                onSubmit={async (patch) => { await persist(patch); }}
+
+              onBack={() => {}}
+              onChangeCategory={() => setResetCategoryView((n) => n + 1)}
+              saving={saving}
+              />
+            </section>
+          )}
+
+          {/* 📸 ④ الصور */}
+          {draft.category_slug && (
+            <section className="pt-4 border-t border-gray-100">
+              <h2 className="text-sm font-black text-gray-900 mb-2">٤. الصور</h2>
+              <StepPhotos
+                draft={draft}
+                categories={dbExtraCategories}
+                token={token}
+                onSubmit={async (photos) => { await persist({ photos }); }}
+                onUpload={async (photos) => { await persist({ photos }); }}
+
+              onBack={() => {}}
+              saving={saving}
+              />
+            </section>
+          )}
+
+          {/* 📞 ⑤ التواصل + النشر */}
+          {draft.category_slug && (
+            <section className="pt-4 border-t border-gray-100">
+              <h2 className="text-sm font-black text-gray-900 mb-2">٥. بيانات التواصل</h2>
+              <StepContact
+                draft={draft}
+                errors={errors}
+                onSubmit={async (patch) => {
+                  const ok = validateContact(patch, setErrors);
+                  if (!ok) return;
+                  const t = await persist({ ...patch, status: 'submitted' });
+                  if (t) {
+                    trackEvent({ event_type: 'wizard_submit' });
+                    setStep(1);
+                  }
+                }}
+              onBack={() => {}}
+              saving={saving}
+              />
+            </section>
+          )}
+        </div>
 
         {showBulkExcel && (
           <BulkExcelDrafts
