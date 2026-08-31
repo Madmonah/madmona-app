@@ -1,0 +1,354 @@
+﻿URL: https://www.facebook.com/
+{
+ "dialogCount": 8,
+ "buttons": [
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Back to previous page",
+   "disabled": false,
+   "ariaDisabled": "true",
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "",
+   "aria": "Facebook",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Exit typeahead",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "",
+   "aria": "Home",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "",
+   "aria": "Professional dashboard",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "",
+   "aria": "Reels",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "",
+   "aria": "Marketplace",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "",
+   "aria": "Gaming",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Facebook menu",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Messenger",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Messenger",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Notifications",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Notifications",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Your profile",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Møhamed Nassef",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Meta AI",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Friends",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Dashboard",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Groups",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Pages",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Memories",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "See more",
+   "aria": "See more explore items",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "مضمونة - Madmona",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "مراكب للبيع",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "معدات تصوير مستعمله للبيع فى مصر",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "تبادل و تكبير جروبات مجاناً 🐥",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "El Gouna _ الجونة",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "See more",
+   "aria": "See more shortcuts",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Privacy",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Terms",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Advertising",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Ad Choices",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Cookies",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "More",
+   "aria": "More footer links",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "",
+   "aria": "Møhamed Nassef's Timeline",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "What's on your mind, Møhamed?",
+   "aria": "",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Live video",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Photo/video",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Reel",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "DIV",
+   "txt": "",
+   "aria": "Previous items",
+   "disabled": false,
+   "ariaDisabled": "true",
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Create story",
+   "aria": "Create story",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Your story",
+   "aria": "View your story",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "Property Street",
+   "aria": "Property Street's story",
+   "disabled": false,
+   "ariaDisabled": null,
+   "inDialog": false
+  },
+  {
+   "tag": "A",
+   "txt": "محمودسيد ضاحي",
+   "aria": "محمودسيد ضاحي's story",
+   "disabled": false,
+   

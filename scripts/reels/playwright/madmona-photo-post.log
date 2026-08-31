@@ -1,0 +1,702 @@
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-08T20:34:46.175Z — cycle ════
+[cycle] جيفيرا Jefaira رأس الحكمة  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-86a14009-b414-49db-9f5b-899a138cccf2.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-08T20:38:10.338Z — cycle ════
+[cycle] Telal El Sokhna — Shores  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-2d36ea18-87f3-4977-bed8-c4688ecc38de.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ post button click not confirmed (facebook)
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (73s)
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✗ tweet post not confirmed (twitter)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✗ publish click not confirmed (pinterest)
+
+═══ summary ═══
+✗ facebook  post button click not confirmed (facebook)
+✓ instagram  https://www.instagram.com/
+✗ twitter  tweet post not confirmed (twitter)
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✗ pinterest  publish click not confirmed (pinterest)
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-08T20:55:14.716Z — cycle ════
+[cycle] I Business Park  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-e7959915-c86e-477a-8650-bad7478f2568.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ post button click not confirmed (facebook)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ linkedin timed out after 240s
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✗ pinterest timed out after 180s
+
+═══ summary ═══
+✗ facebook  post button click not confirmed (facebook)
+✗ linkedin  linkedin timed out after 240s
+✗ threads  post click not confirmed (threads)
+✗ pinterest  pinterest timed out after 180s
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-08T21:09:42.214Z — cycle ════
+[cycle] Glitz Mall  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-aa52be34-bd48-4d66-9d25-525d4471e63f.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ post button click not confirmed (facebook)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ linkedin timed out after 240s
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ threads timed out after 180s
+
+═══ summary ═══
+✗ facebook  post button click not confirmed (facebook)
+✗ linkedin  linkedin timed out after 240s
+✗ threads  threads timed out after 180s
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-08T21:21:22.332Z — cycle ════
+[cycle] Nedit Tower  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-349b97a6-d00a-4cfa-a448-353762be2e26.webp
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ Protocol error (Runtime.callFunctionOn): Target closed
+
+═══ summary ═══
+✗ facebook  facebook timed out after 240s
+✗ linkedin  no file input
+✗ threads  Protocol error (Runtime.callFunctionOn): Target closed
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-09T06:00:23.888Z — cycle ════
+[cycle] ERROR: مفيش إعلان جديد بصورة ينفع ينشر
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-09T16:00:24.857Z — cycle ════
+[cycle] شقة ١٦٨م ٤ غرف — كمبوند أناكاجي العاصمة الإدارية  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-fb9c27d2-ef1c-40c0-a4d5-b1a2a70a9067.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✓ https://www.facebook.com/  (119s)
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- TWITTER  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[twitter] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[linkedin] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- THREADS  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[threads] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✓ facebook  https://www.facebook.com/
+✗ instagram  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ twitter  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ linkedin  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ threads  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ bluesky  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-10T10:13:58.740Z — cycle ════
+[cycle] الباتيو أورو El Patio Oro  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-88e06513-6269-40ea-9a59-465a3f89fda3.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ no file input
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ instagram timed out after 240s
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (60s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✗ pinterest timed out after 180s
+
+═══ summary ═══
+✗ facebook  no file input
+✗ instagram  instagram timed out after 240s
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✗ pinterest  pinterest timed out after 180s
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-10T16:00:24.123Z — cycle ════
+[cycle] اب ماونت Upmount  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-593521d6-502c-445c-8aff-4aa61d45a263.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Attempted to use detached Frame '85707F121BC2D5A95E5ECCAC31BEB73E'.
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (64s)
+
+--- TWITTER  [http://localhost:9223] ---
+[x] no compose button — trying keyboard shortcut
+[twitter] ✓ https://x.com/home  (60s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✓ https://www.pinterest.com/  (70s)
+
+═══ summary ═══
+✗ facebook  Attempted to use detached Frame '85707F121BC2D5A95E5ECCAC31BEB73E'.
+✓ instagram  https://www.instagram.com/
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  https://www.pinterest.com/
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-11T07:37:15.416Z — cycle ════
+[cycle] شقة 1 غرفة — Ritz New Zayed الشيخ زايد  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-0ee26a4c-2fe8-452b-bfee-818132145f42.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ no file input
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (126s)
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✗ twitter timed out after 360s
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ threads timed out after 180s
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✗ Execution context was destroyed, most likely because of a navigation.
+
+═══ summary ═══
+✗ facebook  no file input
+✓ instagram  https://www.instagram.com/
+✗ twitter  twitter timed out after 360s
+✗ linkedin  no file input
+✗ threads  threads timed out after 180s
+✗ bluesky  no file input (bluesky)
+✗ pinterest  Execution context was destroyed, most likely because of a navigation.
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-11T16:08:54.020Z — cycle ════
+[cycle] محل F&B واجهة بلازا — TRI HUB التجمع الخامس  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-4b0d9c86-9dbe-4f09-aa9b-b0e9e0600125.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ no file input
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ instagram timed out after 240s
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (56s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ linkedin timed out after 240s
+
+--- THREADS  [http://localhost:9223] ---
+[dialog] auto-accepting beforeunload: 
+[threads] ✓ https://www.threads.com/  (112s)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✓ https://bsky.app/  (48s)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✗ Attempted to use detached Frame 'C171327F43B189FAC334061E99E59482'.
+
+═══ summary ═══
+✗ facebook  no file input
+✗ instagram  instagram timed out after 240s
+✓ twitter  https://x.com/home
+✗ linkedin  linkedin timed out after 240s
+✓ threads  https://www.threads.com/
+✓ bluesky  https://bsky.app/
+✗ pinterest  Attempted to use detached Frame 'C171327F43B189FAC334061E99E59482'.
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-12T06:00:50.703Z — cycle ════
+[cycle] Glow Terra Towers  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-35bb7983-1221-4c71-a3db-948bbd849232.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ no file input
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (87s)
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (65s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Skip to search","Skip to main content","Skip to sidebar","Skip to primary content","Skip to aside","Close jump menu","Home, 1 new notification","Me","For Business","New posts","Follow Mohamed Ahmed Ibrahim","Follow Ivan Montanhini","Follow Marwa Eid","Follow Jetex","Open control menu for post by Jetex","Reaction button state: no reaction","Open reactions menu","Comment","Repost","Open control me
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✓ https://www.pinterest.com/  (112s)
+
+═══ summary ═══
+✗ facebook  no file input
+✓ instagram  https://www.instagram.com/
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  https://www.pinterest.com/
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-12T16:00:25.801Z — cycle ════
+[cycle] Dejoya New Zayed - استلام سنتين  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-a152fd33-2bcf-4ffc-b818-bb473c32f11a.jpeg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Execution context was destroyed, most likely because of a navigation.
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ instagram timed out after 240s
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (62s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✓ https://www.pinterest.com/  (90s)
+
+═══ summary ═══
+✗ facebook  Execution context was destroyed, most likely because of a navigation.
+✗ instagram  instagram timed out after 240s
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  https://www.pinterest.com/
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-13T06:00:24.633Z — cycle ════
+[cycle] سولت SALT رأس الحكمة — تطوير مصر  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-17749136-5963-455f-af48-715de570ec8d.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (61s)
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (53s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✓ https://www.pinterest.com/  (67s)
+
+═══ summary ═══
+✗ facebook  facebook timed out after 240s
+✓ instagram  https://www.instagram.com/
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  https://www.pinterest.com/
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-13T16:00:24.566Z — cycle ════
+[cycle] Talda — HDP Development  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-d7261c1c-ec20-4b0b-9634-3c51a8dab10c.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ post button click not confirmed (facebook)
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ instagram timed out after 240s
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✗ Runtime.callFunctionOn timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✗ publish click not confirmed (pinterest)
+
+═══ summary ═══
+✗ facebook  post button click not confirmed (facebook)
+✗ instagram  instagram timed out after 240s
+✗ twitter  Runtime.callFunctionOn timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✗ pinterest  publish click not confirmed (pinterest)
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-14T06:00:27.168Z — cycle ════
+[cycle] شقة متوسطة  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-f55eeb54-43d7-45f3-9d5c-f078f5ab2d4a.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (64s)
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (66s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[dialog] auto-accepting beforeunload: 
+[pinterest] ✗ Execution context was destroyed
+
+═══ summary ═══
+✗ facebook  facebook timed out after 240s
+✓ instagram  https://www.instagram.com/
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✗ pinterest  Execution context was destroyed
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-14T16:00:25.212Z — cycle ════
+[cycle] شرق الأكاديمية  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-4e32d1fa-9d10-4aed-af9f-189e3deb31ce.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ post button click not confirmed (facebook)
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ instagram timed out after 240s
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (135s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ Attempted to use detached Frame 'E8CD4496CAC57B63347F795C02CD07B0'.
+
+--- BLUESKY  [http://localhost:9223] ---
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-15T06:00:25.109Z — cycle ════
+[cycle] شقة 2 غرف — IVY Residence عرض Triple 8  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-4cdf5d70-11da-4dee-8f2d-573b001bc3e9.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (67s)
+
+--- TWITTER  [http://localhost:9223] ---
+[x] no compose button — trying keyboard shortcut
+[twitter] ✗ Protocol error (Runtime.callFunctionOn): Target closed
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[linkedin] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- THREADS  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[threads] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✗ facebook  facebook timed out after 240s
+✓ instagram  https://www.instagram.com/
+✗ twitter  Protocol error (Runtime.callFunctionOn): Target closed
+✗ linkedin  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ threads  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ bluesky  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-15T16:28:39.002Z — cycle ════
+[cycle] ERROR: fetch failed
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-16T08:59:03.747Z — cycle ════
+[cycle] ERROR: fetch failed
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-16T16:26:49.484Z — cycle ════
+[cycle] شقة غرفتين  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-7a000139-37ed-45f8-a2d4-90c85ca39671.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[dialog] auto-accepting beforeunload: 
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-17T16:00:28.082Z — cycle ════
+[cycle] شقة للبيع في شارع 45 سيدي بشر ١٠٠ متر  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-bc5ce281-0ec2-4fa1-8f2e-196d5e6f2767.jpeg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (69s)
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (80s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✓ https://www.pinterest.com/  (75s)
+
+═══ summary ═══
+✗ facebook  facebook timed out after 240s
+✓ instagram  https://www.instagram.com/
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  https://www.pinterest.com/
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-18T12:29:57.240Z — cycle ════
+[cycle] ERROR: fetch failed
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-19T08:44:20.395Z — cycle ════
+[cycle] ERROR: fetch failed
+[madmona-post] one-shot done
+[madmona-post] 7 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-19T16:00:25.874Z — cycle ════
+[cycle] شقة مفروشة للبيع في الدقي - 242 متر - قرب نادي الصيد  C:\Users\SOLUTI~1\AppData\Local\Temp\madmona-ad-597a9b12-8a9b-4ef2-beb0-a39b7ed44f51.jpg
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ instagram timed out after 240s
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (71s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[li] dialog buttons: ["Reset","Done","Close Modal Dialog"]
+[linkedin] ✗ no file input
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ Protocol error (Page.bringToFront): Session closed. Most likely the page has been closed.
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ Protocol error (Target.createTarget): Failed to open a new tab
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✗ facebook  facebook timed out after 240s
+✗ instagram  instagram timed out after 240s
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✗ threads  Protocol error (Page.bringToFront): Session closed. Most likely the page has been closed.
+✗ bluesky  Protocol error (Target.createTarget): Failed to open a new tab
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+[madmona-post] one-shot done

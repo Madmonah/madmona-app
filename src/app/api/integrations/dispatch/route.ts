@@ -19,7 +19,24 @@ function sb() {
   )
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  // 🔐 (٢٨/٨) كان مفتوح بدون حماية — أي حد يقدر يطلق ويبهوكس للموردين.
+  //    ثلاث طرق زي باقي الكرونات: Bearer (Vercel) · هيدر · query.
+  const cronSecret = process.env.CRON_SECRET
+  if (cronSecret) {
+    const url = new URL(req.url)
+    const auth = req.headers.get('authorization') || ''
+    const ok =
+      auth === `Bearer ${cronSecret}` ||
+      req.headers.get('x-cron-secret') === cronSecret ||
+      url.searchParams.get('secret') === cronSecret
+    if (!ok) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), {
+        status: 401, headers: { 'content-type': 'application/json' },
+      })
+    }
+  }
+
   const supa = sb()
   const { data: pending } = await supa
     .from('integration_outbox')

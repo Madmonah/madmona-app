@@ -1,0 +1,53 @@
+[rec] connecting to http://localhost:9222…
+[rec] opening https://claude.ai/design/p/004b32d9-d907-4765-a1cd-d514533dddcd?file=%E2%95%AA%E2%94%A4%E2%94%98%C3%AA%E2%95%AA%E2%96%92%E2%95%AA%C2%AC%20%E2%94%98%C3%AD%20-%20%E2%95%AA%E2%94%82%E2%95%AA%C3%B1%E2%95%AA%C2%BA%E2%94%98%C3%A4%20%E2%94%98%C3%AA%E2%95%AA%C2%BC%E2%94%98%C3%AA%E2%95%AA%C2%BA%E2%95%AA%C2%BF.dc.html&present=1
+[rec] waiting for design iframe (up to 90s)…
+[rec] recording 25s @ 30 fps…
+[rec] captured 2 frames
+[rec] ffmpeg → E:\madmona-app\scripts\reels\playwright\output\__________________________________dc_htm-2026-08-05T07-46-10.mp4
+ffmpeg version 6.1.1-essentials_build-www.gyan.dev Copyright (c) 2000-2023 the FFmpeg developers
+  built with gcc 12.2.0 (Rev10, Built by MSYS2 project)
+  configuration: --enable-gpl --enable-version3 --enable-static --pkg-config=pkgconf --disable-w32threads --disable-autodetect --enable-fontconfig --enable-iconv --enable-gnutls --enable-libxml2 --enable-gmp --enable-bzlib --enable-lzma --enable-zlib --enable-libsrt --enable-libssh --enable-libzmq --enable-avisynth --enable-sdl2 --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxvid --enable-libaom --enable-libopenjpeg --enable-libvpx --enable-mediafoundation --enable-libass --enable-libfreetype --enable-libfribidi --enable-libharfbuzz --enable-libvidstab --enable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-ffnvcodec --enable-nvdec --enable-nvenc --enable-dxva2 --enable-d3d11va --enable-libvpl --enable-libgme --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libtheora --enable-libvo-amrwbenc --enable-libgsm --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-librubberband
+  libavutil      58. 29.100 / 58. 29.100
+  libavcodec     60. 31.102 / 60. 31.102
+  libavformat    60. 16.100 / 60. 16.100
+  libavdevice    60.  3.100 / 60.  3.100
+  libavfilter     9. 12.100 /  9. 12.100
+  libswscale      7.  5.100 /  7.  5.100
+  libswresample   4. 12.100 /  4. 12.100
+  libpostproc    57.  3.100 / 57.  3.100
+[mjpeg @ 000002c93a33e480] EOI missing, emulating
+Input #0, image2, from 'E:\madmona-app\scripts\reels\playwright\frames-tmp\f%06d.jpg':
+  Duration: 00:00:00.07, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: mjpeg (Baseline), yuvj420p(pc, bt470bg/unknown/unknown), 1080x1920 [SAR 1:1 DAR 9:16], 30 fps, 30 tbr, 30 tbn
+Stream mapping:
+  Stream #0:0 -> #0:0 (mjpeg (native) -> h264 (libx264))
+Press [q] to stop, [?] for help
+[swscaler @ 000002c93a3ae4c0] deprecated pixel format used, make sure you did set range correctly
+    Last message repeated 3 times
+[libx264 @ 000002c93a341600] using SAR=1/1
+[libx264 @ 000002c93a341600] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
+[libx264 @ 000002c93a341600] profile High, level 4.0, 4:2:0, 8-bit
+[libx264 @ 000002c93a341600] 264 - core 164 r3172 c1c9931 - H.264/MPEG-4 AVC codec - Copyleft 2003-2023 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=12 lookahead_threads=4 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=1 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=10 rc=crf mbtree=1 crf=20.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Output #0, mp4, to 'E:\madmona-app\scripts\reels\playwright\output\__________________________________dc_htm-2026-08-05T07-46-10.mp4':
+  Metadata:
+    encoder         : Lavf60.16.100
+  Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt470bg/unknown/unknown, progressive), 1080x1920 [SAR 1:1 DAR 9:16], q=2-31, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc60.31.102 libx264
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
+frame=    0 fps=0.0 q=0.0 size=       0kB time=N/A bitrate=N/A speed=N/A    [mp4 @ 000002c93a340280] Starting second pass: moving the moov atom to the beginning of the file
+[out#0/mp4 @ 000002c93a35cec0] video:1kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 72.970711%
+frame=    2 fps=0.0 q=-1.0 Lsize=       2kB time=00:00:00.03 bitrate= 496.1kbits/s speed=0.26x    
+[libx264 @ 000002c93a341600] frame I:1     Avg QP:10.00  size:   435
+[libx264 @ 000002c93a341600] frame P:1     Avg QP:11.00  size:    71
+[libx264 @ 000002c93a341600] mb I  I16..4: 100.0%  0.0%  0.0%
+[libx264 @ 000002c93a341600] mb P  I16..4:  0.0%  0.0%  0.0%  P16..4:  0.0%  0.0%  0.0%  0.0%  0.0%    skip:100.0%
+[libx264 @ 000002c93a341600] 8x8 transform intra:0.0%
+[libx264 @ 000002c93a341600] coded y,uvDC,uvAC intra: 0.0% 0.0% 0.0% inter: 0.0% 0.0% 0.0%
+[libx264 @ 000002c93a341600] i16 v,h,dc,p: 99%  0%  1%  0%
+[libx264 @ 000002c93a341600] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu:  0%  0% 100%  0%  0%  0%  0%  0%  0%
+[libx264 @ 000002c93a341600] i8c dc,h,v,p: 100%  0%  0%  0%
+[libx264 @ 000002c93a341600] Weighted P-Frames: Y:0.0% UV:0.0%
+[libx264 @ 000002c93a341600] kb/s:60.72
+[rec] ✓ E:\madmona-app\scripts\reels\playwright\output\__________________________________dc_htm-2026-08-05T07-46-10.mp4

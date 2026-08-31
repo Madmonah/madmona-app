@@ -1,0 +1,634 @@
+[madmona-post] 10 platforms, 180min interval
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-05T14:19:46.388Z — cycle ════
+[cycle] shortcut-1-question-answer  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-1-question-answer.mp4
+
+--- TELEGRAM ---
+[telegram] ✓ https://t.me/madmona_cairo/52  (0s)
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ post button click not confirmed (facebook)
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ no file input
+
+--- TWITTER  [http://localhost:9223] ---
+[madmona-post] 10 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-05T15:20:26.633Z — cycle ════
+[cycle] shortcut-1-question-answer  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-1-question-answer.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Runtime.callFunctionOn timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (62s)
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✗ tweet post not confirmed (twitter)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ no file input
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ✓ https://www.youtube.com/watch?v=qzssqzNqOiQ  (69s)
+
+--- TIKTOK  [http://localhost:9223] ---
+[tiktok] ✗ Execution context was destroyed, most likely because of a navigation.
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✓ https://www.pinterest.com/pin-builder/  (63s)
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  Runtime.callFunctionOn timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+✓ instagram  https://www.instagram.com/
+✗ twitter  tweet post not confirmed (twitter)
+✗ linkedin  no file input
+✓ youtube  https://www.youtube.com/watch?v=qzssqzNqOiQ
+✗ tiktok  Execution context was destroyed, most likely because of a navigation.
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  https://www.pinterest.com/pin-builder/
+[madmona-post] one-shot done
+[madmona-post] 10 platforms, 45min interval
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-05T15:34:02.981Z — cycle ════
+[cycle] shortcut-2-before-after  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-2-before-after.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Runtime.callFunctionOn timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ no file input
+
+--- TWITTER  [http://localhost:9223] ---
+[dialog] auto-accepting beforeunload: 
+[twitter] ✗ tweet post not confirmed (twitter)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ no file input
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ✗ Execution context was destroyed, most likely because of a navigation.
+
+--- TIKTOK  [http://localhost:9223] ---
+[tt] not on upload page, clicking sidebar Upload
+[tiktok] ✗ Execution context was destroyed, most likely because of a navigation.
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ no file input (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✓ https://www.pinterest.com/pin-builder/  (160s)
+[cycle] ERROR: fetch failed
+
+[madmona-post] sleeping 45 min…
+[madmona-post] 10 platforms, 45min interval (one-shot)
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-05T20:44:40.795Z — cycle ════
+[cycle] shortcut-2-before-after  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-2-before-after.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[instagram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TWITTER  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[twitter] ✗ Runtime.callFunctionOn timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ no file input
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TIKTOK  [http://localhost:9223] ---
+[tiktok] ✓ https://www.tiktok.com/tiktokstudio/content  (67s)
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ⏭ اتنشر النهارده خلاص — سكيب
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  facebook timed out after 240s
+✓ instagram  (سكيب — اتنشر النهارده)
+✗ twitter  Runtime.callFunctionOn timed out. Increase the 'protocolTimeout' setting in launch/connect calls for a higher timeout if needed.
+✗ linkedin  no file input
+✓ youtube  (سكيب — اتنشر النهارده)
+✓ tiktok  https://www.tiktok.com/tiktokstudio/content
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  (سكيب — اتنشر النهارده)
+[madmona-post] one-shot done
+[madmona-post] 10 platforms, 45min interval
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-07T10:35:10.722Z — cycle ════
+[cycle] shortcut-1-question-answer  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-1-question-answer.mp4
+
+--- TELEGRAM ---
+[telegram] ✓ https://t.me/madmona_cairo/59  (0s)
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✓ https://www.instagram.com/  (158s)
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✗ tweet post not confirmed (twitter)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ no file input
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ✓ https://www.youtube.com/watch?v=HzLa1HofMJw  (124s)
+
+--- TIKTOK  [http://localhost:9223] ---
+[tiktok] ✓ https://www.tiktok.com/tiktokstudio/content  (63s)
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ✓ https://www.pinterest.com/pin-builder/  (99s)
+
+═══ summary ═══
+✓ telegram  https://t.me/madmona_cairo/59
+✗ facebook  facebook timed out after 240s
+✓ instagram  https://www.instagram.com/
+✗ twitter  tweet post not confirmed (twitter)
+✗ linkedin  no file input
+✓ youtube  https://www.youtube.com/watch?v=HzLa1HofMJw
+✓ tiktok  https://www.tiktok.com/tiktokstudio/content
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  https://www.pinterest.com/pin-builder/
+
+[madmona-post] sleeping 45 min…
+
+════ 2026-08-07T11:36:48.868Z — cycle ════
+[cycle] shortcut-2-before-after  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-2-before-after.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ post button click not confirmed (facebook)
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[instagram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TWITTER  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[x] no compose button — trying keyboard shortcut
+[twitter] ✗ twitter timed out after 360s
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ no file input
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TIKTOK  [http://localhost:9223] ---
+[tiktok] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ threads timed out after 180s
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ⏭ اتنشر النهارده خلاص — سكيب
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  post button click not confirmed (facebook)
+✓ instagram  (سكيب — اتنشر النهارده)
+✗ twitter  twitter timed out after 360s
+✗ linkedin  no file input
+✓ youtube  (سكيب — اتنشر النهارده)
+✓ tiktok  (سكيب — اتنشر النهارده)
+✗ threads  threads timed out after 180s
+✗ bluesky  no file input (bluesky)
+✓ pinterest  (سكيب — اتنشر النهارده)
+
+[madmona-post] sleeping 45 min…
+
+════ 2026-08-07T12:36:18.899Z — cycle ════
+[cycle] shortcut-1-question-answer  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-1-question-answer.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ facebook timed out after 240s
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[instagram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TWITTER  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[twitter] ✓ https://x.com/home  (174s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ no file input
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TIKTOK  [http://localhost:9223] ---
+[tiktok] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ post click not confirmed (threads)
+
+--- BLUESKY  [http://localhost:9223] ---
+[bluesky] ✗ no file input (bluesky)
+
+--- PINTEREST  [http://localhost:9223] ---
+[pinterest] ⏭ اتنشر النهارده خلاص — سكيب
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  facebook timed out after 240s
+✓ instagram  (سكيب — اتنشر النهارده)
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✓ youtube  (سكيب — اتنشر النهارده)
+✓ tiktok  (سكيب — اتنشر النهارده)
+✗ threads  post click not confirmed (threads)
+✗ bluesky  no file input (bluesky)
+✓ pinterest  (سكيب — اتنشر النهارده)
+
+[madmona-post] sleeping 45 min…
+[madmona-post] 10 platforms, 45min interval
+[madmona-post] Chrome A: http://localhost:9222   Chrome B: http://localhost:9223
+
+════ 2026-08-08T08:14:24.294Z — cycle ════
+[cycle] shortcut-1-question-answer  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-1-question-answer.mp4
+
+--- TELEGRAM ---
+[telegram] ✓ https://t.me/madmona_cairo/74  (1s)
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ post button click not confirmed (facebook)
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ instagram timed out after 240s
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ✓ https://x.com/home  (82s)
+
+--- LINKEDIN  [http://localhost:9223] ---
+[linkedin] ✗ no file input
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ✓ https://www.youtube.com/watch?v=NnyrcjovbeY  (97s)
+
+--- TIKTOK  [http://localhost:9223] ---
+[dialog] auto-accepting beforeunload: 
+[tiktok] ✗ Attempted to use detached Frame '005B3B8649763DA86D9BB15031EE1B28'.
+
+--- THREADS  [http://localhost:9223] ---
+[threads] ✗ Attempted to use detached Frame '0A725ABEBAD883719E96DBD9B8BDBB18'.
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✓ telegram  https://t.me/madmona_cairo/74
+✗ facebook  post button click not confirmed (facebook)
+✗ instagram  instagram timed out after 240s
+✓ twitter  https://x.com/home
+✗ linkedin  no file input
+✓ youtube  https://www.youtube.com/watch?v=NnyrcjovbeY
+✗ tiktok  Attempted to use detached Frame '005B3B8649763DA86D9BB15031EE1B28'.
+✗ threads  Attempted to use detached Frame '0A725ABEBAD883719E96DBD9B8BDBB18'.
+✗ bluesky  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+[madmona-post] sleeping 45 min…
+
+════ 2026-08-08T09:12:43.085Z — cycle ════
+[cycle] shortcut-2-before-after  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-2-before-after.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[linkedin] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TIKTOK  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[tiktok] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- THREADS  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[threads] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+✗ instagram  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ twitter  (سكيب — اتنشر النهارده)
+✗ linkedin  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ youtube  (سكيب — اتنشر النهارده)
+✗ tiktok  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ threads  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ bluesky  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+[madmona-post] sleeping 45 min…
+
+════ 2026-08-08T09:58:08.759Z — cycle ════
+[cycle] shortcut-1-question-answer  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-1-question-answer.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[linkedin] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TIKTOK  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[tiktok] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- THREADS  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[threads] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+✗ instagram  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ twitter  (سكيب — اتنشر النهارده)
+✗ linkedin  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ youtube  (سكيب — اتنشر النهارده)
+✗ tiktok  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ threads  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ bluesky  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+[madmona-post] sleeping 45 min…
+
+════ 2026-08-08T10:43:33.265Z — cycle ════
+[cycle] shortcut-2-before-after  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-2-before-after.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[linkedin] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TIKTOK  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[tiktok] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- THREADS  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[threads] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+✗ instagram  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ twitter  (سكيب — اتنشر النهارده)
+✗ linkedin  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ youtube  (سكيب — اتنشر النهارده)
+✗ tiktok  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ threads  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ bluesky  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+[madmona-post] sleeping 45 min…
+
+════ 2026-08-08T11:28:57.773Z — cycle ════
+[cycle] shortcut-1-question-answer  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-1-question-answer.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[linkedin] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TIKTOK  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[tiktok] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- THREADS  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[threads] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+✗ instagram  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ twitter  (سكيب — اتنشر النهارده)
+✗ linkedin  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ youtube  (سكيب — اتنشر النهارده)
+✗ tiktok  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ threads  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ bluesky  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+[madmona-post] sleeping 45 min…
+
+════ 2026-08-08T12:14:27.206Z — cycle ════
+[cycle] shortcut-2-before-after  C:\Users\SOLUTI~1\AppData\Local\Temp\reel-shortcut-2-before-after.mp4
+
+--- TELEGRAM ---
+[telegram] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- FACEBOOK  [http://localhost:9222] ---
+[cycle] connecting to http://localhost:9222
+[facebook] ✗ Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+
+--- INSTAGRAM  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[instagram] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- TWITTER  [http://localhost:9223] ---
+[twitter] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- LINKEDIN  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[linkedin] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- YOUTUBE  [http://localhost:9223] ---
+[youtube] ⏭ اتنشر النهارده خلاص — سكيب
+
+--- TIKTOK  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[tiktok] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- THREADS  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[threads] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- BLUESKY  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[bluesky] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+--- PINTEREST  [http://localhost:9223] ---
+[cycle] connecting to http://localhost:9223
+[pinterest] ✗ Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+═══ summary ═══
+✓ telegram  (سكيب — اتنشر النهارده)
+✗ facebook  Failed to fetch browser webSocket URL from http://localhost:9222/json/version: fetch failed
+✗ instagram  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ twitter  (سكيب — اتنشر النهارده)
+✗ linkedin  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✓ youtube  (سكيب — اتنشر النهارده)
+✗ tiktok  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ threads  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ bluesky  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+✗ pinterest  Failed to fetch browser webSocket URL from http://localhost:9223/json/version: fetch failed
+
+[madmona-post] sleeping 45 min…
