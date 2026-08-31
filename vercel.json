@@ -33,14 +33,6 @@
       "schedule": "*/5 23,0-4 * * *"
     },
     {
-      "path": "/api/integrations/dispatch",
-      "schedule": "* 5-22 * * *"
-    },
-    {
-      "path": "/api/integrations/dispatch",
-      "schedule": "*/5 23,0-4 * * *"
-    },
-    {
       "path": "/api/cron/wa-queue-send",
       "schedule": "*/2 * * * *"
     },
@@ -63,6 +55,10 @@
     {
       "path": "/api/i18n/translate?limit=5",
       "schedule": "*/30 5-23 * * *"
+    },
+    {
+      "path": "/api/integrations/dispatch",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
