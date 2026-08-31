@@ -9,8 +9,8 @@
     "lint": "next lint",
     "generate-vapid": "node -e \"const wp=require('web-push'); const k=wp.generateVAPIDKeys(); console.log('NEXT_PUBLIC_VAPID_PUBLIC_KEY=' + k.publicKey); console.log('VAPID_PRIVATE_KEY=' + k.privateKey)\"",
     "check:cron": "node scripts/check-cron-auth.cjs",
-    "prebuild": "node scripts/check-cron-auth.cjs && node scripts/check-wiring.cjs",
-    "check:wiring": "node scripts/check-wiring.cjs"
+    "check:wiring": "node scripts/check-wiring.cjs",
+    "check:all": "node scripts/check-cron-auth.cjs && node scripts/check-wiring.cjs && node scripts/check-mobile.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
