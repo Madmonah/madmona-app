@@ -193,7 +193,7 @@ export default function MarketExplorer({
       try {
         const { count } = await (supabaseBrowser as unknown as {
           from: (t: string) => { select: (c: string, o: { count: 'exact'; head: boolean }) => Promise<{ count: number | null }> }
-        }).from('v_open_property_requests').select('id', { count: 'exact', head: true })
+        }).from('v_live_property_demand').select('id', { count: 'exact', head: true })
         if (alive && typeof count === 'number') setOpenRequests(count)
       } catch { /* البانر مايبانش */ }
     })()
@@ -397,10 +397,10 @@ export default function MarketExplorer({
           </span>
           <span className="flex-1 min-w-0">
             <span className="block text-[13px] font-black text-white">
-              {arNum(openRequests)} طلب مفتوح دلوقتي
+              🔴 طلبات عقارات لايف — {arNum(openRequests)} دلوقتي
             </span>
             <span className="block text-[11px] text-white/70 mt-0.5">
-              عملاء بيدوّروا على وحدات — قدّم عرضك
+              عملاء طالبين وحدات أو بيسألوا عن مشاريع — شوف وقدّم عرضك
             </span>
           </span>
           <span className="text-[#34D399] text-lg font-black">←</span>
@@ -617,8 +617,10 @@ function IndicatorsBar({ items }: { items: Item[] }) {
   const fmtK = (r: readonly [number, number]) => `${Math.round(r[0] / 1000)}–${Math.round(r[1] / 1000)} ألف`
 
   const cards: Array<{ label: string; value: string; gold?: boolean; t?: Trend }> = []
-  if (fin.usd != null) cards.push({ label: t('bo.usd'), value: `${fin.usd.toFixed(2)} ${t('bo.egp')}`, t: trend.usd })
-  if (fin.gold21 != null) cards.push({ label: t('bo.gold21'), value: `${arNum(Math.round(fin.gold21))} ${t('bo.egp_gram')}`, gold: true, t: trend.gold })
+  // 💵 (٢٨ أغسطس ٢٠٢٦) محمد: «شيل تاب الدولار أو الدهب في بورصة
+  //    العقارات». الدولار والدهب اتشالوا — البورصة عقارية،
+  //    وأسعار المتر هي المؤشر اللي يهم المشتري هنا.
+  //    (لسه موجودين في بورصة رجال الأعمال /business-lounge)
   if (m2.capital) cards.push({ label: t('bo.capital_m2'), value: fmtK(m2.capital) })
   if (m2.newCairo) cards.push({ label: t('bo.newcairo_m2'), value: fmtK(m2.newCairo) })
   if (cards.length === 0) return null
