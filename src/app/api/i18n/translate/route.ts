@@ -57,9 +57,15 @@ function parseJson(raw: string): Record<string, unknown> | null {
 }
 
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get('x-cron-secret') || req.nextUrl.searchParams.get('secret')
-  if (process.env.CRON_SECRET && secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  // 🔐 (٢٨/٨) ثلاث طرق: Bearer (اللي Vercel بيبعته) · هيدر مخصص · query
+  const cronSecret = process.env.CRON_SECRET
+  if (cronSecret) {
+    const auth = req.headers.get('authorization') || ''
+    const ok =
+      auth === `Bearer ${cronSecret}` ||
+      req.headers.get('x-cron-secret') === cronSecret ||
+      req.nextUrl.searchParams.get('secret') === cronSecret
+    if (!ok) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   }
   if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json({ ok: false, error: 'مفيش GEMINI_API_KEY' })
