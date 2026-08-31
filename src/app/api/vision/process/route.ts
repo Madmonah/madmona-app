@@ -19,7 +19,7 @@ export const runtime = 'nodejs'
 export const maxDuration = 60
 
 const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent'
 
 /** 📝 البرومبت — وصف عملي للإعلانات مش وصف فني */
 const PROMPT = `اوصف الصورة دي بالعربي في سطر أو اتنين، للاستخدام في سوق إلكتروني مصري.
@@ -61,30 +61,39 @@ async function fetchImageBase64(url: string): Promise<{ data: string; mime: stri
 async function describeWithGemini(
   key: string, b64: string, mime: string,
 ): Promise<string | null> {
-  try {
-    const res = await fetch(`${GEMINI_URL}?key=${key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: PROMPT },
-            { inline_data: { mime_type: mime, data: b64 } },
-          ],
-        }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 200 },
-      }),
-      signal: AbortSignal.timeout(30000),
-    })
-    if (!res.ok) return null
-    const j = await res.json() as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[]
+  // 🔁 الخدمة بترجّع 503 «high demand» أحيانًا — اتأكدت بالتجربة.
+  //    تلات محاولات بتباعد بتحلّها؛ الفشل الحقيقي نادر.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 2500 * attempt))
+    try {
+      const res = await fetch(`${GEMINI_URL}?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: PROMPT },
+              { inline_data: { mime_type: mime, data: b64 } },
+            ],
+          }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 600 },
+        }),
+        signal: AbortSignal.timeout(35000),
+      })
+      // 🔁 ازدحام أو حد المعدل → نعيد
+      if (res.status === 503 || res.status === 429) continue
+      if (!res.ok) return null
+      const j = await res.json() as {
+        candidates?: { content?: { parts?: { text?: string }[] } }[]
+      }
+      const t = j.candidates?.[0]?.content?.parts?.map((p) => p.text).join(' ')
+      const clean = t?.trim().replace(/\s+/g, ' ').slice(0, 500)
+      if (clean) return clean
+    } catch {
+      // نكمّل للمحاولة اللي بعدها
     }
-    const t = j.candidates?.[0]?.content?.parts?.map((p) => p.text).join(' ')
-    return t?.trim().replace(/\s+/g, ' ').slice(0, 400) || null
-  } catch {
-    return null
   }
+  return null
 }
 
 export async function POST(req: NextRequest) {
@@ -142,7 +151,7 @@ export async function POST(req: NextRequest) {
     // ✍️ الحفظ بيحقن الوصف في الرسالة كمان — فالمارد يقراه فورًا
     await (supa.rpc as unknown as (f: string, p: Record<string, unknown>) => Promise<unknown>)(
       'save_media_description',
-      { p_queue_id: item.id, p_description: desc, p_model: 'gemini-2.0-flash' },
+      { p_queue_id: item.id, p_description: desc, p_model: 'gemini-3.6-flash' },
     )
     done++
   }
