@@ -121,6 +121,26 @@ export const MARID_TOOLS = [
     },
   },
   {
+    name: 'add_property_oneshot',
+    description:
+      '⚡ **الأسرع لإضافة عقار** — استخدمها أول ما المالك يبعت وصف الوحدة في رسالة واحدة، ' +
+      'زي «عندي شقة ١٦٠م في مدينة نصر للبيع بـ٣.٥ مليون · مقدم ١٠٪ · تقسيط ٨ سنين». ' +
+      'بتفهم النوع والمنطقة والسعر والمقدم والمساحة لوحدها، وبتعمل الحساب لو مالوش. ' +
+      '⛔ ماتسألش أسئلة قبلها — ابعت نص المالك زي ما هو وهي هتقولك الناقص إيه، ' +
+      'واسأل عن الناقص **بعد** ما الإعلان يتسجّل مش قبله. ' +
+      '📸 وبعدها اطلب الصور — الماركت بليس بيرفض إعلان من غير صورة. ' +
+      '💡 ولو عنده أكتر من وحدة، قوله يحط 🔚 بين كل واحدة والتانية.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        phone: { type: 'string', description: 'رقم صاحب الإعلان' },
+        text: { type: 'string', description: 'نص المالك **زي ما هو** — ماتلخّصهوش' },
+        owner_name: { type: 'string', description: 'اسمه لو قاله' },
+      },
+      required: ['phone', 'text'],
+    },
+  },
+  {
     name: 'create_listing_draft',
     description:
       'سجّل إعلان جديد لحد عايز يضيف منتج أو خدمة على مضمونة. ' +
@@ -922,6 +942,35 @@ async function resolveCategorySlug(
   // ما نوقف تسجيل الإعلان بالكامل — publish-drafts هيسيبه needs_review.
   return (created as { slug?: string } | null)?.slug ?? (ce ? '' : newSlug)
 }
+
+/**
+ * ⚡ (٢٨ أغسطس ٢٠٢٦) محمد: «هل قلّلنا خطوات إضافة الإعلان لخطوة واحدة؟»
+ *
+ * كانت الإجابة لأ — الدوال اتبنت في الداتابيز بس المارد مكانش عنده
+ * منها ولا واحدة، ولسه بيستخدم create_listing_draft اللي بتطلب
+ * اسم + وصف + تصنيف + سعر + صورة (٥ خطوات وأسئلة).
+ *
+ * دي بتاخد **نص المالك زي ما هو** وتفهم منه كل حاجة، وتسجّل الإعلان،
+ * وترجّع الناقص عشان المارد يسأل عنه **بعد** التسجيل مش قبله.
+ */
+async function addPropertyOneshot(a: {
+  phone: string; text: string; owner_name?: string
+}): Promise<ToolResult> {
+  if (!a.text?.trim()) return { ok: false, error: 'ابعت نص المالك' }
+  try {
+    const { data, error } = await (db.rpc as unknown as (
+      f: string, p: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>)(
+      'marid_add_property_oneshot',
+      { p_phone: a.phone, p_text: a.text, p_owner_name: a.owner_name ?? null },
+    )
+    if (error) return { ok: false, error: error.message }
+    return (data ?? { ok: false, error: 'مفيش رد' }) as ToolResult
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'حصل خطأ' }
+  }
+}
+
 
 async function createListingDraft(a: {
   phone: string
@@ -2278,6 +2327,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await whoIsThis(input as never)
       case 'get_my_orders':
         return await getMyOrders(input as never)
+      case 'add_property_oneshot':
+        return await addPropertyOneshot(input as never)
       case 'create_listing_draft':
         return await createListingDraft(input as never)
       case 'add_menu_items':
