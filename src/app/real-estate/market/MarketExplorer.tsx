@@ -389,11 +389,11 @@ export default function MarketExplorer({
       {openRequests > 0 && (
         <Link
           href="/real-estate/requests"
-          className="mx-4 mb-3 flex items-center gap-3 rounded-2xl bg-[#34D399]/12 border border-[#34D399]/35 px-4 py-3 no-underline"
+          className="mx-4 mb-3 flex items-center gap-3 rounded-2xl bg-[#34D399] px-4 py-3.5 shadow-lg shadow-[#34D399]/25 no-underline"
         >
           <span className="relative flex h-2.5 w-2.5 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#34D399]" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#04352A] opacity-60" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#04352A]" />
           </span>
           <span className="flex-1 min-w-0">
             <span className="block text-[13px] font-black text-white">
@@ -403,7 +403,7 @@ export default function MarketExplorer({
               عملاء طالبين وحدات أو بيسألوا عن مشاريع — شوف وقدّم عرضك
             </span>
           </span>
-          <span className="text-[#34D399] text-lg font-black">←</span>
+          <span className="text-[#04352A] text-lg font-black">←</span>
         </Link>
       )}
 
