@@ -121,6 +121,27 @@ export const MARID_TOOLS = [
     },
   },
   {
+    name: 'read_media',
+    description:
+      '🖼️ **اقرا أي صورة أو ملف أو رسالة صوتية وصلتك** — بترجّع اللي فيها وتقولك تعمل بيها إيه. ' +
+      'استخدمها فورًا أول ما حد يبعت ميديا، **قبل ما تسأله أي حاجة**.\n' +
+      'الرد بيقولك role: ' +
+      '• listing = فيها بيانات إعلان → نادي add_listing_oneshot بالوصف ده ' +
+      '• detail_photo = صورة تفصيلة (حمام · مطبخ · سلم) → أرفقها بإعلان موجود مش إعلان لوحدها ' +
+      '• document = مستند (حجز · فاتورة) → مش إعلان، اسأل صاحبه عايز إيه ' +
+      '• context = كلام من غير سعر ولا مساحة → اسأل عن الناقص ' +
+      '• unknown = مفيش وصف → اطلب منه يوصفها بسطر.\n' +
+      '⛔ ماتقولش «الصورة مش واضحة» — الدالة دي بتقراها من الوصف المحفوظ والكابشن.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        body: { type: 'string', description: 'نص رسالة الميديا **زي ما هو** بالأقواس واللينك' },
+        media_type: { type: 'string', description: 'image · audio · document · video' },
+      },
+      required: ['body'],
+    },
+  },
+  {
     name: 'add_listing_oneshot',
     description:
       '⚡ **الأسرع لإضافة أي إعلان** — عقار · عربية · منتج · خدمة · مطعم · إيجار. ' +
@@ -955,6 +976,28 @@ async function resolveCategorySlug(
  * دي بتاخد **نص المالك زي ما هو** وتفهم منه كل حاجة، وتسجّل الإعلان،
  * وترجّع الناقص عشان المارد يسأل عنه **بعد** التسجيل مش قبله.
  */
+/**
+ * 🖼️ (٢٨ أغسطس ٢٠٢٦) محمد: «مفيش رصيد لأنثروبيك فعايزين نبني دالة
+ * تقرا الميديا بأنواعها».
+ *
+ * بتقرا من ٣ مصادر بالترتيب: الوصف المحفوظ → الكابشن → اسم الملف،
+ * وبتقول للمارد الميديا دي إعلان ولا تفصيلة ولا مستند.
+ */
+async function readMedia(a: { body: string; media_type?: string }): Promise<ToolResult> {
+  if (!a.body?.trim()) return { ok: false, error: 'ابعت نص رسالة الميديا' }
+  try {
+    const { data, error } = await (db.rpc as unknown as (
+      f: string, p: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: { message: string } | null }>)(
+      'marid_read_media',
+      { p_body: a.body, p_type: a.media_type ?? 'image' },
+    )
+    if (error) return { ok: false, error: error.message }
+    return (data ?? { ok: false, error: 'مفيش رد' }) as ToolResult
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'حصل خطأ' }
+  }
+}
 async function addListingOneshot(a: {
   phone: string; text: string; owner_name?: string
 }): Promise<ToolResult> {
@@ -2329,6 +2372,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await whoIsThis(input as never)
       case 'get_my_orders':
         return await getMyOrders(input as never)
+      case 'read_media':
+        return await readMedia(input as never)
       case 'add_listing_oneshot':
         return await addListingOneshot(input as never)
       case 'create_listing_draft':
