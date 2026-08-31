@@ -193,7 +193,7 @@ export default function MarketExplorer({
       try {
         const { count } = await (supabaseBrowser as unknown as {
           from: (t: string) => { select: (c: string, o: { count: 'exact'; head: boolean }) => Promise<{ count: number | null }> }
-        }).from('v_live_property_demand').select('id', { count: 'exact', head: true })
+        }).from('v_actionable_demand').select('id', { count: 'exact', head: true })
         if (alive && typeof count === 'number') setOpenRequests(count)
       } catch { /* البانر مايبانش */ }
     })()
