@@ -17,20 +17,25 @@ import {
 } from 'lucide-react'
 
 type Req = {
+  // 🏗️ (٢٨/٨) الاستفسارات على المشاريع بتيجي بالأعمدة دي
+  kind_ar?: string
+  project_title?: string | null
+  developer?: string | null
+  completeness?: number
   id: string
   title: string
   details: string | null
   kind: string
-  purpose: string
+  purpose?: string
   city: string | null
   district: string | null
   budget_min: number | null
   budget_max: number | null
-  area_min: number | null
-  bedrooms: number | null
-  down_payment_max: number | null
-  installment_years_min: number | null
-  urgency: string
+  area_min?: number | null
+  bedrooms?: number | null
+  down_payment_max?: number | null
+  installment_years_min?: number | null
+  urgency?: string
   responses_count: number
   age_label: string
 }
@@ -53,7 +58,7 @@ export default function OpenRequests() {
   const load = useCallback(async () => {
     const { data } = await (supabaseBrowser as unknown as {
       from: (t: string) => { select: (c: string) => { order: (c: string, o?: unknown) => Promise<{ data: unknown }> } }
-    }).from('v_open_property_requests').select('*').order('created_at', { ascending: false })
+    }).from('v_actionable_demand').select('*').order('created_at', { ascending: false })
     setRows((data as Req[]) || [])
     setLoading(false)
   }, [])
