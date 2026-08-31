@@ -121,11 +121,13 @@ export const MARID_TOOLS = [
     },
   },
   {
-    name: 'add_property_oneshot',
+    name: 'add_listing_oneshot',
     description:
-      '⚡ **الأسرع لإضافة عقار** — استخدمها أول ما المالك يبعت وصف الوحدة في رسالة واحدة، ' +
-      'زي «عندي شقة ١٦٠م في مدينة نصر للبيع بـ٣.٥ مليون · مقدم ١٠٪ · تقسيط ٨ سنين». ' +
-      'بتفهم النوع والمنطقة والسعر والمقدم والمساحة لوحدها، وبتعمل الحساب لو مالوش. ' +
+      '⚡ **الأسرع لإضافة أي إعلان** — عقار · عربية · منتج · خدمة · مطعم · إيجار. ' +
+        'استخدمها أول ما حد يبعت وصف حاجة عايز يعرضها في رسالة واحدة. ' +
+      'أمثلة: «عندي شقة ١٦٠م في مدينة نصر بـ٣.٥ مليون» · «عربية النترا ٢٠٢٠ بـ٨٥٠ ألف» ' +
+        '· «بقدم خدمة تصوير أفراح بـ٥٠٠٠» · «لابتوب ديل للبيع بـ١٢٠٠٠». ' +
+      'بتعرف النوع والتصنيف والمنطقة والسعر لوحدها، وبتعمل الحساب لو مالوش. ' +
       '⛔ ماتسألش أسئلة قبلها — ابعت نص المالك زي ما هو وهي هتقولك الناقص إيه، ' +
       'واسأل عن الناقص **بعد** ما الإعلان يتسجّل مش قبله. ' +
       '📸 وبعدها اطلب الصور — الماركت بليس بيرفض إعلان من غير صورة. ' +
@@ -953,7 +955,7 @@ async function resolveCategorySlug(
  * دي بتاخد **نص المالك زي ما هو** وتفهم منه كل حاجة، وتسجّل الإعلان،
  * وترجّع الناقص عشان المارد يسأل عنه **بعد** التسجيل مش قبله.
  */
-async function addPropertyOneshot(a: {
+async function addListingOneshot(a: {
   phone: string; text: string; owner_name?: string
 }): Promise<ToolResult> {
   if (!a.text?.trim()) return { ok: false, error: 'ابعت نص المالك' }
@@ -961,7 +963,7 @@ async function addPropertyOneshot(a: {
     const { data, error } = await (db.rpc as unknown as (
       f: string, p: Record<string, unknown>,
     ) => Promise<{ data: unknown; error: { message: string } | null }>)(
-      'marid_add_property_oneshot',
+      'marid_add_anything_oneshot',
       { p_phone: a.phone, p_text: a.text, p_owner_name: a.owner_name ?? null },
     )
     if (error) return { ok: false, error: error.message }
@@ -2327,8 +2329,8 @@ export async function runMaridTool(name: string, input: Record<string, unknown>)
         return await whoIsThis(input as never)
       case 'get_my_orders':
         return await getMyOrders(input as never)
-      case 'add_property_oneshot':
-        return await addPropertyOneshot(input as never)
+      case 'add_listing_oneshot':
+        return await addListingOneshot(input as never)
       case 'create_listing_draft':
         return await createListingDraft(input as never)
       case 'add_menu_items':
