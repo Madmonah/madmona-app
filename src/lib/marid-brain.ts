@@ -396,14 +396,17 @@ ${Object.entries(MADMONA_LINKS)
     parameters: toGeminiSchema(t.input_schema),
   }))
 
-  const messages: Array<{ role: 'user' | 'assistant'; content: unknown }> = [
-    {
-      role: 'user',
-      content:
-        mediaBlocks.length > 0
-          ? [...mediaBlocks, { type: 'text', text: opts.userMessage }]
-          : opts.userMessage,
-    },
+  // 🧞 (١ سبتمبر ٢٠٢٦ — مساءً) الرسالة الأولى بصيغة جيميناي: parts مش content.
+  //    كانت لسه أنثروبيك → 400 "Unknown name content at contents[0]" (من لوج
+  //    Vercel) → المارد بيقع للمكتبة في كل رد. الميديا: base64 → inlineData.
+  const mediaParts: GeminiPart[] = mediaBlocks
+    .map((b) => {
+      const src = (b as { source?: { media_type?: string; data?: string } }).source
+      return src?.data ? { inlineData: { mimeType: src.media_type || 'image/jpeg', data: src.data } } : null
+    })
+    .filter((x): x is { inlineData: { mimeType: string; data: string } } => !!x)
+  const messages: GeminiContent[] = [
+    { role: 'user', parts: [...mediaParts, { text: opts.userMessage }] },
   ]
 
   let droppedMedia = false
@@ -443,9 +446,9 @@ ${Object.entries(MADMONA_LINKS)
         droppedMedia = true
         messages[0] = {
           role: 'user',
-          content:
+          parts: [{ text:
             `${opts.userMessage}\n\n(العميل بعت ملف مش قادر أفتحه — ` +
-            `قوله كده بصراحة واطلب منه يبعت التفاصيل مكتوبة.)`,
+            `قوله كده بصراحة واطلب منه يبعت التفاصيل مكتوبة.)` }],
         }
         continue
       }
@@ -475,7 +478,7 @@ ${Object.entries(MADMONA_LINKS)
         // لسه فيه لفّات فاضية — نرجّعله يصحّح بنفسه وينادي الأداة فعلًا.
         if (turn < MAX_TURNS - 1) {
           messages.push({ role: 'model', parts: res.parts } as never)
-          messages.push({ role: 'user', content: buildGuardCorrection(isMeeting, listingToolOff) })
+          messages.push({ role: 'user', parts: [{ text: buildGuardCorrection(isMeeting, listingToolOff) }] })
           continue
         }
         // خلصت اللفّات — مانبعتش وعد كاذب. رد صادق + تنبيه لمحمد.
