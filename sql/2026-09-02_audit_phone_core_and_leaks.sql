@@ -1,0 +1,53 @@
+-- 🔍 (٢ سبتمبر ٢٠٢٦) الفحص الشامل — النتائج والإصلاحات
+--
+-- ═══ 🔴 (١) أخطر اكتشاف: الموظف بيدخل ويلاقي نفسه «مش موظف» ═══
+-- madmona_resolve هي اللي بتحدد هوية أي مستخدم (أدمن/موظف/عميل)، وكانت
+-- بتقارن `normalize_phone(x.phone) = v_phone` في **تلات مواضع**، و
+-- v_phone خام من madmona_accounts.phone_normalized — المخزّن بصيغتين
+-- ('201…' و'+201…'). أي حد جلسته على صيغة البلَس كان بيرجع بـ
+--     roles: { admin: [], employee: [], customer: [] }
+-- من غير أي رسالة خطأ. حجم المشكلة: ٦١ جلسة نشطة على ٣٥ حساب.
+-- ✅ بعد الإصلاح (phone_core على الجنبين): ٩ موظفين و١٠ أدمن رجعت
+--    هويتهم — ١٩ هوية كانت ضايعة بصمت.
+--
+-- ⚠️ **السبب الجذري لسه محتاج قرار محمد:** ٣٧ رقم ليهم **حسابين**
+--    في madmona_accounts (واحد بالبلَس وواحد من غيره) — من ضمنهم حساب
+--    محمد ونورا وشهد. الدمج بيمس هوية مستخدمين فمااتعملش من غير إذن.
+--    الاستعلام: select normalize_phone(phone_normalized) c, count(*)
+--               from madmona_accounts group by 1 having count(*)>1;
+--
+-- ═══ 🔴 (٢) تسريب: نسب العمولة كانت مقروءة للزائر ═══
+-- commission_rules (فيه value = النسبة و auto_charge) كان عليه سياسة
+-- USING(true) — يعني أي حد معاه مفتاح anon (وهو في كود الموقع) يقرا
+-- هوامش مضمونة. ⛔ كسر لخط محمد: «العمولة في الباكاند فقط فقط فقط».
+-- ✅ اتقفل. آمن: src/lib/commission.ts بيقراه بـservice_role من السيرفر
+--    بس (بيتخطى RLS)، ومفيش أي كود كلاينت بيلمسه.
+--
+-- ═══ 🟠 (٣) _wa_login_v2_staging مقروء للزائر ═══
+-- جدول مؤقت من ترحيل قديم (filename · content · created_at — ٤ صفوف)
+-- بيخزّن محتوى ملفات. مفيش كود بيقراه. ✅ اتقفل.
+--
+-- ═══ ✅ اللي طلع سليم ═══
+-- • RLS مفعّل على **كل** جداول public (صفر بدون) — مفيش تكرار لحادثة ٢٨/٨.
+-- • باقي السياسات المفتوحة كلها مرجعية عامة مقصودة (districts ·
+--   attributes · categories · restaurant_menu_items · static_pages …).
+-- • v_duplicate_accounts = صفر.
+-- • ١٢ كرون نشط، كلهم في cron_allowlist (مفيش واحد الحارس هيمسحه).
+-- • الوكلاء: ٣١ تشغيلة ناجحة وصفر فشل آخر ٧ أيام.
+-- • ٥٣٢ إعلان منشور · صفر من غير seller_class.
+--
+-- ═══ 📋 اللي محتاج شغل (مرتّب بالأولوية) ═══
+-- ١. دمج الـ٣٧ حساب المكرر ← قرار محمد.
+-- ٢. ٢٢ إعلان منشور من غير سعر (غير عقارات) — التريجر بيمنع الجديد،
+--    دول قدامى عدّوا قبله.
+-- ٣. ١٠ إعلانات منشورة صورها placeholder أو مفيش (١ من غير أي صورة).
+-- ٤. ١٣٢٢ صورة لسه ماتفحصتش بحارس الكتابة (الوكيل واقف مع قفل «work»).
+-- ٥. ٩٥ إعلان من غير ترجمة i18n.
+--
+-- (تعريفات الدوال المعدّلة كاملة في الميجريشنز المطبّقة:
+--  madmona_resolve_phone_core · lock_commission_rules_and_wa_staging)
+
+drop policy if exists commission_rules_read on public.commission_rules;
+revoke all on public.commission_rules from anon, authenticated;
+drop policy if exists "_wa_v2_stage_read" on public._wa_login_v2_staging;
+revoke all on public._wa_login_v2_staging from anon, authenticated;
