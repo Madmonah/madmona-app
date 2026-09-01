@@ -75,19 +75,23 @@ const DEVELOPER_MODULES = [
 ]
 
 /** 🏛️ لوحة مضمونة — نفس النظام: فينانس أولًا */
+// 🏛️ (١/٩) لوحة مضمونة — على الصفحات اللي **عليها البيانات فعلًا**.
+//    /admin/team كانت 404 — الفريق في /admin/staff.
 const PLATFORM: Mod[] = [
-  { key: 'admin',     label: 'الإدارة',       href: '/admin',                  icon: LayoutDashboard },
+  { key: 'company',   label: 'الشركة',        href: '/admin/company',          icon: LayoutDashboard },
+  { key: 'staff',     label: 'الفريق',        href: '/admin/staff',            icon: Users },
   { key: 'listings',  label: 'الإعلانات',     href: '/admin/listings',         icon: LayoutGrid },
+  { key: 'suppliers', label: 'الموردين',      href: '/admin/suppliers',        icon: Users },
   { key: 'bourse',    label: 'البورصة',       href: '/real-estate/market',     icon: Building2 },
   { key: 'demand',    label: 'طلبات لايف',    href: '/real-estate/requests',   icon: Megaphone },
-  { key: 'suppliers', label: 'الموردين',      href: '/admin/suppliers',        icon: Users },
-  { key: 'team',      label: 'الفريق',        href: '/admin/team',             icon: Users },
   { key: 'crm',       label: 'مكالماتي',      href: '/crm',                    icon: Users },
+  { key: 'tasks',     label: 'التاسكات',      href: '/admin/task-review',      icon: ClipboardList },
 ]
 
 const PLATFORM_FINANCE: Mod[] = [
-  { key: 'fin',       label: 'الفينانس',      href: '/admin/business-finance', icon: TrendingUp },
-  { key: 'payroll',   label: 'المرتبات',      href: '/admin/payroll',          icon: Wallet },
+  { key: 'dash',      label: 'الأوفرفيو',     href: '/admin/dashboard',        icon: TrendingUp },
+  { key: 'fin',       label: 'الفينانس',      href: '/admin/business-finance', icon: Wallet },
+  { key: 'payroll',   label: 'المرتبات',      href: '/admin/payroll',          icon: Receipt },
   { key: 'commission',label: 'العمولات',      href: '/admin/commissions',      icon: Receipt },
 ]
 
@@ -112,7 +116,7 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         if (staff === true) {
           if (!alive) return
           setTitle('لوحة مضمونة')
-          setHref('/admin')
+          setHref('/admin/company')
           setFinance(PLATFORM_FINANCE)
           setMods(PLATFORM)
           return
