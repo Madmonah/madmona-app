@@ -78,7 +78,8 @@ const DEVELOPER_MODULES = [
 // 🏛️ (١/٩) لوحة مضمونة — على الصفحات اللي **عليها البيانات فعلًا**.
 //    /admin/team كانت 404 — الفريق في /admin/staff.
 const PLATFORM: Mod[] = [
-  { key: 'company',   label: 'الشركة',        href: '/admin/company',          icon: LayoutDashboard },
+  { key: 'erp',       label: 'نظام الإدارة',  href: '/supplier/erp',           icon: LayoutDashboard },
+  { key: 'company',   label: 'الشركة',        href: '/admin/company',          icon: Building2 },
   { key: 'staff',     label: 'الفريق',        href: '/admin/staff',            icon: Users },
   { key: 'listings',  label: 'الإعلانات',     href: '/admin/listings',         icon: LayoutGrid },
   { key: 'suppliers', label: 'الموردين',      href: '/admin/suppliers',        icon: Users },
@@ -116,7 +117,7 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         if (staff === true) {
           if (!alive) return
           setTitle('لوحة مضمونة')
-          setHref('/admin/company')
+          setHref('/supplier/erp')
           setFinance(PLATFORM_FINANCE)
           setMods(PLATFORM)
           return
