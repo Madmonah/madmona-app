@@ -1205,3 +1205,47 @@ git add sql/ && git commit
 باب اللوحة (`platform_admins`) — ويتجرّب **بجلسة المستخدم الحقيقية**
 مش بالقراءة. ومتفحصش بـ`role` لوحده: عند مضمونة الدور متعمَّد إنه
 مايكونش `admin`، والصلاحية في `permissions`.
+
+## ☎️ قاعدة الأرقام: `phone_core` على الجنبين — دايمًا (٢ سبتمبر ٢٠٢٦)
+🔴 **أخطر حاجة اتكشفت في الفحص الشامل:** `madmona_resolve` (اللي بتحدد
+هوية أي مستخدم — أدمن/موظف/عميل) كانت بتقارن
+`normalize_phone(x.phone) = v_phone` في **تلات مواضع**، و`v_phone` خام
+من `madmona_accounts.phone_normalized` — **المخزّن بصيغتين** (`201…`
+و`+201…`). أي حد جلسته على صيغة البلَس كان بيرجع بـ
+`roles: {admin:[], employee:[], customer:[]}`: **الموظف بيدخل ويلاقي
+نفسه مش موظف** — لا حضور ولا تاسكات ولا إشعارات — **ومن غير أي رسالة
+خطأ توضّح السبب**. ٦١ جلسة نشطة على ٣٥ حساب. بعد الإصلاح رجعت ١٩ هوية
+(٩ موظفين + ١٠ أدمن).
+
+⚠️ ودي كانت السبب التاني وراء «مالكش صلاحية» في الحضور — اتخفت ورا
+السبب الأول (`role='owner'`) فبعد إصلاحه الشاشة فضلت مقفولة.
+
+✅ **القاعدة:** أي مقارنة أرقام في أي دالة أو كويري =
+`phone_core(a) = phone_core(b)` — **الجنبين**. ممنوع تقارن عمود خام،
+وممنوع تطبّق `normalize_phone` على جنب واحد. الفحص:
+```sql
+select proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+ where n.nspname='public' and pg_get_functiondef(p.oid) ilike '%phone_normalized%'
+   and pg_get_functiondef(p.oid) not ilike '%phone_core%';
+```
+
+⚠️ **السبب الجذري لسه مفتوح — محتاج قرار محمد:** **٣٧ رقم ليهم حسابين**
+في `madmona_accounts` (واحد بالبلَس وواحد من غيره) — من ضمنهم حساب محمد
+ونورا وشهد. ده امتداد لمرض ٤.٧، بس في جدول ماكانش مغطّى بالحماية.
+الدمج بيمس هوية مستخدمين فمايتعملش من غير إذن صريح.
+
+## 🔴 العمولة كانت مقروءة للزائر (٢ سبتمبر ٢٠٢٦)
+`commission_rules` (فيه `value` = النسبة و`auto_charge`) كان عليه
+سياسة `USING(true)` — يعني أي حد معاه مفتاح anon (**وهو في كود الموقع**)
+يقرا هوامش مضمونة كلها. ⛔ كسر مباشر لخط «العمولة في الباكاند فقط فقط
+فقط». اتقفل، وآمن: `src/lib/commission.ts` بيقراه بـ`service_role` من
+راوتات السيرفر بس.
+
+⚠️ **الدرس:** فحص «الجداول اللي عليها RLS» **مش كافي**. لازم تفحص كمان
+**السياسات المفتوحة** `USING(true)`:
+```sql
+select tablename, policyname, roles from pg_policies
+ where schemaname='public' and cmd in ('SELECT','ALL')
+   and (roles::text like '%anon%' or roles::text='{public}')
+   and btrim(coalesce(qual,''))='true';
+```
