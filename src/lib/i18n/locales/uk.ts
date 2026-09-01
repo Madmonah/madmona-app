@@ -143,6 +143,7 @@ export const uk: Partial<Dict> = {
   'market.track_services': 'Послуги',
   'market.track_hybrid': 'Комбіновані',
   'market.track_restaurants': 'Ресторани',
+  'market.track_industry': 'Промисловість і B2B',
   'market.track_products': 'Товари',
   'market.track_daily': 'Продукти',
   'market.sort_newest': 'Спочатку нові',

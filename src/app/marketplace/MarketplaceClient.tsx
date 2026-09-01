@@ -84,7 +84,7 @@ const SORT_LABELS: Record<SortOption, string> = {
   rating: 'market.sort_rating',
 }
 
-type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales'
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales' | 'industry'
 
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'market.track_all',
@@ -95,6 +95,7 @@ const TRACK_LABELS: Record<TrackTab, string> = {
   products: 'market.track_products',
   daily: 'market.track_daily',
   sales: 'market.track_products',
+  industry: 'market.track_industry',
 }
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -106,6 +107,7 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   products: '🏷️',
   daily: '🛒',
   sales: '🏷️',
+  industry: '🏭',
 }
 
 // Per-vertical colours — same identity as the homepage hero/tabs.
@@ -118,6 +120,7 @@ const TRACK_ACCENT: Record<TrackTab, { accent: string; bg: string }> = {
   hybrid:      { accent: '#059669', bg: '#E7F1ED' },
   daily:       { accent: '#7A4FA3', bg: '#EDE3F5' },
   sales:       { accent: '#3D7BB6', bg: '#D9E7F4' },
+  industry:    { accent: '#5A6B7A', bg: '#E4E9ED' },   // 🏭 رمادي صناعي
 }
 
 // Tab order: الكل + بيع · إيجار · خدمات · مطاعم · سوبر ماركت
@@ -128,7 +131,8 @@ const TRACK_ACCENT: Record<TrackTab, { accent: string; bg: string }> = {
 // 15 Aug 2026 (Mohamed): drop the 'all' and 'daily' tabs. Tabs are now exactly
 // buy / rent / services / restaurants. 'daily' had 3 categories, all
 // is_active=false with 0 published listings, so it was an always-empty tab.
-const TRACK_TAB_ORDER: TrackTab[] = ['products', 'rentals', 'services', 'restaurants']
+// 🏭 (١/٩) التاب الخامس — شركات وصناعة (B2B: عرض سعر · حد أدنى · شهادات)
+const TRACK_TAB_ORDER: TrackTab[] = ['products', 'rentals', 'services', 'restaurants', 'industry']
 
 // Vertical names — identical to the homepage hero.
 const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
@@ -143,6 +147,7 @@ const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
   // `activeTrack === 'products' && c.track === 'sales'`). موجود هنا عشان
   // النوع يكمل، وبنفس التسمية عشان لو اتعرض في أي مكان يبقى متسق.
   sales:       { ar: 'بيع',         en: 'Buy' },
+  industry:    { ar: 'شركات وصناعة', en: 'Industry & B2B' },
 }
 
 function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listing[] }) {

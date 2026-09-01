@@ -134,6 +134,7 @@ export const zh: Partial<Dict> = {
   'market.track_services': '服务',
   'market.track_hybrid': '综合',
   'market.track_restaurants': '餐厅',
+  'market.track_industry': '企业与工业',
   'market.track_products': '商品',
   'market.track_daily': '生鲜杂货',
   'market.sort_newest': '最新',

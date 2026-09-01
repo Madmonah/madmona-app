@@ -143,6 +143,7 @@ export const ja: Partial<Dict> = {
   'market.track_services': 'サービス',
   'market.track_hybrid': 'ハイブリッド',
   'market.track_restaurants': 'レストラン',
+  'market.track_industry': '企業・産業',
   'market.track_products': '商品',
   'market.track_daily': '食料品',
   'market.sort_newest': '新着順',
