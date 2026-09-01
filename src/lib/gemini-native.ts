@@ -85,10 +85,19 @@ export async function callGeminiNative(opts: {
   const key = process.env.GEMINI_API_KEY
   if (!key) throw new Error('GEMINI_API_KEY مش موجود')
 
+  // 🔁 (١ سبتمبر ٢٠٢٦ — مساءً) محمد: «المارد لسه بيرد من المكتبة مع إننا
+  //    ربطناه بجوجل!». الفحص بالأرقام: الحصة المجانية لموديلات Flash =
+  //    **٢٠ نداء في اليوم** (gemini-flash-latest · 3.6 · 3.7) — والمارد
+  //    بياخد ٢–٤ نداءات للرد الواحد = ٧ ردود ثم 429 للمكتبة.
+  //    موديلات Lite حصتها أعلى بكتير، واتأكدت إنها بتكمّل دورة الأدوات
+  //    كاملة (نداء → أداة → رد بالإعلانات). فاللايت الأول والفلاش احتياطي.
   const models = [
-    process.env.GEMINI_MODEL || 'gemini-flash-latest',
-    'gemini-flash-latest',
+    process.env.GEMINI_MODEL || 'gemini-flash-lite-latest',
+    'gemini-flash-lite-latest',
+    'gemini-3.1-flash-lite',
+    'gemini-3.5-flash-lite',
     'gemini-3.6-flash',
+    'gemini-flash-latest',
   ].filter((m, i, a) => a.indexOf(m) === i)
 
   const body: Record<string, unknown> = {

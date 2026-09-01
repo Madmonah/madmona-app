@@ -15,7 +15,7 @@
 // 💡 ولما الرصيد يرجع: غيّر السطر الواحد ده لـanthropic وخلاص.
 // ============================================================================
 
-const GEMINI_MODEL = 'gemini-3.6-flash'
+const GEMINI_MODEL = 'gemini-flash-lite-latest'
 const GEMINI_URL =
   `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 

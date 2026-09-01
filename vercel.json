@@ -53,8 +53,8 @@
       "schedule": "*/15 5-22 * * *"
     },
     {
-      "path": "/api/i18n/translate?limit=15",
-      "schedule": "*/5 5-23 * * *"
+      "path": "/api/i18n/translate?limit=10",
+      "schedule": "*/15 5-23 * * *"
     },
     {
       "path": "/api/integrations/dispatch",
