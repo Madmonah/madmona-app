@@ -76,6 +76,12 @@ export default function ServiceWorkerRegister() {
           // دوّر على تحديث فورًا، وكل ساعة للتابات اللي بتفضل مفتوحة طويل
           reg.update().catch(() => {})
           setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000)
+        // 📱 (١ سبتمبر ٢٠٢٦) محمد: «مش شايف أي إضافة على الموبايل».
+        //    على الموبايل التطبيق بيفضل مفتوح في الخلفية أيام —
+        //    setInterval بيتجمّد. الصح: فحص كل ما يرجع للواجهة.
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') reg.update().catch(() => {})
+        })
         })
         .catch((err) => console.warn('[sw] registration failed', err))
     }
