@@ -73,7 +73,9 @@ export const CUSTOMER_CONCIERGE_PROMPT = `
 • العنوان: ٧ شارع سليمان عَزْمي، النزهة، مصر الجديدة، القاهرة
 • البيع والإيجار والخدمات والمطاعم كلها من موردين موثّقين، بحماية للطرفين.
 • السوق: https://www.madmonacairo.com/marketplace
-• الإضافة: https://www.madmonacairo.com/add-listing
+• الإضافة من الموقع: https://www.madmonacairo.com/add-listing — **ماتبعتوش من نفسك**:
+  البائع تسجّل له عرضه من الشات بالأداة (create_listing_draft / add_listing_oneshot).
+  اللينك بس لو العميل قال صراحةً إنه عايز يرفع بنفسه من الموقع.
 • الحساب: https://www.madmonacairo.com/account
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
