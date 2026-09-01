@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useRef, useState, type MouseEvent } from 'react'
+import { resolveTopGroups } from '@/lib/categoryGroups'
 import Link from 'next/link'
 import SmartImage from '@/components/SmartImage'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -201,39 +202,17 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // Every track now carries group_slug/group_name_ar/group_emoji so the strip
   // renders tidy labeled clusters (e.g. خدمات → طبية وتجميل · منزلية · …)
   // instead of one flat wall of pills. Falls back to a single unnamed bucket.
-  type RootGroup = { slug: string; name_ar: string; name_i18n: Record<string, string> | null; emoji: string; order: number; cats: Category[] }
-  const groupCats = (list: Category[]): RootGroup[] => {
-    const map = new Map<string, RootGroup>()
-    for (const c of list) {
-      const key = c.group_slug || '__ungrouped'
-      if (!map.has(key)) {
-        map.set(key, {
-          slug: key,
-          name_ar: c.group_name_ar || '',
-          name_i18n: c.group_name_i18n || null,
-          emoji: c.group_emoji || '',
-          order: c.group_display_order ?? 999,
-          cats: [],
-        })
-      }
-      map.get(key)!.cats.push(c)
-    }
-    return Array.from(map.values()).sort((a, b) => a.order - b.order)
-  }
+  // (القاعدة نفسها في src/lib/categoryGroups.ts — العرض والإضافة بينادوها)
   // 🗂️ (٢ سبتمبر ٢٠٢٦) محمد: «أنا عايز التصنيفات تظهر زي البيع كده والإيجار».
   //    كروت المجموعات كانت بتتبني من **الرووتس بس**، وشركات وصناعة عندها
   //    رووت واحد (شركات وصناعة) — فطلعت مجموعة واحدة والكروت ماظهرتش خالص.
   //    المجموعات الحقيقية (صناعة الأدوية · صناعة عامة · خدمات صناعية) عايشة
   //    على **أولاد** الرووت. فلو الرووتس طلّعت مجموعة واحدة ورووت واحد،
   //    بنعيد البناء من أولاده.
-  const rootGroups = (() => {
-    const byRoots = groupCats(rootCategories)
-    if (byRoots.length > 1 || rootCategories.length !== 1) return byRoots
-    // (التصنيفات اللي بتوصل للفرونت مفلترة is_active أصلًا من المصدر)
-    const kids = allCategories.filter(c => c.parent_id === rootCategories[0].id)
-    const byKids = groupCats(kids).filter(g => g.slug !== rootCategories[0].group_slug)
-    return byKids.length > 1 ? byKids : byRoots
-  })()
+  const rootGroups = resolveTopGroups(
+    rootCategories,
+    (root) => allCategories.filter(c => c.parent_id === root.id),
+  )
   // (Jul 24 2026) اتفعّلت في تاب «الكل» كمان.
   // الملاحظة القديمة («groups would collide across tracks») مالهاش أساس —
   // قِسناها من الداتابيز: **كل group_slug بيخص تراك واحد بس**، مفيش ولا تصادم.

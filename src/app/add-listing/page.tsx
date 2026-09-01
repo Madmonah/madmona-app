@@ -267,10 +267,17 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
         name_i18n: (top as { name_i18n?: Record<string, string> | null }).name_i18n ?? null,
         group_emoji: (top as { group_emoji?: string | null }).group_emoji ?? null,
         group_display_order: (top as { group_display_order?: number | null }).group_display_order ?? null,
+        // 🗂️ (٢/٩/٢٠٢٦) حقول المجموعة كانت بتتشال من الأقسام الفرعية هنا —
+        //    فالويزارد ماكانش يقدر يجمّعهم زي العرض حتى والداتا موجودة.
         subs: expandedSubs.map((s) => ({
           slug: s.slug,
           name_ar: s.name_ar,
           name_i18n: (s as { name_i18n?: Record<string, string> | null }).name_i18n ?? null,
+          group_slug: (s as { group_slug?: string | null }).group_slug ?? null,
+          group_name_ar: (s as { group_name_ar?: string | null }).group_name_ar ?? null,
+          group_name_i18n: (s as { group_name_i18n?: Record<string, string> | null }).group_name_i18n ?? null,
+          group_emoji: (s as { group_emoji?: string | null }).group_emoji ?? null,
+          group_display_order: (s as { group_display_order?: number | null }).group_display_order ?? null,
           emoji: s.icon || '📁',
           title_placeholder: s.title_placeholder ?? null,
           description_placeholder: s.description_placeholder ?? null,

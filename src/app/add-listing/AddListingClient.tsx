@@ -1,6 +1,7 @@
 'use client';
 
 import { safeStorage } from '@/lib/safe-storage'
+import { resolveTopGroups } from '@/lib/categoryGroups';
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { catNameFor, attrNameFor, groupNameFor } from '@/lib/i18n/catName'
 
@@ -1003,44 +1004,53 @@ function StepCategory({
           //
           //     الأقسام اللي مالهاش فروع (زي أغلب المطاعم) بتتحدد من المستوى
           //     التاني على طول — من غير خطوة فاضية.
-          const groupsMap = new Map<
-            string,
-            {
-              slug: string; name_ar: string; name_i18n?: Record<string, string> | null; emoji: string; order: number;
-              roots: { slug: string; emoji: string; name_ar: string; subs: { slug: string; emoji: string; name_ar: string }[] }[];
-            }
-          >();
-          const seenRoot = new Set<string>();
+          // 🗂️ (٢ سبتمبر ٢٠٢٦) محمد: «ياريت الإضافة تطابق العرض». التجميع
+          //    كان مكتوب هنا نسخة تانية غير اللي في الماركتبليس، فأي قسم
+          //    جديد يتظبط في واحدة وينسى في التانية. دلوقتي القاعدة الواحدة
+          //    في src/lib/categoryGroups.ts والشاشتين بينادوها.
+          const lightOf = (c: {
+            slug: string; name_ar: string; name_i18n?: Record<string, string> | null;
+            group_slug?: string | null; group_name_ar?: string | null;
+            group_name_i18n?: Record<string, string> | null;
+            group_emoji?: string | null; group_display_order?: number | null;
+          }) => ({
+            slug: c.slug, name_ar: c.name_ar, name_i18n: c.name_i18n ?? null,
+            group_slug: c.group_slug ?? null, group_name_ar: c.group_name_ar ?? null,
+            group_name_i18n: c.group_name_i18n ?? null, group_emoji: c.group_emoji ?? null,
+            group_display_order: c.group_display_order ?? null,
+          });
+          const mainBySlug = new Map(visibleMains.map((m) => [m.slug, m]));
+          const subBySlug = new Map<string, { slug: string; emoji: string; name_ar: string }>();
+          for (const m of visibleMains) for (const sub of m.subs) if (!subBySlug.has(sub.slug)) subBySlug.set(sub.slug, sub);
 
-          for (const c of visibleMains) {
-            const key = c.group_slug || c.slug;
-            if (!groupsMap.has(key)) {
-              groupsMap.set(key, {
-                slug: key,
-                name_ar: c.group_name_ar || c.name_ar,
-                name_i18n: (c.group_slug ? c.group_name_i18n : c.name_i18n) || null,
-                emoji: c.group_emoji || c.emoji || '🏷️',
-                order: c.group_display_order ?? 999,
-                roots: [],
-              });
-            }
-            const dedupeKey = `${key}::${c.slug}`;
-            if (seenRoot.has(dedupeKey)) continue;
-            seenRoot.add(dedupeKey);
+          const shared = resolveTopGroups(
+            visibleMains.map(lightOf),
+            (root) => (mainBySlug.get(root.slug)?.subs || []).map(lightOf),
+            { fallbackToSelf: true },
+          );
 
-            const subs: { slug: string; emoji: string; name_ar: string }[] = [];
-            const seenSub = new Set<string>();
-            for (const s of c.subs) {
-              if (seenSub.has(s.slug)) continue;
-              seenSub.add(s.slug);
-              subs.push({ slug: s.slug, emoji: s.emoji, name_ar: s.name_ar });
-            }
-            groupsMap.get(key)!.roots.push({ slug: c.slug, emoji: c.emoji, name_ar: c.name_ar, subs });
-          }
+          const dedupeSubs = (list: { slug: string; emoji: string; name_ar: string }[]) => {
+            const out: { slug: string; emoji: string; name_ar: string }[] = [];
+            const seen = new Set<string>();
+            for (const sub of list) { if (seen.has(sub.slug)) continue; seen.add(sub.slug); out.push({ slug: sub.slug, emoji: sub.emoji, name_ar: sub.name_ar }); }
+            return out;
+          };
 
-          const groups = Array.from(groupsMap.values())
-            .filter((g) => g.roots.length > 0)
-            .sort((a, b) => a.order - b.order);
+          const groups = shared.map((g) => ({
+            slug: g.slug,
+            name_ar: g.name_ar,
+            name_i18n: g.name_i18n,
+            emoji: g.emoji || mainBySlug.get(g.cats[0]?.slug || '')?.emoji || '🏷️',
+            order: g.order,
+            // كل عنصر إما رووت حقيقي (الوضع الطبيعي) أو تصنيف فرعي بقى
+            // مستوى أول (شركات وصناعة — المجموعات عايشة على الأولاد).
+            roots: g.cats.map((c) => {
+              const main = mainBySlug.get(c.slug);
+              if (main) return { slug: main.slug, emoji: main.emoji, name_ar: main.name_ar, subs: dedupeSubs(main.subs) };
+              const sub = subBySlug.get(c.slug);
+              return { slug: c.slug, emoji: sub?.emoji || '📁', name_ar: c.name_ar, subs: [] };
+            }),
+          })).filter((g) => g.roots.length > 0);
 
           const current = pickGroup ? groups.find((g) => g.slug === pickGroup) : null;
 
