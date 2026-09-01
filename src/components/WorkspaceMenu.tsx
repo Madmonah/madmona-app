@@ -86,7 +86,7 @@ const DEVELOPER_MODULES = [
 // 🏛️ (١ سبتمبر ٢٠٢٦) محمد: «فين تاب الحضور والانصراف وباقي التابات
 //    اللي المفروض تكون موجودة في تاب الإدارة». كل صفحة لها زرار.
 const PLATFORM: Mod[] = [
-  { key: 'clock',      label: 'حضوري',          href: '/me',                     icon: Clock },
+  { key: 'clock',      label: 'حضوري',          href: '/account/work#attendance', icon: Clock },
   { key: 'team_att',   label: 'حضور الفريق',    href: '/me/team',                icon: CalendarDays },
   { key: 'mywork',     label: 'شغلي',           href: '/account/work',           icon: ClipboardList },
   { key: 'tasks',      label: 'مراجعة التاسكات',href: '/admin/task-review',      icon: ClipboardList },
