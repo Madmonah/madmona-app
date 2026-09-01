@@ -69,14 +69,16 @@ function buildGroups(cats: Category[]): CatGroup[] {
 // 5 verticals — same identity & order as الماركت (بيع · إيجار · خدمات · مطاعم · سوبر ماركت).
 // مناسبات (hybrid/events) is merged into إيجار per the new structure.
 // 🛒 (٢٥ يوليو ٢٠٢٦ — محمد): «سوبر ماركت» مجال مستقل، مش مجموعة جوه «بيع».
-type VKey = 'products' | 'rentals' | 'services' | 'restaurants' | 'daily'
+type VKey = 'products' | 'rentals' | 'services' | 'restaurants' | 'industry'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; accent: string; bg: string; tracks: string[] }[] = [
   { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', accent: '#3D7BB6', bg: '#D9E7F4', tracks: ['products', 'sales'] },
   { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', accent: '#059669', bg: '#E7F1ED', tracks: ['rentals', 'hybrid'] },
   { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', accent: '#D4A017', bg: '#FAEFD1', tracks: ['services'] },
   { key: 'restaurants', ar: 'مطاعم',      en: 'Restaurants', emoji: '🍽️', accent: '#E26D5C', bg: '#FAE1CB', tracks: ['restaurants'] },
-  { key: 'daily',       ar: 'سوبر ماركت', en: 'Groceries',   emoji: '🛒', accent: '#7A4FA3', bg: '#EDE3F5', tracks: ['daily'] },
+  // 🏭 (١ سبتمبر ٢٠٢٦) القسم الخامس — شركات وصناعة (B2B). «سوبر ماركت» اتشال
+  //    من الموبايل ١٥/٨ وهنا كمان — القسمين لازم يتطابقوا.
+  { key: 'industry',    ar: 'شركات وصناعة', en: 'Industry', emoji: '🏭', accent: '#5A6B7A', bg: '#E4E9ED', tracks: ['industry'] },
 ]
 
 // 🚨 (16 يوليو 2026) كان هنا `DEFAULT_FALLBACK` — لينك Unsplash واحد لصورة
@@ -96,7 +98,7 @@ const TILE_TONE: Record<VKey, string> = {
   rentals:     'from-[#34D399] to-[#2FA084]',
   services:    'from-[#8A6A0F] to-[#D4A017]',
   restaurants: 'from-[#B4453A] to-[#E26D5C]',
-  daily:       'from-[#5C3A7E] to-[#9B6FC4]',
+  industry:    'from-[#3E4A54] to-[#5A6B7A]',   // 🏭 رمادي صناعي
 }
 
 function IconTile({ cat, vkey }: { cat: Category; vkey: VKey }) {
