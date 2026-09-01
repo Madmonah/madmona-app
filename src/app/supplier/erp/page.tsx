@@ -11,6 +11,7 @@
 //    ?business=<id> يخلّي الأدمن يشوف بيزنس تاني.
 // ============================================================================
 import { useEffect, useState, useCallback, Suspense } from 'react'
+import { safeStorage } from '@/lib/safe-storage'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -89,7 +90,15 @@ function ErpInner() {
       const { data, error } = await (supabaseBrowser.rpc as unknown as (
         f: string, a?: Record<string, unknown>,
       ) => Promise<{ data: Dash | null; error: { message: string } | null }>)(
-        'erp_dashboard', businessParam ? { p_supplier: businessParam } : {})
+        // 🚪🚪 (٢ سبتمبر ٢٠٢٦) محمد: «الأوفرفيو مش بتعرض أي حاجة».
+        //     السبب: erp_dashboard كانت بتحدد البيزنس من auth.uid() بس،
+        //     ومحمد وأصحاب البيزنس داخلين بتوكن الواتساب من غير جلسة
+        //     Supabase — فبترجع «مفيش بيزنس» والصفحة تطلع فاضية.
+        //     دي تالت شاشة بنفس المرض (الحضور · قايمة الـ٣ شرط · دي).
+        'erp_dashboard', {
+          ...(businessParam ? { p_supplier: businessParam } : {}),
+          p_token: safeStorage.get('madmona_token') || null,
+        })
       if (error) throw new Error(error.message)
       if (!data?.ok) throw new Error(data?.error || 'مفيش بيانات')
       setD(data)
