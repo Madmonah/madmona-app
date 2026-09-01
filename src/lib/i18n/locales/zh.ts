@@ -439,6 +439,7 @@ export const zh: Partial<Dict> = {
   'mhome.v_rentals': '租赁',
   'mhome.v_services': '服务',
   'mhome.v_restaurants': '餐厅',
+  'mhome.v_industry': '企业与工业',
   'mhome.v_daily': '生鲜杂货',
   'mhome.v_bourse': 'Madmona 房产交易所',
   'mhome.v_business': '商务空间',

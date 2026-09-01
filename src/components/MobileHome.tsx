@@ -212,7 +212,10 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
     const gkeys = new Set(cats.map(c => c.group_slug || c.slug))
     const live = [...gkeys].reduce((s, gk) => s + (liveCounts[gk] ?? 0), 0)
     // الصورة: أول مجموعة في القسم عندها صورة (مع نفس حارس عدم التكرار)
-    const card = catCards.find(c => c.vkey === k && c.useImg && c.image_url)
+    // 🖼️ (١ سبتمبر ٢٠٢٦) محمد: «صورة القسم ملهاش علاقة». للصناعة: القسم
+    //    الرئيسي slug='industry' هو اللي صورته مصنع — مش أول فرع (مواد بناء).
+    const card = (k === 'industry' ? catCards.find(c => c.key === 'industry' && c.image_url) : null)
+      || catCards.find(c => c.vkey === k && c.useImg && c.image_url)
       || catCards.find(c => c.vkey === k)
     return { cats: cats.length, live, card }
   }

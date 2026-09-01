@@ -723,6 +723,7 @@ export const ru: Partial<Dict> = {
   'account.admin_categories': 'Управление категориями',
   'account.admin_categories_sub': 'Категории + динамические атрибуты',
   'account.version': 'Madmona Services v1.0',
+  'mhome.v_industry': 'Промышленность и B2B',
   'mhome.v_daily': 'Продукты',
   'bnav.list': 'Добавить',
   'bnav.chat': 'Чат',
