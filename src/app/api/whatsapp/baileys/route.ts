@@ -4,6 +4,7 @@
 // ⚠️ كل نداء هنا متحقق من توقيعه الفعلي في lib/whatsapp.ts و lib/anthropic.ts
 
 import { NextRequest, NextResponse } from 'next/server'
+import { transcribeAudio as sharedTranscribe } from '@/lib/marid-media'
 import { waitUntil } from '@vercel/functions'
 import { supabase as supabaseAdmin, supabaseUntyped } from '@/lib/supabase'
 import {
@@ -72,32 +73,17 @@ interface ConciergeReply {
 }
 
 // ── تفريغ الصوت (Claude مابيسمعش — لازم مزود خارجي) ──────────────────────
+// 🎙️ (٢ سبتمبر ٢٠٢٦) النسخة اللي كانت هنا اتشالت — كانت **أسوأ** من
+//    اللي في marid-media.ts بتلات حاجات:
+//      • whisper-large-v3-turbo (أقل دقة في العربي)
+//      • اسم الملف ثابت 'voice.ogg' مهما كان النوع الحقيقي — وده بالظبط
+//        الباج اللي marid-media بيحذّر منه: «الامتداد لازم يطابق النوع
+//        الحقيقي — ده كان أصل البق كله». الملف m4a باسم .ogg = Whisper
+//        بيفك تشفير ضوضاء ويطلّع كلام عربي مالوش معنى.
+//      • مفيش temperature=0 ولا فلتر هلوسة
+//    مصدر واحد بس دلوقتي: sharedTranscribe من @/lib/marid-media.
 async function transcribeAudio(media: BaileysMedia): Promise<string | null> {
-  const key = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY
-  if (!key) return null
-
-  const isGroq = !!process.env.GROQ_API_KEY
-  const url = isGroq
-    ? 'https://api.groq.com/openai/v1/audio/transcriptions'
-    : 'https://api.openai.com/v1/audio/transcriptions'
-
-  try {
-    const form = new FormData()
-    const bytes = Buffer.from(media.data_base64, 'base64')
-    form.append('file', new Blob([bytes], { type: media.mimetype || 'audio/ogg' }), 'voice.ogg')
-    form.append('model', isGroq ? 'whisper-large-v3-turbo' : 'whisper-1')
-    form.append('language', 'ar')
-
-    const res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: form })
-    if (!res.ok) {
-      console.error('[transcribe]', res.status, await res.text())
-      return null
-    }
-    return ((await res.json())?.text as string) || null
-  } catch (err) {
-    console.error('[transcribe]', err instanceof Error ? err.message : err)
-    return null
-  }
+  return sharedTranscribe({ data_base64: media.data_base64, mimetype: media.mimetype })
 }
 
 // ── نداء Claude مع صور/PDF ────────────────────────────────────────────────

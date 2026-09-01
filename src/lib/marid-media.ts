@@ -84,11 +84,27 @@ export async function transcribeAudio(m: { data_base64: string; mimetype?: strin
     const mime = m.mimetype || 'audio/ogg'
     // ⚠️ الامتداد لازم يطابق النوع الحقيقي — ده كان أصل البق كله
     form.append('file', new Blob([bytes], { type: mime }), `voice.${extFor(mime)}`)
-    form.append('model', isGroq ? 'whisper-large-v3-turbo' : 'whisper-1')
+    // 🎙️ (٢ سبتمبر ٢٠٢٦) محمد: «كل ما أبعت فويس مش بيرد».
+    //
+    //    القياس على شات الموقع: ٣١ رسالة صوتية، **كلها اتردّ عليها** —
+    //    بس الرد كان «مش فاهم، اكتبها». يعني المشكلة مش في الرد ولا في
+    //    وصول الملف (بيوصل ١٠٠٪ من المتصفح) — **التفريغ نفسه بيطلّع
+    //    كلام مالوش معنى**: «هايز عرف انت ساقال ثوتو ألمي ساقال».
+    //
+    //    السبب: whisper-large-v3-**turbo** متعمَّل للسرعة، ودقته في
+    //    اللغات غير الإنجليزية (والعامية المصرية خصوصًا) أقل بوضوح من
+    //    النسخة الكاملة. large-v3 أبطأ شوية وأغلى شوية على Groq
+    //    (~٠.١١١$ مقابل ٠.٠٤$ للساعة صوت) — وبحجمنا الحالي (~٣٠ رسالة
+    //    في الشهر، ثواني للواحدة) الفرق كسور القرش.
+    //    قابل للتغيير من غير نشر: WHISPER_MODEL.
+    form.append('model', isGroq ? (process.env.WHISPER_MODEL || 'whisper-large-v3') : 'whisper-1')
     form.append('language', 'ar')
     // صفر عشوائية: الهلوسة بتزيد مع الحرارة العالية
     form.append('temperature', '0')
-    form.append('prompt', 'محادثة بالعامية المصرية عن إعلانات وعقارات وعربيات وحجوزات على منصة مضمونة.')
+    // 🔤 البرومبت هنا **تلميح مفردات** مش وصف مهمة. الجملة الطويلة
+    //    القديمة كانت بتسحب Whisper ناحية كلمات المنصة وتزوّد الانحراف.
+    //    أسماء بس، من غير سياق يوجّه المعنى.
+    form.append('prompt', 'مضمونة، إعلان، عقار، شقة، فيلا، عربية، حجز، مطعم، مقدم، تقسيط.')
 
     const res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: form })
     if (!res.ok) {
