@@ -740,14 +740,27 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     : []
   // Subcategories = direct children + cross-listed (also_show_in includes this root)
   type CategoryWithCross = Category & { also_show_in?: string[] | null }
-  const subCategories = selectedRoot
+  // 🏭 (١ سبتمبر ٢٠٢٦) محمد: «تابات أقسام الشركات». التراك اللي عنده رووت
+  //    واحد (شركات وصناعة · مطاعم) كان أقسامه مستخبية ورا ضغطة على بلّة
+  //    وحيدة مالهاش معنى — وكروت المجموعات مابتظهرش أصلًا هناك
+  //    (showGroupHeadings = rootGroups.length > 1). الرووت الوحيد بقى
+  //    يتحسب مختار تلقائيًا، فأقسامه تبان على طول كتابات كبيرة.
+  const soleRoot = rootCategories.length === 1 ? rootCategories[0] : null
+  const effectiveRoot = selectedRoot || soleRoot
+  const subCategories = effectiveRoot
     ? allCategories.filter(c => {
-        if (c.parent_id === selectedRoot.id) return true
+        if (c.parent_id === effectiveRoot.id) return true
         const alsoIn = (c as CategoryWithCross).also_show_in
-        if (Array.isArray(alsoIn) && alsoIn.includes(selectedRoot.id)) return true
+        if (Array.isArray(alsoIn) && alsoIn.includes(effectiveRoot.id)) return true
         return false
       })
     : []
+  // العدّ شامل الأحفاد — قسم أبوه فاضي وأولاده مليانة لازم يبان برقمه.
+  const catCountDeep = (cat: Category): number => {
+    if (!categoryCounts) return 0
+    const kids = allCategories.filter(c => c.parent_id === cat.id)
+    return (categoryCounts[cat.id] || 0) + kids.reduce((n, k) => n + (categoryCounts[k.id] || 0), 0)
+  }
   const selectedCategoryNameRaw = allCategories.find(c => c.slug === selectedCategorySlug)
   const selectedCategoryName = selectedCategoryNameRaw
     ? catNameFor(selectedCategoryNameRaw, locale)
@@ -962,7 +975,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                 label={t('market.track_all')}
                 icon="✨"
               />
-              {sortByData(rootCategories).map(cat => (
+              {!soleRoot && sortByData(rootCategories).map(cat => (
                 <CategoryPill
                   key={cat.id}
                   active={selectedRootSlug === cat.slug}
@@ -975,8 +988,40 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             </div>
           )}
 
+          {/* 🏭 (١/٩/٢٠٢٦) أقسام التراك ذو الرووت الواحد — تابات كبيرة بنفس
+              ستايل فلتر البائع تحتها (أدوية · خامات · تغليف · ماكينات …). */}
+          {soleRoot && !selectedCategorySlug && subCategories.length > 0 && (() => {
+            const col = TRACK_ACCENT[activeTrack] || TRACK_ACCENT.products
+            return (
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-1 -mx-4 px-4">
+                {sortByData(subCategories).map(sub => {
+                  const n = catCountDeep(sub)
+                  const locked = !categoryHasData(sub)
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => { if (!locked) setSelectedCategorySlug(sub.slug) }}
+                      disabled={locked}
+                      title={locked ? comingSoonLabel : undefined}
+                      style={locked ? undefined : { background: '#fff', borderColor: '#F0ECE3', color: '#374151' }}
+                      className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all shadow-soft flex items-center gap-1.5 ${locked ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'hover:-translate-y-0.5'}`}
+                    >
+                      {sub.icon && <span>{sub.icon}</span>}
+                      <span>{catName(sub)}</span>
+                      {n > 0 && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                              style={{ background: col.bg, color: col.accent }}>{n}</span>
+                      )}
+                      {locked && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 leading-none">🔒</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          })()}
+
           {/* Subcategory pills (visible when a root category is selected) */}
-          {subCategories.length > 0 && (
+          {!(soleRoot && !selectedCategorySlug) && subCategories.length > 0 && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4 animate-slide-down">
               <button
                 onClick={() => setSelectedCategorySlug(selectedRootSlug || null)}
