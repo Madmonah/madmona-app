@@ -19,7 +19,7 @@ import {
   LayoutDashboard, LayoutGrid, Package, Boxes, ShoppingCart, CalendarDays,
   Star, Users, Wallet, UtensilsCrossed, KeyRound, Factory, Workflow,
   Warehouse, Building2, Wrench, ClipboardList, ChevronLeft, Tag, Megaphone,
-  TrendingUp, Receipt, HardHat, Ruler, FileText,
+  TrendingUp, Receipt, HardHat, Ruler, FileText, Clock,
 } from 'lucide-react'
 
 type Mod = { key: string; label: string; href: string; icon: React.ElementType }
@@ -77,16 +77,21 @@ const DEVELOPER_MODULES = [
 /** 🏛️ لوحة مضمونة — نفس النظام: فينانس أولًا */
 // 🏛️ (١/٩) لوحة مضمونة — على الصفحات اللي **عليها البيانات فعلًا**.
 //    /admin/team كانت 404 — الفريق في /admin/staff.
+// 🏛️ (١ سبتمبر ٢٠٢٦) محمد: «فين تاب الحضور والانصراف وباقي التابات
+//    اللي المفروض تكون موجودة في تاب الإدارة». كل صفحة لها زرار.
 const PLATFORM: Mod[] = [
-  { key: 'erp',       label: 'نظام الإدارة',  href: '/supplier/erp',           icon: LayoutDashboard },
-  { key: 'company',   label: 'الشركة',        href: '/admin/company',          icon: Building2 },
-  { key: 'staff',     label: 'الفريق',        href: '/admin/staff',            icon: Users },
-  { key: 'listings',  label: 'الإعلانات',     href: '/admin/listings',         icon: LayoutGrid },
-  { key: 'suppliers', label: 'الموردين',      href: '/admin/suppliers',        icon: Users },
-  { key: 'bourse',    label: 'البورصة',       href: '/real-estate/market',     icon: Building2 },
-  { key: 'demand',    label: 'طلبات لايف',    href: '/real-estate/requests',   icon: Megaphone },
-  { key: 'crm',       label: 'مكالماتي',      href: '/crm',                    icon: Users },
-  { key: 'tasks',     label: 'التاسكات',      href: '/admin/task-review',      icon: ClipboardList },
+  { key: 'erp',        label: 'نظام الإدارة',   href: '/supplier/erp',           icon: LayoutDashboard },
+  { key: 'clock',      label: 'حضوري',          href: '/me',                     icon: Clock },
+  { key: 'team_att',   label: 'حضور الفريق',    href: '/me/team',                icon: CalendarDays },
+  { key: 'mywork',     label: 'شغلي',           href: '/account/work',           icon: ClipboardList },
+  { key: 'tasks',      label: 'مراجعة التاسكات',href: '/admin/task-review',      icon: ClipboardList },
+  { key: 'staff',      label: 'الفريق',         href: '/admin/staff',            icon: Users },
+  { key: 'crm',        label: 'مكالماتي',       href: '/crm',                    icon: Users },
+  { key: 'listings',   label: 'الإعلانات',      href: '/admin/listings',         icon: LayoutGrid },
+  { key: 'suppliers',  label: 'الموردين',       href: '/admin/suppliers',        icon: Users },
+  { key: 'bourse',     label: 'البورصة',        href: '/real-estate/market',     icon: Building2 },
+  { key: 'demand',     label: 'طلبات لايف',     href: '/real-estate/requests',   icon: Megaphone },
+  { key: 'company',    label: 'الشركة',         href: '/admin/company',          icon: Building2 },
 ]
 
 const PLATFORM_FINANCE: Mod[] = [

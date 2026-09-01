@@ -40,7 +40,7 @@ type Category = {
   group_display_order?: number | null
 }
 
-type VKey = 'products' | 'rentals' | 'services' | 'restaurants'
+type VKey = 'products' | 'rentals' | 'services' | 'restaurants' | 'industry'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; tracks: string[]; tone: string; accent: string }[] = [
   { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', tracks: ['products', 'sales'],   tone: 'from-[#2C5F8D] to-[#5B9BD5]', accent: '#3D7BB6' },
@@ -50,6 +50,8 @@ const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; tracks: str
   //    الداتابيز طول الوقت (١٣ تصنيف · ٢٦ مطعم منشور · ١٬٥٨٤ صنف منيو)،
   //    بس التصنيفات كانت is_active=false فمكانش ليه تاب هنا.
   { key: 'restaurants', ar: 'مطاعم',      en: 'Restaurants', emoji: '🍽️', tracks: ['restaurants'],         tone: 'from-[#7C2D12] to-[#EA9A3E]', accent: '#9A3412' },
+  // 🏭 (١ سبتمبر ٢٠٢٦) القسم الخامس — شركات وصناعة (B2B)
+  { key: 'industry',    ar: 'شركات وصناعة', en: 'Industry',    emoji: '🏭', tracks: ['industry'],            tone: 'from-[#3E4A54] to-[#5A6B7A]', accent: '#5A6B7A' },
 ]
 
 // (11 أغسطس 2026) قسم «بورصة مضمونة العقارية» مش فئة داتا بيز — كارت ثابت
