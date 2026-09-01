@@ -19,7 +19,7 @@ import {
   LayoutDashboard, LayoutGrid, Package, Boxes, ShoppingCart, CalendarDays,
   Star, Users, Wallet, UtensilsCrossed, KeyRound, Factory, Workflow,
   Warehouse, Building2, Wrench, ClipboardList, ChevronLeft, Tag, Megaphone,
-  TrendingUp, Receipt, HardHat, Ruler, FileText, Clock, Phone,
+  TrendingUp, Receipt, HardHat, Ruler, FileText, Clock, Phone, Store,
 } from 'lucide-react'
 
 type Mod = { key: string; label: string; href: string; icon: React.ElementType }
@@ -94,6 +94,7 @@ const PLATFORM: Mod[] = [
   { key: 'crm',        label: 'مكالماتي',       href: '/crm',                    icon: Users },
   { key: 'listings',   label: 'الإعلانات',      href: '/admin/listings',         icon: LayoutGrid },
   { key: 'suppliers',  label: 'الموردين',       href: '/admin/suppliers',        icon: Users },
+  { key: 'exhibits',   label: 'المعارض',        href: '/admin/exhibitions',      icon: Store },
   { key: 'bourse',     label: 'البورصة',        href: '/real-estate/market',     icon: Building2 },
   { key: 'demand',     label: 'طلبات لايف',     href: '/real-estate/requests',   icon: Megaphone },
   { key: 'company',    label: 'الشركة',         href: '/admin/company',          icon: Building2 },
