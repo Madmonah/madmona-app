@@ -334,6 +334,13 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // 🏗️ (17 Jul 2026) طلب محمد: العقارات تتفصل «بريمري من المطور | ريسيل».
   // البريمري = إعلان مرتبط بمشروع مطور (project_id موجود)، الريسيل = من غير مشروع.
   const [propertySource, setPropertySource] = useState<'all' | 'primary' | 'resale'>('all')
+  // 🏷️ (١ سبتمبر ٢٠٢٦) محمد: «الخدمات والإيجارات مش بيطبق عليهم فلتر —
+  //    (أفراد · عيادات) (أفراد · ورش) (أفراد · مكاتب) (أفراد · شركات
+  //    عقارية · من المطوّر)». فلتر واحد ديناميكي: التسميات من
+  //    seller_class_labels حسب المجموعة، والقيمة من listings.seller_class.
+  type SellerFilterOpt = { key: string; label: string; label_i18n?: Record<string, string>; count: number }
+  const [sellerClass, setSellerClass] = useState<string>('all')
+  const [sellerOpts, setSellerOpts] = useState<SellerFilterOpt[]>([])
   // 31 Jul 2026 (محمد): الإيجار يتقسّم مفروش / بدون فرش
   const [furnishedFilter, setFurnishedFilter] = useState<'all' | 'furnished' | 'unfurnished'>('all')
   // 📄 بيجينيشن «حمّل المزيد» — كان محدود بـ60 إعلان بس. بيكبر بـ60 كل ضغطة،
@@ -359,6 +366,21 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // (٧ أغسطس ٢٠٢٦) دعم الدخول المباشر بـ?group= — كانت التابات من الهوم بتفتح
   // على «الكل» لأن الجروب مكانش بيتقري من الـURL (الباج القديم المعروف).
   const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(mp_restore?.group ?? (searchParams.get('group')))
+
+  useEffect(() => {
+    setSellerClass('all')
+    if (!selectedGroupSlug) { setSellerOpts([]); return }
+    let alive = true
+    ;(async () => {
+      const { data } = await (supabaseBrowser.rpc as unknown as (
+        f: string, a: Record<string, unknown>,
+      ) => Promise<{ data: SellerFilterOpt[] | null }>)('seller_class_filters', { p_group: selectedGroupSlug })
+      if (!alive) return
+      const withData = (data || []).filter(o => o.count > 0)
+      setSellerOpts(withData.length >= 2 ? (data || []) : [])
+    })()
+    return () => { alive = false }
+  }, [selectedGroupSlug])
   useEffect(() => {
     try { setSelectedGroupSlug(new URLSearchParams(window.location.search).get('group')) } catch { /* ssr */ }
   }, [])
@@ -544,6 +566,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       }
       // 🏗️ بريمري/ريسيل — بس جوه عقارات البيع
       const inSaleProperties = (activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties'))))
+    // 🏷️ (١/٩) فلتر نوع البائع — بيشتغل على أي مجموعة
+    if (sellerClass !== 'all') query = query.eq('seller_class' as never, sellerClass as never)
+
       if (inSaleProperties && propertySource === 'primary') {
         query = query.not('project_id', 'is', null)
       } else if (inSaleProperties && propertySource === 'resale') {
@@ -1008,32 +1033,51 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             </div>
           )}
 
-          {/* 🏗️ (17 Jul 2026) بريمري/ريسيل — يظهر بس جوه عقارات البيع */}
-          {(activeTrack === 'products' || activeTrack === 'sales') && (selectedGroupSlug === 'sale-property' || (!!selectedCategorySlug && (selectedCategorySlug.startsWith('sale-properties')))) && (
-            <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
-              {([
-                ['all', t('mk.f_all_props')],
-                ['primary', t('mk.f_primary')],
-                ['resale', t('mk.f_resale')],
-              ] as const).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => setPropertySource(key)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
-                    propertySource === key
-                      ? 'bg-[#173B33] text-white shadow-soft'
-                      : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* 🏷️ (١ سبتمبر ٢٠٢٦) فلتر نوع البائع — ديناميكي حسب المجموعة.
+              عقارات بيع: أفراد · شركات عقارية · من المطوّر (حلّ محل بريمري/ريسيل)
+              مركبات: أفراد · معارض (معرض = ٢+ عربية بنفس الرقم)
+              خدمات طبية: أفراد · عيادات · مراكز · منزلية: أفراد · ورش · شركات
+              مهنية: أفراد · مكاتب · مطاعم: مطاعم · شيفات منزليين */}
+          {sellerOpts.length > 0 && !supplierFilter && (() => {
+            const col = TRACK_ACCENT[activeTrack] || TRACK_ACCENT.products
+            // 🎨 أيقونة لكل نوع — بتتعرّف من المفتاح
+            const ICON: Record<string, string> = {
+              all: '✨', individual: '👤', business: '🏢', developer: '🏗️', showroom: '🚗',
+              clinic: '🏥', center: '🏬', workshop: '🔧', office: '⚖️', restaurant: '🍽️', home_chef: '👩‍🍳',
+            }
+            const opts = [{ key: 'all', label: t('mk.f_all'), count: 0 }, ...sellerOpts]
+            return (
+              <div className="flex gap-2 mt-3 overflow-x-auto pb-1 -mx-4 px-4">
+                {opts.map(o => {
+                  const isActive = sellerClass === o.key
+                  const label = o.key === 'all' ? o.label : ((o as SellerFilterOpt).label_i18n?.[lang] || o.label)
+                  return (
+                    <button
+                      key={o.key}
+                      onClick={() => setSellerClass(o.key)}
+                      style={{
+                        background: isActive ? col.accent : '#fff',
+                        borderColor: isActive ? col.accent : '#F0ECE3',
+                        color: isActive ? '#fff' : '#374151',
+                        boxShadow: isActive ? `0 8px 20px -6px ${col.accent}` : undefined,
+                      }}
+                      className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all shadow-soft flex items-center gap-1.5"
+                    >
+                      <span>{ICON[o.key] || '•'}</span>
+                      <span>{label}</span>
+                      {o.key !== 'all' && o.count > 0 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: isActive ? 'rgba(255,255,255,.25)' : '#F3F4F6', color: isActive ? '#fff' : '#6B7280' }}>{o.count}</span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          })()}
 
           {/* 🛏️ (31 Jul 2026 — محمد) مفروش/بدون فرش — يظهر بس جوه عقارات الإيجار */}
           {activeTrack === 'rentals' && !!selectedCategorySlug && selectedCategorySlug.startsWith('properties-') && (
-            <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1 -mx-4 px-4">
               {([
                 ['all', t('mk.f_all')],
                 ['furnished', t('mk.f_furnished')],
@@ -1042,13 +1086,15 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                 <button
                   key={key}
                   onClick={() => setFurnishedFilter(key)}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
-                    furnishedFilter === key
-                      ? 'bg-[#173B33] text-white shadow-soft'
-                      : 'bg-white/80 text-gray-600 hover:bg-white border border-gray-100'
-                  }`}
+                  style={{
+                    background: furnishedFilter === key ? TRACK_ACCENT.rentals.accent : '#fff',
+                    borderColor: furnishedFilter === key ? TRACK_ACCENT.rentals.accent : '#F0ECE3',
+                    color: furnishedFilter === key ? '#fff' : '#374151',
+                    boxShadow: furnishedFilter === key ? `0 8px 20px -6px ${TRACK_ACCENT.rentals.accent}` : undefined,
+                  }}
+                  className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all shadow-soft flex items-center gap-1.5"
                 >
-                  {label}
+                  <span>{key === 'all' ? '✨' : key === 'furnished' ? '🛋️' : '🏠'}</span><span>{label}</span>
                 </button>
               ))}
             </div>
