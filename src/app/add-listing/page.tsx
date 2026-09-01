@@ -251,6 +251,7 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
         for (const g of grandSubs) if (g.parent_id === s.id) expandedSubs.push(g);
       }
       return {
+        id: top.id,
         slug: top.slug,
         name_ar: top.name_ar,
         emoji: top.icon || '📁',
@@ -270,6 +271,7 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
         // 🗂️ (٢/٩/٢٠٢٦) حقول المجموعة كانت بتتشال من الأقسام الفرعية هنا —
         //    فالويزارد ماكانش يقدر يجمّعهم زي العرض حتى والداتا موجودة.
         subs: expandedSubs.map((s) => ({
+          parent_id: s.parent_id ?? null,
           slug: s.slug,
           name_ar: s.name_ar,
           name_i18n: (s as { name_i18n?: Record<string, string> | null }).name_i18n ?? null,

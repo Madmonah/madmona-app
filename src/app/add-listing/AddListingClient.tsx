@@ -43,9 +43,21 @@ type SubCategory = {
   slug: string;
   name_ar: string;
   emoji: string;
+  // 🐞 (٢/٩/٢٠٢٦) parent_id ضروري: قايمة subs بتضم كمان التصنيفات
+  //    المعروضة بالإعارة (also_show_in) والأحفاد — فمن غيره التجميع
+  //    كان بيسحب مجموعات غريبة على القسم («عقارات بيع» جوه الشركات)
+  //    وبيضخّم العدّ (خدمات صناعية ٢٧ بدل ٥).
+  parent_id?: string | null;
+  name_i18n?: Record<string, string> | null;
+  group_slug?: string | null;
+  group_name_ar?: string | null;
+  group_name_i18n?: Record<string, string> | null;
+  group_emoji?: string | null;
+  group_display_order?: number | null;
 } & WizardMeta;
 
 export type MainCategory = {
+  id?: string | null;
   slug: string;
   name_ar: string;
   emoji: string;
@@ -1025,12 +1037,19 @@ function StepCategory({
             group_display_order: c.group_display_order ?? null,
           });
           const mainBySlug = new Map(visibleMains.map((m) => [m.slug, m]));
+          const mainIdBySlug = new Map(visibleMains.map((m) => [m.slug, m.id ?? null]));
           const subBySlug = new Map<string, { slug: string; emoji: string; name_ar: string }>();
           for (const m of visibleMains) for (const sub of m.subs) if (!subBySlug.has(sub.slug)) subBySlug.set(sub.slug, sub);
 
           const shared = resolveTopGroups(
             visibleMains.map(lightOf),
-            (root) => (mainBySlug.get(root.slug)?.subs || []).map(lightOf),
+            // أولاد الرووت الحقيقيين بس — من غير المعروض بالإعارة (also_show_in)
+            // ولا الأحفاد، وإلا بنسحب مجموعات مش بتاعة القسم ده.
+            (root) => {
+              const m = mainBySlug.get(root.slug);
+              const rootId = m ? mainIdBySlug.get(m.slug) : null;
+              return (m?.subs || []).filter((sub) => !rootId || sub.parent_id === rootId).map(lightOf);
+            },
             { fallbackToSelf: true },
           );
 
