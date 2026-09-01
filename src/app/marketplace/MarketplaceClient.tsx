@@ -367,20 +367,29 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // على «الكل» لأن الجروب مكانش بيتقري من الـURL (الباج القديم المعروف).
   const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(mp_restore?.group ?? (searchParams.get('group')))
 
+  // 🐞 (١/٩/٢٠٢٦) محمد: «التابات بتاعت الفلتر الكبيرة في المطاعم والشركات
+  //    مش شغالة». الجذر: الفلتر كان مربوط بالمجموعة (group) بس — والمجموعات
+  //    مابتتعرضش أصلًا في التراك اللي عنده رووت واحد (showGroupHeadings =
+  //    rootGroups.length > 1)، يعني المطاعم والصناعة المستخدم عمره ما بيقدر
+  //    يختار مجموعة فيهم فالفلتر عمره ما بيظهر. دلوقتي: مجموعة لو مختارة،
+  //    وإلا التراك كله (p_track — كان في توقيع الدالة ومستخدمش).
   useEffect(() => {
     setSellerClass('all')
-    if (!selectedGroupSlug) { setSellerOpts([]); return }
+    if (!selectedGroupSlug && (!activeTrack || activeTrack === 'all')) { setSellerOpts([]); return }
     let alive = true
     ;(async () => {
       const { data } = await (supabaseBrowser.rpc as unknown as (
         f: string, a: Record<string, unknown>,
-      ) => Promise<{ data: SellerFilterOpt[] | null }>)('seller_class_filters', { p_group: selectedGroupSlug })
+      ) => Promise<{ data: SellerFilterOpt[] | null }>)('seller_class_filters', {
+        p_group: selectedGroupSlug, p_track: selectedGroupSlug ? null : activeTrack,
+      })
       if (!alive) return
       const withData = (data || []).filter(o => o.count > 0)
+      // خيار واحد فيه إعلانات = فلتر ميت (الصناعة كلها شركات) — نخفيه.
       setSellerOpts(withData.length >= 2 ? (data || []) : [])
     })()
     return () => { alive = false }
-  }, [selectedGroupSlug])
+  }, [selectedGroupSlug, activeTrack])
   useEffect(() => {
     try { setSelectedGroupSlug(new URLSearchParams(window.location.search).get('group')) } catch { /* ssr */ }
   }, [])
@@ -835,7 +844,24 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                       if (tab === 'all') sp.delete('track'); else sp.set('track', tab)
                       window.history.replaceState(null, '', `/marketplace${sp.toString() ? `?${sp.toString()}` : ''}`)
                     } catch { /* non-blocking */ }
-                    if (selectedRootSlug) {
+                    // 🐞 (١/٩/٢٠٢٦) محمد: «لما بتضغط على الخدمات التاب بتاعت
+                    //    أشخاص · عيادات مش بتروح». التاب كان بيغيّر التراك بس
+                    //    وبيسيب المجموعة المختارة زي ما هي — فتفضل عالق جوه
+                    //    مجموعة التراك القديم، وفلتر البائع بتاعها فاضل على
+                    //    الشاشة وبيفلتر بقيمة مالهاش وجود في التراك الجديد.
+                    //    تبديل القسم = رجوع لأول الشجرة.
+                    if (tab !== activeTrack) {
+                      setSelectedGroupSlug(null)
+                      setSelectedCategorySlug(null)
+                      setSellerClass('all')
+                      setPropertySource('all')
+                      setFurnishedFilter('all')
+                      try {
+                        const sp2 = new URLSearchParams(window.location.search)
+                        sp2.delete('group'); sp2.delete('cat')
+                        window.history.replaceState(null, '', `/marketplace${sp2.toString() ? `?${sp2.toString()}` : ''}`)
+                      } catch { /* non-blocking */ }
+                    } else if (selectedRootSlug) {
                       const stillVisible = allRootCategories.some(
                         c => c.slug === selectedRootSlug && (tab === 'all' || c.track === tab || (tab === 'rentals' && c.track === 'hybrid'))
                       )
