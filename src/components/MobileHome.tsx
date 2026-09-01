@@ -88,6 +88,7 @@ function trackToVkey(track: string | null): VKey {
     case 'rentals': case 'hybrid': return 'rentals'
     case 'services': return 'services'
     case 'restaurants': return 'restaurants'
+    case 'industry': return 'industry'   // 🏭 (١/٩) كان بيقع في default → بيع
     default: return 'products'
   }
 }

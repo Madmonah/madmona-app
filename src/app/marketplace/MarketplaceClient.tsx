@@ -182,7 +182,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     (mp_restore?.track as TrackTab) ||
     (initialTrack === 'hybrid'
       ? 'rentals'
-      : (['rentals', 'services', 'restaurants', 'products', 'daily', 'sales'].includes(initialTrack || '')
+      : (['rentals', 'services', 'restaurants', 'products', 'daily', 'sales', 'industry'].includes(initialTrack || '')
           ? initialTrack
           // default landing tab is now 'products' (buy) since 'all' is gone
           : 'products')) as TrackTab
