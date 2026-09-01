@@ -276,7 +276,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   //    المتاجر نلاقي أسماء المتاجر». تاب الصناعة بيفتح على المتاجر.
   const [viewMode, setViewMode] = useState<'products' | 'stores'>(
     (mp_restore?.view as 'products' | 'stores') ||
-    (searchParams.get('view') === 'stores' || searchParams.get('track') === 'industry' ? 'stores' : 'products')
+    // (٢/٩) الصناعة ماعادتش تفتح على المتاجر — التبديل اتشال، فكانت هتتقفل
+    //       في عرض المتاجر من غير طريق رجوع للإعلانات.
+    (searchParams.get('view') === 'stores' ? 'stores' : 'products')
   )
   const [stores, setStores] = useState<StoreCard[] | null>(null)
 
@@ -769,7 +771,9 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   //    (showGroupHeadings = rootGroups.length > 1). الرووت الوحيد بقى
   //    يتحسب مختار تلقائيًا، فأقسامه تبان على طول كتابات كبيرة.
   const soleRoot = rootCategories.length === 1 ? rootCategories[0] : null
-  const effectiveRoot = selectedRoot || soleRoot
+  // ⚠️ (٢/٩) لما كروت المجموعات بتظهر (الشركات)، الرووت الوحيد **ماينفعش**
+  //    يتحسب مختار — وإلا صف أقسامه بيتعرض تحت الكروت مكرر لنفس المحتوى.
+  const effectiveRoot = selectedRoot || (showGroupHeadings ? null : soleRoot)
   const subCategories = effectiveRoot
     ? allCategories.filter(c => {
         if (c.parent_id === effectiveRoot.id) return true
@@ -1315,25 +1319,12 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           </div>
         )}
 
-        {/* 🏬 تبديل عرض السوق: منتجات ↔ متاجر — بيظهر بس بعد ما العميل يختار
-            قسم فرعي (طلب محمد ٧ أغسطس: «متعرضوش في الكل») — ومخفي جوه العقارات
-            وجوه صفحة متجر معيّن */}
-        {!supplierFilter && !inPropertyZone && !!(selectedGroupSlug || selectedCategorySlug) && (
-          <div className="mb-5 inline-flex items-center gap-1 bg-white rounded-full p-1 shadow-soft border border-gray-100">
-            <button
-              onClick={() => switchView('products')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'products' ? 'bg-[#34D399] text-[#04352A] shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
-            >
-              {t('mk.tab_products')}
-            </button>
-            <button
-              onClick={() => switchView('stores')}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${viewMode === 'stores' ? 'bg-[#34D399] text-[#04352A] shadow-soft' : 'text-gray-600 hover:bg-gray-50'}`}
-            >
-              {t('mk.tab_stores')}
-            </button>
-          </div>
-        )}
+        {/* 🗑️ (٢ سبتمبر ٢٠٢٦) تبديل «منتجات ↔ متاجر» **اتشال**. محمد: «في تاب
+            اسمها منتجات وتاب المتاجر موجودة وملهاش لازمة». وفعلًا: فلتر نوع
+            البائع (أفراد · شركات ومعارض · معارض · من المطوّر) بقى بيعمل نفس
+            الشغل بشكل أوضح، فالتبديل بقى تكرار.
+            كود عرض المتاجر تحت **ماتشالش** — لسه بيشتغل من صفحة المورد
+            (`?supplier=`). للرجوع: رجّع البلوك ده وسطر الديفولت في viewMode. */}
 
         {!loading && (viewMode === 'products' || !!supplierFilter || inPropertyZone || !(selectedGroupSlug || selectedCategorySlug)) && (
           <div className="mb-6 flex items-end justify-between flex-wrap gap-2">
