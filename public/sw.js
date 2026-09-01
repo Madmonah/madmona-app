@@ -35,7 +35,7 @@
 // وبترجع لوحدها أول ما النت يرجع (حدث online + زرار حاول تاني).
 // 🔄 (١ سبتمبر ٢٠٢٦) v10 — الرقم لازم يترفع مع كل نشر مهم، وإلا الموبايل
 //    يفضل على الـSW القديم. محمد: «مش شايف أي إضافة على الموبايل».
-const CACHE_NAME = 'madmona-v19';
+const CACHE_NAME = 'madmona-v20';
 const OFFLINE_PAGE = '/offline.html';
 
 // مسارات ممنوع تخزينها نهائيًا (مصادقة/دخول)
@@ -84,6 +84,16 @@ self.addEventListener('activate', (event) => {
       }
     })()
   );
+});
+
+// 🔎 (١ سبتمبر ٢٠٢٦) الصفحة بتسأل الـSW عن نسخته — عشان تكتشف لو الجهاز
+//    عالق على نسخة قديمة وتصلّح نفسها (شوف versionGuard في ServiceWorkerRegister).
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'GET_VERSION') {
+    const reply = { type: 'VERSION', version: CACHE_NAME };
+    if (event.ports && event.ports[0]) event.ports[0].postMessage(reply);
+    else if (event.source) event.source.postMessage(reply);
+  }
 });
 
 self.addEventListener('fetch', (event) => {
