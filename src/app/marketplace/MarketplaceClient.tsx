@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useRef, useState, type MouseEvent } from 'react'
-import { resolveTopGroups } from '@/lib/categoryGroups'
+import { resolveTopGroups, TRACK_TAB_ORDER } from '@/lib/categoryGroups'
 import Link from 'next/link'
 import SmartImage from '@/components/SmartImage'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -133,7 +133,7 @@ const TRACK_ACCENT: Record<TrackTab, { accent: string; bg: string }> = {
 // buy / rent / services / restaurants. 'daily' had 3 categories, all
 // is_active=false with 0 published listings, so it was an always-empty tab.
 // 🏭 (١/٩) التاب الخامس — شركات وصناعة (B2B: عرض سعر · حد أدنى · شهادات)
-const TRACK_TAB_ORDER: TrackTab[] = ['products', 'rentals', 'services', 'restaurants', 'industry']
+// (الترتيب في src/lib/categoryGroups.ts — الإضافة بتقرا نفس القايمة)
 
 // Vertical names — identical to the homepage hero.
 const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
@@ -845,7 +845,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
 
           {/* Track tabs — الكل + بيع · إيجار · خدمات · مطاعم (colour per vertical, matching the hero) */}
           <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
-            {TRACK_TAB_ORDER.map(tab => {
+            {(TRACK_TAB_ORDER as readonly string[] as TrackTab[]).map(tab => {
               const count = tab === 'all'
                 ? allRootCategories.length
                 : allRootCategories.filter(c => c.track === tab || (tab === 'rentals' && c.track === 'hybrid') || (tab === 'products' && c.track === 'sales')).length

@@ -1,7 +1,7 @@
 'use client';
 
 import { safeStorage } from '@/lib/safe-storage'
-import { resolveTopGroups } from '@/lib/categoryGroups';
+import { resolveTopGroups, TRACK_TAB_ORDER } from '@/lib/categoryGroups';
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { catNameFor, attrNameFor, groupNameFor } from '@/lib/i18n/catName'
 
@@ -812,13 +812,16 @@ function AddListingPageInner({
 // May 17 2026: Added track tabs (الكل/إيجار/خدمات/هايبرد) above the mains
 // grid so 27 categories don't overwhelm the user. Same DB, cleaner UX.
 // =================================================
-type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales';
+type TrackTab = 'all' | 'rentals' | 'services' | 'hybrid' | 'restaurants' | 'products' | 'daily' | 'sales' | 'industry';
 
 // 🌍 (٢٧ أغسطس ٢٠٢٦) التابات كانت بتعرض TRACK_LABELS العربي مهما كانت اللغة.
 const TRACK_KEYS: Record<TrackTab, string> = {
   all: 'al.t_all', rentals: 'al.t_rentals', services: 'al.t_services',
   hybrid: 'al.t_hybrid', restaurants: 'al.t_restaurants', products: 'al.t_products',
   daily: 'al.t_daily', sales: 'al.t_products',
+  // 🏭 (٢/٩) القسم الخامس. بنستعمل مفتاح الماركتبليس نفسه — متـرجم في الستة
+  //    لغات أصلًا، فمفيش داعي لمفتاح تاني ينسى يتترجم.
+  industry: 'market.track_industry',
 };
 const TRACK_LABELS: Record<TrackTab, string> = {
   all: 'الكل',
@@ -829,6 +832,7 @@ const TRACK_LABELS: Record<TrackTab, string> = {
   products: 'منتجات',
   daily: 'سوبر ماركت',
   sales: 'منتجات',
+  industry: 'شركات وصناعة',
 };
 
 const TRACK_EMOJI: Record<TrackTab, string> = {
@@ -840,6 +844,7 @@ const TRACK_EMOJI: Record<TrackTab, string> = {
   products: '🏷️',
   daily: '🛒',
   sales: '🏷️',
+  industry: '🏭',
 };
 
 function StepCategory({
@@ -875,7 +880,7 @@ function StepCategory({
   // FIX (Jul 17 2026): لو جاي بـ?track= (من تاب في الماركت مثلاً) نفتح عليه.
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
     // 'daily' اتشال — مفيش تصنيف بيستعمله. الديفولت لسه «إيجار» زي ما طلبت في يونيو.
-    (['rentals', 'services', 'restaurants', 'products'].includes(initialTrack || '')
+    ((TRACK_TAB_ORDER as readonly string[]).includes(initialTrack || '')
       ? initialTrack
       : initialTrack === 'hybrid' ? 'rentals' : initialTrack === 'sales' ? 'products' : 'rentals') as TrackTab
   );
@@ -942,7 +947,7 @@ function StepCategory({
 
         {/* Track tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5">
-          {(['products', 'rentals', 'services', 'restaurants'] as TrackTab[]).map((tt) => {
+          {(TRACK_TAB_ORDER as readonly string[] as TrackTab[]).map((tt) => {
             const count = categories.filter((c) => inTrack(c.track, tt)).length;
             return (
               <button

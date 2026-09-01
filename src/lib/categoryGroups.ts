@@ -79,3 +79,15 @@ export function resolveTopGroups<T extends GroupMeta>(
   const byKids = groupCategories(kids, opts).filter(g => g.slug !== roots[0].group_slug)
   return byKids.length > 1 ? byKids : byRoots
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// 🧭 أقسام السوق الخمسة — **مصدر واحد** للعرض والإضافة.
+//
+// (٢ سبتمبر ٢٠٢٦) القايمة كانت متكتوبة مرتين: الماركتبليس فيه الخمسة،
+// والويزارد فيه أربعة hardcoded من غير 'industry'. فلما اتضاف القسم
+// الخامس (١/٩) بان في التصفّح واتنسي في الإضافة — بالظبط اللي محمد
+// اشتكى منه. أي قسم جديد يتضاف **هنا** وبس.
+// ملحوظة: 'sales' مالوش تاب — تصنيفاته بتتعرض جوّه 'products'.
+// و'hybrid' جوّه 'rentals'.
+export const TRACK_TAB_ORDER = ['products', 'rentals', 'services', 'restaurants', 'industry'] as const
+export type MarketTrack = (typeof TRACK_TAB_ORDER)[number]
