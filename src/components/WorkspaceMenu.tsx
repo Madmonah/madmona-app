@@ -19,7 +19,7 @@ import {
   LayoutDashboard, LayoutGrid, Package, Boxes, ShoppingCart, CalendarDays,
   Star, Users, Wallet, UtensilsCrossed, KeyRound, Factory, Workflow,
   Warehouse, Building2, Wrench, ClipboardList, ChevronLeft, Tag, Megaphone,
-  TrendingUp, Receipt, HardHat, Ruler, FileText, Clock,
+  TrendingUp, Receipt, HardHat, Ruler, FileText, Clock, Phone,
 } from 'lucide-react'
 
 type Mod = { key: string; label: string; href: string; icon: React.ElementType }
@@ -27,11 +27,17 @@ type Mod = { key: string; label: string; href: string; icon: React.ElementType }
 /** 💰 الفينانس — أول حاجة لكل بيزنس */
 // 🔗 (١/٩) الصفحات الموجودة فعلًا: accounting هي الفينانس —
 //    الباقي تابات جوّاها بالـhash.
+// 🏛️ (١/٩) تابات الـERP — كل واحد زرار مباشر (?tab=) بدل ما يفتح ويدوّر
 const FINANCE: Mod[] = [
-  { key: 'overview',  label: 'الأوفرفيو',  href: '/supplier/erp/accounting',           icon: TrendingUp },
-  { key: 'income',    label: 'الإيرادات',  href: '/supplier/erp/accounting#income',    icon: Wallet },
-  { key: 'expenses',  label: 'المصروفات',  href: '/supplier/erp/accounting#expenses',  icon: Receipt },
-  { key: 'invoices',  label: 'الفواتير',   href: '/supplier/erp/accounting#invoices',  icon: FileText },
+  { key: 'overview',  label: 'نظرة عامة',  href: '/supplier/erp?tab=overview',  icon: TrendingUp },
+  { key: 'finance',   label: 'الحسابات',   href: '/supplier/erp?tab=finance',   icon: Wallet },
+  { key: 'journal',   label: 'القيود',     href: '/supplier/erp/accounting',    icon: Receipt },
+  { key: 'staff',     label: 'الموظفين',   href: '/supplier/erp?tab=staff',     icon: Users },
+  { key: 'inventory', label: 'المخزون',    href: '/supplier/erp?tab=inventory', icon: Warehouse },
+  { key: 'products',  label: 'المنتجات',   href: '/supplier/erp?tab=products',  icon: Package },
+  { key: 'orders',    label: 'الطلبات',    href: '/supplier/erp/crm#orders',    icon: ShoppingCart },
+  { key: 'bookings',  label: 'الحجوزات',   href: '/supplier/erp/crm#bookings',  icon: CalendarDays },
+  { key: 'crm',       label: 'العملاء',    href: '/supplier/erp?tab=crm',       icon: Phone },
 ]
 
 /** 🗂️ موديولات النشاط — بتعرض الإعلانات بالشكل المناسب لكل مسار */
@@ -80,7 +86,6 @@ const DEVELOPER_MODULES = [
 // 🏛️ (١ سبتمبر ٢٠٢٦) محمد: «فين تاب الحضور والانصراف وباقي التابات
 //    اللي المفروض تكون موجودة في تاب الإدارة». كل صفحة لها زرار.
 const PLATFORM: Mod[] = [
-  { key: 'erp',        label: 'نظام الإدارة',   href: '/supplier/erp',           icon: LayoutDashboard },
   { key: 'clock',      label: 'حضوري',          href: '/me',                     icon: Clock },
   { key: 'team_att',   label: 'حضور الفريق',    href: '/me/team',                icon: CalendarDays },
   { key: 'mywork',     label: 'شغلي',           href: '/account/work',           icon: ClipboardList },
@@ -94,11 +99,19 @@ const PLATFORM: Mod[] = [
   { key: 'company',    label: 'الشركة',         href: '/admin/company',          icon: Building2 },
 ]
 
+// 🏛️ (١/٩) لمضمونة: نفس تابات الـERP + المرتبات والعمولات
 const PLATFORM_FINANCE: Mod[] = [
-  { key: 'dash',      label: 'الأوفرفيو',     href: '/admin/dashboard',        icon: TrendingUp },
-  { key: 'fin',       label: 'الفينانس',      href: '/admin/business-finance', icon: Wallet },
-  { key: 'payroll',   label: 'المرتبات',      href: '/admin/payroll',          icon: Receipt },
-  { key: 'commission',label: 'العمولات',      href: '/admin/commissions',      icon: Receipt },
+  { key: 'overview',  label: 'نظرة عامة',  href: '/supplier/erp?tab=overview',  icon: TrendingUp },
+  { key: 'finance',   label: 'الحسابات',   href: '/supplier/erp?tab=finance',   icon: Wallet },
+  { key: 'journal',   label: 'القيود',     href: '/supplier/erp/accounting',    icon: Receipt },
+  { key: 'staff',     label: 'الموظفين',   href: '/supplier/erp?tab=staff',     icon: Users },
+  { key: 'inventory', label: 'المخزون',    href: '/supplier/erp?tab=inventory', icon: Warehouse },
+  { key: 'products',  label: 'المنتجات',   href: '/supplier/erp?tab=products',  icon: Package },
+  { key: 'orders',    label: 'الطلبات',    href: '/admin/marketplace-orders',   icon: ShoppingCart },
+  { key: 'bookings',  label: 'الحجوزات',   href: '/admin/marketplace-bookings', icon: CalendarDays },
+  { key: 'crm',       label: 'العملاء',    href: '/supplier/erp?tab=crm',       icon: Phone },
+  { key: 'payroll',   label: 'المرتبات',   href: '/admin/payroll',              icon: Wallet },
+  { key: 'commission',label: 'العمولات',   href: '/admin/commissions',          icon: Receipt },
 ]
 
 export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void }) {

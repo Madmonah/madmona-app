@@ -75,7 +75,10 @@ export default function ErpPage() {
 function ErpInner() {
   const sp = useSearchParams()
   const businessParam = sp?.get('business') || null
-  const [tab, setTab] = useState<Tab>('overview')
+  // 🔗 (١/٩) ?tab= من قايمة الـ٣ شرط — يفتح التاب مباشرة
+  const tabParam = sp?.get('tab') as Tab | null
+  const [tab, setTab] = useState<Tab>(
+    tabParam && ['overview','finance','staff','inventory','products','crm'].includes(tabParam) ? tabParam : 'overview')
   const [d, setD] = useState<Dash | null>(null)
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)

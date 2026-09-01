@@ -163,7 +163,23 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // Jul 2026: per-category published-listing counts → empty sections lock with "قريباً"
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number> | null>(null)
   const allRootCategories = allCategories.filter(c => c.parent_id === null)
+  // 🔙 (١ سبتمبر ٢٠٢٦) استرجاع الحالة لما نرجع من إعلان — بدل ما نبدأ من الأول.
+  //    بس لو الرابط مافيهوش بارامترات (يعني مش داخل من لينك مباشر).
+  const mp_restore = (() => {
+    if (typeof window === 'undefined') return null
+    if (window.location.search.length > 1) return null
+    try {
+      const raw = sessionStorage.getItem('mp_last_state')
+      if (!raw) return null
+      const st = JSON.parse(raw) as { track?: string; root?: string | null; group?: string | null
+        cat?: string | null; view?: string; y?: number; at?: number }
+      if (!st.at || Date.now() - st.at > 30 * 60 * 1000) return null
+      return st
+    } catch { return null }
+  })()
+
   const [activeTrack, setActiveTrack] = useState<TrackTab>(
+    (mp_restore?.track as TrackTab) ||
     (initialTrack === 'hybrid'
       ? 'rentals'
       : (['rentals', 'services', 'restaurants', 'products', 'daily', 'sales'].includes(initialTrack || '')
@@ -228,20 +244,45 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   const [listings, setListings] = useState<Listing[]>(initialListings ?? [])
   const [loading, setLoading] = useState(!(initialListings && initialListings.length > 0))
   const [searchQuery, setSearchQuery] = useState(initialQuery)
-  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(initialCategorySlug)
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(mp_restore?.cat ?? (initialCategorySlug))
+
   const [supplierFilter] = useState<string | null>(initialSupplier)
   // 🏬 (7 Aug 2026) طلب محمد: «ستور لكل مورد وطريقة العرض بالستور أو بالمنتج».
   // كل مورد ليه صفحة متجر جاهزة أصلًا على ?supplier=<id> — هنا بنضيف
   // طريقة اكتشافها: تبديل عرض السوق «منتجات / متاجر» + كارت متجر لكل تاجر.
   type StoreCard = { id: string; name: string; logo: string | null; kyc: string | null; acc: string | null; count: number; catCounts: Record<string, number>; photo: string | null; secCount?: number }
+  // 🏭 (١ سبتمبر ٢٠٢٦) محمد: «القسم ده خاص بالبيزنس، فلازم لما نفتح تاب
+  //    المتاجر نلاقي أسماء المتاجر». تاب الصناعة بيفتح على المتاجر.
   const [viewMode, setViewMode] = useState<'products' | 'stores'>(
-    searchParams.get('view') === 'stores' ? 'stores' : 'products'
+    (mp_restore?.view as 'products' | 'stores') ||
+    (searchParams.get('view') === 'stores' || searchParams.get('track') === 'industry' ? 'stores' : 'products')
   )
   const [stores, setStores] = useState<StoreCard[] | null>(null)
 
   useEffect(() => {
     if (viewMode !== 'stores' || stores !== null) return
     let alive = true
+
+    // 🏭 (١/٩) في تاب الصناعة: المتاجر = بيزنسات B2B من suppliers مباشرة —
+    //    مش من الإعلانات (إعلانات المعرض على حساب الوصاية فماتظهرش كمتاجر).
+    if (activeTrack === 'industry') {
+      ;(async () => {
+        const { data } = await (supabaseBrowser as unknown as {
+          from: (t: string) => { select: (c: string) => Promise<{ data: unknown }> }
+        }).from('v_industry_stores').select('*')
+        if (!alive) return
+        const rows = (data || []) as Array<{
+          id: string; name: string; logo: string | null; cover: string | null; industry: string | null
+          blurb: string; city: string | null; booth: string | null; products_count: number; profile_complete: boolean
+        }>
+        setStores(rows.map((r) => ({
+          id: r.id, name: r.name, logo: r.logo, kyc: 'approved', acc: null,
+          count: r.products_count, catCounts: {}, photo: r.cover,
+          blurb: r.blurb, booth: r.booth, industry: r.industry,
+        } as unknown as StoreCard)))
+      })()
+      return () => { alive = false }
+    }
     // حسابات المنصة الداخلية — مش متاجر تجار فماتظهرش في الشبكة (طلب محمد ٧ أغسطس)
     const INTERNAL_SUPPLIER_IDS = ['7310f6ef-e474-4ef8-8b8a-388b5e1f5694', '9da8212a-c321-48b5-8822-525f724bcd25']
     ;(async () => {
@@ -272,6 +313,14 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     })()
     return () => { alive = false }
   }, [viewMode, stores])
+
+  useEffect(() => {
+    if (mp_restore?.y && mp_restore.y > 100) {
+      const t = setTimeout(() => window.scrollTo({ top: mp_restore.y!, behavior: 'instant' as ScrollBehavior }), 300)
+      return () => clearTimeout(t)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const switchView = (mode: 'products' | 'stores') => {
     setViewMode(mode)
@@ -309,7 +358,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   // وبعدها تظهر فئاتها بس — بدل شريط واحد فيه كل حاجة. بتتقرا من ?group= (الهوم بيبعتها).
   // (٧ أغسطس ٢٠٢٦) دعم الدخول المباشر بـ?group= — كانت التابات من الهوم بتفتح
   // على «الكل» لأن الجروب مكانش بيتقري من الـURL (الباج القديم المعروف).
-  const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(searchParams.get('group'))
+  const [selectedGroupSlug, setSelectedGroupSlug] = useState<string | null>(mp_restore?.group ?? (searchParams.get('group')))
   useEffect(() => {
     try { setSelectedGroupSlug(new URLSearchParams(window.location.search).get('group')) } catch { /* ssr */ }
   }, [])
@@ -636,6 +685,17 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
   const selectedRoot = findTopRoot(selectedCategory)
   const selectedRootSlug = selectedRoot?.slug || selectedCategorySlug
   // المستوى التاني الحالي (الفئة المختارة نفسها لو تانية، أو أبوها لو المختارة تالتة)
+  // 🔙 (١ سبتمبر ٢٠٢٦) محمد: «لما أرجع من إعلان يفتح على التصنيف اللي كان
+  //    عليه وميبدأش من الأول». بنحفظ الحالة في الجلسة ونرجّعها.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('mp_last_state', JSON.stringify({
+        track: activeTrack, root: selectedRootSlug, group: selectedGroupSlug,
+        cat: selectedCategorySlug, view: viewMode, y: window.scrollY, at: Date.now(),
+      }))
+    } catch { /* non-blocking */ }
+  }, [activeTrack, selectedRootSlug, selectedGroupSlug, selectedCategorySlug, viewMode])
+
   const selectedMid = selectedCategory && selectedCategory.parent_id
     ? (selectedCategory.parent_id === selectedRoot?.id
         ? selectedCategory
