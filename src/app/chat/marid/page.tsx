@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
+import { safeStorage } from '@/lib/safe-storage'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -190,6 +191,18 @@ const [input, setInput] = useState('')
             // هنوجهه لتأكيد الرقم مرة واحدة بدل ما نسأله الاسم والرقم كل مرة
             setName(nm)
             setAuthedNoPhone(true)
+          }
+        } else {
+          // 🚪🚪 (٢ سبتمبر ٢٠٢٦) محمد: «ببعت رسايل للمارد وبمجرد ما أغيّر
+          //     التاب الرسايل بتختفي». السبب: التاريخ كان بيتحمّل بتوكن
+          //     Supabase بس — ومحمد وأصحاب البيزنس داخلين بتوكن الواتساب
+          //     من غير جلسة Supabase. فالرسايل كانت في الذاكرة بس،
+          //     وأول ما التاب يتغيّر الكومبوننت بيتعمله remount وتختفي.
+          //     الرسايل نفسها مش ضايعة — متسجّلة في whatsapp_messages.
+          const wtok = safeStorage.get('madmona_token')
+          if (wtok) {
+            const hist = await loadHistory(wtok)
+            if (hist.length) { setStarted(true); setMessages(hist) }
           }
         }
       } catch {}

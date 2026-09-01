@@ -128,12 +128,37 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false } }
     )
-    const { data: userData, error: uErr } = await admin.auth.getUser(token)
+    // 🚪🚪 (٢ سبتمبر ٢٠٢٦) محمد: «ببعت رسايل للمارد وبمجرد ما أغيّر
+    //     التاب الرسايل بتختفي».
+    //     السبب: التاريخ كان بيتقرا بتوكن Supabase **بس**. ومحمد وأصحاب
+    //     البيزنس داخلين بتوكن الواتساب (madmona_token) من غير جلسة
+    //     Supabase — فالـGET بيرجّع messages: [] والرسايل بتتمسح من
+    //     الشاشة أول ما الكومبوننت يتعمله remount. الرسايل نفسها **مش
+    //     ضايعة** — متسجّلة في whatsapp_messages، بس مفيش طريق يقراها.
+    //     دي رابع شاشة بنفس المرض النهاردة.
+    let phone = ''
+    const { data: userData } = await admin.auth.getUser(token)
     const user = userData?.user
-    if (uErr || !user) return NextResponse.json({ ok: true, messages: [] })
-
-    const { data: prof } = await admin.from('profiles').select('phone').eq('id', user.id).maybeSingle()
-    const phone = normalizeEg((prof as { phone?: string } | null)?.phone || user.phone || '')
+    if (user) {
+      const { data: prof } = await admin.from('profiles').select('phone').eq('id', user.id).maybeSingle()
+      phone = normalizeEg((prof as { phone?: string } | null)?.phone || user.phone || '')
+    } else if (/^[0-9a-f-]{36}$/i.test(token)) {
+      // توكن واتساب: جلسة سارية → رقم الحساب. التوكن سرّي فالخصوصية محفوظة.
+      const { data: sess } = await admin
+        .from('madmona_sessions')
+        .select('account_id, expires_at')
+        .eq('token', token)
+        .maybeSingle()
+      const row = sess as { account_id?: string; expires_at?: string } | null
+      if (row?.account_id && row.expires_at && new Date(row.expires_at) > new Date()) {
+        const { data: acct } = await admin
+          .from('madmona_accounts')
+          .select('phone_normalized')
+          .eq('id', row.account_id)
+          .maybeSingle()
+        phone = normalizeEg((acct as { phone_normalized?: string } | null)?.phone_normalized || '')
+      }
+    }
     if (!phone || phone.length < 11) return NextResponse.json({ ok: true, messages: [] })
 
     const { data: conv } = await supabaseUntyped
