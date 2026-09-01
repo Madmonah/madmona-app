@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>تصليح النسخة — مضمونة</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+       font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:#0f172a;color:#e2e8f0}
+  .box{text-align:center;padding:24px;max-width:340px}
+  h1{font-size:20px;margin:0 0 8px}
+  p{font-size:15px;line-height:1.7;color:#94a3b8;margin:0 0 16px}
+  #log{font-size:13px;color:#64748b;white-space:pre-line}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>🔄 بنصلّح النسخة</h1>
+  <p>بنمسح النسخة القديمة المخزّنة على الجهاز ونحمّل الجديدة.</p>
+  <div id="log">…</div>
+</div>
+<script>
+// 🚨 (١ سبتمبر ٢٠٢٦) محمد: «التعديلات الأخيرة في نسخة الموبايل لسة متعدلتش».
+//    الجهاز كان ممكن يبقى عالق على Service Worker قديم (قبل v8) بيخزّن الـHTML
+//    نفسه — فيحمّل شنكات قديمة، وحارس النسخة اللي جوه ServiceWorkerRegister
+//    عمره ما بيشتغل لأنه مبعوت جوه الباندل الجديد اللي الجهاز مش واصله. قفل دائري.
+//    الصفحة دي **مش** جزء من تطبيق Next — ملف ثابت في public/ بمسار جديد،
+//    فأي SW مهما كان قديم مالوش نسخة منه في الكاش → لازم يجيبه من الشبكة.
+//    ده باب الخروج الوحيد اللي مايعتمدش على كود التطبيق.
+var log = document.getElementById('log');
+var say = function (t) { log.textContent = t; };
+(async function () {
+  try {
+    if ('serviceWorker' in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(function (r) { return r.unregister(); }));
+      say('اتشال ' + regs.length + ' نسخة قديمة…');
+    }
+    if (window.caches) {
+      var keys = await caches.keys();
+      await Promise.all(keys.map(function (k) { return caches.delete(k); }));
+      say('اتمسح ' + keys.length + ' كاش…');
+    }
+  } catch (e) { /* أي فشل هنا مايمنعش إعادة التحميل */ }
+  say('تمام ✅ بنفتح النسخة الجديدة…');
+  setTimeout(function () { location.replace('/?_v=' + Date.now()); }, 900);
+})();
+</script>
+</body>
+</html>

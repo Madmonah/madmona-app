@@ -35,11 +35,12 @@
 // وبترجع لوحدها أول ما النت يرجع (حدث online + زرار حاول تاني).
 // 🔄 (١ سبتمبر ٢٠٢٦) v10 — الرقم لازم يترفع مع كل نشر مهم، وإلا الموبايل
 //    يفضل على الـSW القديم. محمد: «مش شايف أي إضافة على الموبايل».
-const CACHE_NAME = 'madmona-v20';
+const CACHE_NAME = 'madmona-v21';
 const OFFLINE_PAGE = '/offline.html';
 
 // مسارات ممنوع تخزينها نهائيًا (مصادقة/دخول)
-const NEVER_CACHE = ['/auth/', '/admin-entry', '/clock/'];
+// 🚪 (١/٩/٢٠٢٦) '/fix' = باب خروج الجهاز العالق — ماينفعش يتخزّن أبدًا.
+const NEVER_CACHE = ['/auth/', '/admin-entry', '/clock/', '/fix'];
 const STATIC_ASSETS = [
   '/',
   OFFLINE_PAGE,
