@@ -13,6 +13,7 @@
 //    وبعدها موديولات نشاطه اللي بتعرض إعلاناته بالشكل المناسب.
 // ============================================================================
 import { useEffect, useState } from 'react'
+import { safeStorage } from '@/lib/safe-storage'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
@@ -125,15 +126,28 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
     let alive = true
     ;(async () => {
       try {
+        // 🚪🚪 (٢ سبتمبر ٢٠٢٦) محمد: «مش لاقي في الـ٣ شرط نموذج الإدارة
+        //     الخاص بمضمونة». السبب: الكود كان بيبدأ بـauth.getSession()
+        //     و`if (!session?.user) return` — فالقايمة بترجع **فاضية**
+        //     لأي حد داخل بتوكن الواتساب (madmona_token) من غير جلسة
+        //     Supabase، وده باب محمد وأصحاب البيزنس.
+        //     دي حرفيًا «الدرس الأكبر» في CLAUDE.md (٢٥/٨): أي شاشة
+        //     للفريق لازم تقبل **البابين**. workspace_menu_context بترد
+        //     من الاتنين — جلسة لو موجودة، وإلا التوكن.
+        const wtok = safeStorage.get('madmona_token')
         const { data: { session } } = await supabaseBrowser.auth.getSession()
-        if (!session?.user) return
+        if (!session?.user && !wtok) return
+
+        const { data: ctxRaw } = await (supabaseBrowser.rpc as unknown as (
+          f: string, a: Record<string, unknown>,
+        ) => Promise<{ data: unknown }>)('workspace_menu_context', { p_token: wtok || null })
+        const ctx = (ctxRaw || {}) as {
+          ok?: boolean; is_staff?: boolean
+          supplier_id?: string; business_name?: string; industry?: string
+        }
 
         // 🏛️ أدمن مضمونة → لوحة المنصة (فينانس أولًا)
-        const { data: staff } = await (supabaseBrowser.rpc as unknown as (
-          f: string,
-        ) => Promise<{ data: unknown }>)('is_madmona_staff')
-
-        if (staff === true) {
+        if (ctx.is_staff === true) {
           if (!alive) return
           setTitle('لوحة مضمونة')
           setHref('/supplier/erp')
@@ -143,13 +157,8 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         }
 
         // 🏪 صاحب بيزنس → فينانس + موديولات نشاطه
-        const { data: sup } = await (supabaseBrowser as unknown as {
-          from: (t: string) => { select: (c: string) => { eq: (a: string, b: unknown) => { limit: (n: number) => Promise<{ data: unknown }> } } }
-        }).from('suppliers').select('id, business_name, industry')
-          .eq('auth_user_id', session.user.id).limit(1)
-
-        const s = (sup as { id: string; business_name: string; industry?: string }[])?.[0]
-        if (!s || !alive) return
+        if (!ctx.ok || !ctx.supplier_id || !alive) return
+        const s = { id: ctx.supplier_id, business_name: ctx.business_name || '', industry: ctx.industry }
 
         setTitle(s.business_name || 'بيزنسي')
         setHref('/supplier/erp')
