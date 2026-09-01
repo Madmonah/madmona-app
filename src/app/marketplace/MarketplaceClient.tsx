@@ -191,13 +191,20 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
     ? allRootCategories
     : allRootCategories.filter(c => c.track === activeTrack || (activeTrack === 'rentals' && c.track === 'hybrid') || (activeTrack === 'products' && c.track === 'sales'))
 
+  // كل تصنيفات التراك (مش الرووتس بس) — الفلتر بالمجموعة بيحتاجها لأن
+  // مجموعات بعض التراكات عايشة على الأولاد (شركات وصناعة).
+  const trackCategories = activeTrack === 'all'
+    ? allCategories
+    : allCategories.filter(c => c.track === activeTrack || (activeTrack === 'rentals' && c.track === 'hybrid') || (activeTrack === 'products' && c.track === 'sales'))
+
   // Group the visible root categories by their DB group_* metadata (Jun 2026).
   // Every track now carries group_slug/group_name_ar/group_emoji so the strip
   // renders tidy labeled clusters (e.g. خدمات → طبية وتجميل · منزلية · …)
   // instead of one flat wall of pills. Falls back to a single unnamed bucket.
-  const rootGroups = (() => {
-    const map = new Map<string, { slug: string; name_ar: string; name_i18n: Record<string, string> | null; emoji: string; order: number; cats: Category[] }>()
-    for (const c of rootCategories) {
+  type RootGroup = { slug: string; name_ar: string; name_i18n: Record<string, string> | null; emoji: string; order: number; cats: Category[] }
+  const groupCats = (list: Category[]): RootGroup[] => {
+    const map = new Map<string, RootGroup>()
+    for (const c of list) {
       const key = c.group_slug || '__ungrouped'
       if (!map.has(key)) {
         map.set(key, {
@@ -212,6 +219,20 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       map.get(key)!.cats.push(c)
     }
     return Array.from(map.values()).sort((a, b) => a.order - b.order)
+  }
+  // 🗂️ (٢ سبتمبر ٢٠٢٦) محمد: «أنا عايز التصنيفات تظهر زي البيع كده والإيجار».
+  //    كروت المجموعات كانت بتتبني من **الرووتس بس**، وشركات وصناعة عندها
+  //    رووت واحد (شركات وصناعة) — فطلعت مجموعة واحدة والكروت ماظهرتش خالص.
+  //    المجموعات الحقيقية (صناعة الأدوية · صناعة عامة · خدمات صناعية) عايشة
+  //    على **أولاد** الرووت. فلو الرووتس طلّعت مجموعة واحدة ورووت واحد،
+  //    بنعيد البناء من أولاده.
+  const rootGroups = (() => {
+    const byRoots = groupCats(rootCategories)
+    if (byRoots.length > 1 || rootCategories.length !== 1) return byRoots
+    // (التصنيفات اللي بتوصل للفرونت مفلترة is_active أصلًا من المصدر)
+    const kids = allCategories.filter(c => c.parent_id === rootCategories[0].id)
+    const byKids = groupCats(kids).filter(g => g.slug !== rootCategories[0].group_slug)
+    return byKids.length > 1 ? byKids : byRoots
   })()
   // (Jul 24 2026) اتفعّلت في تاب «الكل» كمان.
   // الملاحظة القديمة («groups would collide across tracks») مالهاش أساس —
@@ -511,12 +532,14 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
             ]))
           }
         }
-      } else if (activeTrack !== 'all' && selectedGroupSlug && rootCategories.some(c => (c.group_slug || c.slug) === selectedGroupSlug)) {
+      } else if (activeTrack !== 'all' && selectedGroupSlug && trackCategories.some(c => (c.group_slug || c.slug) === selectedGroupSlug)) {
         // 🗂️ (17 Jul 2026) مجموعة مختارة (drill-down) من غير فئة محددة —
         // الإعلانات بتتفلتر على فئات المجموعة دي + أطفالها بس.
         // ⚠️ الشرط الأخير بيمنع باج الدخول المباشر بالـURL: لو الفئات لسه
         // متحملتش بنقع على فلتر التراك، ولما تتحمل الـeffect بيعيد التشغيل.
-        const groupRoots = rootCategories.filter(c => (c.group_slug || c.slug) === selectedGroupSlug)
+        // 🗂️ (٢/٩) من كل تصنيفات التراك — مجموعات الشركات (pharma · industry-*)
+        //    عايشة على الأولاد مش على الرووت، فالفلتر بالرووتس كان بيرجّع فاضي.
+        const groupRoots = trackCategories.filter(c => (c.group_slug || c.slug) === selectedGroupSlug)
         const groupRootIds = groupRoots.map(c => c.id)
         if (groupRootIds.length > 0) {
           // 🌳 (18 Aug 2026) الشجرة كاملة مش أطفال المستوى الأول بس
@@ -967,6 +990,34 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                   ))}
               </div>
             )
+          ) : !selectedCategorySlug && rootCategories.length > 1 ? (
+            // 🍽️ (٢ سبتمبر ٢٠٢٦) تراك مجموعته واحدة ورووتساته كتير (مطاعم:
+            //    ١٣ مطبخ في مجموعة «مطاعم ومأكولات»). مفيش مستوى مجموعات
+            //    أعلى يتعرض، فالرووتس نفسها بتبقى الكروت — نفس شكل بيع
+            //    وإيجار بالظبط، والضغط بيختار التصنيف على طول.
+            <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2">
+              {sortByData(rootCategories).map(cat => {
+                const n = catCountDeep(cat)
+                const locked = !categoryHasData(cat)
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => { if (!locked) setSelectedCategorySlug(cat.slug) }}
+                    disabled={locked}
+                    title={locked ? comingSoonLabel : undefined}
+                    className={`flex items-center gap-2 px-4 py-3.5 rounded-2xl border shadow-soft transition-all text-right ${locked ? 'bg-gray-50 border-gray-100 cursor-not-allowed opacity-60' : 'bg-white border-gray-100 hover:shadow-card hover:-translate-y-0.5'}`}
+                  >
+                    <span className="text-2xl">{cat.icon || '🏷️'}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-extrabold text-gray-800 leading-tight">{catName(cat)}</span>
+                      <span className="block text-[10px] font-bold text-gray-400 mt-0.5">
+                        {locked ? comingSoonLabel : n}
+                      </span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           ) : (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
               <CategoryPill
@@ -990,7 +1041,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
 
           {/* 🏭 (١/٩/٢٠٢٦) أقسام التراك ذو الرووت الواحد — تابات كبيرة بنفس
               ستايل فلتر البائع تحتها (أدوية · خامات · تغليف · ماكينات …). */}
-          {soleRoot && !selectedCategorySlug && subCategories.length > 0 && (() => {
+          {!showGroupHeadings && soleRoot && !selectedCategorySlug && subCategories.length > 0 && (() => {
             const col = TRACK_ACCENT[activeTrack] || TRACK_ACCENT.products
             return (
               <div className="flex gap-2 mt-3 overflow-x-auto pb-1 -mx-4 px-4">
@@ -1021,7 +1072,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           })()}
 
           {/* Subcategory pills (visible when a root category is selected) */}
-          {!(soleRoot && !selectedCategorySlug) && subCategories.length > 0 && (
+          {!(!showGroupHeadings && soleRoot && !selectedCategorySlug) && subCategories.length > 0 && (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4 animate-slide-down">
               <button
                 onClick={() => setSelectedCategorySlug(selectedRootSlug || null)}
