@@ -1,6 +1,6 @@
 'use client'
 
-import { safeStorage } from '@/lib/safe-storage'
+import { readMadmonaToken, ensureMadmonaToken } from '@/lib/madmona-token'
 
 /* Manager console — /me/team
    Visible only to employees whose business_employees.role is admin or branch_manager
@@ -23,7 +23,9 @@ import {
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 const DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
-const token = () => (typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null)
+// 🔑 (٢/٩/٢٠٢٦) المصدر الواحد — بيقرا المفتاحين (دخول /login مقابل
+//    دخول جوجل) ويولّد التوكن من جلسة Supabase لو ناقص.
+const token = () => (typeof window !== 'undefined' ? readMadmonaToken() : null)
 const hhmm = (iso: string | null) => {
   if (!iso) return ''
   try { return new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit', hour12: false }) } catch { return '' }
@@ -54,9 +56,16 @@ export default function ManagerConsole() {
   }, [])
 
   useEffect(() => {
-    const t = token()
-    if (!t) { router.push('/login'); return }
-    ;(async () => { const ok = await loadEmployees(); if (ok) await loadBom(); setLoading(false); if (!ok) setTimeout(() => router.push('/me'), 1800) })()
+    ;(async () => {
+      // ⚠️ ماترميش على /login غير بعد ما تحاول تولّد التوكن — اللي داخل
+      //    بجوجل توكنه بيتولّد من whoami، وقبل كده كان بيتقذف على الدخول.
+      const t = await ensureMadmonaToken()
+      if (!t) { router.push('/login'); return }
+      const ok = await loadEmployees()
+      if (ok) await loadBom()
+      setLoading(false)
+      if (!ok) setTimeout(() => router.push('/me'), 1800)
+    })()
   }, [router, loadEmployees, loadBom])
 
   if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>

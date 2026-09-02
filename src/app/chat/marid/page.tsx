@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, Fragment } from 'react'
-import { safeStorage } from '@/lib/safe-storage'
+import { readMadmonaToken } from '@/lib/madmona-token'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -199,7 +199,7 @@ const [input, setInput] = useState('')
           //     من غير جلسة Supabase. فالرسايل كانت في الذاكرة بس،
           //     وأول ما التاب يتغيّر الكومبوننت بيتعمله remount وتختفي.
           //     الرسايل نفسها مش ضايعة — متسجّلة في whatsapp_messages.
-          const wtok = safeStorage.get('madmona_token')
+          const wtok = readMadmonaToken()
           if (wtok) {
             const hist = await loadHistory(wtok)
             if (hist.length) { setStarted(true); setMessages(hist) }

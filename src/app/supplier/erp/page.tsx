@@ -11,7 +11,7 @@
 //    ?business=<id> يخلّي الأدمن يشوف بيزنس تاني.
 // ============================================================================
 import { useEffect, useState, useCallback, Suspense } from 'react'
-import { safeStorage } from '@/lib/safe-storage'
+import { readMadmonaToken } from '@/lib/madmona-token'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -97,7 +97,7 @@ function ErpInner() {
         //     دي تالت شاشة بنفس المرض (الحضور · قايمة الـ٣ شرط · دي).
         'erp_dashboard', {
           ...(businessParam ? { p_supplier: businessParam } : {}),
-          p_token: safeStorage.get('madmona_token') || null,
+          p_token: readMadmonaToken(),
         })
       if (error) throw new Error(error.message)
       if (!data?.ok) throw new Error(data?.error || 'مفيش بيانات')

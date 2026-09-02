@@ -13,7 +13,7 @@
 //    وبعدها موديولات نشاطه اللي بتعرض إعلاناته بالشكل المناسب.
 // ============================================================================
 import { useEffect, useState } from 'react'
-import { safeStorage } from '@/lib/safe-storage'
+import { readMadmonaToken } from '@/lib/madmona-token'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
@@ -134,7 +134,7 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         //     دي حرفيًا «الدرس الأكبر» في CLAUDE.md (٢٥/٨): أي شاشة
         //     للفريق لازم تقبل **البابين**. workspace_menu_context بترد
         //     من الاتنين — جلسة لو موجودة، وإلا التوكن.
-        const wtok = safeStorage.get('madmona_token')
+        const wtok = readMadmonaToken()
         const { data: { session } } = await supabaseBrowser.auth.getSession()
         if (!session?.user && !wtok) return
 
