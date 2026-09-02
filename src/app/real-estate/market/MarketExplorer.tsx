@@ -148,16 +148,20 @@ const HS = '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
 export default function MarketExplorer({
   items,
   opportunities,
+  initialOpenRequests = 0,
 }: {
   items: Item[]
   opportunities: Opportunity[]
+  initialOpenRequests?: number
 }) {
   const { t } = useT()
   const [q, setQ] = useState('')
   const [areaF, setAreaF] = useState<'all' | string>('all')
   const [devF, setDevF] = useState<'all' | string>('all')
   // 📢 (٢٨/٨) عدّاد الطلبات المفتوحة — بيتجاب مرة عند الفتح
-  const [openRequests, setOpenRequests] = useState(0)
+  // 📢 (٢/٩) القيمة جاية من السيرفر فالبانر بيبان من أول رسمة —
+  //    والتحديث الحي تحت بيصحّحها لو اتغيّرت.
+  const [openRequests, setOpenRequests] = useState(initialOpenRequests)
   const [chip, setChip] = useState<Chip>('all')
   const [videoOpen, setVideoOpen] = useState<Item | null>(null)
   // 🔗 فلتر لوجو المطوّر (?dev=slug) — جاي من رصّة اللوجوهات في هوم الموبايل (29 Jul 2026)

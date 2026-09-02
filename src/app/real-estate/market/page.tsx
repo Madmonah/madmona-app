@@ -68,6 +68,25 @@ async function getItems(): Promise<Item[]> {
   }
 }
 
+// 📢 (٢ سبتمبر ٢٠٢٦) محمد: «طلبات لايف مش بتظهر أول ما الصفحة تفتح».
+//    العدّاد كان بيتجاب من المتصفح **بعد** التحميل، والبانر شرطه
+//    `openRequests > 0` — فبيفضل مخفي لحد ما الطلب يرجع وبعدين يظهر
+//    فجأة. دلوقتي بيتجاب من السيرفر فبيبان من أول رسمة.
+async function getOpenRequestsCount(): Promise<number> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { count } = await supabase
+      .from('v_actionable_demand')
+      .select('id', { count: 'exact', head: true })
+    return count ?? 0
+  } catch {
+    return 0
+  }
+}
+
 async function getOpportunities(): Promise<Opportunity[]> {
   try {
     const { data } = await sb()
@@ -82,7 +101,9 @@ async function getOpportunities(): Promise<Opportunity[]> {
 }
 
 export default async function PropertyMarketPage() {
-  const [items, opportunities] = await Promise.all([getItems(), getOpportunities()])
+  const [items, opportunities, openRequests] = await Promise.all([
+    getItems(), getOpportunities(), getOpenRequestsCount(),
+  ])
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
@@ -90,7 +111,7 @@ export default async function PropertyMarketPage() {
       <div className="hidden md:block">
         <TopNav />
       </div>
-      <MarketExplorer items={items} opportunities={opportunities} />
+      <MarketExplorer items={items} opportunities={opportunities} initialOpenRequests={openRequests} />
 
       {/* 🏗️ (٢٢ أغسطس ٢٠٢٦ — محمد: «المطورين مكانها جوّه بورصة عقارات مضمونة»)
           كان قسم مستقل على الصفحة الرئيسية على نفس مستوى «بيع» و«إيجار».
