@@ -80,6 +80,9 @@ interface ListingDetail {
   supplier: {
     id: string
     business_name: string
+    // 🏛️ (٢ سبتمبر ٢٠٢٦) محمد: «مضمونة معندهاش اعلانات» — حساب المنصة
+    // عمره ما يتعرض كـ«صاحب الإعلان». مضمونة في النص مش طرف.
+    is_platform?: boolean | null
     kyc_status?: string | null
     profile: { phone: string; full_name: string | null } | null
   } | null
@@ -203,16 +206,17 @@ export default function ListingDetailPage() {
         if (l.supplier_id) {
           const { data: supFull } = await supabaseBrowser
             .from('marketplace_suppliers')
-            .select('id, business_name, profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)')
+            .select('id, business_name, is_platform, profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)')
             .eq('id', l.supplier_id)
             .maybeSingle()
           if (supFull) {
-            supplier = supFull as ListingDetail['supplier']
+            // النوع المولّد من Supabase لسه ماعندوش is_platform (عمود جديد)
+            supplier = supFull as unknown as ListingDetail['supplier']
           } else {
             // anon مايقدرش يقرأ profile_id فالـjoin بيتمنع → نجيب اسم المورّد بس
             const { data: supBasic } = await supabaseBrowser
               .from('marketplace_suppliers')
-              .select('id, business_name')
+              .select('id, business_name, is_platform')
               .eq('id', l.supplier_id)
               .maybeSingle()
             supplier = (supBasic ? { ...(supBasic as object), profile: null } : null) as ListingDetail['supplier']
@@ -1433,7 +1437,28 @@ export default function ListingDetailPage() {
               )}
 
               {/* Supplier card */}
+              {/* 🏛️ (٢ سبتمبر ٢٠٢٦) محمد: «مضمونة معندهاش اعلانات».
+                  الإعلان اللي الموظف بيضيفه بالنيابة عن عميل بيقع على حساب
+                  المنصة، فالكارت كان بيقول «صاحب الإعلان: مضمونة ✅ مورد
+                  موثّق» على شقة وعربية بتاعت ناس — ده بيخلّي مضمونة **طرف**
+                  وهي في النص. دلوقتي بيتعرض «معروض عن طريق مضمونة».
+                  ⛔ وممنوع نعرض اسم المالك الحقيقي هنا — قاعدة ٢٧/٨:
+                  الاسم والرقم مايبانوش إلا بعد الاتفاق (partyPhoneHidden). */}
               {!isDirectory && listing.supplier && (
+                listing.supplier.is_platform ? (
+                  <div className="bg-white rounded-3xl shadow-soft p-6">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{t('listing.via_label')}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#34D399] to-[#34D399] flex items-center justify-center flex-shrink-0">
+                        <ShieldCheck className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-900 truncate">{t('listing.via_madmona')}</p>
+                        <p className="text-xs text-gray-500 leading-snug">{t('listing.via_madmona_note')}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
                 <div className="bg-white rounded-3xl shadow-soft p-6">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">{t('listing.owner_label')}</p>
                   <div className="flex items-center gap-3 mb-4">
@@ -1448,6 +1473,7 @@ export default function ListingDetailPage() {
                     </div>
                   </div>
                 </div>
+                )
               )}
             </div>
           </aside>

@@ -150,10 +150,19 @@ const [input, setInput] = useState('')
     setMessages([{ id: mkId(), role: 'sys', text: `أهلاً${nm ? ' يا ' + nm : ''} 👋 أنا المارد، مساعدك الشخصي على مضمونة — اسألني في أي حاجة.`, time: nowTime() }])
   }, [])
 
+  // 🔑 (٢ سبتمبر ٢٠٢٦) بيرجّع الهوية مع التاريخ — مش التاريخ لوحده.
+  //    الإرسال بياخد الرقم من حالة الكومبوننت، ومسار توكن الواتساب
+  //    ماكانش بيملاها خالص (شوف التعليق تحت في الـuseEffect).
+  const identityRef = useRef<{ phone: string; name: string }>({ phone: '', name: '' })
+
   async function loadHistory(token: string): Promise<Msg[]> {
     try {
       const res = await fetch('/api/chat', { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
+      identityRef.current = {
+        phone: typeof data?.phone === 'string' ? data.phone : '',
+        name: typeof data?.name === 'string' ? data.name : '',
+      }
       if (!data?.ok || !Array.isArray(data.messages)) return []
       type HistRow = { id?: string; direction: string; message_type: string; text: string; media_url: string | null; created_at: string }
       return (data.messages as HistRow[]).map((m): Msg => {
@@ -199,10 +208,29 @@ const [input, setInput] = useState('')
           //     من غير جلسة Supabase. فالرسايل كانت في الذاكرة بس،
           //     وأول ما التاب يتغيّر الكومبوننت بيتعمله remount وتختفي.
           //     الرسايل نفسها مش ضايعة — متسجّلة في whatsapp_messages.
+          //  ⚠️ (٢ سبتمبر ٢٠٢٦ — تكملة) محمد: «لسة شات مضمونة بيمسح
+          //     الشات لوحده». الإصلاح الأول رجّع **التاريخ** بس ونسي
+          //     **الهوية**: `setPhone` ماكانش بيتنادى في المسار ده خالص.
+          //     فكانت بتحصل حاجتين:
+          //       ١) تاريخ فاضي → `started` يفضل false → يرجع لشاشة
+          //          البداية، وده اللي شكله «الشات اتمسح».
+          //       ٢) وحتى لما التاريخ يظهر، `phone` فاضي → الـPOST بيترفض
+          //          → الرسالة الجديدة **مش بتتسجّل** أصلاً، فتختفي مع
+          //          أول remount.
+          //     دلوقتي الـGET بيرجّع الرقم والاسم، والحالة بتتملى منهم.
           const wtok = readMadmonaToken()
           if (wtok) {
             const hist = await loadHistory(wtok)
-            if (hist.length) { setStarted(true); setMessages(hist) }
+            const id = identityRef.current
+            if (id.phone && id.phone.length >= 11) {
+              setPhone(id.phone)
+              if (id.name) setName(id.name)
+              setStarted(true)
+              if (hist.length) setMessages(hist)
+              else welcome(id.name)
+            } else if (hist.length) {
+              setStarted(true); setMessages(hist)
+            }
           }
         }
       } catch {}

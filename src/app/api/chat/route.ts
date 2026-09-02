@@ -139,9 +139,12 @@ export async function GET(request: NextRequest) {
     let phone = ''
     const { data: userData } = await admin.auth.getUser(token)
     const user = userData?.user
+    let name = ''
     if (user) {
-      const { data: prof } = await admin.from('profiles').select('phone').eq('id', user.id).maybeSingle()
-      phone = normalizeEg((prof as { phone?: string } | null)?.phone || user.phone || '')
+      const { data: prof } = await admin.from('profiles').select('phone, full_name').eq('id', user.id).maybeSingle()
+      const pr = prof as { phone?: string; full_name?: string } | null
+      phone = normalizeEg(pr?.phone || user.phone || '')
+      name = (pr?.full_name || '').trim()
     } else if (/^[0-9a-f-]{36}$/i.test(token)) {
       // توكن واتساب: جلسة سارية → رقم الحساب. التوكن سرّي فالخصوصية محفوظة.
       const { data: sess } = await admin
@@ -153,13 +156,15 @@ export async function GET(request: NextRequest) {
       if (row?.account_id && row.expires_at && new Date(row.expires_at) > new Date()) {
         const { data: acct } = await admin
           .from('madmona_accounts')
-          .select('phone_normalized')
+          .select('phone_normalized, full_name')
           .eq('id', row.account_id)
           .maybeSingle()
-        phone = normalizeEg((acct as { phone_normalized?: string } | null)?.phone_normalized || '')
+        const ac = acct as { phone_normalized?: string; full_name?: string } | null
+        phone = normalizeEg(ac?.phone_normalized || '')
+        name = (ac?.full_name || '').trim()
       }
     }
-    if (!phone || phone.length < 11) return NextResponse.json({ ok: true, messages: [] })
+    if (!phone || phone.length < 11) return NextResponse.json({ ok: true, messages: [], phone: '', name })
 
     const { data: conv } = await supabaseUntyped
       .from('whatsapp_conversations')
@@ -168,7 +173,7 @@ export async function GET(request: NextRequest) {
       .eq('session_id', 'web')
       .maybeSingle()
     const conversationId = (conv as { id?: string } | null)?.id
-    if (!conversationId) return NextResponse.json({ ok: true, messages: [] })
+    if (!conversationId) return NextResponse.json({ ok: true, messages: [], phone, name })
 
     const { data: rows } = await supabaseUntyped
       .from('whatsapp_messages')
@@ -198,7 +203,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ ok: true, messages })
+    return NextResponse.json({ ok: true, messages, phone, name })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'unknown'
     console.error('[chat GET]', msg)
