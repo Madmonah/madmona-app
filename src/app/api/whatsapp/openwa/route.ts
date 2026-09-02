@@ -181,6 +181,37 @@ export async function POST(req: NextRequest) {
         console.error('[openwa-relay] media API failed', { type, metaKeys: Object.keys(meta) })
       }
     }
+
+    // 🔬 (٢ سبتمبر ٢٠٢٦) الصوت بس هو اللي بيفشل — الصور ٤٦٦/٤٧٣ بتوصل
+    //    والصوت ٠ من ١٢٨. التلات مسارات بتفشل، والسبب في شكل الحمولة
+    //    اللي OpenWA بيبعتها لرسايل ptt. بنسجّل **مفاتيح** الحمولة
+    //    (مش محتواها) عشان رسالة واحدة تكشف الناقص بالظبط.
+    if (!media) {
+      try {
+        const mediaObjKeys = Object.keys(mediaObj || {})
+        await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/_wa_media_debug`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+            Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({
+            session_id: sessionId,
+            raw_type: rawType,
+            norm_type: type,
+            top_keys: Object.keys(data || {}),
+            media_keys: mediaObjKeys,
+            meta_keys: Object.keys(meta || {}),
+            had_media_url: !!mediaUrl,
+            had_inline: !!inlineB64,
+            api_fallback_ok: false,
+            note: 'كل مسارات الميديا فشلت',
+          }),
+        })
+      } catch { /* التشخيص مايوقفش الرسالة */ }
+    }
   }
 
   // ── صيغة baileys ─────────────────────────────────────────────────────
