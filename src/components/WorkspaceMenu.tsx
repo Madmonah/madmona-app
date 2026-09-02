@@ -193,6 +193,10 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
           { key: 'shifts',      label: 'الورديات',  href: admin('shifts'),     icon: CalendarDays },
           { key: 'permissions', label: 'الصلاحيات', href: admin('permissions'),icon: KeyRound },
           { key: 'settings',    label: 'الإعدادات', href: admin('settings'),   icon: Tag },
+          // 🗂️ (٢ سبتمبر ٢٠٢٦) محمد: «عايزك توصّل الـ٧٠ شاشة كلهم».
+          //    ٦٥ شاشة مالهاش لازمة تتحشر في الدرج — الفهرس المجمّع
+          //    (/links) بيوصّل لكلهم بأقسامهم، وده لينك واحد ليه.
+          { key: 'all_screens', label: 'كل الشاشات', href: admin('links'), icon: LayoutGrid },
         ]
         setMods([
           ...keys.filter((k) => BUSINESS[k]).map((k) => ({ key: k, ...BUSINESS[k] })),
