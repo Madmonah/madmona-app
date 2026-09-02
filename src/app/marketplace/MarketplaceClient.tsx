@@ -51,6 +51,9 @@ interface Listing {
   price_egp?: number | string | null
   category: { name_ar: string; name_en: string | null; name_i18n?: Record<string, string> | null; icon: string | null; slug: string } | null
   supplier: { id?: string | null; business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
+  // 🏬 (٢ سبتمبر ٢٠٢٦) اسم البائع الحقيقي لما الإعلان محفوظ على حساب
+  //    وصاية — «مضمونة وسيط مش طرف». شوف sql/2026-09-02_seller_display_name.
+  seller_display_name?: string | null
   photos: { url: string; is_primary: boolean; quality_flag?: string | null; is_placeholder?: boolean | null }[] | null
   pricing: { price: number | string; is_active: boolean }[] | null
   // 💰 (٢٨/٨) نظام السداد — المقدم والتقسيط للعقارات
@@ -554,6 +557,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         .select(`
           id, title, i18n, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification, price_egp,
           category:categories(name_ar, name_en, name_i18n, icon, slug),
+          seller_display_name,
           supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status),
           photos:listing_photos(url, is_primary, quality_flag, is_placeholder),
           pricing:pricing_rules(price, is_active)
@@ -623,7 +627,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       }
       retriesRef.current = 0
       setLoadError(false)
-      setListings((data || []) as Listing[])
+      // (٢/٩) seller_display_name عمود جديد لسه مش في الأنواع المولّدة
+      setListings((data || []) as unknown as Listing[])
       setTotalCount(typeof count === 'number' ? count : null)
       setLoading(false)
     }
@@ -1642,8 +1647,14 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                       {displayTitle}
                     </h3>
 
-                    {/* 🏬 لينك متجر التاجر — جوه كارت الإعلان */}
-                    {listing.supplier?.id && listing.supplier?.business_name && (
+                    {/* 🏬 (٢/٩/٢٠٢٦) الإعلان المحفوظ على حساب وصاية بيعرض اسم
+                        صاحبه الحقيقي — من غير لينك متجر لأنه لسه ماسجّلش.
+                        «مضمونة وسيط مش طرف». */}
+                    {listing.seller_display_name ? (
+                      <span className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 border border-gray-200 rounded-full text-[10px] font-bold text-gray-600">
+                        🏭 {listing.seller_display_name}
+                      </span>
+                    ) : listing.supplier?.id && listing.supplier?.business_name && (
                       <button
                         type="button"
                         onClick={(e) => {
