@@ -62,6 +62,23 @@ type DBCategory = {
   group_display_order?: number | null
 }
 
+// 🔢 (٢ سبتمبر ٢٠٢٦) عدد أقسام كل تراك — بقاعدة «لو رووت واحد عُدّ
+//    أولاده». من غيرها «شركات وصناعة» كانت بتقول «١ قسم» وفيها ١٨.
+async function getTrackSectionCounts(): Promise<Record<string, number>> {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data } = await (supabase.rpc as unknown as (
+      f: string,
+    ) => Promise<{ data: unknown }>)('track_section_counts')
+    return (data as Record<string, number>) || {}
+  } catch {
+    return {}
+  }
+}
+
 async function getRootCategories(): Promise<DBCategory[]> {
   try {
     const supabase = createClient(
@@ -140,11 +157,12 @@ async function getSiteStats(): Promise<{ listings: number; categories: number; s
 }
 
 export default async function HomePage() {
-  const [settings, rootCategories, stats, liveCounts] = await Promise.all([
+  const [settings, rootCategories, stats, liveCounts, sectionCounts] = await Promise.all([
     getSiteSettings(),
     getRootCategories(),
     getSiteStats(),
     getGroupLiveCounts(),
+    getTrackSectionCounts(),
   ])
 
   const HERO_IMAGE = settings.hero_image_url || DEFAULT_HERO_IMAGE
@@ -155,7 +173,7 @@ export default async function HomePage() {
       {/* ⚠️ (6 Aug 2026) MUACampaignBanner بيستخدم useSearchParams — لازم Suspense حواليه
           وإلا Next بتحقن BAILOUT_TO_CLIENT_SIDE_RENDERING في الـHTML الستاتيك وبتكسر الـhydration */}
       <div className="md:hidden"><Suspense fallback={null}><MUACampaignBanner /></Suspense></div>
-      <MobileHome categories={rootCategories} liveCounts={liveCounts} />
+      <MobileHome categories={rootCategories} liveCounts={liveCounts} sectionCounts={sectionCounts} />
 
       {/* DESKTOP - New design (7 Aug 2026) from Madmona Redesign file */}
       <div className="hidden md:block">

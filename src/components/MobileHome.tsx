@@ -126,7 +126,7 @@ function buildGroups(cats: Category[]): CatGroup[] {
   return [...map.values()].sort((a, b) => a.order - b.order)
 }
 
-export default function MobileHome({ categories, liveCounts = {} }: { categories: Category[]; liveCounts?: Record<string, number> }) {
+export default function MobileHome({ categories, liveCounts = {}, sectionCounts = {} }: { categories: Category[]; liveCounts?: Record<string, number>; sectionCounts?: Record<string, number> }) {
   const { lang, t } = useT()
   const router = useRouter()
   const en = lang === 'en'
@@ -217,7 +217,10 @@ export default function MobileHome({ categories, liveCounts = {} }: { categories
     const card = (k === 'industry' ? catCards.find(c => c.key === 'industry' && c.image_url) : null)
       || catCards.find(c => c.vkey === k && c.useImg && c.image_url)
       || catCards.find(c => c.vkey === k)
-    return { cats: cats.length, live, card }
+    // 🔢 (٢/٩/٢٠٢٦) العدّاد من الداتابيز بقاعدة «لو رووت واحد عُدّ أولاده» —
+    //    cats.length بيعدّ الرووتس بس، فالصناعة كانت بتطلع «١ قسم» وفيها ١٨.
+    const fromDb = trackOf(k).reduce((sum, tr) => sum + (sectionCounts[tr] ?? 0), 0)
+    return { cats: fromDb || cats.length, live, card }
   }
 
   return (
