@@ -587,7 +587,10 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         query = query.in('category_id', categoryIds)
       }
       if (isSearching) {
-        query = query.ilike('title', `%${searchQuery.trim()}%`)
+        // 🔎 (٢/٩/٢٠٢٦) البحث في **كل اللغات** مش العنوان العربي بس —
+        //    search_blob = العنوان + كل ترجمات i18n. من غيره الزائر
+        //    اللي بيدوّر 'Kawasaki' كان بياخد صفر والترجمة موجودة.
+        query = query.ilike('search_blob' as never, `%${searchQuery.trim()}%`)
       }
       if (supplierFilter) {
         query = query.eq('supplier_id', supplierFilter)
