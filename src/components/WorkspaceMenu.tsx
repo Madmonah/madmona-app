@@ -177,7 +177,27 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
 
         const keys = ((data as { modules?: string[] })?.modules) || []
         if (!alive) return
-        setMods(keys.filter((k) => BUSINESS[k]).map((k) => ({ key: k, ...BUSINESS[k] })))
+
+        // 🏢 (٢ سبتمبر ٢٠٢٦) محمد: «الإدارة في المعارض مش بتفتح على كل
+        //    تابات الـERP — لا فيه إضافة موظف ولا لوكيشن».
+        //    السبب: القايمة كانت بتوصّل لـ/supplier/erp/* (٨ شاشات بس)،
+        //    بينما اللوحة الكاملة (٧٠ شاشة: فريق · فروع · حضور · ورديات
+        //    · مرتبات · صلاحيات …) عايشة في
+        //    /admin/business-finance/<supplier>/*.
+        //    الشاشات **موجودة** — كانت مش موصولة بس.
+        const admin = (seg: string) => `/admin/business-finance/${s.id}/${seg}`
+        const FULL_ADMIN: Mod[] = [
+          { key: 'team_full',   label: 'الموظفين',  href: admin('team'),       icon: Users },
+          { key: 'branches',    label: 'الفروع',    href: admin('branches'),   icon: Building2 },
+          { key: 'attendance',  label: 'الحضور',    href: admin('attendance'), icon: Clock },
+          { key: 'shifts',      label: 'الورديات',  href: admin('shifts'),     icon: CalendarDays },
+          { key: 'permissions', label: 'الصلاحيات', href: admin('permissions'),icon: KeyRound },
+          { key: 'settings',    label: 'الإعدادات', href: admin('settings'),   icon: Tag },
+        ]
+        setMods([
+          ...keys.filter((k) => BUSINESS[k]).map((k) => ({ key: k, ...BUSINESS[k] })),
+          ...FULL_ADMIN,
+        ])
       } catch { /* مش مسجّل — مايظهرش حاجة */ }
     })()
     return () => { alive = false }
