@@ -40,3 +40,26 @@ alter table public.listings add column if not exists seller_display_name text;
 
 comment on column public.listings.seller_display_name is
   'اسم البائع الحقيقي للعرض لما الإعلان محفوظ على حساب وصاية (٢/٩/٢٠٢٦). عرض فقط.';
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 🔴🔴 درس غالي — العمود الجديد قفل السوق كله لدقيقتين
+-- ═══════════════════════════════════════════════════════════════════
+-- أول ما الكود بدأ يقرا `seller_display_name`، السوق كله رجّع
+-- **401** و«مش قادرين نحمّل العروض دلوقتي» — مش الإعلانات الصيدلانية
+-- بس، **كل** الإعلانات.
+--
+-- السبب: صلاحيات `anon` على `listings` ممنوحة **عمود بعمود**
+-- (٢٦٧ عمود مسجّل في column_privileges) مش على الجدول كله. والعمود
+-- الجديد مش فيهم — وPostgREST بيرفض **الاستعلام كله** لو فيه عمود
+-- واحد مش مسموح، مش بيتجاهله.
+--
+-- ⚠️ ده أخطر من فخ الـGRANT المكتوب في CLAUDE.md ٤.٦ — ده على مستوى
+--    **العمود** مش الجدول، و`has_table_privilege` بترجّع true وتغشّك.
+--
+-- ✅ القاعدة: **أي عمود جديد على جدول بيتقري من المتصفح لازم ياخد
+--    GRANT صريح في نفس الميجريشن**:
+--      grant select (اسم_العمود) on public.الجدول to anon, authenticated;
+--    والفحص: has_column_privilege('anon','public.listings','العمود','SELECT')
+
+grant select (seller_display_name) on public.listings to anon, authenticated;
+grant update (seller_display_name) on public.listings to authenticated;
