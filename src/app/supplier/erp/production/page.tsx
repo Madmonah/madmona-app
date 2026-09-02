@@ -4,6 +4,7 @@
 // (٢٨ أغسطس ٢٠٢٦) موديول المصنع — محمد: «تيكوود نشاطه مصنع».
 // ============================================================================
 import { useEffect, useState, useCallback } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveBusiness, type Business } from '@/lib/business-access'
@@ -26,6 +27,8 @@ const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
 const PRIORITY: Record<string, string> = { low: 'عادي', normal: 'عادي', high: 'مهم', urgent: '🔴 عاجل' }
 
 export default function ProductionPage() {
+  // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
+  const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
   const [rows, setRows] = useState<PO[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,7 +63,7 @@ export default function ProductionPage() {
       order_number: form.order_number?.trim() || `PO-${Date.now().toString().slice(-6)}`,
       product_name: form.product_name.trim(),
       quantity: Number(form.quantity) || 1,
-      unit: form.unit || 'قطعة',
+      unit: form.unit || t('erp.unit_piece'),
       status: form.status || 'planned',
       priority: form.priority || 'normal',
       due_date: form.due_date || null,
@@ -110,14 +113,14 @@ export default function ProductionPage() {
             <Factory className="w-5 h-5 text-[#059669]" /> أوامر التشغيل
           </h1>
         </div>
-        <button onClick={() => setForm({ quantity: 1, unit: 'قطعة', status: 'planned', priority: 'normal' })}
+        <button onClick={() => setForm({ quantity: 1, unit: t('erp.unit_piece'), status: 'planned', priority: 'normal' })}
           className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black flex items-center gap-1.5">
           <Plus className="w-4 h-4" /> أمر جديد
         </button>
       </div>
 
       <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
-        {[['active', 'الشغال'], ['done', 'اللي خلص'], ['all', 'الكل']].map(([k, l]) => (
+        {[['active', 'الشغال'], ['done', 'اللي خلص'], ['all', t('erp.all')]].map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${
               filter === k ? 'bg-[#04352A] text-white' : 'bg-[#F1EEE6] text-gray-600'}`}>
@@ -129,8 +132,8 @@ export default function ProductionPage() {
       {shown.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
           <Factory className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm font-bold text-gray-600">مفيش أوامر تشغيل</p>
-          <p className="text-[11px] text-gray-400 mt-1">ابدأ بأول أمر تشغيل لمنتج.</p>
+          <p className="text-sm font-bold text-gray-600">{t('erp.no_orders')}</p>
+          <p className="text-[11px] text-gray-400 mt-1">{t('erp.orders_hint')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -156,11 +159,11 @@ export default function ProductionPage() {
                 )}
                 <div className="flex gap-1.5 flex-wrap">
                   {r.status !== 'in_progress' && r.status !== 'done' && (
-                    <Act onClick={() => setStatus(r.id, 'in_progress')}>ابدأ</Act>
+                    <Act onClick={() => setStatus(r.id, 'in_progress')}>{t('erp.start')}</Act>
                   )}
-                  {r.status === 'in_progress' && <Act onClick={() => setStatus(r.id, 'paused')}>وقّف</Act>}
+                  {r.status === 'in_progress' && <Act onClick={() => setStatus(r.id, 'paused')}>{t('erp.stop')}</Act>}
                   {r.status !== 'done' && <Act onClick={() => setStatus(r.id, 'done')} primary>خلص ✓</Act>}
-                  <Act onClick={() => setForm(r)}>تعديل</Act>
+                  <Act onClick={() => setForm(r)}>{t('erp.edit')}</Act>
                 </div>
               </div>
             )
@@ -174,26 +177,26 @@ export default function ProductionPage() {
           <div className="bg-white rounded-2xl w-full max-w-md p-4 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-black text-base">{form.id ? 'تعديل الأمر' : 'أمر تشغيل جديد'}</h2>
+              <h2 className="font-black text-base">{form.id ? t('erp.edit_order') : t('erp.new_order')}</h2>
               <button onClick={() => setForm(null)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <F label="المنتج *"><input value={form.product_name || ''} onChange={(e) => setForm({ ...form, product_name: e.target.value })} className={INP} /></F>
             <div className="grid grid-cols-2 gap-2">
-              <F label="الكمية"><input type="number" value={form.quantity ?? 1} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} className={INP} /></F>
-              <F label="الوحدة"><input value={form.unit || ''} onChange={(e) => setForm({ ...form, unit: e.target.value })} className={INP} placeholder="قطعة" /></F>
+              <F label={t('erp.quantity')}><input type="number" value={form.quantity ?? 1} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.unit')}><input value={form.unit || ''} onChange={(e) => setForm({ ...form, unit: e.target.value })} className={INP} placeholder={t('erp.unit_piece')} /></F>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <F label="الأولوية">
+              <F label={t('erp.priority')}>
                 <select value={form.priority || 'normal'} onChange={(e) => setForm({ ...form, priority: e.target.value })} className={INP}>
-                  <option value="normal">عادي</option><option value="high">مهم</option><option value="urgent">عاجل</option>
+                  <option value="normal">{t('erp.normal')}</option><option value="high">{t('erp.important')}</option><option value="urgent">{t('erp.urgent')}</option>
                 </select>
               </F>
-              <F label="تاريخ التسليم"><input type="date" value={form.due_date || ''} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className={INP} /></F>
+              <F label={t('erp.delivery_date')}><input type="date" value={form.due_date || ''} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className={INP} /></F>
             </div>
-            <F label="ملاحظات"><textarea value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={INP} rows={2} /></F>
+            <F label={t('erp.notes')}><textarea value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={INP} rows={2} /></F>
             <button onClick={save} disabled={saving}
               className="w-full mt-2 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50">
-              {saving ? 'بيحفظ…' : 'حفظ'}
+              {saving ? t('erp.saving') : t('erp.save')}
             </button>
           </div>
         </div>
@@ -216,10 +219,11 @@ function Act({ children, onClick, primary }: { children: React.ReactNode; onClic
   )
 }
 function Denied() {
+  const { t } = useT()
   return (
     <div className="max-w-md mx-auto py-20 px-4 text-center" dir="rtl">
-      <h1 className="font-black text-lg mb-2">الصفحة دي للموردين</h1>
-      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">ارجع للماركت بليس</Link>
+      <h1 className="font-black text-lg mb-2">{t('erp.suppliers_only')}</h1>
+      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">{t('erp.back_market')}</Link>
     </div>
   )
 }

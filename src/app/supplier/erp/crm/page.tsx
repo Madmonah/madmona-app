@@ -9,6 +9,7 @@
 // CRM موديول **أساسي لكل بيزنس** — لأن أي بيزنس عنده عملاء مهما كان نشاطه.
 // ============================================================================
 import { useEffect, useState, useCallback } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveBusiness, type Business } from '@/lib/business-access'
@@ -28,6 +29,8 @@ const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
 }
 
 export default function BizCrmPage() {
+  // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
+  const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
   const [rows, setRows] = useState<Cust[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,7 +73,7 @@ export default function BizCrmPage() {
       : await db.from('biz_customers').insert(payload)
     setSaving(false)
     if (error) {
-      alert(error.message.includes('duplicate') ? 'العميل ده مسجّل بالفعل بنفس الرقم.' : error.message)
+      alert(error.message.includes('duplicate') ? t('erp.dup_customer') : error.message)
       return
     }
     setForm(null); await load(biz.id)
@@ -79,8 +82,8 @@ export default function BizCrmPage() {
   if (loading) return <div className="py-24 text-center"><Loader2 className="w-7 h-7 animate-spin mx-auto text-gray-400" /></div>
   if (!biz) return (
     <div className="max-w-md mx-auto py-20 px-4 text-center" dir="rtl">
-      <h1 className="font-black text-lg mb-2">الصفحة دي للموردين</h1>
-      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">ارجع للماركت بليس</Link>
+      <h1 className="font-black text-lg mb-2">{t('erp.suppliers_only')}</h1>
+      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">{t('erp.back_market')}</Link>
     </div>
   )
 
@@ -108,7 +111,7 @@ export default function BizCrmPage() {
       {rows.length > 4 && (
         <div className="relative mb-3">
           <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="دوّر بالاسم أو الرقم"
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('erp.search_customer')}
             className="w-full border border-gray-200 rounded-xl pr-9 pl-3 py-2.5 text-sm" />
         </div>
       )}
@@ -116,8 +119,8 @@ export default function BizCrmPage() {
       {shown.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
           <Users className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm font-bold text-gray-600">{q ? 'مفيش نتايج' : 'مفيش عملاء مسجّلين'}</p>
-          {!q && <p className="text-[11px] text-gray-400 mt-1">سجّل عملاءك عشان تتابع تعاملاتهم معاك.</p>}
+          <p className="text-sm font-bold text-gray-600">{q ? t('erp.no_results') : t('erp.no_customers_yet')}</p>
+          {!q && <p className="text-[11px] text-gray-400 mt-1">{t('erp.customers_hint')}</p>}
         </div>
       ) : (
         <div className="space-y-2">
@@ -152,7 +155,7 @@ export default function BizCrmPage() {
                       </a>
                     </>
                   )}
-                  <button onClick={() => setForm(r)} className="px-2.5 py-1.5 rounded-lg bg-[#F1EEE6] text-[11.5px] font-bold">تعديل</button>
+                  <button onClick={() => setForm(r)} className="px-2.5 py-1.5 rounded-lg bg-[#F1EEE6] text-[11.5px] font-bold">{t('erp.edit')}</button>
                 </div>
               </div>
             )
@@ -164,24 +167,24 @@ export default function BizCrmPage() {
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-3" onClick={() => setForm(null)}>
           <div className="bg-white rounded-2xl w-full max-w-md p-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-black text-base">{form.id ? 'تعديل عميل' : 'عميل جديد'}</h2>
+              <h2 className="font-black text-base">{form.id ? t('erp.edit_customer') : t('erp.new_customer')}</h2>
               <button onClick={() => setForm(null)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <F label="الاسم *"><input value={form.full_name || ''} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className={INP} /></F>
-            <F label="الموبايل"><input value={form.phone || ''} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={INP} dir="ltr" placeholder="01xxxxxxxxx" /></F>
+            <F label={t('erp.mobile')}><input value={form.phone || ''} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={INP} dir="ltr" placeholder="01xxxxxxxxx" /></F>
             <div className="grid grid-cols-2 gap-2">
-              <F label="المدينة"><input value={form.city || ''} onChange={(e) => setForm({ ...form, city: e.target.value })} className={INP} /></F>
+              <F label={t('erp.city')}><input value={form.city || ''} onChange={(e) => setForm({ ...form, city: e.target.value })} className={INP} /></F>
               <F label="الحالة">
                 <select value={form.status || 'active'} onChange={(e) => setForm({ ...form, status: e.target.value })} className={INP}>
-                  <option value="lead">مهتم</option><option value="active">عميل</option>
-                  <option value="inactive">خامل</option><option value="blocked">محظور</option>
+                  <option value="lead">{t('erp.interested')}</option><option value="active">{t('erp.customer')}</option>
+                  <option value="inactive">{t('erp.inactive')}</option><option value="blocked">{t('erp.blocked')}</option>
                 </select>
               </F>
             </div>
-            <F label="ملاحظات"><textarea value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={INP} rows={2} /></F>
+            <F label={t('erp.notes')}><textarea value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={INP} rows={2} /></F>
             <button onClick={save} disabled={saving}
               className="w-full mt-2 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50">
-              {saving ? 'بيحفظ…' : 'حفظ'}
+              {saving ? t('erp.saving') : t('erp.save')}
             </button>
           </div>
         </div>

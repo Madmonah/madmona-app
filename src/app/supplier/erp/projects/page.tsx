@@ -13,6 +13,7 @@
 //    والتسليم — والتعديل بيظهر في البورصة على طول.
 // ============================================================================
 import { useEffect, useState, useCallback } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveBusiness, type Business } from '@/lib/business-access'
@@ -39,6 +40,8 @@ type Project = {
 }
 
 export default function MyProjectsPage() {
+  // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
+  const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
   const [rows, setRows] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -81,8 +84,8 @@ export default function MyProjectsPage() {
   if (loading) return <div className="py-24 text-center"><Loader2 className="w-7 h-7 animate-spin mx-auto text-gray-400" /></div>
   if (!biz) return (
     <div className="max-w-md mx-auto py-20 px-4 text-center" dir="rtl">
-      <h1 className="font-black text-lg mb-2">الصفحة دي للموردين</h1>
-      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">ارجع للماركت بليس</Link>
+      <h1 className="font-black text-lg mb-2">{t('erp.suppliers_only')}</h1>
+      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">{t('erp.back_market')}</Link>
     </div>
   )
 
@@ -98,14 +101,14 @@ export default function MyProjectsPage() {
         <Building2 className="w-5 h-5 text-[#059669]" /> مشاريعي
       </h1>
       <p className="text-[11.5px] text-gray-500 mb-4 leading-relaxed">
-        مشاريعك في بورصة مضمونة العقارية. تعدّل <b>نظام السداد</b> و<b>موعد التسليم</b> هنا —
+        مشاريعك في بورصة مضمونة العقارية. تعدّل <b>{t('erp.payment_plan')}</b> و<b>{t('erp.delivery')}</b> هنا —
         والتعديل بيظهر للعملاء في البورصة على طول.
       </p>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <Stat label="كل المشاريع" v={rows.length} />
-        <Stat label="ظاهر في البورصة" v={rows.filter((r) => r.is_active).length} good />
-        <Stat label="ناقص نظام سداد" v={noPlan} warn={noPlan > 0} />
+        <Stat label={t('erp.all_projects')} v={rows.length} />
+        <Stat label={t('erp.visible_bourse')} v={rows.filter((r) => r.is_active).length} good />
+        <Stat label={t('erp.missing_plan')} v={noPlan} warn={noPlan > 0} />
       </div>
 
       {noPlan > 0 && (
@@ -122,7 +125,7 @@ export default function MyProjectsPage() {
       {rows.length > 5 && (
         <div className="relative mb-3">
           <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="دوّر باسم المشروع"
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('erp.search_project')}
             className="w-full border border-gray-200 rounded-xl pr-9 pl-3 py-2.5 text-sm" />
         </div>
       )}
@@ -131,10 +134,10 @@ export default function MyProjectsPage() {
         <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
           <Building2 className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-sm font-bold text-gray-600">
-            {rows.length === 0 ? 'مفيش مشاريع في البورصة' : 'مفيش نتايج'}
+            {rows.length === 0 ? t('erp.no_projects') : t('erp.no_results')}
           </p>
           {rows.length === 0 && (
-            <p className="text-[11px] text-gray-400 mt-1">كلّم فريق مضمونة عشان نضيف مشاريعك.</p>
+            <p className="text-[11px] text-gray-400 mt-1">{t('erp.projects_hint')}</p>
           )}
         </div>
       ) : (
@@ -159,7 +162,7 @@ export default function MyProjectsPage() {
               <div className="space-y-1 mb-2.5">
                 <p className="text-[11.5px] text-gray-700 flex items-start gap-1.5">
                   <Wallet className="w-3 h-3 mt-[3px] shrink-0 text-[#2FA084]" />
-                  {p.نظام_السداد || <span className="text-amber-700 font-bold">مفيش نظام سداد — ضيفه</span>}
+                  {p.نظام_السداد || <span className="text-amber-700 font-bold">{t('erp.no_payment_plan')}</span>}
                 </p>
                 {p.التسليم && (
                   <p className="text-[11.5px] text-gray-700 flex items-start gap-1.5">
@@ -194,7 +197,7 @@ export default function MyProjectsPage() {
               <button onClick={() => setEdit(null)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <div className="mb-2.5">
-              <label className="block text-[11px] font-bold text-gray-600 mb-1">نظام السداد</label>
+              <label className="block text-[11px] font-bold text-gray-600 mb-1">{t('erp.payment_plan')}</label>
               <textarea value={draft.plan} onChange={(e) => setDraft({ ...draft, plan: e.target.value })} rows={3}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
                 placeholder="مثال: ١٠٪ مقدم · تقسيط ٨ سنين" />
@@ -203,14 +206,14 @@ export default function MyProjectsPage() {
               </p>
             </div>
             <div className="mb-3">
-              <label className="block text-[11px] font-bold text-gray-600 mb-1">موعد التسليم</label>
+              <label className="block text-[11px] font-bold text-gray-600 mb-1">{t('erp.delivery')}</label>
               <input value={draft.delivery} onChange={(e) => setDraft({ ...draft, delivery: e.target.value })}
                 className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
                 placeholder="مثال: تسليم ٣ سنين" />
             </div>
             <button onClick={save} disabled={saving}
               className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50">
-              {saving ? 'بيحفظ…' : 'حفظ'}
+              {saving ? t('erp.saving') : t('erp.save')}
             </button>
           </div>
         </div>

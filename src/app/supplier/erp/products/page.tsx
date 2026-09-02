@@ -13,6 +13,7 @@
 //    تعدّل الاسم أو السعر هنا → يتغيّر في الماركت بليس تلقائيًا.
 // ============================================================================
 import { useEffect, useState, useCallback } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveBusiness, type Business } from '@/lib/business-access'
@@ -37,6 +38,8 @@ type Item = {
 }
 
 export default function ProductsPage() {
+  // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
+  const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
   const [rows, setRows] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
@@ -78,7 +81,7 @@ export default function ProductsPage() {
       cost_price_egp: Number(form.cost_price_egp) || 0,
       qty_on_hand: Number(form.qty_on_hand) || 0,
       reorder_level: Number(form.reorder_level) || 0,
-      unit: form.unit || 'قطعة',
+      unit: form.unit || t('erp.unit_piece'),
       active: form.active ?? true,
       notes: form.notes || null,
     }
@@ -102,7 +105,7 @@ export default function ProductsPage() {
       const r = data as { ok: boolean; published: boolean }
       if (r?.ok) setRows((l) => l.map((x) => x.id === it.id ? { ...x, publish_to_marketplace: r.published } : x))
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'حصل خطأ')
+      alert(e instanceof Error ? e.message : t('erp.error'))
     }
     setBusy(null)
   }
@@ -110,8 +113,8 @@ export default function ProductsPage() {
   if (loading) return <div className="py-24 text-center"><Loader2 className="w-7 h-7 animate-spin mx-auto text-gray-400" /></div>
   if (!biz) return (
     <div className="max-w-md mx-auto py-20 px-4 text-center" dir="rtl">
-      <h1 className="font-black text-lg mb-2">الصفحة دي للموردين</h1>
-      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">ارجع للماركت بليس</Link>
+      <h1 className="font-black text-lg mb-2">{t('erp.suppliers_only')}</h1>
+      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">{t('erp.back_market')}</Link>
     </div>
   )
 
@@ -134,21 +137,21 @@ export default function ProductsPage() {
             <Package className="w-5 h-5 text-[#059669]" /> منتجاتي
           </h1>
         </div>
-        <button onClick={() => setForm({ unit: 'قطعة', qty_on_hand: 0, active: true })}
+        <button onClick={() => setForm({ unit: t('erp.unit_piece'), qty_on_hand: 0, active: true })}
           className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black flex items-center gap-1.5">
           <Plus className="w-4 h-4" /> منتج جديد
         </button>
       </div>
 
       <p className="text-[11.5px] text-gray-500 mb-3 leading-relaxed">
-        ده مصدر منتجاتك. تعدّل الاسم أو السعر هنا <b>فيتغيّر في الماركت بليس تلقائيًا</b>،
+        ده مصدر منتجاتك. تعدّل الاسم أو السعر هنا <b>{t('erp.auto_sync_market')}</b>،
         وتقرر إيه اللي يظهر للعملاء وإيه اللي يفضل داخلي.
       </p>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <Stat label="كل المنتجات" v={rows.length} />
-        <Stat label="ظاهر للعملاء" v={rows.filter((r) => r.publish_to_marketplace).length} good />
-        <Stat label="محتاج طلب" v={low.length} warn={low.length > 0} />
+        <Stat label={t('erp.all_products')} v={rows.length} />
+        <Stat label={t('erp.visible_to_customers')} v={rows.filter((r) => r.publish_to_marketplace).length} good />
+        <Stat label={t('erp.needs_reorder')} v={low.length} warn={low.length > 0} />
       </div>
 
       {low.length > 0 && filter !== 'low' && (
@@ -161,7 +164,7 @@ export default function ProductsPage() {
       )}
 
       <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
-        {([['all', 'الكل'], ['shown', 'ظاهر'], ['hidden', 'داخلي'], ['low', 'محتاج طلب']] as const).map(([k, l]) => (
+        {([['all', t('erp.all')], ['shown', t('erp.visible')], ['hidden', t('erp.internal')], ['low', t('erp.needs_reorder')]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${
               filter === k ? 'bg-[#04352A] text-white' : 'bg-[#F1EEE6] text-gray-600'}`}>
@@ -173,7 +176,7 @@ export default function ProductsPage() {
       {rows.length > 6 && (
         <div className="relative mb-3">
           <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="دوّر بالاسم"
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('erp.search_name')}
             className="w-full border border-gray-200 rounded-xl pr-9 pl-3 py-2.5 text-sm" />
         </div>
       )}
@@ -182,10 +185,10 @@ export default function ProductsPage() {
         <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
           <Boxes className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-sm font-bold text-gray-600">
-            {rows.length === 0 ? 'مفيش منتجات لسه' : 'مفيش نتايج'}
+            {rows.length === 0 ? t('erp.no_products') : t('erp.no_results')}
           </p>
           {rows.length === 0 && (
-            <p className="text-[11px] text-gray-400 mt-1">ابدأ بأول منتج — وهيظهر في الماركت بليس لو فعّلته.</p>
+            <p className="text-[11px] text-gray-400 mt-1">{t('erp.products_hint')}</p>
           )}
         </div>
       ) : (
@@ -212,7 +215,7 @@ export default function ProductsPage() {
                       r.publish_to_marketplace ? 'bg-[#34D399]/15 text-[#059669]' : 'bg-[#F1EEE6] text-gray-500'}`}>
                     {busy === r.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       : r.publish_to_marketplace ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                    {r.publish_to_marketplace ? 'ظاهر' : 'داخلي'}
+                    {r.publish_to_marketplace ? t('erp.visible') : t('erp.internal')}
                   </button>
                 </div>
               </div>
@@ -225,21 +228,21 @@ export default function ProductsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-3" onClick={() => setForm(null)}>
           <div className="bg-white rounded-2xl w-full max-w-md p-4 max-h-[88vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-black text-base">{form.id ? 'تعديل منتج' : 'منتج جديد'}</h2>
+              <h2 className="font-black text-base">{form.id ? t('erp.edit_product') : t('erp.new_product')}</h2>
               <button onClick={() => setForm(null)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <F label="الاسم *"><input value={form.name_ar || ''} onChange={(e) => setForm({ ...form, name_ar: e.target.value })} className={INP} /></F>
             <div className="grid grid-cols-2 gap-2">
-              <F label="سعر البيع"><input type="number" value={form.selling_price_egp ?? 0} onChange={(e) => setForm({ ...form, selling_price_egp: Number(e.target.value) })} className={INP} /></F>
-              <F label="سعر التكلفة"><input type="number" value={form.cost_price_egp ?? 0} onChange={(e) => setForm({ ...form, cost_price_egp: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.sell_price')}><input type="number" value={form.selling_price_egp ?? 0} onChange={(e) => setForm({ ...form, selling_price_egp: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.cost_price')}><input type="number" value={form.cost_price_egp ?? 0} onChange={(e) => setForm({ ...form, cost_price_egp: Number(e.target.value) })} className={INP} /></F>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <F label="الكمية المتاحة"><input type="number" value={form.qty_on_hand ?? 0} onChange={(e) => setForm({ ...form, qty_on_hand: Number(e.target.value) })} className={INP} /></F>
-              <F label="الوحدة"><input value={form.unit || ''} onChange={(e) => setForm({ ...form, unit: e.target.value })} className={INP} placeholder="قطعة · متر · كيلو" /></F>
+              <F label={t('erp.qty_available')}><input type="number" value={form.qty_on_hand ?? 0} onChange={(e) => setForm({ ...form, qty_on_hand: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.unit')}><input value={form.unit || ''} onChange={(e) => setForm({ ...form, unit: e.target.value })} className={INP} placeholder="قطعة · متر · كيلو" /></F>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <F label="حد إعادة الطلب"><input type="number" value={form.reorder_level ?? 0} onChange={(e) => setForm({ ...form, reorder_level: Number(e.target.value) })} className={INP} /></F>
-              <F label="كود المنتج (SKU)"><input value={form.sku || ''} onChange={(e) => setForm({ ...form, sku: e.target.value })} className={INP} dir="ltr" /></F>
+              <F label={t('erp.reorder_level')}><input type="number" value={form.reorder_level ?? 0} onChange={(e) => setForm({ ...form, reorder_level: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.sku')}><input value={form.sku || ''} onChange={(e) => setForm({ ...form, sku: e.target.value })} className={INP} dir="ltr" /></F>
             </div>
             {form.listing_id && (
               <p className="text-[11px] text-[#059669] font-bold mb-2 flex items-center gap-1">
@@ -248,7 +251,7 @@ export default function ProductsPage() {
             )}
             <button onClick={save} disabled={saving}
               className="w-full mt-2 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50">
-              {saving ? 'بيحفظ…' : 'حفظ'}
+              {saving ? t('erp.saving') : t('erp.save')}
             </button>
           </div>
         </div>

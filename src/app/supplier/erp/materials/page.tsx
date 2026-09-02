@@ -11,6 +11,7 @@
 // 🔒 حارس في الداتابيز بيمنع عرض أي حاجة هنا في الماركت بليس.
 // ============================================================================
 import { useEffect, useState, useCallback } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveBusiness, type Business } from '@/lib/business-access'
@@ -36,6 +37,8 @@ const CLASS_LABEL: Record<string, string> = {
 }
 
 export default function MaterialsPage() {
+  // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
+  const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
   const [rows, setRows] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
@@ -73,7 +76,7 @@ export default function MaterialsPage() {
       supplier_id: biz.id,
       name_ar: form.name_ar.trim(),
       sku: form.sku || null,
-      unit: form.unit || 'قطعة',
+      unit: form.unit || t('erp.unit_piece'),
       current_stock: Number(form.current_stock) || 0,
       reorder_threshold: Number(form.reorder_threshold) || 0,
       cost_price_egp: Number(form.cost_price_egp) || 0,
@@ -93,8 +96,8 @@ export default function MaterialsPage() {
   if (loading) return <div className="py-24 text-center"><Loader2 className="w-7 h-7 animate-spin mx-auto text-gray-400" /></div>
   if (!biz) return (
     <div className="max-w-md mx-auto py-20 px-4 text-center" dir="rtl">
-      <h1 className="font-black text-lg mb-2">الصفحة دي للموردين</h1>
-      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">ارجع للماركت بليس</Link>
+      <h1 className="font-black text-lg mb-2">{t('erp.suppliers_only')}</h1>
+      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">{t('erp.back_market')}</Link>
     </div>
   )
 
@@ -115,7 +118,7 @@ export default function MaterialsPage() {
             <Wrench className="w-5 h-5 text-[#059669]" /> المواد والأدوات
           </h1>
         </div>
-        <button onClick={() => setForm({ unit: 'قطعة', current_stock: 0, item_class: 'material' })}
+        <button onClick={() => setForm({ unit: t('erp.unit_piece'), current_stock: 0, item_class: 'material' })}
           className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black flex items-center gap-1.5">
           <Plus className="w-4 h-4" /> صنف جديد
         </button>
@@ -128,9 +131,9 @@ export default function MaterialsPage() {
       </p>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <Stat label="كل الأصناف" v={rows.length} />
-        <Stat label="خامات ومستهلكات" v={rows.filter((r) => r.item_class !== 'asset').length} />
-        <Stat label="محتاج طلب" v={low.length} warn={low.length > 0} />
+        <Stat label={t('erp.all_items')} v={rows.length} />
+        <Stat label={t('erp.materials')} v={rows.filter((r) => r.item_class !== 'asset').length} />
+        <Stat label={t('erp.needs_reorder')} v={low.length} warn={low.length > 0} />
       </div>
 
       {low.length > 0 && !onlyLow && (
@@ -150,7 +153,7 @@ export default function MaterialsPage() {
       {rows.length > 6 && (
         <div className="relative mb-3">
           <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="دوّر بالاسم"
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('erp.search_name')}
             className="w-full border border-gray-200 rounded-xl pr-9 pl-3 py-2.5 text-sm" />
         </div>
       )}
@@ -159,7 +162,7 @@ export default function MaterialsPage() {
         <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
           <Boxes className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-sm font-bold text-gray-600">
-            {rows.length === 0 ? 'مفيش مواد مسجّلة' : 'مفيش نتايج'}
+            {rows.length === 0 ? t('erp.no_materials') : t('erp.no_results')}
           </p>
           {rows.length === 0 && (
             <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
@@ -171,7 +174,7 @@ export default function MaterialsPage() {
         <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
           <table className="w-full text-xs">
             <thead className="bg-[#F5F4F0] text-gray-600">
-              <tr><Th>الصنف</Th><Th>النوع</Th><Th>المتاح</Th><Th>حد الطلب</Th><Th>التكلفة</Th><Th></Th></tr>
+              <tr><Th>{t('erp.item')}</Th><Th>{t('erp.type')}</Th><Th>{t('erp.available')}</Th><Th>{t('erp.reorder_short')}</Th><Th>{t('erp.cost')}</Th><Th></Th></tr>
             </thead>
             <tbody>
               {shown.map((r) => (
@@ -190,7 +193,7 @@ export default function MaterialsPage() {
                   <td className="px-2.5 py-2.5 tabular text-gray-500">{Number(r.reorder_threshold || 0).toLocaleString('ar-EG')}</td>
                   <td className="px-2.5 py-2.5 tabular text-gray-600">{Number(r.cost_price_egp || 0).toLocaleString('ar-EG')}</td>
                   <td className="px-2.5 py-2.5">
-                    <button onClick={() => setForm(r)} className="text-[11px] font-bold text-[#059669]">تعديل</button>
+                    <button onClick={() => setForm(r)} className="text-[11px] font-bold text-[#059669]">{t('erp.edit')}</button>
                   </td>
                 </tr>
               ))}
@@ -203,11 +206,11 @@ export default function MaterialsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-3" onClick={() => setForm(null)}>
           <div className="bg-white rounded-2xl w-full max-w-md p-4 max-h-[88vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-black text-base">{form.id ? 'تعديل صنف' : 'صنف جديد'}</h2>
+              <h2 className="font-black text-base">{form.id ? t('erp.edit_item') : t('erp.new_item')}</h2>
               <button onClick={() => setForm(null)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <F label="الاسم *"><input value={form.name_ar || ''} onChange={(e) => setForm({ ...form, name_ar: e.target.value })} className={INP} /></F>
-            <F label="النوع">
+            <F label={t('erp.type')}>
               <select value={form.item_class || 'material'} onChange={(e) => setForm({ ...form, item_class: e.target.value })} className={INP}>
                 <option value="material">خامة (بتدخل في المنتج)</option>
                 <option value="consumable">مستهلك (بيتستخدم ويخلص)</option>
@@ -215,17 +218,17 @@ export default function MaterialsPage() {
               </select>
             </F>
             <div className="grid grid-cols-2 gap-2">
-              <F label="الكمية المتاحة"><input type="number" value={form.current_stock ?? 0} onChange={(e) => setForm({ ...form, current_stock: Number(e.target.value) })} className={INP} /></F>
-              <F label="الوحدة"><input value={form.unit || ''} onChange={(e) => setForm({ ...form, unit: e.target.value })} className={INP} placeholder="قطعة · لتر · كيلو · متر" /></F>
+              <F label={t('erp.qty_available')}><input type="number" value={form.current_stock ?? 0} onChange={(e) => setForm({ ...form, current_stock: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.unit')}><input value={form.unit || ''} onChange={(e) => setForm({ ...form, unit: e.target.value })} className={INP} placeholder="قطعة · لتر · كيلو · متر" /></F>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <F label="حد إعادة الطلب"><input type="number" value={form.reorder_threshold ?? 0} onChange={(e) => setForm({ ...form, reorder_threshold: Number(e.target.value) })} className={INP} /></F>
-              <F label="سعر التكلفة"><input type="number" value={form.cost_price_egp ?? 0} onChange={(e) => setForm({ ...form, cost_price_egp: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.reorder_level')}><input type="number" value={form.reorder_threshold ?? 0} onChange={(e) => setForm({ ...form, reorder_threshold: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.cost_price')}><input type="number" value={form.cost_price_egp ?? 0} onChange={(e) => setForm({ ...form, cost_price_egp: Number(e.target.value) })} className={INP} /></F>
             </div>
             <F label="كود (اختياري)"><input value={form.sku || ''} onChange={(e) => setForm({ ...form, sku: e.target.value })} className={INP} dir="ltr" /></F>
             <button onClick={save} disabled={saving}
               className="w-full mt-2 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50">
-              {saving ? 'بيحفظ…' : 'حفظ'}
+              {saving ? t('erp.saving') : t('erp.save')}
             </button>
           </div>
         </div>

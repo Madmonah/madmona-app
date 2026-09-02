@@ -11,6 +11,7 @@
 //     مش للبيع.)
 // ============================================================================
 import { useEffect, useState, useCallback } from 'react'
+import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveBusiness, type Business } from '@/lib/business-access'
@@ -34,6 +35,8 @@ const KIND: Record<string, { label: string; icon: typeof Package }> = {
 }
 
 export default function CatalogPage() {
+  // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
+  const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
   const [rows, setRows] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
@@ -71,7 +74,7 @@ export default function CatalogPage() {
           x.item_id === it.item_id ? { ...x, on_marketplace: r.published } : x))
       }
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'حصل خطأ')
+      alert(e instanceof Error ? e.message : t('erp.error'))
     }
     setBusy(null)
   }
@@ -79,8 +82,8 @@ export default function CatalogPage() {
   if (loading) return <div className="py-24 text-center"><Loader2 className="w-7 h-7 animate-spin mx-auto text-gray-400" /></div>
   if (!biz) return (
     <div className="max-w-md mx-auto py-20 px-4 text-center" dir="rtl">
-      <h1 className="font-black text-lg mb-2">الصفحة دي للموردين</h1>
-      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">ارجع للماركت بليس</Link>
+      <h1 className="font-black text-lg mb-2">{t('erp.suppliers_only')}</h1>
+      <Link href="/marketplace" className="text-[#059669] font-bold text-sm">{t('erp.back_market')}</Link>
     </div>
   )
 
@@ -103,12 +106,12 @@ export default function CatalogPage() {
       </p>
 
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <Stat label="ظاهر للعملاء" v={onCount} good />
-        <Stat label="داخلي" v={rows.length - onCount} />
+        <Stat label={t('erp.visible_to_customers')} v={onCount} good />
+        <Stat label={t('erp.internal')} v={rows.length - onCount} />
       </div>
 
       <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
-        {([['all', 'الكل'], ['shown', 'ظاهر'], ['hidden', 'داخلي']] as const).map(([k, l]) => (
+        {([['all', t('erp.all')], ['shown', t('erp.visible')], ['hidden', t('erp.internal')]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setFilter(k)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${
               filter === k ? 'bg-[#04352A] text-white' : 'bg-[#F1EEE6] text-gray-600'}`}>
@@ -120,7 +123,7 @@ export default function CatalogPage() {
       {rows.length > 6 && (
         <div className="relative mb-3">
           <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="دوّر بالاسم"
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('erp.search_name')}
             className="w-full border border-gray-200 rounded-xl pr-9 pl-3 py-2.5 text-sm" />
         </div>
       )}
@@ -129,7 +132,7 @@ export default function CatalogPage() {
         <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
           <Package className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-sm font-bold text-gray-600">
-            {rows.length === 0 ? 'مفيش منتجات أو خدمات مسجّلة' : 'مفيش نتايج'}
+            {rows.length === 0 ? t('erp.no_catalog') : t('erp.no_results')}
           </p>
         </div>
       ) : (
@@ -149,7 +152,7 @@ export default function CatalogPage() {
                   </p>
                 </div>
                 {isMenu ? (
-                  <span className="text-[10.5px] font-bold text-gray-400 shrink-0">من المنيو</span>
+                  <span className="text-[10.5px] font-bold text-gray-400 shrink-0">{t('erp.from_menu')}</span>
                 ) : (
                   <button onClick={() => toggle(it)} disabled={busy === it.item_id}
                     className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11.5px] font-black transition ${
@@ -159,7 +162,7 @@ export default function CatalogPage() {
                     {busy === it.item_id
                       ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       : it.on_marketplace ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                    {it.on_marketplace ? 'ظاهر' : 'داخلي'}
+                    {it.on_marketplace ? t('erp.visible') : t('erp.internal')}
                   </button>
                 )}
               </div>

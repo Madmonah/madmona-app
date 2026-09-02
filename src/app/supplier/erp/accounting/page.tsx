@@ -1,6 +1,7 @@
 'use client';
 // Madmona ERP — المحاسبة (شجرة حسابات · قيود · قوائم مالية · استيراد Excel)
 import { supabaseBrowser as supabase } from '@/lib/supabase-browser';
+import { useT } from '@/lib/i18n/LanguageProvider'
 import { jsonObj } from '@/lib/rpc';
 import { useEffect, useMemo, useState } from 'react';
 // PERF: xlsx (~430KB raw / ~110KB gzipped) is only used by the import flow
@@ -37,6 +38,8 @@ const IMPORT_TARGETS: Record<string, { label: string; fields: { key: string; lab
 const fmt = (n: number) => Number(n || 0).toLocaleString('ar-EG', { maximumFractionDigits: 2 });
 
 export default function ErpAccountingPage() {
+  // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
+  const { t } = useT()
   const [supplierId, setSupplierId] = useState<string>('');
   const [tab, setTab] = useState<'coa' | 'entry' | 'reports' | 'import'>('reports');
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -65,7 +68,7 @@ export default function ErpAccountingPage() {
     const { data } = await supabase.rpc('erp_seed_default_coa', { p_supplier_id: supplierId });
     const r = jsonObj<{ ok: boolean; error: string; accounts_created: number }>(data);
     if (r.ok) { flash('ok', `تم إنشاء ${r.accounts_created} حساب`); loadAccounts(); }
-    else flash('err', r.error || 'حصل خطأ');
+    else flash('err', r.error || t('erp.error'));
   };
 
   // ---------- قيد يدوي ----------
@@ -82,7 +85,7 @@ export default function ErpAccountingPage() {
     const r = jsonObj<{ ok: boolean; error: string; entry_no: string }>(data);
     if (r.ok) { flash('ok', `تم ترحيل القيد رقم ${r.entry_no}`);
       setLines([{ account_id: '', debit: '', credit: '' }, { account_id: '', debit: '', credit: '' }]); setEntryMemo(''); }
-    else flash('err', r.error || 'حصل خطأ');
+    else flash('err', r.error || t('erp.error'));
   };
 
   // ---------- التقارير ----------
@@ -177,13 +180,13 @@ export default function ErpAccountingPage() {
   return (
     <div dir="rtl" style={{ minHeight: '100vh', background: G.bg, color: G.ink, fontFamily: "'Cairo', 'Inter', sans-serif", padding: '24px 16px' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <h1 style={{ color: G.dark, fontSize: 26, fontWeight: 800, marginBottom: 4 }}>المحاسبة والقوائم المالية</h1>
-        <p style={{ color: '#555', marginTop: 0 }}>قيود مزدوجة · ميزان مراجعة · قائمة دخل · مركز مالي · استيراد Excel</p>
+        <h1 style={{ color: G.dark, fontSize: 26, fontWeight: 800, marginBottom: 4 }}>{t('erp.accounting_title')}</h1>
+        <p style={{ color: '#555', marginTop: 0 }}>{t('erp.accounting_sub')}</p>
 
         {msg && <div style={{ ...card, padding: 12, marginBottom: 12, borderRight: `4px solid ${msg.t === 'ok' ? G.teal : '#c0392b'}` }}>{msg.m}</div>}
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-          {([['reports', 'القوائم المالية'], ['entry', 'قيد يومية'], ['coa', 'شجرة الحسابات'], ['import', 'استيراد Excel']] as const).map(([k, l]) => (
+          {([['reports', t('erp.statements')], ['entry', 'قيد يومية'], ['coa', t('erp.chart_tree')], ['import', t('erp.import_excel')]] as const).map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)} style={{ ...btn, background: tab === k ? btn.background : '#fff', color: tab === k ? '#fff' : G.dark, border: tab === k ? 0 : `1.5px solid ${G.teal}` }}>{l}</button>
           ))}
         </div>
@@ -192,10 +195,10 @@ export default function ErpAccountingPage() {
           <div style={card}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h2 style={{ margin: 0, color: G.dark, fontSize: 18 }}>شجرة الحسابات ({accounts.length})</h2>
-              {accounts.length === 0 && <button style={btn} onClick={seedCoa}>إنشاء الشجرة الافتراضية</button>}
+              {accounts.length === 0 && <button style={btn} onClick={seedCoa}>{t('erp.create_default_tree')}</button>}
             </div>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr><th style={th}>الكود</th><th style={th}>الاسم</th><th style={th}>النوع</th><th style={th}>ترحيل</th></tr></thead>
+              <thead><tr><th style={th}>{t('erp.code')}</th><th style={th}>{t('erp.name')}</th><th style={th}>{t('erp.type')}</th><th style={th}>{t('erp.post')}</th></tr></thead>
               <tbody>{accounts.map(a => (
                 <tr key={a.id}>
                   <td style={{ ...td, fontWeight: a.is_postable ? 400 : 800 }}>{a.code}</td>
@@ -209,10 +212,10 @@ export default function ErpAccountingPage() {
 
         {tab === 'entry' && (
           <div style={card}>
-            <h2 style={{ marginTop: 0, color: G.dark, fontSize: 18 }}>قيد يومية جديد</h2>
+            <h2 style={{ marginTop: 0, color: G.dark, fontSize: 18 }}>{t('erp.new_entry')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: 10, marginBottom: 12 }}>
               <input type="date" style={inp} value={entryDate} onChange={e => setEntryDate(e.target.value)} />
-              <input style={inp} placeholder="البيان" value={entryMemo} onChange={e => setEntryMemo(e.target.value)} />
+              <input style={inp} placeholder={t('erp.memo')} value={entryMemo} onChange={e => setEntryMemo(e.target.value)} />
             </div>
             {lines.map((l, i) => (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 130px 130px', gap: 8, marginBottom: 8 }}>
@@ -220,16 +223,16 @@ export default function ErpAccountingPage() {
                   <option value="">— اختر الحساب —</option>
                   {postable.map(a => <option key={a.id} value={a.id}>{a.code} · {a.name_ar}</option>)}
                 </select>
-                <input style={inp} type="number" placeholder="مدين" value={l.debit} onChange={e => setLines(v => v.map((x, j) => j === i ? { ...x, debit: e.target.value, credit: '' } : x))} />
-                <input style={inp} type="number" placeholder="دائن" value={l.credit} onChange={e => setLines(v => v.map((x, j) => j === i ? { ...x, credit: e.target.value, debit: '' } : x))} />
+                <input style={inp} type="number" placeholder={t('erp.debit')} value={l.debit} onChange={e => setLines(v => v.map((x, j) => j === i ? { ...x, debit: e.target.value, credit: '' } : x))} />
+                <input style={inp} type="number" placeholder={t('erp.credit')} value={l.credit} onChange={e => setLines(v => v.map((x, j) => j === i ? { ...x, credit: e.target.value, debit: '' } : x))} />
               </div>
             ))}
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 8 }}>
-              <button style={{ ...btn, background: '#fff', color: G.dark, border: `1.5px solid ${G.teal}` }} onClick={() => setLines(v => [...v, { account_id: '', debit: '', credit: '' }])}>+ بند</button>
+              <button style={{ ...btn, background: '#fff', color: G.dark, border: `1.5px solid ${G.teal}` }} onClick={() => setLines(v => [...v, { account_id: '', debit: '', credit: '' }])}>{t('erp.add_line')}</button>
               <span style={{ fontWeight: 700, color: totals.d === totals.c && totals.d > 0 ? G.mid : '#c0392b' }}>
                 مدين {fmt(totals.d)} · دائن {fmt(totals.c)} {totals.d === totals.c && totals.d > 0 ? '✓ متوازن' : '✗'}
               </span>
-              <button style={{ ...btn, marginRight: 'auto', opacity: totals.d === totals.c && totals.d > 0 ? 1 : .5 }} disabled={!(totals.d === totals.c && totals.d > 0)} onClick={saveEntry}>ترحيل القيد</button>
+              <button style={{ ...btn, marginRight: 'auto', opacity: totals.d === totals.c && totals.d > 0 ? 1 : .5 }} disabled={!(totals.d === totals.c && totals.d > 0)} onClick={saveEntry}>{t('erp.post_entry')}</button>
             </div>
           </div>
         )}
@@ -239,20 +242,20 @@ export default function ErpAccountingPage() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
               <select style={{ ...inp, width: 200 }} value={report} onChange={e => setReport(e.target.value as any)}>
                 <option value="tb">ميزان المراجعة</option>
-                <option value="income">قائمة الدخل</option>
-                <option value="bs">المركز المالي</option>
+                <option value="income">{t('erp.income_statement')}</option>
+                <option value="bs">{t('erp.balance_sheet')}</option>
               </select>
               {report !== 'bs' && <input type="date" style={{ ...inp, width: 160 }} value={from} onChange={e => setFrom(e.target.value)} />}
               <input type="date" style={{ ...inp, width: 160 }} value={to} onChange={e => setTo(e.target.value)} />
-              <button style={btn} onClick={runReport}>عرض</button>
+              <button style={btn} onClick={runReport}>{t('erp.view')}</button>
             </div>
 
             {report === 'tb' && tb.length > 0 && (
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><th style={th}>الكود</th><th style={th}>الحساب</th><th style={th}>مدين</th><th style={th}>دائن</th></tr></thead>
+                <thead><tr><th style={th}>{t('erp.code')}</th><th style={th}>{t('erp.account')}</th><th style={th}>{t('erp.debit')}</th><th style={th}>{t('erp.credit')}</th></tr></thead>
                 <tbody>{tb.map(r => <tr key={r.code}><td style={td}>{r.code}</td><td style={td}>{r.name_ar}</td><td style={td}>{fmt(r.balance_debit)}</td><td style={td}>{fmt(r.balance_credit)}</td></tr>)}
                 <tr style={{ fontWeight: 800, background: 'rgba(47,160,132,.08)' }}>
-                  <td style={td} colSpan={2}>الإجمالي</td>
+                  <td style={td} colSpan={2}>{t('erp.total')}</td>
                   <td style={td}>{fmt(tb.reduce((a, r) => a + +r.balance_debit, 0))}</td>
                   <td style={td}>{fmt(tb.reduce((a, r) => a + +r.balance_credit, 0))}</td>
                 </tr></tbody>
@@ -260,29 +263,29 @@ export default function ErpAccountingPage() {
 
             {report === 'income' && income?.ok && (
               <div>
-                <h3 style={{ color: G.dark }}>الإيرادات</h3>
+                <h3 style={{ color: G.dark }}>{t('erp.revenues')}</h3>
                 {income.revenue.map((r: any) => <div key={r.code} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,.05)' }}><span>{r.code} · {r.name_ar}</span><b>{fmt(r.amount)}</b></div>)}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontWeight: 800, color: G.mid }}><span>إجمالي الإيرادات</span><span>{fmt(income.total_revenue)}</span></div>
-                <h3 style={{ color: G.dark }}>المصروفات</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontWeight: 800, color: G.mid }}><span>{t('erp.total_revenue')}</span><span>{fmt(income.total_revenue)}</span></div>
+                <h3 style={{ color: G.dark }}>{t('erp.expenses')}</h3>
                 {income.expenses.map((r: any) => <div key={r.code} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,.05)' }}><span>{r.code} · {r.name_ar}</span><b>{fmt(r.amount)}</b></div>)}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontWeight: 800 }}><span>إجمالي المصروفات</span><span>{fmt(income.total_expenses)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontWeight: 800 }}><span>{t('erp.total_expense')}</span><span>{fmt(income.total_expenses)}</span></div>
                 <div style={{ ...card, marginTop: 12, background: `linear-gradient(90deg, rgba(212,160,23,.1), rgba(47,160,132,.12))`, display: 'flex', justifyContent: 'space-between', fontWeight: 900, fontSize: 18 }}>
-                  <span>صافي {income.net_income >= 0 ? 'الربح' : 'الخسارة'}</span><span style={{ color: income.net_income >= 0 ? G.dark : '#c0392b' }}>{fmt(income.net_income)} ج.م</span>
+                  <span>صافي {income.net_income >= 0 ? t('erp.profit') : t('erp.loss')}</span><span style={{ color: income.net_income >= 0 ? G.dark : '#c0392b' }}>{fmt(income.net_income)} ج.م</span>
                 </div>
               </div>)}
 
             {report === 'bs' && bs?.ok && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <h3 style={{ color: G.dark }}>الأصول</h3>
+                  <h3 style={{ color: G.dark }}>{t('erp.assets')}</h3>
                   {bs.assets.map((r: any) => <div key={r.code} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,.05)' }}><span>{r.name_ar}</span><b>{fmt(r.amount)}</b></div>)}
                   <div style={{ fontWeight: 800, padding: '8px 0', color: G.mid }}>الإجمالي: {fmt(bs.total_asset)}</div>
                 </div>
                 <div>
-                  <h3 style={{ color: G.dark }}>الالتزامات وحقوق الملكية</h3>
+                  <h3 style={{ color: G.dark }}>{t('erp.liab_equity')}</h3>
                   {bs.liabilitys.map((r: any) => <div key={r.code} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,.05)' }}><span>{r.name_ar}</span><b>{fmt(r.amount)}</b></div>)}
                   {bs.equitys.map((r: any) => <div key={r.code} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,.05)' }}><span>{r.name_ar}</span><b>{fmt(r.amount)}</b></div>)}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}><span>صافي دخل الفترة</span><b>{fmt(bs.net_income_to_date)}</b></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}><span>{t('erp.net_income')}</span><b>{fmt(bs.net_income_to_date)}</b></div>
                   <div style={{ fontWeight: 800, padding: '8px 0', color: G.mid }}>الإجمالي: {fmt(bs.total_liability + bs.total_equity_incl_income)}</div>
                 </div>
                 <div style={{ gridColumn: '1/-1', textAlign: 'center', fontWeight: 800, color: bs.balanced ? G.mid : '#c0392b' }}>
@@ -320,7 +323,7 @@ export default function ErpAccountingPage() {
                   ))}
                 </div>
                 <button style={{ ...btn, opacity: impBusy ? .6 : 1 }} disabled={impBusy} onClick={runImport}>
-                  {impBusy ? 'جاري الاستيراد…' : `استيراد ${impRows.length} صف`}
+                  {impBusy ? t('erp.importing') : `استيراد ${impRows.length} صف`}
                 </button>
               </>
             )}
