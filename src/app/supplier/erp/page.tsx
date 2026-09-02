@@ -151,9 +151,16 @@ function ErpInner() {
               {b.is_platform ? t('erp.platform_panel') : (b.industry || t('erp.system'))}
             </p>
           </div>
+          {/* 🗂️ (٢ سبتمبر ٢٠٢٦) محمد: «عايز التابات كلها تكون موجودة لنوع
+              البيزنس». شاشة الـERP فيها ٦ تابات بس، وباقي الشاشات (٦٥)
+              في لوحة البيزنس. اللينك ده بيوصّل للفهرس المفلتر حسب النشاط
+              — من نفس المكان اللي المستخدم واقف فيه. */}
+          <Link href={`/admin/business-finance/${b.id}/links`} style={{ fontSize: 12, color: GREEN, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            {t('erp.all_screens')} <ChevronLeft size={14} />
+          </Link>
           {b.is_platform && (
             <Link href="/admin/company" style={{ fontSize: 12, color: GREEN, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}>
-              الإدارة الكاملة <ChevronLeft size={14} />
+              {t('erp.full_admin')} <ChevronLeft size={14} />
             </Link>
           )}
         </div>

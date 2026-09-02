@@ -116,6 +116,11 @@ const PLATFORM_FINANCE: Mod[] = [
   { key: 'commission',label: 'العمولات',   href: '/admin/commissions',          icon: Receipt },
 ]
 
+const nullStr = (v: unknown): string | null => {
+  const t = typeof v === 'string' ? v.trim() : ''
+  return t ? t : null
+}
+
 export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void }) {
   const [finance, setFinance] = useState<Mod[]>([])
   const [mods, setMods] = useState<Mod[]>([])
@@ -144,6 +149,7 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         const ctx = (ctxRaw || {}) as {
           ok?: boolean; is_staff?: boolean
           supplier_id?: string; business_name?: string; industry?: string
+          platform_supplier_id?: string
         }
 
         // 🏛️ أدمن مضمونة → لوحة المنصة (فينانس أولًا)
@@ -152,7 +158,16 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
           setTitle('لوحة مضمونة')
           setHref('/supplier/erp')
           setFinance(PLATFORM_FINANCE)
-          setMods(PLATFORM)
+          // 🗂️ (٢ سبتمبر ٢٠٢٦) محمد: «مش شايف الكلام ده في نسخة الموبايل».
+          //    السبب: فرع الفريق كان بيعمل return **قبل** ما يوصل للينكات
+          //    الإدارة الكاملة اللي اتضافت للبيزنس — فموظف مضمونة (وده
+          //    محمد نفسه) عمره ما كان يشوفها.
+          //    دلوقتي بيزنس المنصة بياخد نفس اللينكات.
+          const own = nullStr(ctx.platform_supplier_id)
+          setMods(own ? [...PLATFORM, {
+            key: 'all_screens', label: 'كل الشاشات',
+            href: `/admin/business-finance/${own}/links`, icon: LayoutGrid,
+          }] : PLATFORM)
           return
         }
 

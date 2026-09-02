@@ -208,6 +208,7 @@ const ar: Dict = {
   'market.track_industry': 'شركات وصناعة',
   // 🏢 (٢ سبتمبر ٢٠٢٦) شاشات الإدارة ERP
   'erp.overview': 'نظرة عامة',
+  'erp.all_screens': 'كل الشاشات',
   'erp.finance': 'الحسابات',
   'erp.staff': 'الموظفين',
   'erp.inventory': 'المخزون',
@@ -1959,6 +1960,7 @@ const en: Dict = {
   'market.track_industry': 'Industry & B2B',
   // 🏢 (2 Sep 2026) ERP admin screens
   'erp.overview': 'Overview',
+  'erp.all_screens': 'All screens',
   'erp.finance': 'Accounts',
   'erp.staff': 'Staff',
   'erp.inventory': 'Inventory',

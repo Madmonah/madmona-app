@@ -11,7 +11,11 @@ import {
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 type LinkItem = { label: string; path: string; share?: boolean }
-type Group = { title: string; icon: React.ReactNode; items: LinkItem[]; desc?: string }
+type Group = { title: string; icon: React.ReactNode; items: LinkItem[]; desc?: string
+  // 🎯 (٢ سبتمبر ٢٠٢٦) محمد: «اخفي الأقسام اللي مش بتخص نوع البيزنس».
+  //    القسم بيظهر لو **أي** مفتاح من needs موجود في موديولات النشاط.
+  //    من غير needs = قسم أساسي بيظهر للكل.
+  needs?: string[] }
 
 export default function LinksHubPage({ params }: { params: { supplierId: string } }) {
   const { supplierId } = params
@@ -20,6 +24,7 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
   const [loading, setLoading] = useState(true)
   const [origin, setOrigin] = useState('https://www.madmonacairo.com')
   const [copied, setCopied] = useState<string | null>(null)
+  const [mods, setMods] = useState<string[] | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') setOrigin(window.location.origin)
@@ -28,6 +33,13 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
       setSupplier(s)
       const { data: br } = await supabase.from('supplier_branches').select('code, name').eq('supplier_id', supplierId).order('code')
       setBranches(br || [])
+      // موديولات النشاط — الفلترة بتتبني عليها
+      try {
+        const { data: bm } = await (supabase.rpc as unknown as (
+          f: string, a: Record<string, unknown>,
+        ) => Promise<{ data: unknown }>)('business_modules', { p_supplier_id: supplierId })
+        setMods(((bm as { modules?: string[] })?.modules) || [])
+      } catch { setMods([]) }
       setLoading(false)
     })()
   }, [supplierId])
@@ -104,6 +116,7 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
     {
       title: 'المنتجات والوحدات', icon: <Store className="w-4 h-4" />,
       desc: 'الكتالوج والمعرض والوحدات والتوكيلات',
+      needs: ['products', 'catalog', 'units', 'inventory', 'listings'],
       items: [
         { label: 'الكتالوج', path: `${baseAdmin}/catalog` },
         { label: 'الوحدات', path: `${baseAdmin}/units` },
@@ -116,6 +129,7 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
     {
       title: 'المقاولات والمشاريع', icon: <Briefcase className="w-4 h-4" />,
       desc: 'لأصحاب المقاولات والتطوير العقاري',
+      needs: ['projects', 'stages', 'production', 'units', 'contracts'],
       items: [
         { label: 'المشاريع', path: `${baseAdmin}/projects` },
         { label: 'جدول الكميات (BOQ)', path: `${baseAdmin}/boq` },
@@ -135,6 +149,7 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
     {
       title: 'المعدات والعهدة', icon: <CalendarCheck className="w-4 h-4" />,
       desc: 'المعدات والورشة والعهدة',
+      needs: ['projects', 'production', 'materials', 'maintenance'],
       items: [
         { label: 'المعدات', path: `${baseAdmin}/equipment` },
         { label: 'سجل المعدات', path: `${baseAdmin}/equipment-logs` },
@@ -207,7 +222,12 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
-        {groups.map((g) => (
+        {groups
+          // 🎯 (٢/٩) قسم متخصص بيظهر بس لو نشاط البيزنس بيستخدمه.
+          //    mods === null معناها لسه بتتحمّل → نعرض الكل (مانخفيش
+          //    حاجة بالغلط وقت التحميل).
+          .filter((g) => !g.needs || mods === null || g.needs.some((k) => mods.includes(k)))
+          .map((g) => (
           <section key={g.title} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-4 py-3 bg-[#FAFAF7] border-b border-gray-100">
               <div className="flex items-center gap-2">
