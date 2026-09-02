@@ -568,10 +568,21 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
         query = query.order('created_at', { ascending: false })
       }
 
-      if (categoryIds && categoryIds.length > 0) {
+      // 🔍 (٢ سبتمبر ٢٠٢٦) البحث بيدوّر في **السوق كله** مش في التاب
+      //    المفتوح بس.
+      //
+      //    الباج: التاب الافتراضي «بيع»، فاللي بيدوّر على «شعبان» (مطعم)
+      //    أو «لانسر» (عربية) من الشاشة الأولى كان بياخد «مفيش نتائج»
+      //    والإعلان موجود ومنشور — بس في تاب تاني. اتأكدت لايف:
+      //    ?q=شعبان = صفر · ?track=restaurants&q=شعبان = نتيجة واحدة.
+      //    ودي غالبًا نفس شكوى محمد إن «إعلانات مش موجودة».
+      //
+      //    الفلتر بالتصنيف بيتشال وقت البحث بس — التصفّح العادي زي ما هو.
+      const isSearching = !!searchQuery.trim()
+      if (!isSearching && categoryIds && categoryIds.length > 0) {
         query = query.in('category_id', categoryIds)
       }
-      if (searchQuery.trim()) {
+      if (isSearching) {
         query = query.ilike('title', `%${searchQuery.trim()}%`)
       }
       if (supplierFilter) {
