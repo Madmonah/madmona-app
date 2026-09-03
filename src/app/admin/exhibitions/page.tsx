@@ -166,11 +166,28 @@ export default function ExhibitionsPage() {
                   <p style={{ fontSize: 12, color: MUTED, margin: '0 0 10px' }}>
                     {open.listings.length} منتج معروض في تاب «شركات وصناعة» — بعرض سعر
                   </p>
+                  {/* ➕ (٣ سبتمبر ٢٠٢٦) ضيف منتج **من جوّه الشركة**.
+                      في PharmaConex اتعمل ٥١ حساب مورد و**الـ٥١ كلهم فضلوا
+                      صفر إعلانات**: المندوب كان بيسيب الشاشة دي ويضيف من
+                      /admin/listings، وهناك الرقم بيتكتب بالإيد أو يتنسى،
+                      فالإعلان بيتحجز على حساب مضمونة بدل حساب الشركة.
+                      اللينك ده بيمرّر اسم الشركة ورقمها، والربط بيتم بالرقم. */}
+                  <Link
+                    href={`/admin/listings?add=1&co=${encodeURIComponent(open.name)}${open.phone ? `&phone=${encodeURIComponent(open.phone)}` : ''}`}
+                    style={{ ...btnStyle(GREEN), width: '100%', marginBottom: 12 }}
+                  >
+                    <Package size={14} /> ضيف منتج للشركة دي
+                  </Link>
+                  {!open.phone && (
+                    <p style={{ fontSize: 11.5, color: AMBER, background: AMBER_BG, borderRadius: 8, padding: '7px 10px', margin: '0 0 12px' }}>
+                      ⚠️ الشركة من غير رقم — المنتج مش هيعرف يتربط بحسابها. هات الرقم الأول.
+                    </p>
+                  )}
                   {open.listings.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: 24, background: AMBER_BG, borderRadius: 12 }}>
                       <Package size={28} color={AMBER} style={{ margin: '0 auto 8px' }} />
                       <p style={{ fontSize: 13, fontWeight: 700, color: AMBER, margin: 0 }}>لسه مفيش منتجات</p>
-                      <p style={{ fontSize: 11.5, color: MUTED, margin: '4px 0 0' }}>صوّر الكتالوج من الاستاند واحنا نضيفهم</p>
+                      <p style={{ fontSize: 11.5, color: MUTED, margin: '4px 0 0' }}>صوّر الكتالوج من الاستاند واضغط «ضيف منتج» فوق</p>
                     </div>
                   ) : open.listings.map(l => (
                     <Link key={l.id} href={`/marketplace/${l.slug}`} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 0', borderTop: `1px solid ${LINE}`, textDecoration: 'none', color: INK }}>

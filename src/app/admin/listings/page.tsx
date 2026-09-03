@@ -251,10 +251,20 @@ function ListingsInner() {
     // بالكويري بس مابيعملش mount جديد).
     if (searchParams.get('add') === '1' && !adder) {
       setAdderErr(null)
+      // 🏢 (٣ سبتمبر ٢٠٢٦) جاي من كارت الشركة في /admin/exhibitions؟
+      //    نملا بياناتها. في PharmaConex الـ٥١ شركة اتعملهم حسابات موردين
+      //    و**الـ٥١ كلهم فضلوا صفر إعلانات** — المندوب كان بيسيب شاشة
+      //    المعارض ويضيف المنتج من هنا، فالرقم بيتكتب بالإيد أو يتنسى،
+      //    والإعلان بيتحجز على حساب مضمونة. الربط بيتم بالرقم
+      //    (admin_add_listing → ensure_supplier_for_phone) فتمريره
+      //    هو اللي بيوصّل المنتج لحساب شركته.
+      const coName = (searchParams.get('co') || '').trim()
+      const coPhone = (searchParams.get('phone') || '').trim()
       setAdder({
         title: '', category_id: addCats[0]?.id || '',
-        city: '', owner_name: '', owner_phone: '', contact_phone: '',
-        photos: [], publish: true, seller_kind: 'individual', price: '',
+        city: '', owner_name: coName, owner_phone: coPhone, contact_phone: coPhone,
+        photos: [], publish: true,
+        seller_kind: coName ? 'business' : 'individual', price: '',
       })
       window.history.replaceState({}, '', '/admin/listings')
     }
