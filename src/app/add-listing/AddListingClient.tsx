@@ -682,10 +682,8 @@ function AddListingPageInner({
             session. Lets them explicitly resume or start fresh. */}
         {pendingResume && step === 1 && (
           <ResumeDraftBanner
-            pendingStep={pendingResume.step}
             categorySlug={pendingResume.categorySlug}
             categories={dbExtraCategories}
-            onResume={resumeDraft}
             onDiscard={discardDraft}
           />
         )}
@@ -4492,16 +4490,12 @@ function Nav({ onBack, onNext, saving, nextLabel }: {
 // picker").
 // =================================================
 function ResumeDraftBanner({
-  pendingStep,
   categorySlug,
   categories,
-  onResume,
   onDiscard,
 }: {
-  pendingStep: Step;
   categorySlug?: string;
   categories: MainCategory[];
-  onResume: () => void;
   onDiscard: () => void;
 }) {
   const { t } = useT()
@@ -4535,26 +4529,24 @@ function ResumeDraftBanner({
             </div>
           )}
           <div className="text-xs text-gray-600 mt-1">
-            {t('al.draft_body', { n: pendingStep })}
+            {t('al.draft_filled')}
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={onResume}
-          className="py-2.5 px-3 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-semibold hover:bg-[#34D399]/90 transition-all"
-        >
-          {t('al.draft_continue')}
-        </button>
-        <button
-          type="button"
-          onClick={onDiscard}
-          className="py-2.5 px-3 rounded-xl bg-white border border-[#E5E5E0] text-sm font-medium text-gray-700 hover:bg-[#F5F4F0] transition-all"
-        >
-          {t('al.draft_new')}
-        </button>
-      </div>
+      {/* 🧹 (٣ سبتمبر ٢٠٢٦) محمد: «مش عارف ليه بيجيب تاب كمّل في الإضافة
+          مع إنها المفروض متبقاش موجودة».
+          زرار «كمّل من فين وقفت» كان بقايا الويزارد الخماسي اللي اتشال من
+          الواجهة يوم ٢٨/٨ — بيعمل setStep() والخطوات مابقتش معروضة أصلاً،
+          فكان **مش بيعمل أي حاجة**. والمسودة بتتملى في الفورم لوحدها
+          دلوقتي، فمفيش «فين وقفت» من أساسه.
+          فضل زرار واحد له معنى: يمسح المسودة القديمة ويبدأ من فاضي. */}
+      <button
+        type="button"
+        onClick={onDiscard}
+        className="w-full py-2.5 px-3 rounded-xl bg-white border border-[#E5E5E0] text-sm font-medium text-gray-700 hover:bg-[#F5F4F0] transition-all"
+      >
+        {t('al.draft_new')}
+      </button>
     </div>
   );
 }

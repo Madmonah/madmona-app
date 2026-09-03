@@ -1554,6 +1554,8 @@ const ar: Dict = {
   'al.err_phone': 'رقم تليفون مش صحيح (لازم 11 رقم)',
   'al.draft_found': 'لقينالك مسودة محفوظة',
   'al.draft_body': 'وصلت لخطوة {n} من 5 — تقدر تكمل من فين وقفت، أو تبدأ منتج جديد،',
+  // 🧹 (٣ سبتمبر ٢٠٢٦) الويزارد بقى شاشة واحدة — مفيش «خطوة N»
+  'al.draft_filled': 'ملّيناهالك في الفورم تحت — كمّل عادي، أو ابدأ من جديد.',
   'al.draft_continue': '→ كمل من فين وقفت',
   'al.draft_new': '✨ ابدأ منتج جديد',
 
@@ -3417,6 +3419,7 @@ const en: Dict = {
   'al.err_phone': 'Invalid phone number (must be 11 digits)',
   'al.draft_found': 'We found a saved draft',
   'al.draft_body': 'You reached step {n} of 5 — continue where you left off, or start a new listing,',
+  'al.draft_filled': 'We filled the form below for you — carry on, or start fresh.',
   'al.draft_continue': '→ Continue where you left off',
   'al.draft_new': '✨ Start a new listing',
 
