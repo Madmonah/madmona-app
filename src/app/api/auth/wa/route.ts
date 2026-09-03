@@ -71,6 +71,21 @@ async function openwaReady(sb: ReturnType<typeof admin>): Promise<Set<string>> {
   } catch { return new Set() }
 }
 
+// 📮 (٣ سبتمبر ٢٠٢٦) محمد: «سيبك من موضوع التوثيق بالتليفون علشان مش
+//    شغال، خلي التوثيق بالرسالة وخلي في التيرناتيف لكل الحسابات المتوصلة».
+//    التأكيد أصلاً session-agnostic — الكود بيتقبل من **أي** رقم بيستقبل.
+//    اللي كان معلّق على رقم واحد هو **اللينك** بس. فبنرجّع كل الأرقام
+//    الرسمية المتوصلة، والعميل يبعت على أي واحد فيهم.
+// ⚠️ أرقام مضمونة الرسمية بس — أرقام الموظفين الشخصية على OpenWA
+//    ماتتعرضش للعملاء.
+const OFFICIAL_WA = ['201002229982', '201026222337', '201114621551'] as const
+
+async function liveOfficialNumbers(sb: ReturnType<typeof admin>): Promise<string[]> {
+  const ready = await openwaReady(sb)
+  if (ready.size === 0) return []
+  return OFFICIAL_WA.filter((n) => ready.has(n))
+}
+
 async function pickLoginWa(sb: ReturnType<typeof admin>): Promise<string> {
   try {
     const { data } = await sb
@@ -316,7 +331,14 @@ export async function POST(req: NextRequest) {
     //    الواتساب البيزنس والعادي») بنرجّع الرقم لوحده كمان عشان الواجهة
     //    تقدر تبني لينك يفتح تطبيق بعينه (whatsapp/w4b) مش wa.me بس.
     const waNumber = await pickLoginWa(sb)
+    // البدائل: باقي الأرقام الرسمية المتوصلة — العميل يجرّب أي واحد
+    // لو الأول مش راضي يفتح أو رقمه مش شغّال عنده.
+    const live = await liveOfficialNumbers(sb)
+    const alternatives = live
+      .filter((n) => n !== waNumber)
+      .map((n) => ({ number: n, url: `https://wa.me/${n}?text=${text}` }))
     return NextResponse.json({
+      alternatives,
       code,
       wa_number: waNumber,
       wa_url: `https://wa.me/${waNumber}?text=${text}`,

@@ -38,6 +38,10 @@ function CompletePhoneContent() {
   const [phase, setPhase] = useState<'idle' | 'waiting' | 'finishing' | 'done'>('idle')
   const [err, setErr] = useState('')
   const [waUrl, setWaUrl] = useState('')
+  // 🔀 (٣ سبتمبر ٢٠٢٦) «وخلي في التيرناتيف لكل الحسابات المتوصلة» —
+  //    التأكيد session-agnostic، فالكود بيتقبل من أي رقم مضمونة بيستقبل.
+  //    لو الرقم الأول مش راضي يفتح أو مش شغّال، العميل يجرّب التاني.
+  const [alts, setAlts] = useState<Array<{ number: string; url: string }>>([])
   const [code, setCode] = useState('')
   const codeRef = useRef<string>('')
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -115,6 +119,7 @@ function CompletePhoneContent() {
       codeRef.current = j.code
       setCode(j.code)
       setWaUrl(j.wa_url)
+      setAlts(Array.isArray(j.alternatives) ? j.alternatives : [])
       setPhase('waiting')
       if (win) { try { win.location.href = j.wa_url } catch { /* الزرار البديل موجود */ } }
       startPolling()
@@ -176,16 +181,13 @@ function CompletePhoneContent() {
                     - العميل مايكتبش أي كود
                     الواتساب فضل تحته لأنه شغّال وناس متعوّدة عليه، وميزته
                     إن الرقم بيتأكد من مصدر الرسالة نفسها. */}
-                <VerifyPhoneByCall
-                  onDone={() => { setPhase('done'); setTimeout(() => router.replace(redirectTo), 900) }}
-                />
-
-                <div className="my-4 flex items-center gap-3">
-                  <div className="h-px bg-gray-100 flex-1" />
-                  <span className="text-[11px] text-gray-400 font-bold">{t('cp.or')}</span>
-                  <div className="h-px bg-gray-100 flex-1" />
-                </div>
-
+                {/* 📮 (٣ سبتمبر ٢٠٢٦) محمد: «سيبك من موضوع التوثيق بالتليفون
+                    علشان مش شغال، خلي التوثيق بالرسالة».
+                    القياس اللي بنى القرار: التوثيق بالمكالمة ١٤ محاولة —
+                    **نجحت مرة واحدة**، وآخر نجاح ٢ أغسطس (معتمد على معمل
+                    الصوت على لاب محمد، ولازم يفضل شغّال ٢٤ ساعة).
+                    الكومبوننت `VerifyPhoneByCall` **ماتحذفش** — اتشال من
+                    العرض بس، زي ما بنعمل مع أي قدرة بتتقفل. */}
                 <button
                   type="button"
                   onClick={begin}
@@ -217,6 +219,30 @@ function CompletePhoneContent() {
                     <div className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-xl tracking-[0.3em] text-[#059669] mb-3 select-all">
                       {code}
                     </div>
+                    {/* 🔀 (٣ سبتمبر ٢٠٢٦) بدائل — أي رقم مضمونة متوصل ينفع.
+                        التأكيد session-agnostic فالكود بيتقبل من أي واحد فيهم. */}
+                    {alts.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-[11.5px] text-gray-500 font-bold mb-1.5">
+                          أو ابعت نفس الكود على أي رقم من دول:
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                          {alts.map((a) => (
+                            <a
+                              key={a.number}
+                              href={a.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              dir="ltr"
+                              className="inline-flex items-center gap-1.5 bg-white border border-[#2FA084]/40 rounded-xl px-3 py-1.5 text-[13px] font-bold text-[#059669] hover:bg-[#F0F7F4] transition-colors"
+                            >
+                              <Send className="w-3.5 h-3.5" />
+                              0{a.number.replace(/^20/, '')}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex items-center justify-center gap-2 text-[#059669] font-bold text-sm mb-1">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       {t('cp.waiting')}

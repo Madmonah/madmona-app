@@ -176,7 +176,12 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         const s = { id: ctx.supplier_id, business_name: ctx.business_name || '', industry: ctx.industry }
 
         setTitle(s.business_name || 'بيزنسي')
-        setHref('/supplier/erp')
+        // 🏢 (٣ سبتمبر ٢٠٢٦) محمد: «عايزين نخلي صفحة الموبايل تفتح في
+        //    الإدارة الصفحة دي: /admin/business-finance/<supplier>».
+        //    كان بيفتح /supplier/erp — دي الشاشة المختصرة (٨ تابات).
+        //    لوحة الإدارة الكاملة (فلوس · فريق · فروع · حضور · مرتبات …)
+        //    عايشة على المسار ده، وهي اللي المفروض تفتح من الموبايل.
+        setHref(`/admin/business-finance/${s.id}`)
         setFinance(FINANCE)
 
         // 🏗️ مطوّر عقاري → موديل المقاولات الكامل
@@ -213,6 +218,11 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
           //    (/links) بيوصّل لكلهم بأقسامهم، وده لينك واحد ليه.
           { key: 'all_screens', label: 'كل الشاشات', href: admin('links'), icon: LayoutGrid },
         ]
+        // لوحة الإدارة نفسها أول حاجة في القايمة — مش بس من عنوان الدرج
+        FULL_ADMIN.unshift({
+          key: 'admin_home', label: 'لوحة الإدارة',
+          href: `/admin/business-finance/${s.id}`, icon: LayoutGrid,
+        })
         setMods([
           ...keys.filter((k) => BUSINESS[k]).map((k) => ({ key: k, ...BUSINESS[k] })),
           ...FULL_ADMIN,
