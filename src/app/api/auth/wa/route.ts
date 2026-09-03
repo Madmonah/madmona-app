@@ -38,6 +38,39 @@ const LOGIN_WA_FALLBACK = '201026222337' // 337 — البيزنس الموثّ�
 // بيختار رقم اللوجين لحظيًا: 982 طالما مش متعطّل، وإلا يرجع لـ337. الإشارة من
 // wa_number_configs.enabled (نفس الفلاج اللي بيوقّف المارد على الرقم) — Supabase
 // دايمًا متاح للتطبيق. أي عطل نادر في القراءة → نفضّل الأساسي 982. يأتمت سويتش 30 يوليو.
+// 🐞 (٣ سبتمبر ٢٠٢٦) محمد: «في مشكلة في توثيق رقم التليفون لحساب الأستاذ
+//    محمود سالم». الجذر: جلسة 982 على OpenWA وقعت يوم ٣١/٨ الساعة ٧:٤٠ م
+//    (Account rejected by WhatsApp 403) — وكل لينكات التوثيق بتوّدي عليها.
+//    فالعميل بيبعت الكود لرقم مش سامع، والصفحة تفضل تلف لحد ما تنتهي.
+//    القياس: ٢٣ محاولة في أسبوع، **اتنين بس** اتوثّقوا — وآخر نجاح كان
+//    بالظبط آخر رسالة وصلت للرقم ده.
+//
+//    الفولباك ده كان **موجود** ومع ذلك ماشتغلش، لأنه بيقرا `enabled` —
+//    وهو فلاج **يدوي** محدش قلبه. نفس مرض «الحارس بيقرا إشارة ميتة».
+//    ✅ دلوقتي بيقرا **الحالة الحية** من OpenWA كمان (قاعدة محمد: «التقارير
+//    تقرا من داتا حية مش جداول ميتة»)، بمهلة قصيرة عشان الدخول ما يعلّقش.
+async function openwaReady(sb: ReturnType<typeof admin>): Promise<Set<string>> {
+  try {
+    const { data } = await sb.from('whatsapp_config').select('key, value')
+      .in('key', ['openwa_url', 'openwa_api_key'])
+    const cfg = Object.fromEntries(((data ?? []) as Array<{ key: string; value: string }>)
+      .map((r) => [r.key, r.value]))
+    if (!cfg.openwa_url) return new Set()
+    const ac = new AbortController()
+    const t = setTimeout(() => ac.abort(), 2500)   // الدخول ماينتظرش أكتر من كده
+    const res = await fetch(cfg.openwa_url.replace(/\/$/, '') + '/api/sessions', {
+      headers: cfg.openwa_api_key ? { 'x-api-key': cfg.openwa_api_key } : {},
+      signal: ac.signal,
+    }).finally(() => clearTimeout(t))
+    if (!res.ok) return new Set()
+    const j = await res.json()
+    const arr: Array<{ phone?: string; status?: string }> =
+      Array.isArray(j) ? j : (j.sessions || j.data || [])
+    return new Set(arr.filter((x) => x.status === 'ready')
+      .map((x) => String(x.phone || '').replace(/\D/g, '')).filter(Boolean))
+  } catch { return new Set() }
+}
+
 async function pickLoginWa(sb: ReturnType<typeof admin>): Promise<string> {
   try {
     const { data } = await sb
@@ -46,7 +79,14 @@ async function pickLoginWa(sb: ReturnType<typeof admin>): Promise<string> {
       .in('session_id', [LOGIN_WA_PRIMARY, LOGIN_WA_FALLBACK])
     const rows = (data ?? []) as Array<{ session_id: string; enabled: boolean | null }>
     const primary = rows.find((r) => (r.session_id || '').replace(/\D/g, '') === LOGIN_WA_PRIMARY)
-    return !primary || primary.enabled !== false ? LOGIN_WA_PRIMARY : LOGIN_WA_FALLBACK
+    if (primary && primary.enabled === false) return LOGIN_WA_FALLBACK
+
+    // الفلاج بيقول «شغّال» — بس هل الجلسة عايشة فعلاً؟
+    const ready = await openwaReady(sb)
+    if (ready.size === 0) return LOGIN_WA_PRIMARY            // مقدرناش نتأكد → زي ما كان
+    if (ready.has(LOGIN_WA_PRIMARY)) return LOGIN_WA_PRIMARY
+    if (ready.has(LOGIN_WA_FALLBACK)) return LOGIN_WA_FALLBACK
+    return LOGIN_WA_PRIMARY
   } catch {
     return LOGIN_WA_PRIMARY
   }
