@@ -41,6 +41,10 @@ export default function ExpoPage() {
   const [cats, setCats] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
+  // ⚠️ (٣ سبتمبر ٢٠٢٦) ممنوع نقول للعميل «بعتنالك إيميل» غير لما يكون
+  //    اتبعت فعلًا. الـAPI بيرجّع emailed، والرسالة بتتغيّر على أساسه —
+  //    اتكشف إن مفتاح Resend راجع 401، وكانت الشاشة هتكدب على العميل.
+  const [emailed, setEmailed] = useState(false)
   const [err, setErr] = useState<string | null>(null)
 
   function set(k: keyof typeof f, v: string) { setF((s) => ({ ...s, [k]: v })) }
@@ -61,6 +65,7 @@ export default function ExpoPage() {
       })
       const j = await r.json().catch(() => null)
       if (!r.ok || !j?.ok) { setErr(j?.error || 'مش قادرين نسجّل الطلب دلوقتي'); setBusy(false); return }
+      setEmailed(!!j.emailed)
       setDone(true)
     } catch {
       setErr('مش قادرين نوصل للسيرفر دلوقتي، جرّب تاني')
@@ -225,8 +230,9 @@ export default function ExpoPage() {
             <div style={{ textAlign: 'center', padding: '26px 8px' }}>
               <p style={{ margin: '0 0 8px', fontSize: 21, fontWeight: 800 }}>وصلنا طلبكم ✅</p>
               <p style={{ margin: '0 auto', fontSize: 15, color: INK2, lineHeight: 1.8, maxWidth: '46ch' }}>
-                بعتنالكم إيميل تأكيد فيه الخطوات. فريقنا هيكلّمكم خلال يوم عمل عشان ناخد
-                الكتالوج ونجهّز صفحة الشركة قبل المعرض.
+                {emailed
+                  ? 'بعتنالكم إيميل تأكيد فيه الخطوات. فريقنا هيكلّمكم خلال يوم عمل عشان ناخد الكتالوج ونجهّز صفحة الشركة قبل المعرض.'
+                  : 'فريقنا هيكلّمكم خلال يوم عمل عشان ناخد الكتالوج ونجهّز صفحة الشركة قبل المعرض.'}
               </p>
               <a href={`https://wa.me/201002229982`} style={{
                 display: 'inline-block', marginTop: 18, background: INK, color: PAPER,
