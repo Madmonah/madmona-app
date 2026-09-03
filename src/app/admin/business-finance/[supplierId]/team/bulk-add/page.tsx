@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import { readMadmonaToken } from '@/lib/madmona-token'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
@@ -315,11 +316,17 @@ export default function BulkAddEmployeesPage({
       },
     }))
     
+    // 🚪🚪 (٣ سبتمبر ٢٠٢٦) لازم نبعت توكن مضمونة: الدالة بقى فيها حارس
+    //    البابين (schedule_edit_ok) — قبل كده كانت من غير أي فحص صلاحية
+    //    ومن غير GRANT، فكانت بترجّع «permission denied» لأي حد داخل
+    //    بتوكن الواتساب (دوره anon) وهو الباب اللي محمد وأصحاب البيزنس
+    //    بيدخلوا منه.
     const { data, error } = await supabase.rpc('admin_bulk_add_employees', {
       p_supplier_id: supplierId,
       p_branch_id: selectedBranch,
       p_employees: payload,
-    })
+      p_token: readMadmonaToken(),
+    } as never)
     
     if (error) {
       setResult({ success: false, error: error.message })
