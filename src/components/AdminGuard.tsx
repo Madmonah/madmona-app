@@ -18,7 +18,23 @@ import { useRouter, usePathname } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { Loader2, ShieldAlert, ArrowLeft } from 'lucide-react'
 
-type State = 'checking' | 'staff' | 'supplier' | 'guest'
+type State = 'checking' | 'staff' | 'owner' | 'supplier' | 'guest'
+
+// 🏢 (٣ سبتمبر ٢٠٢٦) محمد: «بيفتح صفحة اسمها إدارة بيزنسك مفيهاش أي
+//    صلاحيات ولا إضافة».
+//    🐞 حارس ٢٨/٨ كان بيسأل سؤال واحد: «موظف مضمونة؟» — وأي حد غيره
+//    يتقذف. بس **لوحة البيزنس نفسها عايشة تحت /admin**
+//    (/admin/business-finance/<بيزنسه>)، وحارس الصفحة الداخلي
+//    (admin_check_finance_access) بيدعم `business_admin` صراحةً.
+//    فصاحب البيزنس كان بيتقفل في وشه **بيزنسه هو** قبل ما الحارس
+//    الصح يشتغل أصلاً. (اتقاس: محمود سالم → business_admin allowed=true،
+//    ومع ذلك الشاشة بترميه.)
+//    ✅ دلوقتي: مسار بيزنسه بيعدّي لو هو مالكه/مديره؛ أي شاشة تانية
+//    تحت /admin تفضل لفريق مضمونة بس.
+function businessIdFromPath(path: string | null): string | null {
+  const m = (path || '').match(/^\/admin\/business-finance\/([0-9a-f-]{36})(?:\/|$)/i)
+  return m ? m[1] : null
+}
 
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<State>('checking')
@@ -39,7 +55,22 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
           f: string, a?: Record<string, unknown>,
         ) => Promise<{ data: unknown }>)('is_madmona_staff')
         if (!alive) return
-        setState(data === true ? 'staff' : 'supplier')
+        if (data === true) { setState('staff'); return }
+
+        // مش موظف مضمونة — بس ممكن يكون داخل على لوحة بيزنسه هو
+        const bizId = businessIdFromPath(pathname)
+        if (bizId) {
+          const { data: acc } = await (supabaseBrowser.rpc as unknown as (
+            f: string, a: Record<string, unknown>,
+          ) => Promise<{ data: { full?: boolean; is_owner?: boolean; is_staff?: boolean } | null }>)(
+            'my_supplier_access', { p_supplier_id: bizId },
+          )
+          if (!alive) return
+          if (acc?.full === true || acc?.is_owner === true || acc?.is_staff === true) {
+            setState('owner'); return
+          }
+        }
+        setState('supplier')
       } catch {
         if (alive) setState('supplier')
       }
@@ -51,7 +82,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     return <div className="py-32 text-center"><Loader2 className="w-7 h-7 animate-spin mx-auto text-gray-400" /></div>
   }
 
-  if (state === 'staff') return <>{children}</>
+  if (state === 'staff' || state === 'owner') return <>{children}</>
 
   // 🏪 مورد دخل على /admin بالغلط — نوديه لنظامه هو
   return (
