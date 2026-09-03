@@ -289,6 +289,37 @@ export default function BulkAddEmployeesPage({
     setMode('manual')
   }
   
+  // 🗣️ (٣ سبتمبر ٢٠٢٦) محمد: «عايزين نبقى نقول سبب لعدم الإضافة»
+  //    + «لو فيه حاجة مانداتوري ياريت تكون واضحة».
+  //    الرسايل الخام من بوستجرس (duplicate key … uniq_emp_pin_per_supplier ·
+  //    permission denied · null value in column …) مالهاش معنى لحد بره
+  //    الكود، وكانت بتتعرض زي ما هي. دلوقتي كل سبب معروف ليه جملة
+  //    بتقول **إيه اللي حصل وإيه المطلوب**.
+  function reasonAr(raw: string): string {
+    const m = (raw || '').toLowerCase()
+    if (m.includes('uniq_emp_pin_per_supplier') || m.includes('pin'))
+      return 'رقم الدخول (PIN) متكرر — جرّب تاني وهو هياخد رقم جديد.'
+    if (m.includes('permission denied') || m.includes('admin only') || m.includes('not_authorized'))
+      return 'مالكش صلاحية إضافة موظفين في البيزنس ده.'
+    if (m.includes('فرع غير موجود') || m.includes('branch'))
+      return 'الفرع مش موجود — اختار فرع، أو اعمل فرع من شاشة الفروع.'
+    if (m.includes('موجود بالفعل'))
+      return 'فيه موظف بنفس الاسم في الفرع ده.'
+    if (m.includes('null value') && m.includes('phone'))
+      return 'الموبايل مطلوب للموظف ده.'
+    if (m.includes('null value')) {
+      const col = /column "([a-z_]+)"/i.exec(raw)
+      return col ? `خانة مطلوبة ناقصة: ${col[1]}` : 'فيه خانة مطلوبة ناقصة.'
+    }
+    if (m.includes('invalid input syntax') && m.includes('numeric'))
+      return 'المرتب لازم يكون رقم.'
+    if (m.includes('violates foreign key'))
+      return 'الفرع أو البيزنس مش موجود — حدّث الصفحة وجرّب تاني.'
+    if (m.includes('duplicate key'))
+      return 'البيانات دي مسجّلة قبل كده.'
+    return raw || 'سبب غير معروف — ابعتلنا صورة الشاشة.'
+  }
+
   // Submit
   async function handleSubmit() {
     const validRows = rows.filter(r => r.name.trim())
@@ -297,7 +328,9 @@ export default function BulkAddEmployeesPage({
       return
     }
     if (!selectedBranch) {
-      alert('اختار فرع الأول')
+      alert(branches.length === 0
+        ? 'البيزنس ده مالوش أي فرع، وإضافة الموظفين لازم تكون على فرع. اعمل فرع من شاشة «الفروع» الأول.'
+        : 'اختار الفرع اللي الموظفين دول هيتضافوا عليه.')
       return
     }
     
@@ -329,7 +362,7 @@ export default function BulkAddEmployeesPage({
     } as never)
     
     if (error) {
-      setResult({ success: false, error: error.message })
+      setResult({ success: false, error: reasonAr(error.message), raw: error.message })
     } else {
       setResult(data)
       if (data?.inserted > 0) {
@@ -384,15 +417,22 @@ export default function BulkAddEmployeesPage({
         {/* Result banner */}
         {result && (
           <div className={`rounded-2xl p-4 border ${
-            result.success !== false ? 'bg-[#34D399]/5 border-[#059669]/20' : 'bg-red-50 border-red-200'
+            result.success !== false && (result.inserted ?? 0) > 0
+              ? 'bg-[#34D399]/5 border-[#059669]/20'
+              : result.success !== false
+                ? 'bg-amber-50 border-amber-300'
+                : 'bg-red-50 border-red-200'
           }`}>
             {result.success !== false ? (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-5 h-5 text-[#059669]" />
+                  {(result.inserted ?? 0) > 0
+                    ? <CheckCircle2 className="w-5 h-5 text-[#059669]" />
+                    : <AlertCircle className="w-5 h-5 text-amber-600" />}
                   <p className="text-sm font-black text-[#1A2E26]">
-                    تم إضافة {result.inserted} موظف بنجاح
-                    {result.skipped > 0 && ` · ${result.skipped} متخطي`}
+                    {(result.inserted ?? 0) > 0
+                      ? `تم إضافة ${result.inserted} موظف${result.skipped > 0 ? ` · ${result.skipped} مااتضافش` : ''}`
+                      : 'مااتضافش ولا موظف — السبب تحت'}
                   </p>
                 </div>
                 {result.inserted_employees && result.inserted_employees.length > 0 && (
@@ -406,10 +446,14 @@ export default function BulkAddEmployeesPage({
                   </div>
                 )}
                 {result.errors && result.errors.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-amber-700 space-y-1">
-                    <p className="font-bold mb-1">صفوف متخطية:</p>
+                  <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-amber-800 space-y-1.5">
+                    <p className="font-bold mb-1">
+                      {(result.inserted ?? 0) > 0 ? 'اللي مااتضافش وليه:' : 'السبب:'}
+                    </p>
                     {result.errors.map((e: any, i: number) => (
-                      <div key={i}>· {e.name}: {e.error}</div>
+                      <div key={i} className="leading-relaxed">
+                        · <b>{e.name}</b> — {reasonAr(e.error)}
+                      </div>
                     ))}
                   </div>
                 )}
