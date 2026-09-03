@@ -7,7 +7,6 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   ShieldCheck, AlertCircle, Loader2, CheckCircle, MessageCircle, Send, RefreshCw,
 } from 'lucide-react'
-import VerifyPhoneByCall from '@/components/VerifyPhoneByCall'
 
 // =====================================================================
 // 🔗 توثيق الرقم — طريقتين
@@ -186,8 +185,10 @@ function CompletePhoneContent() {
                     القياس اللي بنى القرار: التوثيق بالمكالمة ١٤ محاولة —
                     **نجحت مرة واحدة**، وآخر نجاح ٢ أغسطس (معتمد على معمل
                     الصوت على لاب محمد، ولازم يفضل شغّال ٢٤ ساعة).
-                    الكومبوننت `VerifyPhoneByCall` **ماتحذفش** — اتشال من
-                    العرض بس، زي ما بنعمل مع أي قدرة بتتقفل. */}
+                    (٣ سبتمبر ٢٠٢٦ — تكملة) محمد: «شيل تأكيد التليفون عن
+                    طريق المكالمة ده خالص لأنه بيفصل». اتحذف بالكامل:
+                    الكومبوننت + /api/verify-call + /api/verify-call/incoming.
+                    جدول `phone_call_verifications` سايبه — أثر محفوظ. */}
                 <button
                   type="button"
                   onClick={begin}

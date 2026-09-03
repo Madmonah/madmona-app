@@ -16,6 +16,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { readMadmonaToken } from '@/lib/madmona-token'
 import { Loader2, ShieldAlert, ArrowLeft } from 'lucide-react'
 
 type State = 'checking' | 'staff' | 'owner' | 'supplier' | 'guest'
@@ -44,8 +45,38 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     let alive = true
     ;(async () => {
+      const bizId = businessIdFromPath(pathname)
       const { data: { session } } = await supabaseBrowser.auth.getSession()
+
+      // 🚪🚪 (٣ سبتمبر ٢٠٢٦) محمد: «مش بيفتح إضافة الموظفين» من الموبايل.
+      //    الحارس ده كان بيسأل عن **جلسة Supabase بس**، ومحمد وأصحاب
+      //    البيزنس بيدخلوا بتوكن الواتساب (madmona_token) من غير أي جلسة
+      //    Supabase — فالشاشة بتقول «سجّل دخولك الأول» وهو داخل فعلًا.
+      //    ⚠️ ده نفس «الدرس الأكبر» (٢٥/٨): لوحة business-finance ليها
+      //    **بابين**، وأي حارس جديد لازم يقبل الاتنين. الميدلوير وحارس
+      //    الصفحة بيقبلوا التوكن من زمان — الحارس ده لوحده كان بباب واحد.
       if (!session?.user) {
+        const wtok = readMadmonaToken()
+        if (wtok) {
+          try {
+            if (bizId) {
+              const { data: fin } = await (supabaseBrowser.rpc as unknown as (
+                f: string, a: Record<string, unknown>,
+              ) => Promise<{ data: { allowed?: boolean } | null }>)(
+                'admin_check_finance_access', { p_token: wtok, p_supplier_id: bizId },
+              )
+              if (!alive) return
+              if (fin?.allowed === true) { setState('owner'); return }
+            }
+            const { data: ctx } = await (supabaseBrowser.rpc as unknown as (
+              f: string, a: Record<string, unknown>,
+            ) => Promise<{ data: { is_staff?: boolean } | null }>)(
+              'workspace_menu_context', { p_token: wtok },
+            )
+            if (!alive) return
+            if (ctx?.is_staff === true) { setState('staff'); return }
+          } catch { /* التوكن مش صالح — بنكمّل على guest */ }
+        }
         if (alive) setState('guest')
         return
       }
@@ -58,7 +89,6 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
         if (data === true) { setState('staff'); return }
 
         // مش موظف مضمونة — بس ممكن يكون داخل على لوحة بيزنسه هو
-        const bizId = businessIdFromPath(pathname)
         if (bizId) {
           const { data: acc } = await (supabaseBrowser.rpc as unknown as (
             f: string, a: Record<string, unknown>,

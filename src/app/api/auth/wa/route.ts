@@ -78,12 +78,21 @@ async function openwaReady(sb: ReturnType<typeof admin>): Promise<Set<string>> {
 //    الرسمية المتوصلة، والعميل يبعت على أي واحد فيهم.
 // ⚠️ أرقام مضمونة الرسمية بس — أرقام الموظفين الشخصية على OpenWA
 //    ماتتعرضش للعملاء.
+// 📮 (٣ سبتمبر ٢٠٢٦ — تكملة) محمد: «خلي رقم التليفون يتأكد من **أي جلسة
+//    مفتوحة على أوبن واتساب**».
+//    قبل كده كانت محصورة في تلات أرقام رسمية — والاتنين الأساسيين منهم
+//    وقعوا (982 اتحظر ٣١/٨). فالتوثيق كان بيقف على رقم مفصول.
+//    دلوقتي أي جلسة `ready` على OpenWA تنفع تستقبل الكود — والتأكيد
+//    أصلاً session-agnostic فالمخ بيأكّده مهما كان الرقم المستقبِل.
 const OFFICIAL_WA = ['201002229982', '201026222337', '201114621551'] as const
 
-async function liveOfficialNumbers(sb: ReturnType<typeof admin>): Promise<string[]> {
+/** كل الأرقام اللي جلستها شغالة دلوقتي — الرسمية الأول للعرض. */
+async function liveWaNumbers(sb: ReturnType<typeof admin>): Promise<string[]> {
   const ready = await openwaReady(sb)
   if (ready.size === 0) return []
-  return OFFICIAL_WA.filter((n) => ready.has(n))
+  const official = OFFICIAL_WA.filter((n) => ready.has(n))
+  const rest = [...ready].filter((n) => !(OFFICIAL_WA as readonly string[]).includes(n))
+  return [...official, ...rest]
 }
 
 async function pickLoginWa(sb: ReturnType<typeof admin>): Promise<string> {
@@ -97,11 +106,9 @@ async function pickLoginWa(sb: ReturnType<typeof admin>): Promise<string> {
     if (primary && primary.enabled === false) return LOGIN_WA_FALLBACK
 
     // الفلاج بيقول «شغّال» — بس هل الجلسة عايشة فعلاً؟
-    const ready = await openwaReady(sb)
-    if (ready.size === 0) return LOGIN_WA_PRIMARY            // مقدرناش نتأكد → زي ما كان
-    if (ready.has(LOGIN_WA_PRIMARY)) return LOGIN_WA_PRIMARY
-    if (ready.has(LOGIN_WA_FALLBACK)) return LOGIN_WA_FALLBACK
-    return LOGIN_WA_PRIMARY
+    const live = await liveWaNumbers(sb)
+    if (live.length === 0) return LOGIN_WA_PRIMARY          // مقدرناش نتأكد → زي ما كان
+    return live[0]                                          // الرسمي الشغّال، وإلا أي جلسة شغالة
   } catch {
     return LOGIN_WA_PRIMARY
   }
@@ -333,7 +340,7 @@ export async function POST(req: NextRequest) {
     const waNumber = await pickLoginWa(sb)
     // البدائل: باقي الأرقام الرسمية المتوصلة — العميل يجرّب أي واحد
     // لو الأول مش راضي يفتح أو رقمه مش شغّال عنده.
-    const live = await liveOfficialNumbers(sb)
+    const live = await liveWaNumbers(sb)
     const alternatives = live
       .filter((n) => n !== waNumber)
       .map((n) => ({ number: n, url: `https://wa.me/${n}?text=${text}` }))
