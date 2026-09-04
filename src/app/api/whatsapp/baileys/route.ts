@@ -379,6 +379,39 @@ export async function POST(request: NextRequest) {
     // ⚠️ الاستثناء اللي كان للأدمن (`&& !isAdmin(phone)`) **اتشال** بناءً
     //    على التعليمة دي — يعني أوامر الأدمن من واتساب من ٠١٠٠٢٢٢٩٩٨٢ وقفت.
     //    ترجع من غير نشر: صف في `marid_skip_exceptions` بالرقم.
+    // 🔐 (٥ سبتمبر ٢٠٢٦) كود الدخول بيتأكّد **قبل** قاعدة سكوت المارد —
+    //    عارض معرض أو موظف مسكّت كان بيبعت الكود ويتبلع بصمت.
+    // ── ٠) كود تسجيل الدخول MADxxxxx ────────────────────────────────────
+    const loginCode = (body.text || '').toUpperCase().match(/\bMAD[A-Z0-9]{5}\b/)?.[0]
+    if (loginCode) {
+      const { data: rowRaw } = await supabaseAdmin
+        .from('wa_inbound_verifications')
+        .select('id, verified, expires_at')
+        .eq('code', loginCode)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const row = rowRaw as { id: string; verified: boolean; expires_at: string } | null
+
+      if (!row) {
+        await sendText({ to: phone, jid: replyJid, session: body.session_id, body: 'الكود ده مش موجود. ارجع للموقع واطلب كود جديد 🙏' })
+        return NextResponse.json({ ok: true, login: 'unknown_code' })
+      }
+      if (new Date(row.expires_at) < new Date()) {
+        await sendText({ to: phone, jid: replyJid, session: body.session_id, body: 'الكود ده انتهت صلاحيته. اطلب كود جديد من الموقع 🙏' })
+        return NextResponse.json({ ok: true, login: 'expired' })
+      }
+
+      await supabaseAdmin
+        .from('wa_inbound_verifications')
+        .update({ verified: true, verified_phone: phone, verified_at: new Date().toISOString() } as never)
+        .eq('id', row.id)
+
+      await sendText({ to: phone, jid: replyJid, session: body.session_id, body: '✅ تم التأكيد! ارجع للموقع، هتلاقي نفسك دخلت.' })
+      return NextResponse.json({ ok: true, login: 'verified' })
+    }
+
     const skipReason = await maridSkipReason(phone)
     if (skipReason) {
       console.warn('[wa] رسالة اتسجّلت ومفيش رد', {
@@ -504,37 +537,6 @@ export async function POST(request: NextRequest) {
       if (seen) {
         return NextResponse.json({ ok: true, skipped: 'duplicate', replied: false })
       }
-    }
-
-    // ── ٠) كود تسجيل الدخول MADxxxxx ────────────────────────────────────
-    const loginCode = (body.text || '').toUpperCase().match(/\bMAD[A-Z0-9]{5}\b/)?.[0]
-    if (loginCode) {
-      const { data: rowRaw } = await supabaseAdmin
-        .from('wa_inbound_verifications')
-        .select('id, verified, expires_at')
-        .eq('code', loginCode)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      const row = rowRaw as { id: string; verified: boolean; expires_at: string } | null
-
-      if (!row) {
-        await sendText({ to: phone, jid: replyJid, session: body.session_id, body: 'الكود ده مش موجود. ارجع للموقع واطلب كود جديد 🙏' })
-        return NextResponse.json({ ok: true, login: 'unknown_code' })
-      }
-      if (new Date(row.expires_at) < new Date()) {
-        await sendText({ to: phone, jid: replyJid, session: body.session_id, body: 'الكود ده انتهت صلاحيته. اطلب كود جديد من الموقع 🙏' })
-        return NextResponse.json({ ok: true, login: 'expired' })
-      }
-
-      await supabaseAdmin
-        .from('wa_inbound_verifications')
-        .update({ verified: true, verified_phone: phone, verified_at: new Date().toISOString() } as never)
-        .eq('id', row.id)
-
-      await sendText({ to: phone, jid: replyJid, session: body.session_id, body: '✅ تم التأكيد! ارجع للموقع، هتلاقي نفسك دخلت.' })
-      return NextResponse.json({ ok: true, login: 'verified' })
     }
 
     // ── ١) المحادثة ─────────────────────────────────────────────────────

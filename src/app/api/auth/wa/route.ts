@@ -32,10 +32,10 @@ function admin() {
 // (30 Jul 2026) رقم اللوجين اتغيّر 9982 -> 337 (البيزنس الموثّق). التأكيد
 // session-agnostic: المخ في /api/whatsapp/baileys بيأكّد كود MADxxxxx مهما
 // كان الرقم المستقبِل وبيرد على نفس الجلسة.
-import { authWaSession } from '@/lib/wa-auth-session'
+import { pickAuthWaSession } from '@/lib/wa-auth-session'
 
 const LOGIN_WA_PRIMARY = '201002229982' // 982 — البراند/المارد (الأساسي)
-const LOGIN_WA_FALLBACK = '201026222337' // 337 — البيزنس الموثّق (الاحتياطي)
+// (٥/٩/٢٠٢٦) 337 ماعادش احتياطي للدخول — رقم الحملات ومستبعد في pickAuthWaSession
 
 // بيختار رقم اللوجين لحظيًا: 982 طالما مش متعطّل، وإلا يرجع لـ337. الإشارة من
 // wa_number_configs.enabled (نفس الفلاج اللي بيوقّف المارد على الرقم) — Supabase
@@ -98,20 +98,19 @@ async function liveWaNumbers(sb: ReturnType<typeof admin>): Promise<string[]> {
 }
 
 async function pickLoginWa(sb: ReturnType<typeof admin>): Promise<string> {
+  // 🐞 (٥ سبتمبر ٢٠٢٦) محمد: «لمونة بيبعت توثيق بالواتساب ومش عارف يستلم حسابه».
+  //    السبب: صف `wa_number_configs` بتاع 9982 عليه enabled=false (فلاج سكوت
+  //    المارد) — والدالة كانت بترجّع 337 **فورًا** من غير ما تسأل لو متوصل.
+  //    و337 = رقم الحملات وحالته «initializing» — فكل أكواد الدخول (١٢ كود في
+  //    يوم واحد) راحت لواتساب مش شغال وولا واحد اتأكد.
+  //    فلاج المارد مالوش علاقة باستقبال كود — الويبهوك بيأكّد الكود قبل أي
+  //    قرار رد. الاختيار كله بقى في `pickAuthWaSession` (الترتيب + الجاهزية
+  //    الحية + استبعاد رقم الحملات دايمًا).
+  void sb
   try {
-    const { data } = await sb
-      .from('wa_number_configs')
-      .select('session_id, enabled')
-      .in('session_id', [LOGIN_WA_PRIMARY, LOGIN_WA_FALLBACK])
-    const rows = (data ?? []) as Array<{ session_id: string; enabled: boolean | null }>
-    const primary = rows.find((r) => (r.session_id || '').replace(/\D/g, '') === LOGIN_WA_PRIMARY)
-    if (primary && primary.enabled === false) return LOGIN_WA_FALLBACK
-
-    // 🔐 (٤ سبتمبر ٢٠٢٦) الاختيار اتوحّد في `wa-auth-session.ts`:
-    //    9982 → 1551، و**رقم الحملات مستبعد** مهما كانت حالته. قبل كده
-    //    `liveWaNumbers` كانت بترجّع 337 تاني في الترتيب بعد 982، فأول ما
-    //    982 يقع كل أكواد الدخول تطلع من رقم الحملة الباردة.
-    return await authWaSession()
+    const pick = await pickAuthWaSession()
+    console.log('[auth/wa] login number', pick)
+    return pick.session
   } catch {
     return LOGIN_WA_PRIMARY
   }
