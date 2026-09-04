@@ -171,11 +171,19 @@ export async function callGeminiNative(opts: {
 
   let lastErr = ''
 
+  // ⏱️ (٤ سبتمبر ٢٠٢٦) نداء جيميناي ماكانش له مهلة: تحت «high demand» النداء
+  //    الواحد وصل ٢٧ ثانية، و٣ موديلات × محاولتين عدّت الـ60 ثانية بتاعة
+  //    Vercel → FUNCTION_INVOCATION_TIMEOUT صفحة HTML للمستخدم بدل رد المكتبة.
+  //    مهلة ٢٠ ث للنداء، و٤٠ ث إجمالي — بعدها نرمي ونسيب المسار يقع للمكتبة.
+  const startedAt = Date.now()
+  const BUDGET_MS = 40_000
   for (const model of models) {
+    if (Date.now() - startedAt > BUDGET_MS) { lastErr = lastErr || 'timeout budget'; break }
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`
 
     for (let attempt = 0; attempt < 2; attempt++) {
       const res = await fetch(url, {
+        signal: AbortSignal.timeout(20_000),
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
