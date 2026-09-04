@@ -127,6 +127,8 @@ export async function callGeminiNative(opts: {
   tools?: GeminiTool[]
   maxTokens?: number
   temperature?: number
+  /** ⏳ آخر لحظة مسموح نستنى لحدها (ms منذ epoch) — للطلب كله مش النداء الواحد */
+  deadlineAt?: number
 }): Promise<GeminiResult> {
   const key = process.env.GEMINI_API_KEY
   if (!key) throw new Error('GEMINI_API_KEY مش موجود')
@@ -148,13 +150,14 @@ export async function callGeminiNative(opts: {
   //    ٢٠ نداء في اليوم — يعني `3.6-flash` و`flash-latest` بيرجّعوا 429
   //    فورًا كل مرة. كانوا بيضيفوا نداءين مرفوضين مضمونين لكل رسالة
   //    من غير أي فايدة، وبيعمّقوا الحفرة.
+  // 🛟 (٤ سبتمبر ٢٠٢٦) الترتيب بالقياس الحي الساعة دي:
+  //    flash-lite-latest → 503 في ٢ ث · 3.1-flash-lite → 200 في ٥ ث ·
+  //    3.5-flash-lite → 200 بس في **٥٤ ث** (بيعدّي الـ60 ث بتاعة Vercel لوحده).
+  //    فـ3.1 قبل 3.5. (2.5-flash-lite → 404 على المفتاح ده.)
   const models = [
     process.env.GEMINI_MODEL || 'gemini-flash-lite-latest',
-    'gemini-3.5-flash-lite',
-    // 🛟 (٤ سبتمبر ٢٠٢٦) الاتنين فوق رجّعوا 503 «high demand» مع بعض ساعة
-    //    كاملة والمارد وقع للمكتبة على كل رسالة. 3.1-flash-lite رد 200 في
-    //    نفس اللحظة — مسبح طلب مختلف. (2.5-flash-lite → 404 على المفتاح ده.)
     'gemini-3.1-flash-lite',
+    'gemini-3.5-flash-lite',
   ].filter((m, i, a) => a.indexOf(m) === i)
 
   const body: Record<string, unknown> = {
@@ -175,19 +178,31 @@ export async function callGeminiNative(opts: {
   //    الواحد وصل ٢٧ ثانية، و٣ موديلات × محاولتين عدّت الـ60 ثانية بتاعة
   //    Vercel → FUNCTION_INVOCATION_TIMEOUT صفحة HTML للمستخدم بدل رد المكتبة.
   //    مهلة ٢٠ ث للنداء، و٤٠ ث إجمالي — بعدها نرمي ونسيب المسار يقع للمكتبة.
-  const startedAt = Date.now()
-  const BUDGET_MS = 40_000
+  // ⏳ (٤ سبتمبر ٢٠٢٦ — تكملة) المهلة بقت على مستوى **الطلب كله**: المخ بيعمل
+  //    لحد ٤ أدوار، و٤ × ٤٠ ث عدّت الـ60 ث وطلع FUNCTION_INVOCATION_TIMEOUT
+  //    تاني. `deadlineAt` جاي من callMaridWithTools = بداية الطلب + ٤٥ ث،
+  //    وكل نداء بياخد المتبقي بس (بحد أدنى ٣ ث).
+  const deadline = opts.deadlineAt ?? Date.now() + 40_000
+  const remaining = () => deadline - Date.now()
   for (const model of models) {
-    if (Date.now() - startedAt > BUDGET_MS) { lastErr = lastErr || 'timeout budget'; break }
+    if (remaining() < 3_000) { lastErr = lastErr || 'timeout budget'; break }
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`
 
     for (let attempt = 0; attempt < 2; attempt++) {
-      const res = await fetch(url, {
-        signal: AbortSignal.timeout(20_000),
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
+      if (remaining() < 3_000) { lastErr = lastErr || 'timeout budget'; break }
+      let res: Response
+      try {
+        res = await fetch(url, {
+          signal: AbortSignal.timeout(Math.max(3_000, Math.min(20_000, remaining()))),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+      } catch (e) {
+        // انقطاع أو مهلة — زي 503: جرّب تاني أو الموديل الجاي
+        lastErr = e instanceof Error ? e.message : String(e)
+        continue
+      }
 
       if (res.ok) {
         const d = await res.json() as {

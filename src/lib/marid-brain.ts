@@ -45,10 +45,12 @@ let _cachedModel: { value: string; at: number } | null = null
 async function callModel(args: {
   system?: string
   contents: GeminiContent[]
-  tools?: Array<{ name: string; description: string; parameters: Record<string, unknown> }>
+  tools?: Array<{ name: string; description: string; parameters?: Record<string, unknown> }>
   maxTokens?: number
+  /** ⏳ (٤ سبتمبر ٢٠٢٦) مهلة الطلب كله — بتتمرّر لكل نداء جيميناي */
+  deadlineAt?: number
 }) {
-  return callGeminiNative(args)
+  return callGeminiNative(args as Parameters<typeof callGeminiNative>[0])
 }
 
 async function getMaridModel(): Promise<string> {
@@ -238,6 +240,9 @@ export async function callMaridWithTools(opts: {
 }): Promise<string> {
   const mediaBlocks = opts.mediaBlocks ?? []
   const MAX_TURNS = opts.admin ? 6 : 4
+  // ⏳ (٤ سبتمبر ٢٠٢٦) مهلة الطلب كله: Vercel بيقتل الراوت عند 60 ث، والمارد
+  //    بيعمل لحد ٤ أدوار — المهلة لازم تتقسم عليهم مش تتكرر لكل نداء.
+  const deadlineAt = Date.now() + 45_000
   // 🔌 (٢٤ أغسطس ٢٠٢٦) الأدوات المطفية من `/admin/marid` مابتوصلش لكلود
   //    أصلًا — ده الحارس الأول من التلاتة (شوف `marid-tool-settings.ts`).
   const tools = await filterEnabledTools(
@@ -444,6 +449,7 @@ ${Object.entries(MADMONA_LINKS)
         tools: geminiTools,
         contents: messages as unknown as GeminiContent[],
         maxTokens: 1200,
+        deadlineAt,
       })
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -572,6 +578,7 @@ ${Object.entries(MADMONA_LINKS)
     system: finalSystem,
     contents: messages as unknown as GeminiContent[],
     maxTokens: 1024,
+    deadlineAt,
   })
 
   logAiUsage({
