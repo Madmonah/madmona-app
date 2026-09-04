@@ -765,10 +765,12 @@ function AddListingPageInner({
                 draft={draft}
                 errors={errors}
                 onSubmit={async (patch) => {
-                  const ok = validateContact(patch, setErrors);
+                  // ⚠️ (٤/٩/٢٠٢٦) المتغيّر ده كان اسمه `t` وبيحجب `t` بتاع
+                  //    الترجمة في نفس الاسكوب — اتسمّى `saved`.
+                  const ok = validateContact(patch, setErrors, t);
                   if (!ok) return;
-                  const t = await persist({ ...patch, status: 'submitted' });
-                  if (t) {
+                  const saved = await persist({ ...patch, status: 'submitted' });
+                  if (saved) {
                     trackEvent({ event_type: 'wizard_submit' });
                     setStep(1);
                   }
@@ -2490,8 +2492,20 @@ const PROFILE_PROPERTY: ProductFieldProfile = {
   showMadeToOrder: false, showBrand: false, showModel: false,
   showShipping: false, showWholesale: false,
 };
+// 🐞🔴 (٤ سبتمبر ٢٠٢٦) محمد: «اعمل إعلان تجريبي كامل». التيست كشف إن
+//    **النشر كان بيقع خالص**: أول ما اليوزر يدوس «ابعت الإعلان»، React
+//    بيرمي `Minified React error #321` (Invalid hook call) و**صفر نداء
+//    شبكة** — يعني الإعلان مابيوصلش السيرفر أصلاً، والشاشة بترجع لأولها
+//    من غير أي رسالة خطأ. اليوزر بيفتكر إنه بعت وهو مابعتش.
+//
+//    السبب: تلات **دوال مساعدة عادية** (مش كومبوننتس) بتنادي `useT()`
+//    جوّاها. الهوك جوّه دالة بتتنادى من event handler = كراش مؤكد.
+//    `validateContact` هي القاتلة لأنها بتتنادى من `handleFinalSubmit`.
+//    التانيتين بيتنادوا وقت الرندر فكانوا بيعدوا بالصدفة.
+//
+//    ✅ الحل: `t` بتتمرّر كبارامتر — مفيش هوك بره الكومبوننت.
 function getProductFieldProfile(slug: string | null | undefined): ProductFieldProfile {
-  const { t } = useT()
+  // (كان فيه useT() هنا و`t` مش مستخدمة خالص — سطر ميت بيكسر الهوكس)
   if (!slug) return PROFILE_RETAIL;
   if (slug === 'shop-pharmacy' || slug === 'shop-supermarket') return PROFILE_CONSUMABLE;
   if (slug === 'shop-produce') return PROFILE_FRESH;
@@ -4108,8 +4122,10 @@ function StepPricing({
 // =================================================
 type PhotoCopy = { heading: string; sub: string; box: string };
 
-function getServicePhotoCopy(slug: string | null | undefined): PhotoCopy | null {
-  const { t } = useT()
+function getServicePhotoCopy(
+  slug: string | null | undefined,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): PhotoCopy | null {
   if (!slug) return null;
   const s = slug.toLowerCase();
   const has = (re: RegExp) => re.test(s);
@@ -4158,7 +4174,7 @@ function StepPhotos({
   // activity (عيادة → صورة الدكتور، كوافير → صورة من شغلك …). Non-service tracks
   // keep the generic copy. The ≥1-photo requirement below applies to all.
   const svcCopy = getCategoryTrack(draft.category_slug, categories) === 'services'
-    ? getServicePhotoCopy(draft.category_slug)
+    ? getServicePhotoCopy(draft.category_slug, t)
     : null;
   const [photos, setPhotos] = useState<{ url: string; caption?: string }[]>(draft.photos || []);
   const [uploading, setUploading] = useState(false);
@@ -4423,8 +4439,11 @@ function StepContact({
   );
 }
 
-function validateContact(patch: Partial<DraftPayload>, setErrors: (e: Record<string, string>) => void): boolean {
-  const { t } = useT()
+function validateContact(
+  patch: Partial<DraftPayload>,
+  setErrors: (e: Record<string, string>) => void,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): boolean {
   const errs: Record<string, string> = {};
   if (!patch.contact_name || patch.contact_name.length < 2) errs.contact_name = t('al.err_your_name');
   if (!patch.contact_phone || !/^(\+?2)?01\d{9}$/.test(String(patch.contact_phone).replace(/\s/g, '')))
