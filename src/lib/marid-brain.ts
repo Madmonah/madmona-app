@@ -456,6 +456,18 @@ ${Object.entries(MADMONA_LINKS)
     }
 
     // 📊 قياس بس — fire-and-forget، مايأخّرش الرد ولا بيقدر يكسره
+    //
+    // 🐞 (٤ سبتمبر ٢٠٢٦) محمد: «هو جوجل ده بكام؟ انت مش بتقول بصفر تكلفة».
+    //    كل نداءات جيميناي (٦٨ نداء) كانت متسجّلة بـ**صفر توكن** —
+    //    فاستهلاك جوجل كان مالوش أي قياس، ومكنّاش نقدر نقول بكام.
+    //    السبب: اللوجر بيقرا شكل كلود (`input_tokens`/`output_tokens`)،
+    //    وجيميناي بيرجّع `{ input, output }` — فالقراءة بترجع undefined
+    //    وتتحوّل صفر **من غير أي خطأ**. فشل صامت في القياس.
+    const u = res.usage as unknown as {
+      input_tokens?: number; output_tokens?: number
+      cache_creation_input_tokens?: number | null; cache_read_input_tokens?: number | null
+      input?: number; output?: number
+    }
     logAiUsage({
       agentName: 'المارد',
       channel: opts.channel ?? null,
@@ -464,7 +476,12 @@ ${Object.entries(MADMONA_LINKS)
       turn,
       cacheTtl: '1h',
       latencyMs: Date.now() - _t0,
-      usage: res.usage as never,
+      usage: {
+        input_tokens: u.input_tokens ?? u.input ?? 0,
+        output_tokens: u.output_tokens ?? u.output ?? 0,
+        cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
+        cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
+      } as never,
     })
 
     // 🔧 (٢٨/٨) جيميناي بيرجّع calls جاهزة — مفيش فلترة على type
