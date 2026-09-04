@@ -727,7 +727,9 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
                               <p className="text-sm text-[#1A2E26] truncate">{s.name}</p>
                               {s.duration > 0 && <p className="text-[10px] text-[#6B7280] flex items-center gap-1"><Clock className="w-3 h-3" /> {fmt(s.duration)} دقيقة</p>}
                             </div>
-                            <span className="font-black font-mono text-sm flex-shrink-0" style={{ color: t.accent }}>{fmt(s.price)} ج</span>
+                            {/* 🧾 (٤ سبتمبر ٢٠٢٦) خدمات B2B (سقالات · مقاولات · تركيب) سعرها بعرض —
+                                price_egp عمود إجباري فبيتخزّن 0، وكان بيتعرض «٠ ج». */}
+                            <span className="font-black font-mono text-sm flex-shrink-0" style={{ color: t.accent }}>{Number(s.price) > 0 ? `${fmt(s.price)} ج` : 'بعرض سعر'}</span>
                           </div>
                         ))}
                       </div>
