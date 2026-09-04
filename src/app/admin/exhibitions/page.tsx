@@ -21,10 +21,14 @@ type Co = {
   id: string; name: string; booth: string | null; logo: string | null; industry: string | null
   claimed: boolean; products_collected: boolean; priced: boolean; interest: string | null
   listings_count: number; has_phone: boolean; complete: boolean
+  // 📬 (٤ سبتمبر ٢٠٢٦) حالة آخر رسالة واتساب + هل ليه صفحة — من exhibition_companies_list
+  event?: string; phone?: string | null; has_page?: boolean
+  wa_status?: string | null; wa_at?: string | null; wa_error?: string | null
 }
 type Card = Co & {
   claim_token: string; supplier_id: string; cover: string | null; description: string | null
   phone: string | null; email: string | null; website: string | null; city: string | null
+  wa_status?: string | null; wa_at?: string | null; wa_error?: string | null; wa_message?: string | null; contact_source?: string | null
   district: string | null; address: string | null; store_slug: string | null
   listings: Array<{ id: string; title: string; slug: string; category: string; photo: string | null }>
   gallery: string[] | null
@@ -59,7 +63,7 @@ export default function ExhibitionsPage() {
     // 🔲 QR — يتولّد في المتصفح
     try {
       const QR = (await import('qrcode')).default
-      const url = `${SITE}/claim-business/${data.claim_token}`
+      const url = data.claim_token ? `${SITE}/claim-business/${data.claim_token}` : ''
       setQr(await QR.toDataURL(url, { width: 320, margin: 2, color: { dark: INK, light: '#FFFFFF' } }))
     } catch { /* الـQR تحسين */ }
   }
@@ -78,7 +82,7 @@ export default function ExhibitionsPage() {
             <div>
               <h1 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>🏢 المعارض — Pharmaconex 2026</h1>
               <p style={{ fontSize: 12, color: MUTED, margin: '2px 0 0' }}>
-                {list.length} شركة · {done} صفحة مكتملة · {claimed} استلمت
+                {list.length} شركة · {list.filter(c => c.has_page).length} ليها صفحة · {list.filter(c => c.wa_status === 'delivered' || c.wa_status === 'read').length} وصلتها رسالة · {claimed} استلمت
               </p>
             </div>
           </div>
@@ -109,6 +113,8 @@ export default function ExhibitionsPage() {
                   <Chip on={c.complete} label="صفحة" />
                   <Chip on={c.listings_count > 0} label={`${c.listings_count} منتج`} />
                   <Chip on={c.has_phone} label="تليفون" />
+                  <Chip on={!!c.has_page} label="صفحة" />
+                  <Chip on={c.wa_status === 'delivered' || c.wa_status === 'read'} label={(() => { const m: Record<string,string> = { read: 'اتقري', delivered: 'اتسلّم', sent: 'اتبعت', queued: 'في الطابور', failed: 'اترفض', cancelled: 'اتلغى' }; return c.wa_status ? ('واتساب: ' + (m[c.wa_status] || c.wa_status)) : 'مفيش رسالة' })()} />
                   <Chip on={c.claimed} label="استلمت" strong />
                 </div>
               </div>
@@ -150,6 +156,7 @@ export default function ExhibitionsPage() {
                   {open.cover && <img src={open.cover} alt="" style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 12, marginBottom: 12 }} />}
                   <p style={{ fontSize: 13, lineHeight: 1.7, color: INK, margin: '0 0 14px' }}>{open.description || <span style={{ color: MUTED }}>الوصف لسه ماتجمعش</span>}</p>
                   <Info icon={Phone} label="التليفون" value={open.phone} />
+                  <Info icon={Phone} label="واتساب" value={open.wa_status ? `${({ read:'اتقري', delivered:'اتسلّم', sent:'اتبعت — مستني إيصال', queued:'في الطابور', failed:'اترفض' } as Record<string,string>)[open.wa_status] || open.wa_status}${open.wa_at ? ' · ' + new Date(open.wa_at).toLocaleString('ar-EG') : ''}${open.wa_error ? ' — ' + open.wa_error : ''}` : 'مفيش رسالة اتبعتت'} />
                   <Info icon={Globe} label="الموقع" value={open.website} link />
                   <Info icon={MapPin} label="العنوان" value={[open.district, open.city, open.address].filter(Boolean).join(' · ') || null} />
                   <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
