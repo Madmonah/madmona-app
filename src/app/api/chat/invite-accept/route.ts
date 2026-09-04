@@ -37,9 +37,12 @@ type Sb = ReturnType<typeof admin>
 function digits20(raw: string): string | null {
   let d = (raw || '').replace(/\D/g, '')
   if (d.startsWith('00')) d = d.slice(2)
-  if (d.startsWith('0') && d.length === 11) d = '20' + d.slice(1)
-  if (d.length === 10 && d.startsWith('1')) d = '20' + d
-  return /^20\d{10}$/.test(d) ? d : null
+  // 🌍 (٤ سبتمبر ٢٠٢٦) كانت بترفض أي رقم مش مصري (^20\d{10}$) — قبول الدعوة
+  //    كان مستحيل لرقم إماراتي. مصر = 01…/1… بس؛ غير كده E.164 دولي (١٠–١٥ رقم).
+  if (d.startsWith('01') && d.length === 11) d = '20' + d.slice(1)
+  else if (d.length === 10 && d.startsWith('1')) d = '20' + d
+  if (/^20\d{10}$/.test(d)) return d
+  return /^[1-9]\d{9,14}$/.test(d) ? d : null
 }
 
 /** لاقي profile بالرقم، واعمله واحد لو مش موجود. */

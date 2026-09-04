@@ -110,8 +110,11 @@ export function looksLikeLid(raw: string): boolean {
 export function normalizePhone(raw: string): string {
   let digits = (raw || '').replace(/\D/g, '')
   if (!digits) return ''
-  // Egyptian local number starting with 0
-  if (digits.startsWith('0') && digits.length === 11) {
+  // 🌍 (٤ سبتمبر ٢٠٢٦) 00 الدولية بتتشال؛ والصفر المحلي مصري **بس** لو الرقم 01xxxxxxxxx.
+  //    رقم إماراتي محلي (05…) كان بيتحوّل لرقم مصري وهمي.
+  if (digits.startsWith('00')) digits = digits.slice(2)
+  // Egyptian local number starting with 01
+  if (digits.startsWith('01') && digits.length === 11) {
     digits = '20' + digits.slice(1)
   }
   // Already has country code

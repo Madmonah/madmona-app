@@ -28,10 +28,15 @@ export function normalizePhone(input: string): string | null {
     if (s.startsWith('20')) s = '+' + s
     else if (s.startsWith('0')) s = '+20' + s.slice(1)
     else if (s.length === 10) s = '+20' + s
+    // 🌍 (٤ سبتمبر ٢٠٢٦) رقم دولي من غير + (971585280538 · 9665…) — كان بيرجّع null
+    else if (/^[1-9]\d{9,14}$/.test(s)) s = '+' + s
     else return null
   }
-  if (!/^\+20\d{10}$/.test(s)) return null
-  return s
+  // مصر: نفس القاعدة القديمة بالظبط. غير مصر: E.164 (+كود الدولة + ٧–١٤ رقم).
+  // 🐞 (٤ سبتمبر ٢٠٢٦) كانت بترفض أي حاجة مش +20 — صاحب «لمونة» (إمارات)
+  //    حاول يدخل ١١ مرة بلينك واتساب وكل مرة «bad_identifier». صفر حساب.
+  if (s.startsWith('+20')) return /^\+20\d{10}$/.test(s) ? s : null
+  return /^\+[1-9]\d{7,14}$/.test(s) ? s : null
 }
 
 /**

@@ -20,8 +20,12 @@ export const maxDuration = 60
 function normalizeEg(raw: string): string {
   let d = (raw || '').replace(/\D/g, '')
   if (!d) return ''
-  if (d.startsWith('0') && d.length === 11) d = '20' + d.slice(1)
-  if (d.length === 10) d = '20' + d
+  // 🌍 (٤ سبتمبر ٢٠٢٦) الدالة كانت بتفترض إن أي رقم مصري: رقم إماراتي محلي
+  //    0585280538 (١٠ أرقام) كان بيتحوّل لـ200585280538 — رقم مصري وهمي.
+  //    مصر = 01xxxxxxxxx (١١) أو 1xxxxxxxxx (١٠) بس؛ غير كده الرقم دولي زي ما هو.
+  if (d.startsWith('00')) d = d.slice(2)
+  if (d.length === 11 && d.startsWith('01')) return '20' + d.slice(1)
+  if (d.length === 10 && d.startsWith('1')) return '20' + d
   return d
 }
 

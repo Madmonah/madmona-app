@@ -5,8 +5,10 @@ export const runtime = 'nodejs'
 
 function normEg(raw: string) {
   let d = (raw || '').replace(/\D/g, '')
-  if (d.startsWith('0') && d.length === 11) d = '20' + d.slice(1)
-  if (d.length === 10) d = '20' + d
+  // 🌍 (٤ سبتمبر ٢٠٢٦) مصر = 01xxxxxxxxx / 1xxxxxxxxx بس — غير كده الرقم دولي زي ما هو
+  if (d.startsWith('00')) d = d.slice(2)
+  if (d.startsWith('01') && d.length === 11) d = '20' + d.slice(1)
+  else if (d.length === 10 && d.startsWith('1')) d = '20' + d
   return d
 }
 
