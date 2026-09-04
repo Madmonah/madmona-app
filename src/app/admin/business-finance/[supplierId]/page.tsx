@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import BusinessSetupSteps from '@/components/BusinessSetupSteps'
-import { createClient } from '@supabase/supabase-js'
+import { financeRpc } from '@/lib/financeRpc'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   TrendingUp, TrendingDown, Wallet, Building2, Users, Calendar,
@@ -43,10 +43,6 @@ const PALETTE = {
 // Madmona itself = the platform/company, NOT a B2B client.
 const MADMONA_ID = 'c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 /* ============================================================
    MODULE REGISTRY — single source of truth for back-office tabs.
@@ -158,53 +154,20 @@ export default function BusinessFinancePage({
 
   async function loadAll() {
     setLoading(true)
-
-    // Supplier
-    const { data: sup } = await supabase
-      .from('suppliers')
-      .select('id, business_name, logo_url, industry, business_type, contract_status, commission_rate, commission_extra_rate, contact_phone, theme')
-      .eq('id', supplierId)
-      .single()
-    setSupplier(sup as Supplier)
-
-    // Branches
-    const { data: br } = await supabase
-      .from('supplier_branches')
-      .select('id, name, code, address, district, status, phone')
-      .eq('supplier_id', supplierId)
-      .order('code', { ascending: true })
-    setBranches((br || []) as Branch[])
-
-    // Transactions (last 200)
-    const { data: txns } = await supabase
-      .from('financial_transactions')
-      .select('id, branch_id, direction, amount_egp, category_snapshot, payment_method, description, customer_name, occurred_at, madmona_commission_amount, is_void, supplier_branches(name)')
-      .eq('supplier_id', supplierId)
-      .eq('is_void', false)
-      .order('occurred_at', { ascending: false })
-      .limit(200)
-    
-    const txnsWithBranch = (txns || []).map((t: any) => ({
-      ...t,
-      branch_name: t.supplier_branches?.name || '—',
-    }))
-    setTransactions(txnsWithBranch as Transaction[])
-
-    // Daily summaries (last 30 days)
-    const { data: sums } = await supabase
-      .from('v_business_daily_summary')
-      .select('*')
-      .eq('supplier_id', supplierId)
-      .order('business_date', { ascending: false })
-      .limit(120)  // 30 days × 4 branches
-    setSummaries((sums || []) as DailySummary[])
-
-    // Per-supplier module overrides (supplier_modules table) — empty = registry defaults
-    const { data: mods } = await supabase.rpc('admin_supplier_modules', { p_supplier_id: supplierId })
+    // 🐞 (٥ سبتمبر ٢٠٢٦) كانت ٥ قراءات بعميل anon من غير جلسة ولا توكن —
+    //    بعد إغلاق ٢٨/٨ (anon مالوش select على suppliers) أي صاحب بيزنس داخل
+    //    بتوكن الواتساب كان بيشوف «شركة غير موجودة» (لمونة أول ما استلم
+    //    حسابه). RPC واحدة بتقبل النظامين عبر financeRpc (p_token تلقائي) —
+    //    «الدرس الأكبر ٢٥/٨». أرقام العمولة بتتصفّر لغير الأدمن في الداتابيز.
+    const { data: bundle } = await financeRpc('business_overview_bundle', { p_supplier_id: supplierId })
+    const ok = bundle && bundle.ok
+    setSupplier((ok ? bundle.supplier : null) as Supplier | null)
+    setBranches((ok ? bundle.branches : []) as Branch[])
+    setTransactions((ok ? bundle.transactions : []) as Transaction[])
+    setSummaries((ok ? bundle.summaries : []) as DailySummary[])
     const omap: Record<string, any> = {}
-    ;(Array.isArray(mods) ? mods : []).forEach((r: any) => { omap[r.module_href] = r })
+    ;(ok && Array.isArray(bundle.modules) ? bundle.modules : []).forEach((r: any) => { omap[r.module_href] = r })
     setModOverrides(omap)
-
     setLoading(false)
   }
 
