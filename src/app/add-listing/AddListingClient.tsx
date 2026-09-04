@@ -839,9 +839,9 @@ const TRACK_LABELS: Record<TrackTab, string> = {
   services: 'خدمات',
   hybrid: 'هايبرد',
   restaurants: 'مطاعم',
-  products: 'منتجات',
+  products: 'بيع',
   daily: 'سوبر ماركت',
-  sales: 'منتجات',
+  sales: 'بيع',
   industry: 'شركات وصناعة',
 };
 

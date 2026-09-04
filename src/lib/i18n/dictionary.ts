@@ -399,7 +399,15 @@ const ar: Dict = {
   'erp.cost': 'التكلفة',
   'erp.sell': 'البيع',
   'erp.entry_no': 'قيد',
-  'market.track_products': 'منتجات',
+  // 🏷️ (٤ سبتمبر ٢٠٢٦) محمد: «إعلانات الويزارد اللي للبيع بتنزل في
+  //    سكشن الإيجار؟؟». الجذر: نفس التاب كان ليه **تلات أسامي**:
+  //    الهوم «بيع» · السوق «منتجات» · الإضافة «منتجات».
+  //    فاللي عايز يبيع شقة مابيدوّرش تحت «منتجات» — بيفتح «إيجار»
+  //    (وهو التاب الافتراضي أصلًا) ويلاقي «عقارات للإيجار» فيدوس عليها.
+  //    والاسمين مكررين حرفيًا: «عقارات سكنية» موجودة في الاتنين.
+  //    اتوحّدوا على «بيع» زي الهوم — وده كمان بيطبّق قاعدة ٢/٩
+  //    «الإضافة تطابق العرض».
+  'market.track_products': 'بيع',
   'market.track_daily': 'سوبر ماركت',
   'market.sort_newest': 'الأحدث',
   'market.sort_price_asc': 'السعر: من الأقل',
@@ -1251,7 +1259,7 @@ const ar: Dict = {
   'al.t_services': 'خدمات',
   'al.t_hybrid': 'هايبرد',
   'al.t_restaurants': 'مطاعم',
-  'al.t_products': 'منتجات',
+  'al.t_products': 'بيع',
   'al.t_daily': 'سوبر ماركت',
   'al.s1_title': 'إيه اللي عايز تضيفه؟',
   'al.s1_sub': 'اختار النوع وابدأ — الإضافة مجانية وبتاخد دقيقة',
@@ -2271,7 +2279,7 @@ const en: Dict = {
   'erp.cost': 'Cost',
   'erp.sell': 'Sell',
   'erp.entry_no': 'Entry',
-  'market.track_products': 'Products',
+  'market.track_products': 'For Sale',
   'market.track_daily': 'Groceries',
   'market.sort_newest': 'Newest',
   'market.sort_price_asc': 'Price: low to high',
@@ -3116,7 +3124,7 @@ const en: Dict = {
   'al.t_services': 'Services',
   'al.t_hybrid': 'Hybrid',
   'al.t_restaurants': 'Restaurants',
-  'al.t_products': 'Products',
+  'al.t_products': 'For Sale',
   'al.t_daily': 'Groceries',
   'al.s1_title': 'What would you like to add?',
   'al.s1_sub': 'Pick a type and start — free and takes a minute',
