@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
+import BusinessSetupSteps from '@/components/BusinessSetupSteps'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
@@ -437,6 +438,9 @@ export default function BusinessFinancePage({
 
       {/* Body */}
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* 🧭 (٥/٩/٢٠٢٦) خطوات استكمال حساب الشركة — محمد: «نمشي معاه بخطوات
+            لحد ما يخلص بناء الشركة بالكامل». بتتحسب من الداتا الحقيقية. */}
+        <BusinessSetupSteps supplierId={supplierId} />
         {/* MODULES — مجمّعة: وحدات النشاط (بلون البراند) ثم الإدارة العامة */}
         {vertModules.length > 0 && (
           <section>

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { modulesForIndustry, canOpenModule } from '@/lib/erpModules'
+import BusinessSetupSteps from '@/components/BusinessSetupSteps'
 
 /* ============================================================================
    MyWorkspaceCard — «شغلي وصلاحياتي» في شاشة حسابي
@@ -196,6 +197,8 @@ export default function MyWorkspaceCard() {
                   )
                 })()}
 
+                {/* 🧭 (٥/٩/٢٠٢٦) استكمال بناء الشركة — الخطوة الجاية للمالك */}
+                {m.relation === 'owner' && <BusinessSetupSteps supplierId={m.supplier_id} compact />}
                 <div className="grid grid-cols-2 gap-2">
                   {/* 🗂️ (٢٠ أغسطس ٢٠٢٦) «شغلي» — الحضور والطلبات والمصاريف
                       جوّه الأبليكيشن نفسه. محمد: «عايز تاب حسابي يعرض كل
