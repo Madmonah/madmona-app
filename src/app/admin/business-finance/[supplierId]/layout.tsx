@@ -3,7 +3,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'لوحة الإدارة — مضمونة',
+  // (القالب الرئيسي بيضيف «| مضمونة» لوحده)
+  title: 'لوحة الإدارة',
   robots: { index: false, follow: false },
 }
 
