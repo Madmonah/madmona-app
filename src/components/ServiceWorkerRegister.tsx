@@ -45,21 +45,51 @@ export default function ServiceWorkerRegister() {
     // أكتر من مرة.
     // ========================================================================
     let reloaded = false
-    const isUserBusy = () => {
-      const el = document.activeElement as HTMLElement | null
-      if (!el) return false
-      const tag = el.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true
-      if (el.isContentEditable) return true
+    // 🐞 (٤ سبتمبر ٢٠٢٦) اتكشف في تيست الويزارد: نشرنا نسخة جديدة والمستخدم
+    //    كان بيملا إعلان — الـSW عمل reload و**الشغل ضاع**.
+    //    الحارس القديم كان بيفحص `document.activeElement` بس، يعني
+    //    «المؤشر جوّه خانة **في اللحظة دي**». بس اليوزر اللي كتب نص الفورم
+    //    وبعدين بيسكرول أو بيدوس زرار مش «مشغول» بالمقياس ده — فبيتعمله
+    //    reload وهو فاقد شغله.
+    //    ✅ دلوقتي أي فورم فيه بيانات مدخّلة = شغل مش محفوظ = ماتقاطعوش.
+    const hasUnsavedInput = () => {
+      try {
+        const fields = document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+          'input:not([type=hidden]):not([type=search]), textarea, select',
+        )
+        for (const f of fields) {
+          if (f.disabled) continue
+          if ('readOnly' in f && (f as HTMLInputElement).readOnly) continue
+          if (f.type === 'checkbox' || f.type === 'radio') continue
+          if (f.type === 'file') { if ((f as HTMLInputElement).files?.length) return true; continue }
+          if (String(f.value || '').trim()) return true
+        }
+      } catch { /* لو أي حاجة وقعت، مانمنعش التحديث */ }
       return false
     }
+    const isUserBusy = () => {
+      const el = document.activeElement as HTMLElement | null
+      if (el) {
+        const tag = el.tagName
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true
+        if (el.isContentEditable) return true
+      }
+      return hasUnsavedInput()
+    }
+    // 🕐 التحديث المؤجّل بيتنفّذ أول ما اليوزر يسيب الصفحة (تاب تاني أو
+    //    قفل) — فمحدش بيفضل على نسخة قديمة للأبد، ومحدش بيضيع شغله.
+    let pendingReload: (() => void) | null = null
+    const onHide = () => {
+      if (document.visibilityState === 'hidden' && pendingReload) { const f = pendingReload; pendingReload = null; f() }
+    }
+    document.addEventListener('visibilitychange', onHide)
 
     const onSwMessage = (event: MessageEvent) => {
       if (event.data?.type !== 'SW_UPDATED' || reloaded) return
       const doReload = () => {
         if (reloaded) return
-        // ماتقاطعش المستخدم وهو بيكتب — استنى لحد ما يخلّص
-        if (isUserBusy()) { setTimeout(doReload, 3000); return }
+        // ماتقاطعش المستخدم وهو بيكتب أو وعنده بيانات مش محفوظة
+        if (isUserBusy()) { pendingReload = doReload; setTimeout(doReload, 5000); return }
         reloaded = true
         console.info('[sw] نسخة جديدة اشتغلت — إعادة تحميل الصفحة')
         window.location.reload()
@@ -98,8 +128,15 @@ export default function ServiceWorkerRegister() {
         await Promise.all(regs.map((r) => r.unregister()))
         const keys = await caches.keys()
         await Promise.all(keys.map((k) => caches.delete(k)))
-        console.warn('[sw] عالق — مسحنا كل حاجة وبنعيد التحميل')
-        window.location.reload()
+        // ⚠️ (٤/٩/٢٠٢٦) المسار ده كان بيعمل reload **من غير أي فحص** —
+        //    أقسى من SW_UPDATED (بيمسح التسجيل والكاش كمان). بقى يحترم
+        //    نفس القاعدة: مايقاطعش شغل مش محفوظ.
+        const hardReload = () => {
+          if (isUserBusy()) { pendingReload = hardReload; setTimeout(hardReload, 5000); return }
+          console.warn('[sw] عالق — مسحنا كل حاجة وبنعيد التحميل')
+          window.location.reload()
+        }
+        hardReload()
       } catch { /* الحارس تحسين — مايكسرش حاجة */ }
     }
 
@@ -131,6 +168,7 @@ export default function ServiceWorkerRegister() {
       window.removeEventListener('beforeinstallprompt', early)
       window.removeEventListener('appinstalled', clearOnInstall)
       navigator.serviceWorker.removeEventListener('message', onSwMessage)
+      document.removeEventListener('visibilitychange', onHide)
     }
   }, [])
 

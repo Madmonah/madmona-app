@@ -4325,20 +4325,17 @@ function StepPhotos({
 
           ⚠️ الاستثناء للموظف بس — العميل اللي بيسجّل بنفسه لسه لازم صورة،
              لأنه شايف إعلانه قدامه ومحدش هيرجعله يطلبها. */}
-      <div className="grid grid-cols-2 gap-3 mt-6">
-        <button type="button" onClick={onBack} className={btnSecondary}>{t('al.back')}</button>
-        <button
-          type="button"
-          onClick={() => onSubmit(photos)}
-          disabled={saving || uploading || (photos.length === 0 && !staffEntry)}
-          className={btnPrimary}
-          title={photos.length === 0 && !staffEntry ? t('al.upload_first_title') : undefined}
-        >
-          {saving ? '...'
-            : photos.length > 0 ? t('al.next')
-            : staffEntry ? t('al.next_staff')
-            : t('al.upload_first')}
-        </button>
+      {/* 🧹 (٤ سبتمبر ٢٠٢٦) أزرار «كمل →/← رجوع» اتشالت من هنا كمان.
+          دي مكتوبة بإيدها مش من `Nav`، فما اتشالتش مع الباقي — والشاشة
+          واحدة من ٢٨/٨ فمفيش «بعده» يتنقل ليه. الصور بتتحفظ لوحدها
+          (autoSave) والنشر من زرار «ابعت الإعلان» في آخر الشاشة.
+          فضل التنبيه بس لما مفيش صور — عشان اليوزر يعرف ليه هيتوقف. */}
+      <div className="mt-6">
+        {photos.length === 0 && !staffEntry && (
+          <p className="text-xs text-amber-700 bg-amber-50 rounded-xl px-3 py-2">
+            {t('al.upload_first_title')}
+          </p>
+        )}
       </div>
       {photos.length === 0 && (
         <p className="text-xs text-gray-500 mt-3 text-center">
