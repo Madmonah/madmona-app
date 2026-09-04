@@ -154,9 +154,12 @@ export async function callGeminiNative(opts: {
   //    flash-lite-latest → 503 في ٢ ث · 3.1-flash-lite → 200 في ٥ ث ·
   //    3.5-flash-lite → 200 بس في **٥٤ ث** (بيعدّي الـ60 ث بتاعة Vercel لوحده).
   //    فـ3.1 قبل 3.5. (2.5-flash-lite → 404 على المفتاح ده.)
+  // 🔁 (٤ سبتمبر ٢٠٢٦ — قياس تاني) flash-lite-latest بيرجّع 503 بس بعد **٢١ ث**
+  //    — بياكل نص مهلة الطلب قبل ما نوصل لـ3.1 اللي بيرد في ٤ ث. فـ3.1 الأساسي،
+  //    وflash-lite-latest احتياطي. GEMINI_MODEL في البيئة لسه بيغلب لو اتحط.
   const models = [
-    process.env.GEMINI_MODEL || 'gemini-flash-lite-latest',
-    'gemini-3.1-flash-lite',
+    process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite',
+    'gemini-flash-lite-latest',
     'gemini-3.5-flash-lite',
   ].filter((m, i, a) => a.indexOf(m) === i)
 
