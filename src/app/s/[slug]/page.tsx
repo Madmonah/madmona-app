@@ -509,7 +509,8 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
   const gallery: any[] = (data.gallery || []).filter((g: any) => galUrl(g))
   const cover: string = data.cover_url || ''
   // عدّاد المعروض: الإعلانات (units) هي بضاعة المورّد لو مفيش كتالوج خدمات
-  const invCount = units.length || Number(data.product_count || 0) || Number(data.service_count || 0)
+  // 🍽️ (٤/٩) مطعم بمنيو: العدّ بالأصناف مش بالإعلان الواحد («١ صنف» كانت غلط)
+  const invCount = menu.length || units.length || Number(data.product_count || 0) || Number(data.service_count || 0)
   const branchChip = branches.length === 0 ? null
     : branches.length === 1 ? 'فرع واحد'
     : branches.length === 2 ? 'فرعين'

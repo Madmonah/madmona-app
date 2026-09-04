@@ -198,7 +198,7 @@ export default function RestaurantCloud({ business, listing, supplier, items, hi
                     {it.photo_url && <img src={it.photo_url} alt={it.name_ar} className="w-24 h-24 rounded-2xl object-cover flex-shrink-0" loading="lazy" />}
                     <div className="min-w-0 flex-1 flex flex-col">
                       <p className="font-black text-[15px] leading-snug">{lang.startsWith('ar') ? it.name_ar : (it.name_en || it.name_ar)}</p>
-                      {it.description_ar && <p className="text-[12px] leading-relaxed mt-0.5 line-clamp-2" style={{ color: PALETTE.muted }}>{it.description_ar}</p>}
+                      {it.description_ar && it.description_ar.replace(/[.\s]+$/,'').toLowerCase() !== it.name_ar.trim().toLowerCase() && <p className="text-[12px] leading-relaxed mt-0.5 line-clamp-2" style={{ color: PALETTE.muted }}>{it.description_ar}</p>}
                       <div className="mt-auto pt-2 flex items-center justify-between gap-2">
                         <span className="font-black text-[15px] tabular-nums" style={{ color: PALETTE.accent }}>
                           {hasSizes && <span className="text-[11px] font-bold ml-1" style={{ color: PALETTE.muted }}>{lang.startsWith('ar') ? 'من' : 'from'}</span>}
