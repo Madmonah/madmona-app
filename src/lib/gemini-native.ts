@@ -75,6 +75,52 @@ export function toGeminiSchema(s: unknown): Record<string, unknown> {
  *    الأحدث، فبنروح للي بعده بدل ما الرد يقف.
  *    (اتأكدت بالاختبار ٢٨/٨: 3.6-flash → 429 · flash-latest → ✅)
  */
+// ═══════════════════════════════════════════════════════════════════════
+// 🔌 قاطع دورة الحصة (٤ سبتمبر ٢٠٢٦)
+//
+// محمد: «هو جوجل ده بكام؟» → الفحص من كونسول جوجل نفسه لقى **~٣٬٢٠٠ نداء
+// مرفوض بـ429 في ٤ أيام**، ونسبة النجاح نزلت من ١٠٠٪ لقرب الصفر.
+//
+// 🐞 الجذر — **دوامة**: القايمة فيها ٥ موديلات بيتجربوا بالترتيب،
+//    و`MAX_TURNS = 4` في المخ. يعني رسالة عميل واحدة ممكن تكلّف
+//    **٢٠ نداء لجوجل**. وأول ما الحصة تخلص، كل رسالة جديدة بتحرق ٢٠
+//    وحدة تانية — فبنحفر أعمق بدل ما نوقف.
+//    التأكيد بالأرقام: ٧٩ رسالة يوم ٣١/٨ × ٢٠ ≈ ١٬٥٨٠ — وجوجل شايفة ١٬٨٨٠.
+//
+// ✅ أول ٤٢٩، بنوقف النداء خالص لفترة تبريد. المارد بيرجّع للقالب
+//    (`marid_reply_mode='template'` / `marid_offline_replies`) بدل ما
+//    يفضل يضرب في حيطة. التبريد متخزّن في `whatsapp_config` عشان كل
+//    نسخ السيرفرليس تشوفه — الذاكرة لوحدها مابتنفعش هنا.
+// ═══════════════════════════════════════════════════════════════════════
+const COOLDOWN_KEY = 'gemini_quota_cooldown_until'
+const COOLDOWN_MS = 15 * 60_000
+let _cool: { until: number; at: number } | null = null
+
+async function cooldownUntil(): Promise<number> {
+  if (_cool && Date.now() - _cool.at < 60_000) return _cool.until
+  try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
+    const { data } = await db.from('whatsapp_config').select('value').eq('key', COOLDOWN_KEY).maybeSingle()
+    const v = Number((data as { value?: string } | null)?.value || 0)
+    _cool = { until: Number.isFinite(v) ? v : 0, at: Date.now() }
+    return _cool.until
+  } catch { return 0 }
+}
+
+async function startCooldown(): Promise<void> {
+  const until = Date.now() + COOLDOWN_MS
+  _cool = { until, at: Date.now() }
+  try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } })
+    await db.from('whatsapp_config').upsert(
+      { key: COOLDOWN_KEY, value: String(until) } as never, { onConflict: 'key' })
+  } catch { /* التبريد في الذاكرة على الأقل */ }
+}
+
 export async function callGeminiNative(opts: {
   system?: string
   contents: GeminiContent[]
@@ -85,19 +131,26 @@ export async function callGeminiNative(opts: {
   const key = process.env.GEMINI_API_KEY
   if (!key) throw new Error('GEMINI_API_KEY مش موجود')
 
+  // 🔌 الحصة خلصت من شوية؟ ماتضربش في حيطة — ارجع للقالب على طول.
+  const cool = await cooldownUntil()
+  if (cool > Date.now()) {
+    throw new Error(`Gemini: الحصة خلصت — تبريد لحد ${new Date(cool).toISOString()}`)
+  }
+
   // 🔁 (١ سبتمبر ٢٠٢٦ — مساءً) محمد: «المارد لسه بيرد من المكتبة مع إننا
   //    ربطناه بجوجل!». الفحص بالأرقام: الحصة المجانية لموديلات Flash =
   //    **٢٠ نداء في اليوم** (gemini-flash-latest · 3.6 · 3.7) — والمارد
   //    بياخد ٢–٤ نداءات للرد الواحد = ٧ ردود ثم 429 للمكتبة.
   //    موديلات Lite حصتها أعلى بكتير، واتأكدت إنها بتكمّل دورة الأدوات
   //    كاملة (نداء → أداة → رد بالإعلانات). فاللايت الأول والفلاش احتياطي.
+  // 🔻 (٤ سبتمبر ٢٠٢٦) القايمة اتقصّرت من ٦ لـ٢.
+  //    السبب: التعليق فوق نفسه بيقول إن حصة موديلات **Flash** المجانية
+  //    ٢٠ نداء في اليوم — يعني `3.6-flash` و`flash-latest` بيرجّعوا 429
+  //    فورًا كل مرة. كانوا بيضيفوا نداءين مرفوضين مضمونين لكل رسالة
+  //    من غير أي فايدة، وبيعمّقوا الحفرة.
   const models = [
     process.env.GEMINI_MODEL || 'gemini-flash-lite-latest',
-    'gemini-flash-lite-latest',
-    'gemini-3.1-flash-lite',
     'gemini-3.5-flash-lite',
-    'gemini-3.6-flash',
-    'gemini-flash-latest',
   ].filter((m, i, a) => a.indexOf(m) === i)
 
   const body: Record<string, unknown> = {
@@ -164,5 +217,7 @@ export async function callGeminiNative(opts: {
     }
   }
 
+  // كل الموديلات رجّعت الحصة خلصت → وقف النداءات فترة بدل الدوامة
+  if (/429|quota|RESOURCE_EXHAUSTED/i.test(lastErr)) await startCooldown()
   throw new Error(`Gemini (كل الموديلات): ${lastErr.slice(0, 220)}`)
 }
