@@ -47,6 +47,7 @@ interface Overview {
   openwa?: { reachable: boolean; error: string | null }
   devices?: Device[]
   senders?: Sender[]
+  queued?: number
 }
 
 const STATUS_AR: Record<string, string> = {
@@ -147,6 +148,27 @@ export default function SendingPage() {
     )
   }
 
+  /* 🔘 (٤ سبتمبر ٢٠٢٦) محمد: «ليه مفيش ولا رسالة اتبعتت للبيزنس
+     بتوع المعرض؟» — الطابور كان فيه ٥٤ رسالة و`queue_send_enabled` على
+     `0`، والشاشة دي كانت بتعرض «مقفول» **من غير أي زرار يفتحه**.
+     شاشة بتعرض مفتاح وماتقدرش تقلبه = المفتاح مش في إيد حد. */
+  const queueLane = (data?.senders ?? []).find((x) => x.name === 'طابور الواتساب')
+  const queueOn = queueLane?.active !== false
+  const [busy, setBusy] = useState(false)
+  const toggleQueue = async () => {
+    setBusy(true)
+    try {
+      const res = await fetch('/api/admin/sending', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': safePw(password) },
+        body: JSON.stringify({ action: queueOn ? 'queue_off' : 'queue_on' }),
+      })
+      const j = await res.json()
+      if (!res.ok) throw new Error(j.error || 'فشل')
+      await load(password)
+    } catch (e) { setError((e as Error).message) } finally { setBusy(false) }
+  }
+
   const d = data
   return (
     <div className="min-h-screen bg-[#FAFAF7] p-4 md:p-6" dir="rtl">
@@ -165,6 +187,26 @@ export default function SendingPage() {
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-xs text-red-700 break-words">{error}</div>
         )}
+
+        {/* 🚦 مفتاح الطابور — أهم حاجة في الشاشة، فوق خالص */}
+        <div className={`rounded-2xl border p-4 mb-4 ${queueOn ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="min-w-0">
+              <p className="font-black text-sm text-gray-900">
+                طابور الواتساب — {queueOn ? '🟢 شغّال' : '🟡 واقف'}
+              </p>
+              <p className="text-[11px] text-gray-600 mt-0.5">
+                {typeof d?.queued === 'number' ? <><b>{d.queued}</b> رسالة مستنية · </> : null}
+                رسالة واحدة كل تشغيلة، ومابتتبعتش الجاية غير لما اللي قبلها يتأكد وصولها.
+              </p>
+            </div>
+            <button onClick={toggleQueue} disabled={busy || !password}
+              className={`px-4 py-2 rounded-xl text-xs font-black text-white disabled:opacity-50 ${
+                queueOn ? 'bg-amber-600' : 'bg-emerald-600'}`}>
+              {busy ? '...' : queueOn ? 'وقّف الطابور' : 'شغّل الطابور'}
+            </button>
+          </div>
+        </div>
 
         {/* ⓪ الأجهزة المتصلة دلوقتي — من OpenWA مباشرة */}
         <h2 className="text-sm font-black text-gray-700 mb-2">

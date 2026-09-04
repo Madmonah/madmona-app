@@ -202,6 +202,46 @@ async function fetchDevices(senders: SenderRow[]) {
 //    أي استثناء مش متمسوك هنا بيخلّي Vercel يرجّع ٥٠٠ **بجسم فاضي**، فمفيش
 //    ولا معلومة تقول إيه اللي وقع. الغلاف ده بيمسك أي حاجة ويرجّعها JSON
 //    فيها اسم الخطأ ورسالته — الشاشة بتعرضها زي ما هي.
+/* 🔘 (٤ سبتمبر ٢٠٢٦) محمد: «ليه مفيش ولا رسالة اتبعتت للبيزنس بتوع
+   المعرض؟» — السبب إن `queue_send_enabled` فضل `0`، والشاشة دي كانت
+   **`GET` بس**: بتعرض حالة كل مسار وماعندهاش أي زرار يغيّرها. فالوحيد
+   اللي بيقدر يشغّل الطابور كان سطر أمر في الترمنال — اتجرّب مرتين وماخدش.
+
+   شاشة بتعرض مفتاح وماتقدرش تقلبه = المفتاح مش في إيد حد.
+   الزرار بقى هنا: تشغيل/إيقاف الطابور، وفكّ إيقاف أي مسار وقع. */
+export async function POST(request: Request) {
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  let body: { action?: string; session?: string }
+  try { body = await request.json() } catch {
+    return NextResponse.json({ error: 'bad_json' }, { status: 400 })
+  }
+
+  const setCfg = async (key: string, value: string) => {
+    const { error } = await supabase
+      .from('whatsapp_config')
+      .upsert({ key, value } as never, { onConflict: 'key' })
+    if (error) throw new Error(error.message)
+  }
+
+  try {
+    if (body.action === 'queue_on')  { await setCfg('queue_send_enabled', '1'); return NextResponse.json({ ok: true, queue: 'on' }) }
+    if (body.action === 'queue_off') { await setCfg('queue_send_enabled', '0'); return NextResponse.json({ ok: true, queue: 'off' }) }
+
+    // فكّ إيقاف مسار وقع بعد عطل — بنمسح صف الإيقاف بتاعه هو بس
+    if (body.action === 'resume_lane' && body.session) {
+      const { error } = await supabase
+        .from('whatsapp_config').delete().eq('key', `queue_halt_${body.session}`)
+      if (error) throw new Error(error.message)
+      return NextResponse.json({ ok: true, resumed: body.session })
+    }
+    return NextResponse.json({ error: 'unknown_action' }, { status: 400 })
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 })
+  }
+}
+
 export async function GET(request: Request) {
   try {
     return await handle(request)
@@ -255,10 +295,18 @@ async function handle(request: Request) {
     }
   })
 
+  // عدّاد الرسايل المستنية — الشاشة بتعرضه جنب مفتاح الطابور عشان
+  // اللي بيشغّله يعرف هيخرج كام رسالة قبل ما يضغط.
+  const { count: queuedCount } = await supabase
+    .from('whatsapp_campaign_messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'queued')
+
   return NextResponse.json({
     ...base,
     openwa: { reachable: live.reachable, error: live.error },
     devices: live.devices,
     senders: senderStatus,
+    queued: queuedCount ?? 0,
   })
 }
