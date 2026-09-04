@@ -1429,3 +1429,19 @@ tool_name not in ('search_catalog','list_categories','who_is_this',
   الصفحات الطويلة (حتى `/marketplace` نفسها) — مش عيب في الصفحة.
   للتحقق البصري: `resize_window` بارتفاع كبير (3600) وصوّر من غير سكرول،
   وارجع `preset: desktop` بعدها. والـDOM بـ`find`/JS دليل كفاية.
+
+## 🔐 توثيق الواتساب كان بيروح لرقم واقع (٥ سبتمبر ٢٠٢٦)
+محمد: «لمونة بيبعت توثيق بالواتساب ومش عارف يستلم حسابه».
+🐞 `pickLoginWa` في `/api/auth/wa` كانت بترجّع **337** فورًا لو صف
+`wa_number_configs` بتاع 9982 عليه `enabled=false` (ده فلاج سكوت المارد،
+اتقفل ٣/٩) — و337 رقم الحملات وحالته «initializing». ١٢ كود في يوم واحد
+راحوا لواتساب مش متوصل وولا واحد اتأكد. ✅ الاختيار بقى `pickAuthWaSession`
+بس (الترتيب + الجاهزية الحية + استبعاد رقم الحملات). وكود `MADxxxxx`
+بيتأكّد في المخ **قبل** `marid_should_skip` — المسكّت كان بيتبلع.
+⚠️ **الفحص الأول لأي «التوثيق مش شغال»:**
+```bash
+curl -s -H 'content-type: application/json' -d '{"action":"start"}' https://www.madmonacairo.com/api/auth/wa
+```
+`wa_number` لازم يكون رقم حالته `ready` على OpenWA (`/api/sessions`).
+ومحاكاة الويبهوك (`event: message.received` على `/api/whatsapp/openwa?token=`)
+بترجّع `login: verified` — من غير ما تبعت واتساب حقيقي.
