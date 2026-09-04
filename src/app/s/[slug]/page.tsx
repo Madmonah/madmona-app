@@ -387,7 +387,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
       //    مايشوفش اسمه في التاب ولا في البوكماركس.
       try {
         const nm = (d as { business_name?: string } | null)?.business_name
-        if (nm) document.title = `${nm} — مضمونة`
+        if (nm) document.title = `${nm} | مضمونة`
       } catch { /* مايكسرش الصفحة */ }
     })()
   }, [slug])

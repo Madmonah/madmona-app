@@ -5,7 +5,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'نظام الإدارة — مضمونة',
+    // (القالب الرئيسي بيضيف «| مضمونة» لوحده — مانكررهاش)
+  title: 'نظام الإدارة',
   robots: { index: false, follow: false },
 }
 
