@@ -84,6 +84,8 @@ export default function SettingsPage({
   const [roles, setRoles] = useState<RoleTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'general' | 'identity' | 'branches' | 'employees' | 'commission' | 'modules'>('general')
+  // 💰 (٥/٩/٢٠٢٦) تاب العمولة للأدمن بس — صاحب البيزنس مالوش دعوة بالعمولة (business_supplier_head.is_admin)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [toast, setToast] = useState('')
 
   async function loadAll() {
@@ -95,6 +97,7 @@ export default function SettingsPage({
       supabase.from('business_employees').select('*').eq('supplier_id', supplierId).order('role'),
     ])
     setSupplier(supRes.data as Supplier)
+    sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId }).then((h: any) => setIsAdmin(!!(h?.data?.ok && h.data.is_admin)))
     setBranches((brRes.data || []) as Branch[])
     setEmployees((empRes.data || []) as Employee[])
 
@@ -156,7 +159,7 @@ export default function SettingsPage({
               { key: 'employees', label: `الموظفين (${employees.length})` },
               { key: 'commission', label: 'العمولة' },
               { key: 'modules', label: 'الموديولات' },
-            ].map((t) => (
+            ].filter((t) => t.key !== 'commission' || isAdmin).map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key as any)}

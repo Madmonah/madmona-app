@@ -397,7 +397,7 @@ export default function TeamOversightPage({
                 <Badge>هيكل إدارة كامل</Badge>
                 <Badge>Daily tasks تلقائي</Badge>
                 <Badge>Live tracking</Badge>
-                <Badge>عمولة على gross</Badge>
+                <Badge>تقارير لايف</Badge>
               </div>
             </div>
           </div>
