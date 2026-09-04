@@ -7,7 +7,7 @@ import {
   Loader2, MapPin, Calendar, ChevronLeft, Scissors, Clock, Sparkles, User,
   ChevronDown, MessageCircle, ShieldCheck, Image as ImageIcon, Crown, Wind,
   Brush, Hand, Flower2, Building2, Stethoscope, Utensils, Briefcase,
-  Wrench, Car, ShoppingBag, Home, Factory, Plane,
+  Wrench, Car, ShoppingBag, Home, Factory, Plane, Package,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -323,6 +323,25 @@ const VERTICALS: Record<string, VerticalCfg> = {
     },
     catIcons: { 'داخلي': MapPin, 'خارجي': Plane, 'مناسبات': Crown },
   },
+  // 🧱 (٤ سبتمبر ٢٠٢٦) مواد بناء وتشطيبات وتوريدات مقاولات — مورّد جملة
+  //    (مصنع أو تاجر). المشتري مقاول أو مطوّر بيطلب عرض سعر
+  //    وكتالوج — مش بيحجز ميعاد.
+  building_materials: {
+    productsHeading: 'المنتجات ومواصفاتها',
+    productsUnit: 'منتج',
+    kicker: 'مواد بناء وتشطيبات',
+    heroCta: 'اطلب عرض سعر', heroCtaIcon: Package, waCta: 'اطلب الكتالوج',
+    bookChip: 'توريد للمشاريع', unitWord: 'منتج',
+    galleryHeading: 'من أعمالنا',
+    galleryTiles: ['المنتجات', 'التطبيق', 'المخزن', 'الجودة'],
+    branchesHeading: 'المقر والمخازن', branchCta: 'تواصل',
+    servicesHeading: 'المنتجات وأسعار الجملة', servicesIcon: Package,
+    teamHeading: 'فريق المبيعات والدعم الفني',
+    accountSub: 'تابع عروض الأسعار وأوردراتك',
+    coverBadge: 'صورة من أعمالنا',
+    catLabels: { 'جملة': 'بالجملة', general: 'عام', 'عام': 'عام' },
+    catIcons: { 'جملة': Package },
+  },
   default: {
     kicker: 'احجز أونلاين',
     heroCta: 'احجز الآن', heroCtaIcon: Calendar, waCta: 'تواصل معنا',
@@ -338,22 +357,37 @@ const VERTICALS: Record<string, VerticalCfg> = {
   },
 }
 
+/* 🗺️ (٤ سبتمبر ٢٠٢٦) `suppliers.industry` **مخزّن بالعربي** لأغلب
+   الحسابات الحقيقية (مطوّر عقاري · مطاعم · كافيهات …) — والخريطة كانت
+   بتقارن بمفاتيح إنجليزي بس، فـ١٢٨ ستورفرنت (منهم كل المطوّرين العقاريين)
+   كانوا واقعين على ثيم `default` بلغة صالون: «احجز في أقرب فرع ليك».
+   الخريطة بقت بتطبّع القيمة الأول وبعدين تطابق بالكلمة — إنجليزي أو عربي.
+   ⚠️ أي نشاط جديد يتضاف هنا في القايمتين مع بعض. */
+const INDUSTRY_MAP: Array<[RegExp, keyof typeof VERTICALS]> = [
+  [/beauty_salon|salon|صالون|تجميل|كوافير/i, 'beauty_salon'],
+  [/polyclinic|clinic|medical_center|عياد|طب|مركز طبي/i, 'polyclinic'],
+  [/restaurant|cafe|coffee|مطعم|مطاعم|كافيه|كافيهات|مشروبات|أكل/i, 'restaurant'],
+  [/car_showroom|^cars$|معرض سيارات|معرض عربيات/i, 'car_showroom'],
+  [/vehicle_agency|^auto$|توكيل|غسيل وتلميع|سيارات|عربيات/i, 'vehicle_agency'],
+  [/building_material|finishing|مواد بناء|تشطيب|كيماويات|دهان|عوازل|سيراميك|رخام|طوب|أسمنت|خرسان|زجاج|أرضيات|جبس/i, 'building_materials'],
+  [/factory|factories|industrial|مصنع|مصانع|صناع|توريدات|توريد/i, 'factory'],
+  [/contracting|construction|مقاولات|إنشاء/i, 'contracting'],
+  [/real_estate|propert|عقار|مطوّر|مطور|تطوير عقاري|إسكان/i, 'real_estate'],
+  [/marine_rentals|yacht|مراكب|يخوت|بحري/i, 'marine_rentals'],
+  [/tourism|travel|events|event_hall|hotel|سياح|رحلات|مناسبات|قاعة|فندق/i, 'tourism'],
+  [/home_services|maintenance|^services$|خدمات منزلية|صيانة|الخدمات/i, 'home_services'],
+  [/retail|furniture|shop|أثاث|متجر|محل|إلكترونيات/i, 'retail'],
+]
+
 function getVertical(industry: string | null | undefined): VerticalCfg {
-  if (industry === 'beauty_salon') return VERTICALS.beauty_salon
-  if (industry === 'polyclinic' || industry === 'clinic') return VERTICALS.polyclinic
-  if (industry === 'restaurant' || industry === 'restaurants') return VERTICALS.restaurant
-  if (industry === 'car_showroom' || industry === 'cars') return VERTICALS.car_showroom
-  if (industry === 'vehicle_agency' || industry === 'auto') return VERTICALS.vehicle_agency
-  if (industry === 'contracting' || industry === 'construction') return VERTICALS.contracting
-  if (industry === 'retail' || industry === 'furniture' || industry === 'shop') return VERTICALS.retail
-  if (industry === 'marine_rentals' || industry === 'yachts') return VERTICALS.marine_rentals
-  // (٢٢ أغسطس ٢٠٢٦) الأربعة الجداد — بنقبل مفاتيح الستورفرنت **و**مفاتيح
-  // أقسام الـCRM (properties/services/factories/tourism) عشان التاجر اللي
-  // جاي من الـCRM يلاقي ثيمه جاهز من غير ما حد يترجم الاسم بالإيد.
-  if (industry === 'real_estate' || industry === 'properties' || industry === 'property') return VERTICALS.real_estate
-  if (industry === 'home_services' || industry === 'services' || industry === 'maintenance') return VERTICALS.home_services
-  if (industry === 'factory' || industry === 'factories' || industry === 'industrial') return VERTICALS.factory
-  if (industry === 'tourism' || industry === 'travel' || industry === 'events') return VERTICALS.tourism
+  const raw = (industry || '').trim()
+  if (!raw) return VERTICALS.default
+  // التطبيع: الهمزات والألف المقصورة بتتكتب بصيغ مختلفة في نفس الكلمة
+  const norm = raw.toLowerCase()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/[ً-ْـ]/g, '')
+  for (const [re, key] of INDUSTRY_MAP) if (re.test(norm) || re.test(raw)) return VERTICALS[key]
   return VERTICALS.default
 }
 
@@ -439,6 +473,12 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
   const team: any[] = data.team || []
   const gallery: any[] = (data.gallery || []).filter((g: any) => galUrl(g))
   const cover: string = data.cover_url || ''
+  // عدّاد المعروض: الإعلانات (units) هي بضاعة المورّد لو مفيش كتالوج خدمات
+  const invCount = units.length || Number(data.product_count || 0) || Number(data.service_count || 0)
+  const branchChip = branches.length === 0 ? null
+    : branches.length === 1 ? 'فرع واحد'
+    : branches.length === 2 ? 'فرعين'
+    : `${fmt(branches.length)} فروع`
   const loc = branches[0]?.district || branches[0]?.address || 'القاهرة'
   // WhatsApp goes to Madmona's business line (AI auto-responder)
   const WA = '201002229982'
@@ -483,7 +523,10 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
       <header className="relative text-white overflow-hidden">
         <div className="absolute inset-0" style={{ backgroundImage: cover ? `url(${cover})` : t.gCover, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         <div className="absolute inset-0" style={{ backgroundImage: t.heroOverlay }} />
-        {!cover && <span className="absolute top-3 right-3 z-10 text-[10px] font-bold text-white/85 bg-black/30 px-2.5 py-1 rounded-full">{v.coverBadge}</span>}
+        {/* 🏷️ (٤ سبتمبر ٢٠٢٦) بادج «صورة الغلاف» كان بيتعرض **للعميل**
+            لما البيزنس ماعندوش غلاف — فالصفحة بتوصل للمشتري وكأنها
+            ناقصة. البادج اتشال؛ التدرّج لوحده شكله مقصود. `coverBadge`
+            فاضلة في الإعدادات لشاشة رفع الغلاف للمورد. */}
 
         <div className="relative z-10 max-w-2xl mx-auto px-5 pt-10 pb-7 min-h-[330px] flex flex-col justify-end">
           {/* 🏷️ (٢٤ أغسطس ٢٠٢٦) البيزنس اللي مالوش لوجو كان بياخد نجمة ✨ —
@@ -516,7 +559,12 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           )}
 
           <div className="flex flex-wrap gap-2 mt-3.5">
-            {[branches.length > 0 ? `${fmt(branches.length)} فروع` : null, `${fmt(data.industry === 'retail' ? data.product_count : data.service_count)} ${v.unitWord}`, v.bookChip].filter(Boolean).map((s: any) => (
+            {/* 🔢 (٤ سبتمبر ٢٠٢٦) الشارة كانت بتقرا `service_count` بس — والبيزنس
+                اللي بضاعته إعلانات (مورّد مواد بناء · مكتب عقاري · معرض)
+                عدّاده صفر هناك، فالصفحة بتقول «٠ منتج» وتحتها ١٤ منتج
+                بالصور. بقت بتاخد أكبر إشارة حقيقية وبتختفي لو مفيش ولا واحد.
+                و«١ فروع» بقت «فرع واحد». */}
+            {[branchChip, invCount > 0 ? `${fmt(invCount)} ${v.unitWord}` : null, v.bookChip].filter(Boolean).map((s: any) => (
               <span key={s} className="text-xs font-bold bg-white/14 ring-1 ring-white/25 px-3 py-1.5 rounded-full">{s}</span>
             ))}
           </div>
