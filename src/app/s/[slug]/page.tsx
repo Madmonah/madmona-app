@@ -381,6 +381,14 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
       setData(d)
       setUnits(Array.isArray(u) ? u : [])
       setLoading(false)
+      // 🏷️ (٤ سبتمبر ٢٠٢٦) عنوان التاب = اسم البيزنس.
+      //    الصفحة 'use client' فمالهاش metadata — كان بيقول «مضمونة |
+      //    معاملاتك مضمونة…» زي أي صفحة، فصاحب البيزنس اللي بيبعت لينكه
+      //    مايشوفش اسمه في التاب ولا في البوكماركس.
+      try {
+        const nm = (d as { business_name?: string } | null)?.business_name
+        if (nm) document.title = `${nm} — مضمونة`
+      } catch { /* مايكسرش الصفحة */ }
     })()
   }, [slug])
 
