@@ -514,7 +514,8 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
     : branches.length === 1 ? 'فرع واحد'
     : branches.length === 2 ? 'فرعين'
     : `${fmt(branches.length)} فروع`
-  const loc = branches[0]?.district || branches[0]?.address || 'القاهرة'
+  // 🏙️ (٤/٩/٢٠٢٦) مدينة المورد قبل «القاهرة» الثابتة — لمونة في دبي كانت بتطلع «القاهرة»
+  const loc = branches[0]?.district || branches[0]?.address || data.city || 'القاهرة'
   // WhatsApp goes to Madmona's business line (AI auto-responder)
   const WA = '201002229982'
 
@@ -715,7 +716,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         {menu.length > 0 && menuListing && (
           <RestaurantCloud
             hideHeader
-            business={{ name: data.business_name, logo: data.logo_url, tagline: data.description || null,
+            business={{ name: data.business_name, logo: data.logo_url, tagline: data.description_ar || null,
               phone: data.contact_phone || null, city: data.city || null }}
             listing={{ id: menuListing.id, slug: menuListing.slug }}
             supplier={{ id: data.supplier_id, business_name: data.business_name }}

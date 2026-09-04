@@ -22,6 +22,17 @@ import { useT } from '@/lib/i18n/LanguageProvider'
 import { currencyLabel, priceLabel } from '@/lib/currency'
 
 export type CloudSize = { id: string; name_ar: string; price: number }
+// أيقونة القسم لما مفيش صورة — بالكلمة المفتاحية في اسمه (عربي/إنجليزي)
+const EMOJI: [RegExp, string][] = [
+  [/crepe|كريب/i, '🥞'], [/mojito|موهيتو/i, '🍹'], [/milkshake|شيك/i, '🥛'], [/smoothie|سموذي/i, '🥤'],
+  [/energy|طاقة/i, '⚡'], [/juice|عصير|عصائر|عصاير/i, '🍊'], [/fruit|فواكه|فاكهة/i, '🍓'], [/zabado|زبادو|زبادي/i, '🍧'],
+  [/chocolate|شوكولا/i, '🍫'], [/sweet|dessert|حلو/i, '🍰'], [/snack|سناك/i, '🍟'], [/coffee|قهوة|كافيه/i, '☕'],
+  [/tea|شاي/i, '🍵'], [/pizza|بيتزا/i, '🍕'], [/burger|برجر/i, '🍔'], [/grill|مشوي|مشاوي/i, '🍖'], [/salad|سلط/i, '🥗'],
+  [/seafood|بحري|سمك/i, '🦐'], [/chicken|فراخ|دجاج/i, '🍗'], [/breakfast|فطار|فطور/i, '🍳'], [/pasta|مكرونة/i, '🍝'],
+  [/sandwich|ساندوتش/i, '🥪'], [/soup|شوربة/i, '🍲'], [/rice|أرز|رز/i, '🍚'], [/kids|أطفال/i, '🧒'],
+]
+const catEmoji = (name: string) => (EMOJI.find(([re]) => re.test(name)) || [null, '🍽️'])[1]
+
 export type CloudItem = {
   id: string
   name_ar: string
@@ -137,17 +148,23 @@ export default function RestaurantCloud({ business, listing, supplier, items, hi
         </div>
       )}
 
-      {/* كروت الأقسام */}
-      <div className="px-4 pb-3 grid grid-cols-1 gap-3">
+      {/* كروت الأقسام — شبكة عمودين. القسم اللي ليه صورة ياخد غلاف، واللي
+          مالوش (لمونة: العصاير مالهاش صور على موقعهم) ياخد أيقونة على تدرّج
+          بدل مستطيل فاضي طويل. */}
+      <div className="px-4 pb-3 grid grid-cols-2 gap-3">
         {groups.map((g) => (
           <button key={g.id} onClick={() => scrollTo(g.id)} className="text-right rounded-3xl overflow-hidden shadow-sm bg-white">
-            <div className="h-28" style={g.cover ? { backgroundImage: `url(${g.cover})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: 'linear-gradient(135deg,#DCE9E1,#F4EFE8)' }} />
-            <div className="px-4 py-3 flex items-center justify-between">
-              <div>
-                <p className="font-black text-lg leading-tight">{g.name}</p>
-                <p className="text-[12px]" style={{ color: PALETTE.muted }}>{g.items.length} {lang.startsWith('ar') ? 'صنف' : 'items'}</p>
+            {g.cover ? (
+              <div className="h-24" style={{ backgroundImage: `url(${g.cover})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            ) : (
+              <div className="h-24 grid place-items-center text-4xl" style={{ background: 'linear-gradient(135deg,#DCE9E1,#F4EFE8)' }}>{catEmoji(g.name)}</div>
+            )}
+            <div className="px-3 py-2.5 flex items-center justify-between gap-1">
+              <div className="min-w-0">
+                <p className="font-black text-[15px] leading-tight truncate">{g.name}</p>
+                <p className="text-[11px]" style={{ color: PALETTE.muted }}>{g.items.length} {lang.startsWith('ar') ? 'صنف' : 'items'}</p>
               </div>
-              <ChevronLeft className="w-5 h-5" style={{ color: PALETTE.muted }} />
+              <ChevronLeft className="w-4 h-4 flex-shrink-0" style={{ color: PALETTE.muted }} />
             </div>
           </button>
         ))}
