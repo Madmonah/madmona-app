@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import { modulesForIndustry } from '@/lib/erpModules'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
-import { rpcSafe } from '@/lib/rpc'
+import { rpcSafe, withToken } from '@/lib/rpc'
 // 🎨 (٢١ أغسطس ٢٠٢٦) محمد: «خليني أقدر أعدّل الكلام ده ديناميك».
 //    اللوجو والغلاف والوصف ومعرض الصور والألوان — كانوا بيتعدّلوا بالإيد
 //    في SQL لكل بيزنس. بقوا تاب هنا.
@@ -25,6 +25,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+
+// 🔐 (٥/٩/٢٠٢٦) نفس العميل + p_token للدوال المحروسة — شوف withToken في lib/rpc.ts
+const sbTok = withToken(supabase)
 
 type Supplier = {
   id: string
@@ -86,7 +89,8 @@ export default function SettingsPage({
   async function loadAll() {
     setLoading(true)
     const [supRes, brRes, empRes] = await Promise.all([
-      supabase.from('suppliers').select('*').eq('id', supplierId).single(),
+      // (٥/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس — لو الصف مارجعش نستخدم رأس المورد من RPC بتوكن
+      supabase.from('suppliers').select('*').eq('id', supplierId).single().then(async (r: any) => r.data ? r : { data: await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId }).then((h: any) => (h.data && h.data.ok ? h.data : null)) }),
       supabase.from('supplier_branches').select('*').eq('supplier_id', supplierId).order('code'),
       supabase.from('business_employees').select('*').eq('supplier_id', supplierId).order('role'),
     ])
@@ -276,27 +280,19 @@ function BranchesTab({
   const [adding, setAdding] = useState(false)
 
   async function addBranch(b: Partial<Branch>) {
-    await supabase.from('supplier_branches').insert({
-      supplier_id: supplierId,
-      name: b.name?.trim() || 'فرع جديد',
-      code: b.code?.trim() || `BR${branches.length + 1}`,
-      address: b.address?.trim() || null,
-      district: b.district?.trim() || null,
-      phone: b.phone?.trim() || null,
-      manager_name: b.manager_name?.trim() || null,
-      status: 'active',
-      opens_at: '10:00',
-      closes_at: '22:00',
-    })
+    // (٥/٩/٢٠٢٦) insert مباشر كان بيتبلع بصمت لصاحب البيزنس (RLS أدمن بس) — RPC بتوكن
+    await sbTok.rpc('business_branch_save', { p_supplier_id: supplierId, p_branch: {
+      name: b.name?.trim() || 'فرع جديد', code: b.code?.trim() || `BR${branches.length + 1}`,
+      address: b.address?.trim() || null, district: b.district?.trim() || null,
+      phone: b.phone?.trim() || null, manager_name: b.manager_name?.trim() || null,
+      opens_at: '10:00', closes_at: '22:00',
+    } })
     setAdding(false)
     onChanged()
   }
 
   async function updateBranch(id: string, updates: Partial<Branch>) {
-    await supabase.from('supplier_branches').update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    }).eq('id', id)
+    await sbTok.rpc('business_branch_save', { p_supplier_id: supplierId, p_branch: { ...updates, id } })
     setEditingId(null)
     onChanged()
   }
@@ -519,17 +515,11 @@ function EmployeesTab({
 
   async function addEmployee(e: Partial<Employee>) {
     const role = roles.find((r) => r.role === e.role)
-    await supabase.from('business_employees').insert({
-      supplier_id: supplierId,
-      branch_id: e.branch_id || null,
-      full_name: e.full_name?.trim() || 'موظف جديد',
-      role: e.role || 'staff',
-      role_ar: role?.role_ar || e.role,
-      phone: e.phone?.trim() || null,
+    await sbTok.rpc('business_employee_save', { p_supplier_id: supplierId, p_employee: {
+      branch_id: e.branch_id || null, full_name: e.full_name?.trim() || 'موظف جديد',
+      role: e.role || 'staff', role_ar: role?.role_ar || e.role, phone: e.phone?.trim() || null,
       personal_commission_rate: e.personal_commission_rate || 0,
-      status: 'active',
-      avatar_initial: e.full_name?.trim().charAt(0) || 'م',
-    })
+    } })
     setAdding(false)
     onChanged()
   }
@@ -540,14 +530,14 @@ function EmployeesTab({
       const role = roles.find((r) => r.role === updates.role)
       if (role) payload.role_ar = role.role_ar
     }
-    await supabase.from('business_employees').update(payload).eq('id', id)
+    await sbTok.rpc('business_employee_save', { p_supplier_id: supplierId, p_employee: { ...payload, id } })
     setEditingId(null)
     onChanged()
   }
 
   async function deleteEmployee(id: string) {
     if (!confirm('متأكد من حذف الموظف؟ كل tasks بتاعته هتتمسح كمان')) return
-    await supabase.from('business_employees').delete().eq('id', id)
+    await sbTok.rpc('business_employee_delete', { p_employee_id: id })
     onChanged()
   }
 
@@ -868,7 +858,7 @@ function ModulesTab({ supplier, supplierId }: { supplier: Supplier; supplierId: 
   async function toggle(href: string) {
     const next = !isOn(href)
     setBusy(href)
-    await rpcSafe(supabase, 'admin_set_supplier_module', { p_supplier_id: supplierId, p_module_href: href, p_enabled: next })
+    await rpcSafe(sbTok, 'admin_set_supplier_module', { p_supplier_id: supplierId, p_module_href: href, p_enabled: next })
     setOverrides((prev) => ({ ...prev, [href]: { enabled: next } }))
     setBusy(null)
   }

@@ -81,3 +81,23 @@ export function jsonObj<T extends Record<string, any> = Record<string, any>>(
   }
   return {}
 }
+
+
+// 🔐 (٥ سبتمبر ٢٠٢٦) دوال لوحة البيزنس بقت محروسة بـ schedule_edit_ok(supplier, p_token):
+//    جلسة Supabase (مالك/فريق/أدمن) **أو** توكن الواتساب. العميل الأصلي بيبعت
+//    الجلسة لوحده؛ الغلاف ده بيضيف p_token للدوال اللي بتقبله بس (غيرها
+//    PostgREST بيرجّع 404 لو اتبعت له بارامتر زيادة).
+import { readMadmonaToken } from '@/lib/madmona-token'
+const TOKEN_FNS = new Set([
+  'employee_set_password', 'set_employee_email', 'admin_update_employee_contact', 'admin_move_employee_branch',
+  'admin_list_employees_for_manage', 'admin_update_branch_settings', 'admin_create_service', 'admin_update_service',
+  'admin_delete_service', 'admin_set_supplier_module', 'admin_add_task', 'admin_update_task_status',
+  'business_supplier_head', 'business_branch_save', 'business_employee_save', 'business_employee_delete',
+  'admin_bulk_add_employees', 'business_setup_progress', 'business_overview_bundle',
+])
+export function withToken(client: any) {
+  return {
+    rpc: (fn: string, args: Record<string, unknown> = {}) =>
+      client.rpc(fn, TOKEN_FNS.has(fn) ? { p_token: readMadmonaToken(), ...args } : args),
+  }
+}

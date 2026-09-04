@@ -5,6 +5,7 @@ import { readMadmonaToken } from '@/lib/madmona-token'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import {
   Users, ChevronLeft, Loader2, Plus, Trash2, CheckCircle2,
   ClipboardPaste, Type, AlertCircle, Building2, ArrowDownToLine,
@@ -18,6 +19,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+
+// 🔐 (٥/٩/٢٠٢٦) نفس العميل + p_token للدوال المحروسة — شوف withToken في lib/rpc.ts
+const sbTok = withToken(supabase)
 
 type Branch = {
   id: string
@@ -134,7 +138,7 @@ export default function BulkAddEmployeesPage({
   // Load supplier + branches + أدوار مضبوطة على نشاط المورد الحقيقي
   useEffect(() => {
     (async () => {
-      const { data: sup } = await supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single()
+      const { data: sup } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
       setSupplier(sup as any)
       const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
       setBranches((br || []) as Branch[])

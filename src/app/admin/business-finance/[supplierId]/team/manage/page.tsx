@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, RefreshCw, Search, Save, Check,
   Building2, Phone, Users, AlertCircle, Mail, Lock,
@@ -20,6 +21,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
+
+// 🔐 (٥/٩/٢٠٢٦) نفس العميل + p_token للدوال المحروسة — شوف withToken في lib/rpc.ts
+const sbTok = withToken(supabase)
 
 type Branch = { id: string; name: string; code: string | null }
 type Emp = {
@@ -50,15 +54,14 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
 
   async function loadAll() {
     setLoading(true)
-    const { data: sup } = await supabase.from('suppliers')
-      .select('business_name').eq('id', supplierId).single()
+    const { data: sup } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
     setSupplierName((sup as any)?.business_name || '')
 
     const { data: br } = await supabase.from('supplier_branches')
       .select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches((br || []) as Branch[])
 
-    const { data: emp } = await supabase.rpc('admin_list_employees_for_manage', {
+    const { data: emp } = await sbTok.rpc('admin_list_employees_for_manage', {
       p_supplier_id: supplierId,
     })
     const list = (emp || []) as Emp[]
@@ -103,7 +106,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
     setRowState((p) => ({ ...p, [e.employee_id]: { saving: true, msg: '', err: false } }))
 
     if (d.phone !== (e.phone || '') || d.pin !== (e.pin_code || '') || d.email !== (e.email || '')) {
-      const { data: r1 } = await supabase.rpc('admin_update_employee_contact', {
+      const { data: r1 } = await sbTok.rpc('admin_update_employee_contact', {
         p_employee_id: e.employee_id, p_phone: d.phone, p_pin: d.pin, p_email: d.email,
       })
       if (r1 && (r1 as any).ok === false) {
@@ -112,7 +115,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
       }
     }
     if (d.branch_id !== (e.branch_id || '')) {
-      const { data: r2 } = await supabase.rpc('admin_move_employee_branch', {
+      const { data: r2 } = await sbTok.rpc('admin_move_employee_branch', {
         p_employee_id: e.employee_id, p_branch_id: d.branch_id || null,
       })
       if (r2 && (r2 as any).ok === false) {
@@ -141,7 +144,7 @@ export default function ManageTeamPage({ params }: { params: { supplierId: strin
     }
     const pw = window.prompt(`باسورد جديد لـ ${e.full_name} (٦ حروف/أرقام على الأقل):`)
     if (!pw) return
-    const { data } = await supabase.rpc('employee_set_password', { p_employee_id: e.employee_id, p_password: pw })
+    const { data } = await sbTok.rpc('employee_set_password', { p_employee_id: e.employee_id, p_password: pw })
     if ((data as any)?.ok) {
       setEmps((prev) => prev.map((x) => x.employee_id === e.employee_id ? { ...x, has_password: true } : x))
       setRowState((p) => ({ ...p, [e.employee_id]: { saving: false, msg: 'اتحدد الباسورد ✓', err: false } }))

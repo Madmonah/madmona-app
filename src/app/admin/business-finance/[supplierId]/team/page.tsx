@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
-import { rpcSafe } from '@/lib/rpc'
+import { rpcSafe, withToken } from '@/lib/rpc'
 import {
   Users, Crown, Building2, ListChecks, ChevronLeft, Loader2,
   CheckCircle2, Circle, X, RefreshCw, Plus,
@@ -25,6 +25,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+
+// 🔐 (٥/٩/٢٠٢٦) نفس العميل + p_token للدوال المحروسة — شوف withToken في lib/rpc.ts
+const sbTok = withToken(supabase)
 
 // إيميلات الفريق (comms roster) بتاعة تيم مضمونة الداخلي بس — يظهروا بس على أكونت مضمونة نفسها،
 // مش على أي مورّد تاني زي Elite.
@@ -104,10 +107,8 @@ export default function TeamOversightPage({
 
   async function loadAll() {
     setLoading(true)
-    const { data: sup } = await supabase.from('suppliers')
-      .select('id, business_name, industry, contract_status')
-      .eq('id', supplierId).single()
-    setSupplier(sup as Supplier)
+    const { data: sup } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
+    setSupplier((sup && sup.ok ? sup : null) as Supplier)
 
     const { data: br } = await supabase.from('supplier_branches')
       .select('id, name, code, status')
@@ -483,13 +484,13 @@ function TaskModal({
     const newStatus = task.status === 'completed' ? 'pending' : 'completed'
     // Optimistic update
     setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, status: newStatus, completed_at: newStatus === 'completed' ? new Date().toISOString() : null } : t))
-    await rpcSafe(supabase, 'admin_update_task_status', { p_task_id: task.id, p_status: newStatus })
+    await rpcSafe(sbTok, 'admin_update_task_status', { p_task_id: task.id, p_status: newStatus })
     onRefresh()
   }
 
   async function addTask() {
     if (!newTaskTitle.trim()) return
-    await rpcSafe(supabase, 'admin_add_task', {
+    await rpcSafe(sbTok, 'admin_add_task', {
       p_employee_id: employee.employee_id,
       p_title_ar: newTaskTitle.trim(),
       p_priority: 'medium',
@@ -903,7 +904,7 @@ function CommsModal({ roster, onClose, onSaved }: {
   }
   async function saveEmp(id: string) {
     setSaving(true)
-    await rpcSafe(supabase, 'set_employee_email', { p_employee_id: id, p_email: (emps[id] || '').trim() || null })
+    await rpcSafe(sbTok, 'set_employee_email', { p_employee_id: id, p_email: (emps[id] || '').trim() || null })
     setMsg('اتسجّل ✓'); setTimeout(() => setMsg(''), 2000)
     setSaving(false); onSaved()
   }

@@ -5,9 +5,12 @@ import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Plus, X, Scissors, Edit2, Trash2, Save, Clock, Percent, Wrench, Tag, UtensilsCrossed } from 'lucide-react'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
-import { rpcSafe } from '@/lib/rpc'
+import { rpcSafe, withToken } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🔐 (٥/٩/٢٠٢٦) نفس العميل + p_token للدوال المحروسة — شوف withToken في lib/rpc.ts
+const sbTok = withToken(supabase)
+
 
 const SALON_CATEGORIES = [
   { value: 'hair_cut', label: 'قص شعر' },
@@ -62,8 +65,8 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
 
   async function load() {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name, industry, theme').eq('id', supplierId).single()
-    setSupplier(s)
+    const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
+    setSupplier(s && s.ok ? s : null)
     const { data: svc } = await supabase.from('services_catalog')
       .select('*')
       .eq('supplier_id', supplierId)
@@ -76,7 +79,7 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
 
   async function deleteService(id: string, name: string) {
     if (!confirm(`متأكد عاوز تأرشف "${name}"؟`)) return
-    await rpcSafe(supabase, 'admin_delete_service', { p_service_id: id })
+    await rpcSafe(sbTok, 'admin_delete_service', { p_service_id: id })
     load()
   }
 
@@ -212,7 +215,7 @@ function ServiceModal({ supplierId, service, categories, isMenu, accent = '#0596
     if (!form.name_ar || !form.price_egp) return alert(isMenu ? 'اكتب اسم الصنف والسعر' : 'اكتب الاسم والسعر')
     setSaving(true)
     if (isEdit) {
-      await rpcSafe(supabase, 'admin_update_service', {
+      await rpcSafe(sbTok, 'admin_update_service', {
         p_service_id: service.id,
         p_name_ar: form.name_ar,
         p_category: form.category,
@@ -222,7 +225,7 @@ function ServiceModal({ supplierId, service, categories, isMenu, accent = '#0596
         p_description: form.description || null,
       })
     } else {
-      await rpcSafe(supabase, 'admin_create_service', {
+      await rpcSafe(sbTok, 'admin_create_service', {
         p_supplier_id: supplierId,
         p_name_ar: form.name_ar,
         p_category: form.category,
