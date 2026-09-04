@@ -142,6 +142,8 @@ export default function BusinessFinancePage({
   const { supplierId } = params
   // 🔐 صلاحيات اليوزر الحالي جوّه البيزنس ده (null = مالك/أدمن → مفيش قفل)
   const [memberPerms, setMemberPerms] = useState<Record<string, boolean> | null>(null)
+  // 💰 (٥/٩/٢٠٢٦) العمولة تظهر للأدمن بس — من الداتابيز (business_overview_bundle.is_admin)
+  const [isAdmin, setIsAdmin] = useState(false)
   const isMadmona = supplierId === MADMONA_ID
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [branches, setBranches] = useState<Branch[]>([])
@@ -162,6 +164,7 @@ export default function BusinessFinancePage({
     const { data: bundle } = await financeRpc('business_overview_bundle', { p_supplier_id: supplierId })
     const ok = bundle && bundle.ok
     setSupplier((ok ? bundle.supplier : null) as Supplier | null)
+    setIsAdmin(!!(ok && bundle.is_admin))
     setBranches((ok ? bundle.branches : []) as Branch[])
     setTransactions((ok ? bundle.transactions : []) as Transaction[])
     setSummaries((ok ? bundle.summaries : []) as DailySummary[])
@@ -474,6 +477,7 @@ export default function BusinessFinancePage({
             primary
             accent={accent}
           />
+          {isAdmin && (
           <StatCard
             icon={<BadgePercent className="w-5 h-5" />}
             label="كوميشن مضمونة"
@@ -481,6 +485,7 @@ export default function BusinessFinancePage({
             tone="madmona"
             note={`${stats.txnCount} عملية`}
           />
+          )}
         </section>
 
         {/* MIDDLE: Per-branch today */}
@@ -521,12 +526,12 @@ export default function BusinessFinancePage({
                     <Th>الفئة</Th>
                     <Th>الوصف</Th>
                     <Th className="text-left">المبلغ</Th>
-                    <Th className="text-left">كوميشن</Th>
+                    {isAdmin && <Th className="text-left">كوميشن</Th>}
                   </tr>
                 </thead>
                 <tbody>
                   {filteredTxns.slice(0, 50).map((t) => (
-                    <TxnRow key={t.id} t={t} />
+                    <TxnRow key={t.id} t={t} showCommission={isAdmin} />
                   ))}
                 </tbody>
               </table>
@@ -540,7 +545,7 @@ export default function BusinessFinancePage({
         </section>
 
         {/* Footer: contract terms — hidden for Madmona (it's the platform, not a partner) */}
-        {!isMadmona && (
+        {!isMadmona && isAdmin && (
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
           <h3 className="text-sm font-bold text-[#1A2E26] mb-3 flex items-center gap-2">
             <BadgePercent className="w-4 h-4 text-[#059669]" />
@@ -688,7 +693,7 @@ function Th({ children, className = '' }: { children: ReactNode; className?: str
   )
 }
 
-function TxnRow({ t }: { t: Transaction }) {
+function TxnRow({ t , showCommission }: { t: Transaction ; showCommission?: boolean }) {
   const time = new Date(t.occurred_at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
   const date = new Date(t.occurred_at).toLocaleDateString('ar-EG', { day: '2-digit', month: 'short' })
   return (
@@ -714,11 +719,13 @@ function TxnRow({ t }: { t: Transaction }) {
       }`}>
         {t.direction === 'in' ? '+' : '-'}{Number(t.amount_egp).toLocaleString('ar-EG')} ج
       </td>
+      {showCommission && (
       <td className="px-3 py-2.5 text-xs text-left font-mono text-[#6B7280]">
         {t.madmona_commission_amount && Number(t.madmona_commission_amount) > 0 
           ? `${Number(t.madmona_commission_amount).toLocaleString('ar-EG')} ج`
           : '—'}
       </td>
+      )}
     </tr>
   )
 }
