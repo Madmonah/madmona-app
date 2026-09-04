@@ -390,11 +390,18 @@ ${Object.entries(MADMONA_LINKS)
   // 🔧 والأدوات: input_schema → parameters (بأنواع كابيتال)
   const geminiTools = (tools as Array<{
     name: string; description?: string; input_schema?: unknown
-  }>).map((t) => ({
-    name: t.name,
-    description: t.description || t.name,
-    parameters: toGeminiSchema(t.input_schema),
-  }))
+  }>).map((t) => {
+    // 🐞 (٤ سبتمبر ٢٠٢٦) محمد فتح الـ٢٦ أداة كلها — والمارد وقع في catch وبيرد
+    //    من المكتبة. ٣ أدوات (recent_orders · recent_demand · get_financial_prices)
+    //    سكيمتها `properties: {}` → جيميناي بيرفض OBJECT من غير خصائص ويرجّع 400
+    //    على الطلب كله. أداة من غير باراميترات = من غير حقل parameters خالص.
+    const params = toGeminiSchema(t.input_schema)
+    const hasProps = params && typeof params.properties === 'object' && params.properties !== null
+      && Object.keys(params.properties as Record<string, unknown>).length > 0
+    return hasProps
+      ? { name: t.name, description: t.description || t.name, parameters: params }
+      : { name: t.name, description: t.description || t.name }
+  })
 
   // 🧞 (١ سبتمبر ٢٠٢٦ — مساءً) الرسالة الأولى بصيغة جيميناي: parts مش content.
   //    كانت لسه أنثروبيك → 400 "Unknown name content at contents[0]" (من لوج
