@@ -654,18 +654,11 @@ function AddListingPageInner({
           {t('al.hero_sub')}
         </p>
 
-        {/* Progress bar */}
-        <div className="mt-4 max-w-2xl mx-auto">
-          <div className="h-1 bg-[#F5F4F0] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#34D399] transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className="text-xs text-gray-500 mt-2 text-center">
-            {t('al.step_of', { n: step })}
-          </div>
-        </div>
+        {/* 🧹 (٤ سبتمبر ٢٠٢٦) محمد بعد تيست نسخة الموبايل: الشاشة كانت
+            بتقول «خطوة ١ من ٥» وكل الأقسام الخمسة **ظاهرة تحت بعض في
+            نفس الشاشة**. ده بقايا الويزارد الخماسي اللي اتشال ٢٨/٨
+            («عايز نضغط الـ٥ خطوات لخطوة واحدة») — نفس بقايا زرار
+            «كمّل». شريط التقدّم اتشال؛ مفيش خطوات يتقاس عليها. */}
       </header>
 
       {/* Main */}
@@ -3585,6 +3578,12 @@ function StepPricing({
   const track = getCategoryTrack(draft.category_slug, categories);
   const isRentalCopy = track === 'rentals';
   const isHybrid = track === 'hybrid';
+  // 🏷️ (٤ سبتمبر ٢٠٢٦) محمد بعد تيست الموبايل: اللي بيبيع **شقة** كان
+  //    بيتقاله «سعر الخدمة — بكام بتقدم الخدمة؟» و«ارفع أصنافك Excel».
+  //    السبب: سلسلة النصوص مافيهاش فرع للبيع خالص (rentals · hybrid ·
+  //    beauty · وبعدين الافتراضي = خدمة). التراكات `sales` و`products`
+  //    كانت بتقع على الافتراضي.
+  const isSaleCopy = track === 'sales' || track === 'products';
 
   /* 💸 (٢٤ أغسطس ٢٦) محمد: «كاتب عمولة ١٠٪ في الاضافة وشغل عك في عك».
      العمولة مش ١٠٪ للكل. حسب قاعدة ١ أغسطس:
@@ -3774,16 +3773,20 @@ function StepPricing({
     <section>
       <CategoryChip slug={draft.category_slug} categories={categories} onChange={onChangeCategory} />
       <h2 className="text-lg font-semibold mb-1">
-        {isRentalCopy ? t('al.price_label') : (isHybrid ? t('al.price_event') : t('al.price_service'))}
+        {isRentalCopy ? t('al.price_label')
+          : isSaleCopy ? t('al.price_sale')
+          : (isHybrid ? t('al.price_event') : t('al.price_service'))}
       </h2>
       <p className="text-sm text-gray-500 mb-4">
         {isRentalCopy
           ? t('al.q_rent')
-          : isBeauty
-            ? t('al.q_service_base')
-            : isHybrid
-              ? t('al.q_event_base')
-              : t('al.q_service')}
+          : isSaleCopy
+            ? t('al.q_sale')
+            : isBeauty
+              ? t('al.q_service_base')
+              : isHybrid
+                ? t('al.q_event_base')
+                : t('al.q_service')}
       </p>
 
       {/* Jul 5 2026: bulk Excel entry for ALL tracks — each row = a separate
@@ -3795,8 +3798,12 @@ function StepPricing({
       >
         <span className="text-xl">📊</span>
         <span className="flex-1">
-          <span className="block text-sm font-bold text-[#059669]">{t('al.excel_more_title')}</span>
-          <span className="block text-[11px] text-gray-500 mt-0.5">{t('al.excel_more_sub')}</span>
+          <span className="block text-sm font-bold text-[#059669]">
+            {isSaleCopy ? t('al.excel_more_title_sale') : t('al.excel_more_title')}
+          </span>
+          <span className="block text-[11px] text-gray-500 mt-0.5">
+            {isSaleCopy ? t('al.excel_more_sub_sale') : t('al.excel_more_sub')}
+          </span>
         </span>
         <span className="text-[#059669] font-black">←</span>
       </button>
@@ -4456,20 +4463,24 @@ function Field({ label, error, required, children }: {
   );
 }
 
-function Nav({ onBack, onNext, saving, nextLabel }: {
+function Nav({ onNext, saving, nextLabel }: {
   onBack: () => void;
   onNext: () => void;
   saving: boolean;
   nextLabel?: string;
 }) {
   const { t } = useT()
+  // 🧹 (٤ سبتمبر ٢٠٢٦) محمد بعد تيست الموبايل: أزرار «كمل →» و«← رجوع»
+  //    كانت بتتكرر بين كل قسم وقسم — **والأقسام الخمسة كلها ظاهرة في
+  //    نفس الشاشة** من ٢٨/٨. فاليوزر بيدوس «كمل» وهو أصلاً شايف اللي
+  //    بعده. بقايا الويزارد الخماسي زي شريط التقدّم وزرار «كمّل».
+  //    اللي فضل: زرار الفعل الأخير بس (النشر) — واللي بيتعرف بإن ليه
+  //    `nextLabel` صريح. الباقي مابيتعرضش.
+  if (!nextLabel) return null
   return (
-    <div className="grid grid-cols-2 gap-3 mt-6">
-      <button type="button" onClick={onBack} className={btnSecondary}>
-        {t('al.back')}
-      </button>
-      <button type="button" onClick={onNext} disabled={saving} className={btnPrimary}>
-        {saving ? '...' : (nextLabel || t('al.next'))}
+    <div className="mt-6">
+      <button type="button" onClick={onNext} disabled={saving} className={btnPrimary + ' w-full'}>
+        {saving ? '...' : nextLabel}
       </button>
     </div>
   );
