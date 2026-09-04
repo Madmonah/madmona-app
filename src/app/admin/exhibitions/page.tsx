@@ -38,6 +38,11 @@ const INK = '#1F2A24', MUTED = '#6B7770', LINE = '#E3E8E4'
 const GREEN = '#0F7A4F', GREEN_BG = '#E6F4EC', AMBER = '#9A6400', AMBER_BG = '#FBF1DC'
 const SITE = 'https://www.madmonacairo.com'
 
+const EVENT_NAMES: Record<string, string> = {
+  'egypt-projects-2026': 'Egypt Projects 2026 — مواد البناء والتشطيبات',
+  'pharmaconex-2026': 'Pharmaconex 2026',
+}
+
 export default function ExhibitionsPage() {
   const [list, setList] = useState<Co[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,7 +85,9 @@ export default function ExhibitionsPage() {
         <div style={{ maxWidth: 1080, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             <div>
-              <h1 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>🏢 المعارض — Pharmaconex 2026</h1>
+              {/* 🏷️ (٤ سبتمبر ٢٠٢٦) محمد: «صفحة المعارض لسه باسم فارما». الاسم بقى من
+                  الداتا (event) مش مكتوب بالإيد — أي معرض جديد يظهر باسمه. */}
+              <h1 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>🏢 المعارض — {EVENT_NAMES[list[0]?.event || ''] || list[0]?.event || '—'}</h1>
               <p style={{ fontSize: 12, color: MUTED, margin: '2px 0 0' }}>
                 {list.length} شركة · {list.filter(c => c.has_page).length} ليها صفحة · {list.filter(c => c.wa_status === 'delivered' || c.wa_status === 'read').length} وصلتها رسالة · {claimed} استلمت
               </p>
@@ -109,12 +116,14 @@ export default function ExhibitionsPage() {
                   {c.booth && <span style={{ fontWeight: 700 }}>{c.booth}</span>}
                   {c.industry && ` · ${c.industry}`}
                 </p>
-                <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                  <Chip on={c.complete} label="صفحة" />
+                {/* 📐 (٤ سبتمبر ٢٠٢٦) محمد: «مقاستها مش مظبوطة» — ٦ شيبس في صف من غير
+                    wrap كانوا بيخرجوا بره الكارت على الموبايل، وفيهم «صفحة» مرتين.
+                    بقوا يلفّوا، والتكرار اتشال، ونص الواتساب اتقصر. */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                  <Chip on={!!c.has_page} label="صفحة" />
                   <Chip on={c.listings_count > 0} label={`${c.listings_count} منتج`} />
                   <Chip on={c.has_phone} label="تليفون" />
-                  <Chip on={!!c.has_page} label="صفحة" />
-                  <Chip on={c.wa_status === 'delivered' || c.wa_status === 'read'} label={(() => { const m: Record<string,string> = { read: 'اتقري', delivered: 'اتسلّم', sent: 'اتبعت', queued: 'في الطابور', failed: 'اترفض', cancelled: 'اتلغى' }; return c.wa_status ? ('واتساب: ' + (m[c.wa_status] || c.wa_status)) : 'مفيش رسالة' })()} />
+                  <Chip on={c.wa_status === 'delivered' || c.wa_status === 'read'} label={(() => { const m: Record<string,string> = { read: 'اتقرت', delivered: 'وصلت', sent: 'اتبعتت', queued: 'في الطابور', failed: 'اترفضت', cancelled: 'يدوي' }; return '💬 ' + (c.wa_status ? (m[c.wa_status] || c.wa_status) : 'مفيش') })()} />
                   <Chip on={c.claimed} label="استلمت" strong />
                 </div>
               </div>
