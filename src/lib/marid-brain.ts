@@ -234,6 +234,9 @@ export async function callMaridWithTools(opts: {
   /** نتيجة لزق الصورة على الإعلان المستنّيها — بتتحسب في مسار الواتساب */
   photoAttach?: Record<string, unknown> | null
   admin?: boolean
+  /** 🏪 (٤ سبتمبر ٢٠٢٦) وضع بوت البيزنس: الرسالة داخلة على رقم بيزنس مربوط
+   *  (supplier_wa_channels). مفيش أدوات خالص — الكتالوج جوه البرومبت. */
+  businessMode?: boolean
   // 📊 للقياس بس — اختياريين، ولو مابعتّهمش مفيش أي فرق في السلوك
   channel?: string | null
   conversationId?: string | null
@@ -245,7 +248,9 @@ export async function callMaridWithTools(opts: {
   const deadlineAt = Date.now() + 45_000
   // 🔌 (٢٤ أغسطس ٢٠٢٦) الأدوات المطفية من `/admin/marid` مابتوصلش لكلود
   //    أصلًا — ده الحارس الأول من التلاتة (شوف `marid-tool-settings.ts`).
-  const tools = await filterEnabledTools(
+  // 🏪 (٤ سبتمبر ٢٠٢٦) بوت البيزنس: صفر أدوات — أرخص وأأمن على flash-lite،
+  //    والكتالوج كله جوه البرومبت. الرد من القايمة أو تحويل لبشري.
+  const tools = opts.businessMode ? [] : await filterEnabledTools(
     opts.admin ? [...MARID_TOOLS, ...ADMIN_TOOLS] : MARID_TOOLS,
   )
   // بيتقري مرة واحدة هنا ويتستعمل في حارس الوعد الكاذب تحت: لو أداة تسجيل

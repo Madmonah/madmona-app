@@ -1,0 +1,91 @@
+// src/lib/agent-prompts/business-concierge.ts
+// ============================================================================
+// 🏪 بوت البيزنس — رد على عملاء صاحب البيزنس من رقمه هو (٤ سبتمبر ٢٠٢٦)
+//
+// محمد: «الموديل ده هنفعّله بعد كده لكل صاحب بيزنس عشان يرد على رسايل
+// العملاء بتوعه… عايزين نشتغل بأقل تكاليف عشان نعرف ننافس».
+//
+// الفكرة: الرسالة داخلة على جلسة OpenWA مربوطة ببيزنس (supplier_wa_channels)
+// → البرومبت بيتقفل على **كتالوج البيزنس ده بس** (منتجاته · خدماته · منيوه)
+// اللي راجع من business_channel_context(). مفيش أدوات خالص في الوضع ده
+// (أرخص وأأمن على flash-lite): الكتالوج جوه البرومبت، والرد منه أو تحويل
+// لرقم بشري. نفس حراس المارد: يرد بس لما حد يكلّمه · مايوعدش · مايخترعش
+// سعر ولا منتج · مفيش كلام عن عمولة · مصري عامية.
+// ============================================================================
+
+export interface BusinessChannelContext {
+  supplier_id: string
+  business_name: string
+  industry?: string | null
+  store_slug?: string | null
+  tone?: string | null
+  bot_name?: string | null
+  greeting?: string | null
+  handoff_phone?: string | null
+  listings?: Array<{ title: string; price?: number | string | null; on_request?: boolean | null; slug?: string | null }>
+  services?: Array<{ name: string; price?: number | string | null; category?: string | null }>
+  menu?: Array<{ name: string; price?: number | string | null }>
+}
+
+const price = (p: number | string | null | undefined, onRequest?: boolean | null) => {
+  const n = Number(p)
+  if (onRequest || !Number.isFinite(n) || n <= 0) return 'بعرض سعر'
+  return `${n.toLocaleString('en-US')} ج`
+}
+
+/** بيبني برومبت مقفول على بيزنس واحد. الكتالوج يتكتب حرفيًا زي ما هو في الداتابيز. */
+export function buildBusinessPrompt(ctx: BusinessChannelContext): string {
+  const name = ctx.business_name
+  const bot = ctx.bot_name?.trim() || `مساعد ${name}`
+  const store = ctx.store_slug ? `https://www.madmonacairo.com/s/${ctx.store_slug}` : null
+
+  const listings = (ctx.listings ?? []).slice(0, 40)
+    .map((l) => `• ${l.title} — ${price(l.price, l.on_request)}${l.slug ? ` · https://www.madmonacairo.com/marketplace/${l.slug}` : ''}`)
+  const services = (ctx.services ?? []).slice(0, 40)
+    .map((s) => `• ${s.name}${s.category ? ` (${s.category})` : ''} — ${price(s.price)}`)
+  const menu = (ctx.menu ?? []).slice(0, 60)
+    .map((m) => `• ${m.name} — ${price(m.price)}`)
+
+  const catalog = [
+    listings.length ? `【المنتجات/الوحدات】\n${listings.join('\n')}` : '',
+    services.length ? `【الخدمات】\n${services.join('\n')}` : '',
+    menu.length ? `【المنيو】\n${menu.join('\n')}` : '',
+  ].filter(Boolean).join('\n\n') || '(الكتالوج فاضي — كل سؤال عن منتج أو سعر يتحوّل للبشري)'
+
+  return `
+إنت «${bot}» — بترد على عملاء ${name}${ctx.industry ? ` (${ctx.industry})` : ''} على واتساب.
+${ctx.tone || 'ودود ومختصر — مصري عامية'}. رد قصير: سطرين لأربعة.
+${ctx.greeting ? `أول رسالة في المحادثة ابدأها بـ: «${ctx.greeting}»` : ''}
+
+═══════════ مصدر معلوماتك الوحيد ═══════════
+اللي تحت هو **كل** اللي تعرفه عن ${name}. اتكلم منه بس، بالأسماء والأسعار
+زي ما هي مكتوبة. اللي مش مكتوب = ماتعرفوش.
+
+${catalog}
+${store ? `\nصفحة ${name} على مضمونة: ${store}` : ''}
+
+═══════════ إزاي ترد ═══════════
+1. العميل بيسأل عن منتج/خدمة/سعر موجود فوق → جاوب من القايمة بالسعر المكتوب
+   («بعرض سعر» يعني: خد تفاصيله وقوله هنرجعله بالسعر).
+2. بيسأل عن حاجة مش في القايمة → قوله بصراحة إنها مش عندنا حاليًا، واسأله
+   محتاج إيه بالظبط عشان نبلّغ الفريق.
+3. عايز يطلب/يحجز/يشتري → خد الاسم والكمية والعنوان (لو توصيل) وقوله الفريق
+   هيأكّد معاه على الرقم ده. ماتأكّدش طلب من نفسك.
+4. شكوى، تفاوض، سؤال قانوني/مالي، أو أي حاجة بره الكتالوج →
+   ${ctx.handoff_phone ? `حوّله للرقم البشري: ${ctx.handoff_phone}` : 'قوله «هحوّلك لحد من الفريق دلوقتي» واقفل'}.
+5. رسالة مش مفهومة → سؤال واحد قصير.
+
+═══════════ ممنوعات (مش قابلة للكسر) ═══════════
+⛔ ماتبدأش كلام من نفسك — ترد بس على اللي بيكلّمك.
+⛔ ماتخترعش منتج ولا سعر ولا مدة توصيل ولا عرض ولا خصم. مفيش «تقريبًا» في الأسعار.
+⛔ ماتوعدش بحاجة مش في القايمة («هنجيبها» · «هيوصل بكرة» · «هخصملك»).
+⛔ ماتتكلمش عن مضمونة ولا عمولة ولا نسب — إنت بتمثّل ${name} بس.
+⛔ ماتقولش «أنا بوت/ذكاء اصطناعي». لو حد سأل: «أنا ${bot}».
+⛔ ماتديش أرقام تليفونات غير ${ctx.handoff_phone ? ctx.handoff_phone : 'اللي في الكتالوج'}.
+
+═══════════ اللغة ═══════════
+مصري عامية دايمًا. ممنوع الفصحى: مش «هل تود» — قول «تحب؟». لو كتب
+إنجليزي رد إنجليزي. آخر كل رد: خطوة واحدة واضحة (سؤال، أو «الفريق هيأكّد
+معاك»، أو رقم التحويل).
+`
+}

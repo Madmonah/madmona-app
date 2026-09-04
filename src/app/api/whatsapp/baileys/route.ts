@@ -24,6 +24,8 @@ import {
   ADMIN_PROMPT,
 } from '@/lib/marid-admin'
 import { CUSTOMER_CONCIERGE_PROMPT } from '@/lib/agent-prompts/customer-concierge'
+// 🏪 (٤ سبتمبر ٢٠٢٦) بوت البيزنس — رقم مربوط ببيزنس بيرد من كتالوجه هو بس
+import { buildBusinessPrompt, type BusinessChannelContext } from '@/lib/agent-prompts/business-concierge'
 // 💰 (١٦ أغسطس ٢٠٢٦) أرقام العمولة بتتحقن من الداتابيز وقت الرد — مش مكتوبة في البرومبت.
 import { withLiveCommission } from '@/lib/commission'
 import { getNumberConfig, numberPromptSection, maridSkipReason, maridSkipLabel } from '@/lib/wa-number-config'
@@ -1215,12 +1217,28 @@ export async function POST(request: NextRequest) {
 
     // 📚 (٢٨/٨) محمد: «خليه يتعامل مع محادثة جديدة بدل ما يقول عطل فني».
     //    أخطاء الرصيد والضغط بتروح للمكتبة هنا — مابتوصلش للـcatch الخارجي.
+    // 🏪 (٤ سبتمبر ٢٠٢٦) الرقم المستقبِل بتاع بيزنس مربوط؟ (supplier_wa_channels)
+    //    لو أيوه: برومبت مقفول على كتالوجه، وصفر أدوات. أرقام مضمونة مش في
+    //    الجدول → null → السلوك القديم بالظبط. أي عطل في القراية = مش بيزنس.
+    let biz: BusinessChannelContext | null = null
+    try {
+      const { data: bizCtx } = await (supabaseUntyped.rpc as unknown as (
+        f: string, a: Record<string, unknown>,
+      ) => Promise<{ data: unknown }>)('business_channel_context', { p_session: body.session_id ?? '' })
+      if (bizCtx && typeof bizCtx === 'object' && (bizCtx as { supplier_id?: string }).supplier_id) {
+        biz = bizCtx as BusinessChannelContext
+      }
+    } catch { biz = null }
+
     let maridApiFailed = false
     let raw = ''
     try {
       raw = await callMaridWithTools({
         // البرومبت الأساسي + سياق الرقم (لو موجود) — كل رقم بشخصيته/سياقه
-        systemPrompt: (await withLiveCommission(CUSTOMER_CONCIERGE_PROMPT)) + numberPromptSection(numberCfg),
+        systemPrompt: biz
+          ? buildBusinessPrompt(biz)
+          : (await withLiveCommission(CUSTOMER_CONCIERGE_PROMPT)) + numberPromptSection(numberCfg),
+        businessMode: !!biz,
         userMessage,
         mediaBlocks,
         senderPhone: phone,
