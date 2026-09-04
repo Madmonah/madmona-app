@@ -202,23 +202,17 @@ export default function ExpoPage() {
           ))}
         </div>
 
-        {/* ═══ العمولة ═══ */}
+        {/* 💰 (٤ سبتمبر ٢٠٢٦) كان هنا قسم «١٠٪ · عمولة بعد البيع» بخط ٤٤ —
+            ومحمد قال أكتر من مرة: «العميل ملوش دعوة بالعمولة». الرقم بيتحط
+            **فوق** سعر البايع في الباكاند؛ أي ذكر له في شاشة مورد ممنوع. */}
         <div style={{
           marginTop: 26, background: INK, color: PAPER, borderRadius: 14,
-          padding: '22px 24px', display: 'flex', gap: 22, alignItems: 'center', flexWrap: 'wrap',
+          padding: '22px 24px',
         }}>
-          <span style={{ fontSize: 44, fontWeight: 800, lineHeight: 1, letterSpacing: '-.03em' }}>١٠٪</span>
-          <div style={{ flex: 1, minWidth: 230 }}>
-            <p style={{ margin: '0 0 6px', fontSize: 15.5, fontWeight: 700 }}>عمولة بعد البيع — وبس</p>
-            <p style={{ margin: 0, fontSize: 13.5, opacity: .82, lineHeight: 1.65 }}>
-              مضمونة بتاخد نسبتها لما تبيع فعلاً. طول ما مفيش بيع، مفيش أي مقابل.
-            </p>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 10, fontSize: 12.5, opacity: .72 }}>
-              <span>· مفيش اشتراك شهري</span>
-              <span>· مفيش رسوم تسجيل</span>
-              <span>· مفيش مقابل للعرض</span>
-            </div>
-          </div>
+          <p style={{ margin: '0 0 6px', fontSize: 17, fontWeight: 800 }}>مجاني — والسعر اللي بتطلبه هو اللي بتاخده</p>
+          <p style={{ margin: 0, fontSize: 13.5, opacity: .82, lineHeight: 1.65 }}>
+            مفيش اشتراك ولا رسوم تسجيل ولا مقابل للعرض. مضمونة وسيط ضامن بين البايع والمشتري — إحنا مابنشتريش منك ومابنبعش بدالك.
+          </p>
         </div>
 
         {/* ═══ الفورم ═══ */}

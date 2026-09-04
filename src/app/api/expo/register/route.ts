@@ -59,7 +59,7 @@ function confirmationEmail(company: string, contact: string): { subject: string;
     '٤) تستلموها باسمكم من الاستاند في أقل من دقيقة.',
     '',
     'مضمونة وسيط ضامن — مش بنشتري منكم ولا بنبيع بدالكم.',
-    'مفيش اشتراك ولا رسوم تسجيل؛ العمولة ١٠٪ بعد البيع بس.',
+    'مفيش اشتراك ولا رسوم تسجيل — والسعر اللي بتطلبه هو اللي بتاخده.',
     '',
     `واتساب: +${INTAKE_WA}`,
     SITE,
@@ -89,7 +89,7 @@ function confirmationEmail(company: string, contact: string): { subject: string;
       <div style="margin-top:18px;padding:14px 16px;background:#E4F1EA;border-radius:10px">
         <p style="margin:0;font-size:13.5px;line-height:1.7;color:#0E2A20">
           مضمونة <b>وسيط ضامن</b> — مش بنشتري منكم ولا بنبيع بدالكم.<br>
-          مفيش اشتراك ولا رسوم تسجيل؛ العمولة <b>١٠٪ بعد البيع</b> بس.
+          مفيش اشتراك ولا رسوم تسجيل — <b>والسعر اللي بتطلبه هو اللي بتاخده</b>.
         </p>
       </div>
 
