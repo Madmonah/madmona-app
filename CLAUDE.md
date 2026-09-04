@@ -1464,3 +1464,30 @@ curl -s -H 'content-type: application/json' -d '{"action":"start"}' https://www.
 - 💰 نفس الصفحة كانت بتعرض «كوميشن مضمونة» + عمود كوميشن + «base commission
   X%» لصاحب البيزنس. بقت للأدمن بس (`is_admin` من الـRPC، والأرقام نفسها
   null لغيره في الداتابيز). **أي شاشة في اللوحة بتطبع عمولة تتحط ورا `isAdmin`.**
+
+## 🔴 دوال لوحة البيزنس كانت مفتوحة لأي حد (٥ سبتمبر ٢٠٢٦)
+اتكشفت وأنا بجرّب خطوات الاستكمال بتوكن لمونة الحقيقي:
+`employee_set_password` · `set_employee_email` · `admin_update_employee_contact` ·
+`admin_list_employees_for_manage` كانوا SECURITY DEFINER **متاحين لـanon من غير
+أي حارس** — أي حد بالمفتاح العام يغيّر باسورد/رقم/PIN أي موظف (فريق مضمونة
+كمان) ويدخل بحسابه. وباقي `admin_*` (فروع · خدمات · مهام · موديولات) مفتوحين
+لأي مستخدم مسجّل على أي بيزنس.
+✅ الحارس الواحد `schedule_edit_ok(supplier, p_token)` على ١٢ دالة +
+`biz_edit_ok_{employee,branch,service,task}` بيحلّوا المورد من الصف. التواقيع
+القديمة اتمسحت. اتجرّب بمحاولة حقيقية كـ`anon` → «مالكش صلاحية».
+⚠️ **الفحص الدوري** (لازم يطلع فاضي):
+```sql
+select proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+ where n.nspname='public' and p.prosecdef and proname like 'admin\_%'
+   and pg_get_functiondef(p.oid) not ilike '%_ok(%' and pg_get_functiondef(p.oid) not ilike '%is_admin%';
+```
+🧰 **الفرونت:** `withToken(supabase)` في `src/lib/rpc.ts` بيضيف `p_token`
+للدوال المحروسة بس (قايمة `TOKEN_FNS` — دالة جديدة بتوكن = تتضاف هناك).
+قراءة `suppliers` من أي شاشة في اللوحة = `business_supplier_head` مش
+`from('suppliers')` (مقفول لصاحب البيزنس من ٢٨/٨).
+🧑‍💼 **self-serve لصاحب البيزنس:** `business_branch_save` ·
+`business_employee_save` · `business_employee_delete` — بدل insert مباشر كان
+بيتبلع بصمت. صاحب البيزنس بتوكن الواتساب بس (من غير جلسة Supabase) بيقدر
+دلوقتي يفتح: الرئيسية · الفروع · الفريق · الإعدادات · الكتالوج (اتجرّبوا بتوكن
+لمونة). محرر المنيو (`/supplier/marketplace/<listing>/menu`) محتاج جلسة Supabase
+— بتتصكّ مع توثيق الواتساب أصلًا.
