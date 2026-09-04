@@ -633,7 +633,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
             <div className="w-11 h-11 rounded-xl grid place-items-center flex-shrink-0" style={{ background: t.accentSoft }}><ShoppingBag className="w-5 h-5" style={{ color: t.accent }} /></div>
             <div className="min-w-0 flex-1">
               <p className="font-black text-[#1A2E26]">{v.productsHeading || (data.industry === 'vehicle_agency' ? 'قطع غيار وإكسسوارات موتوسيكلات' : 'المنتجات')}</p>
-              <p className="text-[11px] text-[#6B7280]">{fmt(data.product_count)} {v.productsUnit || 'منتج'} · مضمون عن طريق مضمونة</p>
+              <p className="text-[11px] text-[#6B7280]">{fmt(invCount)} {v.productsUnit || 'منتج'} · مضمون عن طريق مضمونة</p>
             </div>
             <span className="font-bold text-sm flex items-center gap-0.5 flex-shrink-0" style={{ color: t.accent }}>تسوّق <ChevronLeft className="w-4 h-4" /></span>
           </Link>
