@@ -87,8 +87,14 @@ interface VerticalCfg {
   coverBadge: string
   catLabels: Record<string, string>
   catIcons: Record<string, any>
+// 🏷️ (٤ سبتمبر ٢٠٢٦) تيست الاستور: صالون تجميل ومطعم كانوا بيقولوا
+//    «المنتجات · ١ منتج للبيع · تسوّق». `productsHeading` كان معرّف
+//    لتلات أنشطة بس (عربيات · عقارات · مصانع) والباقي بيقع على
+//    «المنتجات» العام. أضفناه للباقي بلغة نشاطه.
   /** عنوان كارت المنتجات — لو فاضي بنقع على الافتراضي القديم */
   productsHeading?: string
+  /** وحدة العدّ: «منتج» · «صنف» · «خدمة» … */
+  productsUnit?: string
 }
 
 // salon-specific category maps (used only by the beauty_salon preset)
@@ -105,6 +111,8 @@ const SALON_CAT_ICONS: Record<string, any> = {
 const VERTICALS: Record<string, VerticalCfg> = {
   // صالون تجميل — صيغة مؤنثة (Elite وأمثالها)
   beauty_salon: {
+    productsHeading: 'الخدمات المعروضة',
+    productsUnit: 'خدمة',
     kicker: 'صالون تجميل وسبا',
     heroCta: 'احجزي موعدك', heroCtaIcon: Calendar, waCta: 'تواصلي',
     bookChip: 'حجز فوري', unitWord: 'خدمة',
@@ -119,6 +127,8 @@ const VERTICALS: Record<string, VerticalCfg> = {
   },
   // عيادة / مركز طبي — صيغة محايدة
   polyclinic: {
+    productsHeading: 'الخدمات الطبية المعروضة',
+    productsUnit: 'خدمة',
     kicker: 'عيادة ومركز طبي',
     heroCta: 'احجز كشف', heroCtaIcon: Calendar, waCta: 'تواصل معنا',
     bookChip: 'حجز فوري', unitWord: 'خدمة',
@@ -133,6 +143,8 @@ const VERTICALS: Record<string, VerticalCfg> = {
   },
   // مطعم — صيغة محايدة (منيو + حجز ترابيزة)
   restaurant: {
+    productsHeading: 'الأصناف المعروضة',
+    productsUnit: 'صنف',
     kicker: 'مطعم',
     heroCta: 'احجز ترابيزة', heroCtaIcon: Calendar, waCta: 'اطلب دلفري',
     bookChip: 'حجز فوري', unitWord: 'صنف',
@@ -181,6 +193,7 @@ const VERTICALS: Record<string, VerticalCfg> = {
     catLabels: { 'بيع': 'بيع سيارات', 'استيراد': 'استيراد', general: 'عام', 'عام': 'عام' },
     catIcons: { 'بيع': Car },
     productsHeading: 'العربيات المعروضة للبيع',
+    productsUnit: 'عربية',
   },
   // مقاولات وتشطيبات — طلب عرض سعر بدل الحجز
   contracting: {
@@ -216,6 +229,8 @@ const VERTICALS: Record<string, VerticalCfg> = {
   // `default` فيطلع بكلام عام («المكان» · «من جوه» · «احجز في أقرب فرع ليك»)
   // على نشاط بيتأجّر بالساعة وبينطلق من مرسى مش «فرع».
   marine_rentals: {
+    productsHeading: 'المراكب المعروضة',
+    productsUnit: 'مركب',
     kicker: 'تأجير يخوت ورحلات بحرية',
     heroCta: 'احجز رحلتك', heroCtaIcon: Calendar, waCta: 'اسأل عن يخت',
     bookChip: 'حجز بالساعة', unitWord: 'يخت',
@@ -250,10 +265,12 @@ const VERTICALS: Record<string, VerticalCfg> = {
     },
     catIcons: { 'بيع': Home, 'إيجار': Home, 'إداري': Building2, 'تجاري': Building2 },
     productsHeading: 'الوحدات المعروضة',
+    productsUnit: 'وحدة',
   },
   // 🔧 خدمات ومهنيين — سباك، كهربائي، نجار، صيانة، تنظيف، محامي، محاسب.
   //    دي أكتر فئة «شغل من غير محل» — وهي بالظبط اللي الحملة بتكلّمها.
   home_services: {
+    productsHeading: 'الخدمات المعروضة',
     kicker: 'خدمات وصيانة — بنيجي لك',
     heroCta: 'اطلب فني', heroCtaIcon: Wrench, waCta: 'كلّمنا دلوقتي',
     bookChip: 'بنيجي لحد عندك', unitWord: 'خدمة',
@@ -288,6 +305,8 @@ const VERTICALS: Record<string, VerticalCfg> = {
   },
   // ✈️ سياحة ورحلات وقاعات ومناسبات.
   tourism: {
+    productsHeading: 'الرحلات والعروض',
+    productsUnit: 'عرض',
     kicker: 'سياحة ورحلات ومناسبات',
     heroCta: 'احجز رحلتك', heroCtaIcon: Plane, waCta: 'اسأل عن برنامج',
     bookChip: 'حجز بمقدّم', unitWord: 'برنامج',
@@ -519,7 +538,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
             <div className="w-11 h-11 rounded-xl grid place-items-center flex-shrink-0" style={{ background: t.accentSoft }}><ShoppingBag className="w-5 h-5" style={{ color: t.accent }} /></div>
             <div className="min-w-0 flex-1">
               <p className="font-black text-[#1A2E26]">{v.productsHeading || (data.industry === 'vehicle_agency' ? 'قطع غيار وإكسسوارات موتوسيكلات' : 'المنتجات')}</p>
-              <p className="text-[11px] text-[#6B7280]">{fmt(data.product_count)} منتج للبيع · مضمون عن طريق مضمونة</p>
+              <p className="text-[11px] text-[#6B7280]">{fmt(data.product_count)} {v.productsUnit || 'منتج'} · مضمون عن طريق مضمونة</p>
             </div>
             <span className="font-bold text-sm flex items-center gap-0.5 flex-shrink-0" style={{ color: t.accent }}>تسوّق <ChevronLeft className="w-4 h-4" /></span>
           </Link>
