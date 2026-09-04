@@ -151,6 +151,10 @@ export async function callGeminiNative(opts: {
   const models = [
     process.env.GEMINI_MODEL || 'gemini-flash-lite-latest',
     'gemini-3.5-flash-lite',
+    // 🛟 (٤ سبتمبر ٢٠٢٦) الاتنين فوق رجّعوا 503 «high demand» مع بعض ساعة
+    //    كاملة والمارد وقع للمكتبة على كل رسالة. 3.1-flash-lite رد 200 في
+    //    نفس اللحظة — مسبح طلب مختلف. (2.5-flash-lite → 404 على المفتاح ده.)
+    'gemini-3.1-flash-lite',
   ].filter((m, i, a) => a.indexOf(m) === i)
 
   const body: Record<string, unknown> = {
