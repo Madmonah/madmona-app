@@ -369,7 +369,10 @@ export async function POST(request: NextRequest) {
         const { data } = await (supabaseUntyped.rpc as unknown as (
           f: string, a: Record<string, unknown>,
         ) => Promise<{ data: unknown }>)('marid_offline_reply', {
-          p_text: userMessage, p_phone: phone,
+          // 🐞 (٤ سبتمبر ٢٠٢٦) كان بيبعت `userMessage` = السياق كله + الرسالة —
+          //    فـmarid_detect_intent كانت بتلاقي «عندي/للبيع» في رسالة قديمة وترد
+          //    على مشتري بـ«وصلني عرضك». المكتبة تصنّف الرسالة الحالية بس.
+          p_text: effectiveText, p_phone: phone,
         })
         const t = typeof data === 'string' ? data.trim() : ''
         return t.length > 5 ? t : null
