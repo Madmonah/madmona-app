@@ -13,6 +13,7 @@ import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
 import { useTasksLive, pingTasksChanged } from '@/lib/useTasksLive'
 // 📋 (٢٨/٨) شغلي أنا — الإعلانات والبيزنس اللي الموظف ضافهم بنفسه
 import MyWorkCard from '@/components/MyWorkCard'
+import ExpoManualSend from '@/components/ExpoManualSend'
 
 /* ============================================================================
    /account/work — «شغلي» — كل الإداريات جوّه الأبليكيشن
@@ -414,6 +415,16 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
           <p className="text-[10px] text-[#6B7280] mt-2 text-center">
             شاشة واحدة لكل إعلانات المنصة — الدرافت والمنشور والموقوف وواردة الويزارد. أي إعلان جديد من الويزارد بيرنّ إشعار لكل الفريق.
           </p>
+        </div>
+      )}
+
+      {/* ✋ (٤ سبتمبر ٢٠٢٦) رسايل المعرض — إرسال يدوي من الموبايل.
+          محمد: «حط في تاب شغلي على الواتساب وأنا هبعته». الكومبوننت بيرجّع null لو مفيش رسايل
+          (الـRPC بترجّع [] لغير فريق مضمونة). */}
+      {b.is_platform_owner && (
+        <div className="px-5 py-4 border-b border-gray-100">
+          <SectionTitle icon={<MessageCircle className="w-3.5 h-3.5" />} title="رسايل المعرض" />
+          <ExpoManualSend />
         </div>
       )}
 
