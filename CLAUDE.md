@@ -1361,3 +1361,15 @@ select has_column_privilege('anon','public.listings','اسم_العمود','SELE
   (مش «Quick view»/«product_img1»/صورة موقع واحدة مكررة). من ١٧ «جاهز»
   بالفحص السطحي طلع ٥ بس فعلًا: egypoxy · eltawheed · glassrock ·
   penetron · rockal (+ al-tib). الباقي محتاج كتالوجهم PDF.
+
+## 🧞 المارد بأدواته الكاملة على جوجل ستوديو — أمر محمد نصًا (٤ سبتمبر ٢٠٢٦)
+محمد: «عايزين نفعل المارد وأدواته الكاملة على جوجل ستوديو». ده الأمر النصّي
+اللي قفل ٢٧/٨ كان بيشترطه. اتفتحت الـ٢٦ أداة كلها في `marid_tool_settings`
+(كانت ٦). الموديل `gemini-flash-lite-latest` — صفر أنثروبيك. الكاش دقيقة،
+مفيش نشر. الرجوع: `update marid_tool_settings set enabled=false where
+tool_name not in ('search_catalog','list_categories','who_is_this',
+'get_my_orders','forward_to_supplier','record_unmet_demand')`.
+البرومبت (`customer-concierge.ts`) أصلًا بيأمر باستخدام أدوات التسجيل لما
+تكون مفتوحة — ملاحظات «مش شغلك» كانت بتتحقن بس للأدوات المقفولة.
+⚠️ أرقام عارضي المعرض الـ٥٤ + موظفي مضمونة (بأي حالة) مسكّتين على المارد
+(`marid_mute_list`) — محمد بيرد عليهم بنفسه.
