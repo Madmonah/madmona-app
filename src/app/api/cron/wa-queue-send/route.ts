@@ -322,13 +322,20 @@ export async function GET(request: NextRequest) {
   //    الحل: نجيب الأول قايمة الأرقام اللي ليها مستحق، وبعدين نجيب رسايل
   //    كل رقم **لوحده**. طول طابور رقم مابقاش بيحجب رقم تاني.
   const MK_FILTER = `(${[...PACED_CAMPAIGNS, ...TRANSACTIONAL_CAMPAIGNS].join(',')})`
+  // 🐞 (٤ سبتمبر ٢٠٢٦) محمد: «الطابور شغّال ومفيش ولا رسالة بتتحرك».
+  //    الفلتر كان `.not('…campaign_name','in',MK_FILTER)` — والصف اللي
+  //    `template_vars = {}` عنده campaign_name = NULL، و`NOT (NULL IN (...))`
+  //    = NULL ← الصف **مستبعد بصمت** والكرون بيرجّع «مفيش رسايل مستحقة».
+  //    ٥٤ رسالة قعدت ٣٠ دقيقة والمفتاح على 1 من غير أي أثر.
+  //    الصح: NULL يعدّي (حملة من غير اسم = تسويقية عادية)، والمستبعد بس
+  //    هو اللي اسمه في القايمة. الاتنين (mkSess + mkPerLane) اتصلحوا.
   const { data: mkSessRaw, error: mkSessErr } = await supabaseAdmin
     .from('whatsapp_campaign_messages')
     // ⚠️ التايبس المتولدة قديمة ومش عارفة عمود session — نفس قصة q.select
     //    في شاشة الطابور. السترينج المتعدد بيعدّي، والمفرد لأ.
     .select('session, id')
     .eq('status', 'queued')
-    .not('template_vars->>campaign_name', 'in', MK_FILTER)
+    .or(`template_vars->>campaign_name.is.null,template_vars->>campaign_name.not.in.${MK_FILTER}`)
     .lte('scheduled_for', nowIso)
     .limit(2000)
   const mkSessions = Array.from(new Set(
@@ -340,7 +347,7 @@ export async function GET(request: NextRequest) {
       .from('whatsapp_campaign_messages')
       .select(COLS)
       .eq('status', 'queued')
-      .not('template_vars->>campaign_name', 'in', MK_FILTER)
+      .or(`template_vars->>campaign_name.is.null,template_vars->>campaign_name.not.in.${MK_FILTER}`)
       .lte('scheduled_for', nowIso)
     // الرقم الافتراضي بياخد كمان الرسايل اللي session بتاعها فاضي
     q = s === DEFAULT_SESSION ? q.or(`session.eq.${s},session.is.null`) : q.eq('session' as never, s)
