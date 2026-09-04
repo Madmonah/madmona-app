@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as supabaseAdmin } from '@/lib/supabase'
 import { sendText, normalizePhone } from '@/lib/whatsapp'
+import { pickAuthWaSession } from '@/lib/wa-auth-session'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -52,7 +53,13 @@ export async function POST(request: NextRequest) {
     }
 
     const name = otp.known_name ? ` ${otp.known_name}` : ''
+    // 🔐 (٤ سبتمبر ٢٠٢٦) كان بيبعت من غير `session` — يعني OpenWA
+    //    بياخد **أول رقم متصل**، واللي هو عمليًا 337 (رقم الحملات).
+    //    محمد: «عايز أربط حساب الموبايل بتاع إنشاء الحساب وتسجيل الدخول
+    //    وتوثيق الرقم بحساب مايكونش بيبعت أي رسايل خالص».
+    const authWa = await pickAuthWaSession()
     const sent = await sendText({
+      session: authWa.session,
       to: otp.phone || phone,
       body:
         `أهلاً${name} 👋\n\n` +

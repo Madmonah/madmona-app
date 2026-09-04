@@ -28,6 +28,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase as admin, supabaseUntyped } from '@/lib/supabase'
 import { sendText } from '@/lib/whatsapp'
+import { authWaSession } from '@/lib/wa-auth-session'
 import { normalizePhone } from '@/lib/auth-helpers'
 import { rateLimitOk, clientIp } from '@/lib/rate-limit'
 
@@ -37,7 +38,10 @@ export const dynamic = 'force-dynamic'
 const WA_PRIMARY = '201002229982'  // البراند/المارد
 const WA_FALLBACK = '201026222337' // البيزنس الموثّق
 
-/** نفس منطق اختيار رقم الدخول في /api/auth/wa — الأساسي إلا لو متعطّل. */
+/** ⚠️ (٤ سبتمبر ٢٠٢٦) مابقتش مستخدمة — الاختيار اتوحّد في
+ *  `wa-auth-session.ts`. دي كانت بتقع على **337** (رقم الحملات)
+ *  وبتقرا `enabled` اليدوي بس من غير فحص حي. متستخدمهاش تاني. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function pickWa(): Promise<string> {
   try {
     const { data } = await admin
@@ -96,7 +100,7 @@ export async function POST(req: NextRequest) {
   // ابعت على القناة الحية
   const res = await sendText({
     to: (otp.wa_to || normalized).replace(/\D/g, ''),
-    session: await pickWa(),
+    session: await authWaSession(),
     agentName: 'forgot-password',
     body: [
       '🔐 كود استرجاع كلمة السر في مضمونة:',

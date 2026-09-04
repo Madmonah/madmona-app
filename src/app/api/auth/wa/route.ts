@@ -32,6 +32,8 @@ function admin() {
 // (30 Jul 2026) رقم اللوجين اتغيّر 9982 -> 337 (البيزنس الموثّق). التأكيد
 // session-agnostic: المخ في /api/whatsapp/baileys بيأكّد كود MADxxxxx مهما
 // كان الرقم المستقبِل وبيرد على نفس الجلسة.
+import { authWaSession } from '@/lib/wa-auth-session'
+
 const LOGIN_WA_PRIMARY = '201002229982' // 982 — البراند/المارد (الأساسي)
 const LOGIN_WA_FALLBACK = '201026222337' // 337 — البيزنس الموثّق (الاحتياطي)
 
@@ -105,10 +107,11 @@ async function pickLoginWa(sb: ReturnType<typeof admin>): Promise<string> {
     const primary = rows.find((r) => (r.session_id || '').replace(/\D/g, '') === LOGIN_WA_PRIMARY)
     if (primary && primary.enabled === false) return LOGIN_WA_FALLBACK
 
-    // الفلاج بيقول «شغّال» — بس هل الجلسة عايشة فعلاً؟
-    const live = await liveWaNumbers(sb)
-    if (live.length === 0) return LOGIN_WA_PRIMARY          // مقدرناش نتأكد → زي ما كان
-    return live[0]                                          // الرسمي الشغّال، وإلا أي جلسة شغالة
+    // 🔐 (٤ سبتمبر ٢٠٢٦) الاختيار اتوحّد في `wa-auth-session.ts`:
+    //    9982 → 1551، و**رقم الحملات مستبعد** مهما كانت حالته. قبل كده
+    //    `liveWaNumbers` كانت بترجّع 337 تاني في الترتيب بعد 982، فأول ما
+    //    982 يقع كل أكواد الدخول تطلع من رقم الحملة الباردة.
+    return await authWaSession()
   } catch {
     return LOGIN_WA_PRIMARY
   }
