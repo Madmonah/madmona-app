@@ -95,6 +95,9 @@ interface VerticalCfg {
   productsHeading?: string
   /** وحدة العدّ: «منتج» · «صنف» · «خدمة» … */
   productsUnit?: string
+  /** 🛡️ (٤ سبتمبر ٢٠٢٦) شريط الضمان — «الحجز والدفع … وتقييم بعد
+   *  الزيارة» كان بيتكتب على صفحة مورّد جملة مافيهاش حجز ولا زيارة. */
+  trustLine?: string
 }
 
 // salon-specific category maps (used only by the beauty_salon preset)
@@ -289,6 +292,7 @@ const VERTICALS: Record<string, VerticalCfg> = {
   },
   // 🏭 مصانع وتوريدات — البيع بالجملة: المشتري بيطلب عرض سعر مش بيحجز.
   factory: {
+    trustLine: 'التعامل والتحصيل عن طريق مضمونة — عرض السعر والتسليم موثّقين للطرفين.',
     kicker: 'مصنع وتوريدات',
     heroCta: 'اطلب عرض سعر', heroCtaIcon: Factory, waCta: 'اطلب كتالوج',
     bookChip: 'توريد بالجملة', unitWord: 'منتج',
@@ -327,6 +331,7 @@ const VERTICALS: Record<string, VerticalCfg> = {
   //    (مصنع أو تاجر). المشتري مقاول أو مطوّر بيطلب عرض سعر
   //    وكتالوج — مش بيحجز ميعاد.
   building_materials: {
+    trustLine: 'التعامل والتحصيل عن طريق مضمونة — عرض السعر والتسليم موثّقين للطرفين.',
     productsHeading: 'المنتجات ومواصفاتها',
     productsUnit: 'منتج',
     kicker: 'مواد بناء وتشطيبات',
@@ -585,7 +590,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         {/* trust strip */}
         <div className="rounded-2xl shadow-sm p-3.5 flex items-center gap-3 -mt-9 relative z-20" style={{ background: t.trustBg, border: `1px solid ${t.trustBorder}` }}>
           <div className="w-9 h-9 rounded-xl grid place-items-center flex-shrink-0" style={{ background: t.trustIcoBg }}><ShieldCheck className="w-5 h-5" style={{ color: t.trustIco }} /></div>
-          <p className="text-[11.5px] leading-relaxed" style={{ color: t.trustText }}>الحجز والدفع <b style={{ color: t.trustStrong }}>مؤمّن عن طريق مضمونة</b> — تأكيد على واتساب وتقييم بعد الزيارة.</p>
+          <p className="text-[11.5px] leading-relaxed" style={{ color: t.trustText }}>{v.trustLine || <>الحجز والدفع <b style={{ color: t.trustStrong }}>مؤمّن عن طريق مضمونة</b> — تأكيد على واتساب وتقييم بعد الزيارة.</>}</p>
         </div>
 
         {/* products → marketplace (filtered to this merchant) */}
