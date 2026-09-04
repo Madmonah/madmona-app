@@ -212,50 +212,47 @@ export default function WhatsAppLogin({
           {phase === 'waiting' && (
             <>
               {/* 🟢 الزرار المباشر — بيفتح واتساب بضغطة جديدة (مبتتبلوكش زي window.open) */}
-              {isAndroid && waNumber ? (
+              {/* 🐞 (٤ سبتمبر ٢٠٢٦) محمد: «بيقول وثّق الواتساب ولما بيدوس مش بيفتح
+                  محادثة». على أندرويد الزرارين الوحيدين كانوا intent:// — ودي
+                  بتتبلوك جوه الـPWA (وضع التطبيق) وجوه متصفحات فيسبوك/إنستجرام،
+                  والـfallback مابيتنفّذش. لينك wa.me العادي بيشتغل في كل مكان
+                  (وأندرويد بيسأل «أنهي واتساب؟» لوحده لو فيه اتنين).
+                  فالزرار العام الأول دايمًا، وزرارَي التطبيق المحدد اختيار تاني. */}
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 transition-all mb-3"
+              >
+                <Send className="w-5 h-5" />
+                افتح واتساب وابعت الكود
+              </a>
+              {isAndroid && waNumber && (
                 <>
-                  <p className="text-xs font-bold text-gray-700 mb-2">تبعت الكود من أنهي واتساب؟</p>
+                  <p className="text-[11px] font-bold text-gray-600 mb-1.5">عندك واتساب عادي وبيزنس؟ اختار اللي فيه رقمك:</p>
                   <div className="flex gap-2 mb-3">
                     <a
                       href={appIntent(waNumber, code, 'com.whatsapp', waUrl)}
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:-translate-y-0.5 transition-all"
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-[#25D366] text-[#0B7A5C] py-2.5 rounded-2xl font-bold text-sm"
                     >
                       <Send className="w-4 h-4" />
                       العادي
                     </a>
                     <a
                       href={appIntent(waNumber, code, 'com.whatsapp.w4b', waUrl)}
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-[#0B7A5C] text-white py-3.5 rounded-2xl font-bold text-sm shadow-elevated hover:-translate-y-0.5 transition-all"
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-white border border-[#0B7A5C] text-[#0B7A5C] py-2.5 rounded-2xl font-bold text-sm"
                     >
                       <Briefcase className="w-4 h-4" />
                       بيزنس
                     </a>
                   </div>
-                  <p className="text-[11px] text-gray-600 leading-relaxed mb-2">
-                    هيفتح التطبيق اللي اخترته برسالة جاهزة — <b>دوس إرسال بس</b> وارجع هنا.
-                    <br />
-                    <b className="text-[#B45309]">مهم:</b> هتدخل على الحساب بتاع <b>الرقم اللي بعت الكود</b>،
-                    فاختار التطبيق اللي فيه رقمك الصح.
-                    <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
-                  </p>
-                </>
-              ) : (
-                <>
-                  <a
-                    href={waUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold text-base shadow-elevated hover:-translate-y-0.5 transition-all mb-3"
-                  >
-                    <Send className="w-5 h-5" />
-                    افتح واتساب وابعت الكود
-                  </a>
-                  <p className="text-xs text-gray-600 leading-relaxed mb-2">
-                    هيفتحلك واتساب برسالة جاهزة فيها الكود — <b>دوس إرسال بس</b> وارجع هنا.
-                    <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
-                  </p>
                 </>
               )}
+              <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                هيفتحلك واتساب برسالة جاهزة فيها الكود — <b>دوس إرسال بس</b> وارجع هنا.
+                <br /><b className="text-[#B45309]">مهم:</b> هتدخل على الحساب بتاع <b>الرقم اللي بعت الكود</b>.
+                <br />لو مفتحش، ابعت الكود ده يدوي لـ«المارد» على واتساب:
+              </p>
               <div className="inline-block bg-white border border-[#2FA084]/40 rounded-xl px-5 py-2 font-black text-xl tracking-[0.3em] text-[#059669] mb-3 select-all">
                 {code}
               </div>
