@@ -569,7 +569,9 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
                 عدّاده صفر هناك، فالصفحة بتقول «٠ منتج» وتحتها ١٤ منتج
                 بالصور. بقت بتاخد أكبر إشارة حقيقية وبتختفي لو مفيش ولا واحد.
                 و«١ فروع» بقت «فرع واحد». */}
-            {[branchChip, invCount > 0 ? `${fmt(invCount)} ${v.unitWord}` : null, v.bookChip].filter(Boolean).map((s: any) => (
+            {/* 🛠️ (٤ سبتمبر ٢٠٢٦) شركة خدمات (سقالات · مقاولات) من غير إعلانات: العدّاد
+                والعنوان يتكلموا «خدمة» مش «منتج». */}
+            {[branchChip, invCount > 0 ? `${fmt(invCount)} ${units.length === 0 && services.length > 0 ? 'خدمة' : v.unitWord}` : null, v.bookChip].filter(Boolean).map((s: any) => (
               <span key={s} className="text-xs font-bold bg-white/14 ring-1 ring-white/25 px-3 py-1.5 rounded-full">{s}</span>
             ))}
           </div>
@@ -706,7 +708,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         {/* services / menu */}
         {services.length > 0 && (
           <section>
-            <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><ServicesIcon className="w-4 h-4" style={{ color: t.accent }} /> {v.servicesHeading}</h2>
+            <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><ServicesIcon className="w-4 h-4" style={{ color: t.accent }} /> {units.length === 0 && (data.industry || '').includes('مواد بناء') ? 'الخدمات وعروض الأسعار' : v.servicesHeading}</h2>
             <div className="space-y-2.5">
               {services.map((cat: any) => {
                 const isOpen = openCat === cat.category
