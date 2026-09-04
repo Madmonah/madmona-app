@@ -10,6 +10,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Minus, ShoppingCart, AlertCircle, Check, X } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
+// 💱 (٤ سبتمبر ٢٠٢٦) العملة من الصف — لمونة بالدرهم، «ج» ثابتة = سعر غلط
+import { currencyLabel } from '@/lib/currency'
 import {
   addToCart,
   useCart,
@@ -35,6 +37,7 @@ export type MenuItem = {
   description_ar?: string | null
   description_en?: string | null
   price: number
+  currency?: string | null
   photo_url?: string | null
   category?: string | null
   is_available: boolean
@@ -48,6 +51,7 @@ export type MartProduct = {
   name_en?: string | null
   description_ar?: string | null
   price: number
+  currency?: string | null
   compare_at_price?: number | null
   unit?: string | null
   brand?: string | null
@@ -209,7 +213,7 @@ export function RestaurantMenu({
                           lang === 'ar' ? 'ar-EG' : 'en-US',
                         )}{' '}
                         <span className="text-xs font-normal text-gray-500">
-                          {t('common.egp')}
+                          {currencyLabel(mi.currency, lang)}
                         </span>
                       </p>
 
@@ -415,7 +419,7 @@ export function MartProductsCatalog({
                       )}
                       <p className="text-sm font-black text-[#059669] mt-2 tabular">
                         {p.price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}{' '}
-                        <span className="text-xs font-normal text-gray-500">{t('common.egp')}</span>
+                        <span className="text-xs font-normal text-gray-500">{currencyLabel(p.currency, lang)}</span>
                         {p.compare_at_price && p.compare_at_price > p.price && (
                           <span className="text-xs text-gray-400 line-through mr-2 tabular">
                             {p.compare_at_price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}

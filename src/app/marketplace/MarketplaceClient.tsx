@@ -15,6 +15,8 @@ import CartButton from '@/components/CartButton'
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { catNameFor, groupNameFor, listingTitleFor, cityFor } from '@/lib/i18n/catName'
+// 💱 (٤ سبتمبر ٢٠٢٦) العملة من الإعلان — لمونة (دبي) بالدرهم مش «ج»
+import { currencyLabel } from '@/lib/currency'
 
 interface Category {
   id: string
@@ -49,6 +51,7 @@ interface Listing {
   created_at: string
   requires_id_verification: boolean | null
   price_egp?: number | string | null
+  currency?: string | null
   category: { name_ar: string; name_en: string | null; name_i18n?: Record<string, string> | null; icon: string | null; slug: string } | null
   supplier: { id?: string | null; business_name?: string | null; logo_url?: string | null; kyc_status: string | null } | null
   // 🏬 (٢ سبتمبر ٢٠٢٦) اسم البائع الحقيقي لما الإعلان محفوظ على حساب
@@ -555,7 +558,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       let query = supabaseBrowser
         .from('listings')
         .select(`
-          id, title, i18n, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification, price_egp,
+          id, title, i18n, slug, city, district, rating, reviews_count, status, created_at, requires_id_verification, price_egp, currency,
           category:categories(name_ar, name_en, name_i18n, icon, slug),
           seller_display_name,
           supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status),
@@ -1709,7 +1712,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
                             <p className="text-[10px] text-gray-500 font-medium">{t('market.starts_from')}</p>
                             <p className="text-xl font-black text-[#059669] leading-none mt-0.5 tabular">
                               {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
-                              <span className="text-xs font-medium text-gray-500 ms-1">{t('common.egp')}</span>
+                              <span className="text-xs font-medium text-gray-500 ms-1">{currencyLabel(listing.currency, lang)}</span>
                             </p>
                           </>
                         ) : (

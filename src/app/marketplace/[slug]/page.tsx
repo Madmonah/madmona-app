@@ -13,7 +13,8 @@ import {
 import { isDemoListing, cleanListingTitle } from '@/lib/listingHelpers'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { catNameFor, listingTitleFor, listingDescriptionFor, cityFor, attrNameFor, optionLabelFor } from '@/lib/i18n/catName'
-import { RestaurantMenu, MartProductsCatalog, ProductBuyBox, CartCheckoutBar, type MenuItem, type MartProduct } from '@/components/OrderActions'
+import { MartProductsCatalog, ProductBuyBox, CartCheckoutBar, type MenuItem, type MartProduct } from '@/components/OrderActions'
+import RestaurantCloud from '@/components/RestaurantCloud'
 // 👤 (٢٨/٨) مين ضاف الإعلان — لفريق مضمونة بس (الحماية في الداتابيز)
 import ListingAddedBy from '@/components/ListingAddedBy'
 import CartButton from '@/components/CartButton'
@@ -84,6 +85,7 @@ interface ListingDetail {
     // عمره ما يتعرض كـ«صاحب الإعلان». مضمونة في النص مش طرف.
     is_platform?: boolean | null
     kyc_status?: string | null
+    logo_url?: string | null
     profile: { phone: string; full_name: string | null } | null
   } | null
 }
@@ -206,7 +208,7 @@ export default function ListingDetailPage() {
         if (l.supplier_id) {
           const { data: supFull } = await supabaseBrowser
             .from('marketplace_suppliers')
-            .select('id, business_name, is_platform, profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)')
+            .select('id, business_name, is_platform, logo_url, profile:profiles!marketplace_suppliers_profile_id_fkey(phone, full_name)')
             .eq('id', l.supplier_id)
             .maybeSingle()
           if (supFull) {
@@ -216,7 +218,7 @@ export default function ListingDetailPage() {
             // anon مايقدرش يقرأ profile_id فالـjoin بيتمنع → نجيب اسم المورّد بس
             const { data: supBasic } = await supabaseBrowser
               .from('marketplace_suppliers')
-              .select('id, business_name, is_platform')
+              .select('id, business_name, is_platform, logo_url')
               .eq('id', l.supplier_id)
               .maybeSingle()
             supplier = (supBasic ? { ...(supBasic as object), profile: null } : null) as ListingDetail['supplier']
@@ -1055,11 +1057,17 @@ export default function ListingDetailPage() {
               </section>
             )}
 
+            {/* 🍽️ (٤ سبتمبر ٢٠٢٦) منيو TableQR — محمد: «الديزاين زي demo.tableqr.co
+                سواء في عرض الماركتبليس أو في صفحة المورد، ونبدأ بلمونة».
+                بدل RestaurantMenu القديم — نفس الأصناف/المقاسات/السلة. */}
             {isRestaurant && !isDirectory && listing.supplier && (
-              <RestaurantMenu
-                listing={{ id: listing.id, title: displayTitle }}
+              <RestaurantCloud
+                hideHeader
+                business={{ name: listing.supplier.business_name || displayTitle, logo: listing.supplier.logo_url ?? null,
+                  tagline: null, phone: listing.supplier?.profile?.phone ?? null, city: listing.city ?? null }}
+                listing={{ id: listing.id, slug: listing.slug ?? null }}
                 supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
-                menuItems={menuItems}
+                items={menuItems}
               />
             )}
 

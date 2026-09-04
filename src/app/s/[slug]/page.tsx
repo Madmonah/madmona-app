@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+// 🍽️ (٤ سبتمبر ٢٠٢٦) منيو المطاعم بأسلوب TableQR — نفس الكومبوننت في صفحة الإعلان
+import RestaurantCloud from '@/components/RestaurantCloud'
+import { currencyLabel } from '@/lib/currency'
 import {
   Loader2, MapPin, Calendar, ChevronLeft, Scissors, Clock, Sparkles, User,
   ChevronDown, MessageCircle, ShieldCheck, Image as ImageIcon, Crown, Wind,
@@ -410,6 +413,12 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
      listings. `units` بتجيب الوحدات المنشورة وكروتها بتودّي على صفحة
      الوحدة في الماركتبليس نفسها — مفيش صفحة عرض موازية. */
   const [units, setUnits] = useState<any[]>([])
+  // 🍽️ (٤ سبتمبر ٢٠٢٦) منيو المطعم/الكافيه بأسلوب TableQR — الأصناف من
+  //    restaurant_menu_items (+ المقاسات) بتاعة إعلان المطعم الواحد.
+  //    الاستورفرنت كان بيعرض للمطعم كارت إعلان واحد + «خدمات» من services_catalog
+  //    — والمنيو الحقيقي مش ظاهر. أول تطبيق: لمونة (١٦٣ صنف · درهم).
+  const [menu, setMenu] = useState<any[]>([])
+  const [menuListing, setMenuListing] = useState<{ id: string; slug: string | null } | null>(null)
 
   useEffect(() => {
     (async () => {
@@ -418,7 +427,28 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         supabase.rpc('public_storefront_listings', { p_slug: slug }),
       ])
       setData(d)
-      setUnits(Array.isArray(u) ? u : [])
+      const unitsArr: any[] = Array.isArray(u) ? u : []
+      setUnits(unitsArr)
+      try {
+        const ind = String(d?.industry || '').toLowerCase()
+        const isFood = /restaurant|cafe|food|مطعم|مطاعم|كافيه|عصائر|عصاير|حلويات/.test(ind)
+        if (isFood && unitsArr.length) {
+          const first = unitsArr[0]
+          const { data: mi } = await supabase.from('restaurant_menu_items')
+            .select('id,name_ar,name_en,description_ar,price,currency,category,photo_url,is_available,display_order')
+            .eq('listing_id', first.id).order('display_order', { ascending: true })
+          const items = (mi || []) as any[]
+          if (items.length) {
+            const { data: sz } = await supabase.from('restaurant_menu_item_sizes')
+              .select('id,menu_item_id,name_ar,price,display_order,is_available')
+              .in('menu_item_id', items.map((x) => x.id)).order('display_order', { ascending: true })
+            const szMap = new Map<string, any[]>()
+            for (const s of (sz || []) as any[]) { if (s.is_available === false) continue; if (!szMap.has(s.menu_item_id)) szMap.set(s.menu_item_id, []); szMap.get(s.menu_item_id)!.push({ id: s.id, name_ar: s.name_ar, price: Number(s.price) }) }
+            setMenu(items.map((x) => ({ ...x, price: Number(x.price), sizes: szMap.get(x.id) || [] })))
+            setMenuListing({ id: first.id, slug: first.slug ?? null })
+          }
+        }
+      } catch { /* المنيو إضافة — لو فشل الصفحة تكمّل زي ما كانت */ }
       setLoading(false)
       // 🏷️ (٤ سبتمبر ٢٠٢٦) عنوان التاب = اسم البيزنس.
       //    الصفحة 'use client' فمالهاش metadata — كان بيقول «مضمونة |
@@ -679,7 +709,20 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         {/* 🏠 الوحدات/المعروض من الماركتبليس — للعقارات والمعارض وأي بيزنس
             بضاعته إعلانات مش كتالوج خدمات. الكارت بيودّي على صفحة الوحدة
             الحقيقية في الماركتبليس. */}
-        {units.length > 0 && (
+        {/* 🍽️ (٤ سبتمبر ٢٠٢٦) مطعم/كافيه = منيو TableQR بدل كارت الإعلان + الخدمات.
+            محمد: «الديزاين زي demo.tableqr.co في الماركتبليس وفي صفحة المورد،
+            ونبدأ بلمونة». الأصناف والمقاسات والعملة من الداتابيز. */}
+        {menu.length > 0 && menuListing && (
+          <RestaurantCloud
+            hideHeader
+            business={{ name: data.business_name, logo: data.logo_url, tagline: data.description || null,
+              phone: data.contact_phone || null, city: data.city || null }}
+            listing={{ id: menuListing.id, slug: menuListing.slug }}
+            supplier={{ id: data.supplier_id, business_name: data.business_name }}
+            items={menu}
+          />
+        )}
+        {units.length > 0 && menu.length === 0 && (
           <section>
             <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5">
               <ServicesIcon className="w-4 h-4" style={{ color: t.accent }} /> {v.productsHeading || v.servicesHeading}
@@ -696,7 +739,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
                     <p className="font-black text-[#1A2E26] text-sm mt-1.5 leading-snug">{u.title}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-[11px] text-[#6B7280] flex items-center gap-1"><MapPin className="w-3 h-3" />{u.district || u.city || '—'}</span>
-                      {u.price_egp && <span className="font-black font-mono text-sm" style={{ color: t.accent }}>{fmt(Number(u.price_egp))} ج</span>}
+                      {u.price_egp && <span className="font-black font-mono text-sm" style={{ color: t.accent }}>{fmt(Number(u.price_egp))} {currencyLabel(u.currency, 'ar')}</span>}
                     </div>
                   </div>
                 </Link>
@@ -706,7 +749,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         )}
 
         {/* services / menu */}
-        {services.length > 0 && (
+        {services.length > 0 && menu.length === 0 && (
           <section>
             <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><ServicesIcon className="w-4 h-4" style={{ color: t.accent }} /> {units.length === 0 && (data.industry || '').includes('مواد بناء') ? 'الخدمات وعروض الأسعار' : v.servicesHeading}</h2>
             <div className="space-y-2.5">
