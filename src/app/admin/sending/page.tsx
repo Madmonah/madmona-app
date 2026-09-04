@@ -81,6 +81,9 @@ export default function SendingPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<Overview | null>(null)
+  // 🚦 حالة زرار الطابور — لازم تفضل مع باقي الهوكس فوق أي
+  //    `return` مبكر (`if (!authed)` تحت). هوك بيتنادى بشرط = الصفحة تقع.
+  const [busy, setBusy] = useState(false)
 
   const load = useCallback(async (pw: string, silent = false) => {
     setLoading(true); setError('')
@@ -154,7 +157,6 @@ export default function SendingPage() {
      شاشة بتعرض مفتاح وماتقدرش تقلبه = المفتاح مش في إيد حد. */
   const queueLane = (data?.senders ?? []).find((x) => x.name === 'طابور الواتساب')
   const queueOn = queueLane?.active !== false
-  const [busy, setBusy] = useState(false)
   const toggleQueue = async () => {
     setBusy(true)
     try {
