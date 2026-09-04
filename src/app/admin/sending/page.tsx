@@ -202,7 +202,11 @@ export default function SendingPage() {
                 رسالة واحدة كل تشغيلة، ومابتتبعتش الجاية غير لما اللي قبلها يتأكد وصولها.
               </p>
             </div>
-            <button onClick={toggleQueue} disabled={busy || !password}
+            {/* 🐞 (٤ سبتمبر ٢٠٢٦) كان `disabled={busy || !password}` — والصفحة
+                بتدخل بالكوكي **من غير باسورد** (الشرح فوق عند useEffect)، فالزرار
+                كان بيطلع رمادي ومابيردّش. محمد: «مش عايز يبعت ليه!؟».
+                الاعتماد في الكوكي مش في الخانة — الزرار مايتقفلش عليها. */}
+            <button onClick={toggleQueue} disabled={busy}
               className={`px-4 py-2 rounded-xl text-xs font-black text-white disabled:opacity-50 ${
                 queueOn ? 'bg-amber-600' : 'bg-emerald-600'}`}>
               {busy ? '...' : queueOn ? 'وقّف الطابور' : 'شغّل الطابور'}
