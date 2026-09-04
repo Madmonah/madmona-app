@@ -188,7 +188,9 @@ async function mintSession(rawPhone: string, fullNameHint: string | null = null)
   // الإيميل الداخلي (مُعرّف الحساب في Supabase): من الرقم لو موجود، أو من الـLID
   // لو الرقم مخفي. المستخدم بيدخل بالواتساب كل مرة فالإيميل ده داخلي بحت.
   const email = normalized ? phoneToEmail(normalized) : `wa-lid-${lid}@lid.madmona.eg`
-  const local = normalized ? '0' + normalized.slice(3) : null // +2010... → 010...
+  // 🌍 (٥ سبتمبر ٢٠٢٦) الصيغة المحلية للمصري بس (+2010… → 010…). الرقم الدولي
+  //    (لمونة +971…) كان بيطلع «0585280538» — رقم إماراتي محلي مالوش معنى عندنا.
+  const local = !normalized ? null : normalized.startsWith('+20') ? '0' + normalized.slice(3) : normalized.replace(/^\+/, '')
 
   // 👤 الاسم: اللي الواجهة بعتته له الأولوية، وبعده اسم واتساب.
   const waName = await lookupWaName(sb, [normalized, local, lid].filter(Boolean) as string[])
