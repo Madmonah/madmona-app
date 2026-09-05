@@ -109,6 +109,12 @@ function timing(scenes) {
     if (sc.type === 'panels') stagger('.panel', sc.items.length, 0.9, 0.35)
     if (sc.type === 'parties' && sc.mid) out.push(`body.go .s${i} .mid{animation-delay:${(t + 0.5).toFixed(2)}s}`)
     if (sc.type === 'end') out.push(`body.go .s${i} .end-mark{animation-delay:${(t + 0.25).toFixed(2)}s}`)
+    // 🎯 (٥/٩) reveal: الإجابة تتأخر عن السؤال. من غير الوقفة دي البوست
+    //    بيبقى ليستة — والمشاهد مالوش سبب يستنى. الوقفة هي اللعبة.
+    if (sc.reveal) {
+      out.push(`body.go .s${i} .big em{animation-delay:${(t + sc.reveal).toFixed(2)}s}`)
+      out.push(`body.go .s${i} .note{animation-delay:${(t + sc.reveal + 0.55).toFixed(2)}s}`)
+    }
     t += sc.len
   })
   return { css: out.join('\n'), total: t }
@@ -158,6 +164,14 @@ body.go .sc{animation-name:fade;animation-fill-mode:both;animation-timing-functi
 .has-bg .row{background:rgba(255,255,255,.96);border-color:rgba(255,255,255,.5)}
 body.go .has-bg .bgimg img{animation:kenburns 15s linear both}
 @keyframes kenburns{from{transform:scale(1.04)}to{transform:scale(1.20)}}
+/* الكشف: الإجابة بتتختم مش بتفيد — دي اللحظة اللي المشاهد مستنيها */
+.big em,.note{opacity:1}
+body.go .big em{animation:slam .5s both cubic-bezier(.2,1.1,.3,1.05)}
+body.go .note{animation:pop .45s both cubic-bezier(.2,.85,.3,1.05)}
+@keyframes slam{
+  0%{opacity:0;transform:scale(1.55) rotate(-3deg)}
+  60%{opacity:1;transform:scale(.96) rotate(.5deg)}
+  100%{opacity:1;transform:none}}
 
 /* chat */
 .chat{justify-content:flex-end;padding-bottom:22cqw}
