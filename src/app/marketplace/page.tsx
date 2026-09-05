@@ -8,6 +8,8 @@
 import { Suspense } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import MarketplaceClient from './MarketplaceClient';
+// 🌍 (٦/٩/٢٠٢٦) الزائر بيشوف سوق دولته — كوكي اختياره → هيدر Vercel الجغرافي → مصر
+import { getVisitorCountry } from '@/lib/visitor-country';
 import T from '@/components/T';
 
 // (22 يوليو 2026) SSR لأول دفعة إعلانات — بدل شاشة «جاري التحميل» الفاضية،
@@ -20,7 +22,7 @@ type SSRListing = {
   photos: { url: string; is_primary: boolean }[] | null;
 };
 
-async function getInitialListings(): Promise<SSRListing[]> {
+async function getInitialListings(country: string): Promise<SSRListing[]> {
   try {
     const supa = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,6 +40,7 @@ async function getInitialListings(): Promise<SSRListing[]> {
       `)
       .eq('status', 'published')
       .eq('is_directory', false)
+      .eq('country', country)
       .order('created_at', { ascending: false })
       .limit(30);
     if (!error && data && data.length) return (data as unknown) as SSRListing[];
@@ -49,6 +52,7 @@ async function getInitialListings(): Promise<SSRListing[]> {
       .select('id, title, i18n, slug, city, price_egp, category:categories(name_ar, name_en, name_i18n, icon, slug), photos:listing_photos(url, is_primary), pricing:pricing_rules(price, is_active)')
       .eq('status', 'published')
       .eq('is_directory', false)
+      .eq('country', country)
       .order('created_at', { ascending: false })
       .limit(30);
     return ((basic || []) as unknown) as SSRListing[];
@@ -172,10 +176,11 @@ function MarketplaceFallback({ listings = [] }: { listings?: SSRListing[] }) {
 }
 
 export default async function MarketplacePage() {
-  const initialListings = await getInitialListings();
+  const country = await getVisitorCountry();
+  const initialListings = await getInitialListings(country);
   return (
     <Suspense fallback={<MarketplaceFallback listings={initialListings} />}>
-      <MarketplaceClient initialListings={(initialListings as unknown) as never} />
+      <MarketplaceClient initialListings={(initialListings as unknown) as never} country={country} />
     </Suspense>
   );
 }

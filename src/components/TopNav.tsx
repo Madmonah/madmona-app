@@ -13,6 +13,7 @@ import { LayoutDashboard, Car, Package, Bell, Menu, X, User, LogIn, LogOut, Shar
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
+import CountryToggle from './CountryToggle'
 import CartButton from './CartButton'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
@@ -140,6 +141,9 @@ export default function TopNav() {
               activeClass="text-white"
               inactiveClass="bg-transparent text-white"
             />
+            {/* 🌍 (٦/٩) زرار الدولة — الزائر يقدر يقول «أنا في دبي بس بدوّر في
+                القاهرة». بيكتب كوكي وبيعمل ريلود لأن الفلترة في السيرفر. */}
+            <CountryToggle className="bg-white/15" activeClass="text-white" />
             {/* 🔔 (٢٨/٨) الجرس بقى يودّي شاشة الإشعارات —
                 كان زرار تفعيل push بس ومابيعرضش حاجة */}
             {/* 📊 (٢٨ أغسطس ٢٠٢٦) محمد: «لوحة الإدارة مش ظاهرة في الـ٣ شرط».

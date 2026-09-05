@@ -23,6 +23,7 @@ import {
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import LanguageToggle from './LanguageToggle'
+import CountryToggle from './CountryToggle'
 import DownloadAppBig from '@/components/DownloadAppBig'
 import WorkspaceMenu from '@/components/WorkspaceMenu'
 
@@ -253,6 +254,11 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
               className="w-10 h-10 bg-white/15 !rounded-[14px] justify-center"
               activeClass="text-white"
               inactiveClass="hidden"
+            />
+            {/* 🌍 (٦/٩) زرار الدولة — نفس مقاس وشكل زرار اللغة والإشعارات */}
+            <CountryToggle
+              className="w-10 h-10 bg-white/15 !rounded-[14px] justify-center"
+              activeClass="text-white"
             />
             <Link href="/notifications" aria-label="الإشعارات" className="relative w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center no-underline">
               <Bell className="w-[19px] h-[19px] text-white" strokeWidth={2} />

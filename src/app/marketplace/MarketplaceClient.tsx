@@ -157,7 +157,7 @@ const TRACK_NAME: Record<TrackTab, { ar: string; en: string }> = {
   industry:    { ar: 'شركات وصناعة', en: 'Industry & B2B' },
 }
 
-function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listing[] }) {
+function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initialListings?: Listing[]; country?: string }) {
   const { t, lang, dir, locale } = useT()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -297,6 +297,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
       const { data } = await supabaseBrowser
         .from('listings')
         .select('supplier_id, title, category_id, supplier:marketplace_suppliers(id, business_name, logo_url, kyc_status, account_type), photos:listing_photos(url, is_primary)')
+        .eq('country', country)
         .eq('status', 'published')
         .eq('is_directory', false)
         .not('supplier_id', 'is', null)
@@ -463,7 +464,7 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
 
       // Published-listing counts per category (RPC) — sections with zero data
       // render locked with a "قريباً / Coming soon" badge.
-      const { data: counts } = await supabaseBrowser.rpc('get_marketplace_category_counts')
+      const { data: counts } = await supabaseBrowser.rpc('get_marketplace_category_counts', { p_country: country })
       if (counts) {
         const map: Record<string, number> = {}
         for (const row of counts as { category_id: string; listing_count: number }[]) {
@@ -565,6 +566,8 @@ function MarketplaceBrowseContent({ initialListings }: { initialListings?: Listi
           photos:listing_photos(url, is_primary, quality_flag, is_placeholder),
           pricing:pricing_rules(price, is_active)
         `, { count: 'exact' })
+        // 🌍 (٦/٩) سوق دولة الزائر بس
+        .eq('country', country)
         .eq('status', 'published')
         .eq('is_directory', false)
         .limit(Math.min(visibleLimit, MAX_VISIBLE))
@@ -1808,14 +1811,14 @@ function CategoryPill({
 
 
 
-export default function MarketplaceClient({ initialListings }: { initialListings?: Listing[] } = {}) {
+export default function MarketplaceClient({ initialListings, country }: { initialListings?: Listing[]; country?: string } = {}) {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl">
         <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
       </div>
     }>
-      <MarketplaceBrowseContent initialListings={initialListings} />
+      <MarketplaceBrowseContent initialListings={initialListings} country={country} />
     </Suspense>
   )
 }
