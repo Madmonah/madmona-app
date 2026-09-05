@@ -94,6 +94,9 @@ const TOKEN_FNS = new Set([
   'admin_delete_service', 'admin_set_supplier_module', 'admin_add_task', 'admin_update_task_status',
   'business_supplier_head', 'business_branch_save', 'business_employee_save', 'business_employee_delete',
   'admin_bulk_add_employees', 'business_setup_progress', 'business_overview_bundle',
+  // (٥/٩/٢٠٢٦) دوال الحجز — اتحطّ عليها حارس p_token عشان صفحة الحجز
+  // كانت واقفة على صاحب البيزنس (anon بتوكن الواتساب).
+  'admin_get_bookings', 'admin_create_walkin_booking', 'admin_update_booking_status',
 ])
 export function withToken(client: any) {
   return {

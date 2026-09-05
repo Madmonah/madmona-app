@@ -4,13 +4,17 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
-import { rpcSafe } from '@/lib/rpc'
+import { rpcSafe, withToken } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, RefreshCw, Calendar, Clock, Phone, User, Plus, X,
   CheckCircle2, PlayCircle, XCircle, UserX2, Scissors, Building2, Check,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🔑 (٥/٩/٢٠٢٦) صاحب البيزنس بيدخل بتوكن الواتساب من غير جلسة Supabase،
+//    يعني هو anon — ودوال الحجز واقفة عليه. كل نداء RPC هنا بيمشي
+//    بـsbTok عشان يبعت p_token زي باقي شاشات اللوحة.
+const sbTok = withToken(supabase)
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   scheduled: { label: 'محجوز', cls: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -35,11 +39,12 @@ export default function BookingsPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
-    setSupplier(s)
+    // suppliers مش مقروء لصاحب البيزنس من ٢٨/٨ — الرأس من RPC بتوكن
+    const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
+    setSupplier(s && s.ok ? s : null)
     const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches(br || [])
-    const { data: result } = await supabase.rpc('admin_get_bookings', {
+    const { data: result } = await sbTok.rpc('admin_get_bookings', {
       p_supplier_id: supplierId,
       p_branch_id: branchFilter,
       p_date: dateFilter || null,
@@ -53,7 +58,7 @@ export default function BookingsPage({ params }: { params: { supplierId: string 
 
   async function updateStatus(bookingId: string, newStatus: string) {
     setBusyId(bookingId)
-    await rpcSafe(supabase, 'admin_update_booking_status', { p_booking_id: bookingId, p_new_status: newStatus })
+    await rpcSafe(sbTok, 'admin_update_booking_status', { p_booking_id: bookingId, p_new_status: newStatus })
     await load()
     setBusyId(null)
   }
@@ -224,7 +229,7 @@ function WalkinModal({ supplierId, branches, onClose, onSaved }: any) {
   async function save() {
     if (!form.service_id || !form.customer_name) return alert('اختار الخدمة واسم العميل')
     setSaving(true)
-    await rpcSafe(supabase, 'admin_create_walkin_booking', {
+    await rpcSafe(sbTok, 'admin_create_walkin_booking', {
       p_supplier_id: supplierId,
       p_branch_id: form.branch_id,
       p_service_id: form.service_id,
