@@ -20,6 +20,7 @@ import ListingAddedBy from '@/components/ListingAddedBy'
 import CartButton from '@/components/CartButton'
 import ListQuoteOrderBox from '@/components/ListQuoteOrderBox'
 import { periodLabel } from '@/lib/pricing-periods'
+import { priceLabel, currencyLabel } from '@/lib/currency'
 
 // ============================================================================
 // /marketplace/[slug]
@@ -59,6 +60,7 @@ interface ListingDetail {
   // 💸 (١٥ أغسطس ٢٠٢٦) العمودين دول كانوا متسحبين في الـselect من زمان
   //    ومش مُعرَّفين هنا خالص — فماحدش استخدمهم، وTypeScript ماقالش حاجة.
   price_egp: number | string | null
+  currency?: string | null
   price_on_request: boolean | null
   // Phase 4 product fields (May 29 2026)
   stock_quantity: number | null
@@ -189,7 +191,7 @@ export default function ListingDetailPage() {
             bookings_count, views_count, created_at, updated_at, published_at, requires_id_verification,
             available_addons, stock_quantity, product_condition, brand, model_name, shipping_available,
             shipping_cost, wholesale_tiers, accepts_insurance, insurance_partners, insurance_deposit_pct,
-            branches, booking_deposit_pct, is_directory, directory_source, price_egp, price_on_request,
+            branches, booking_deposit_pct, is_directory, directory_source, price_egp, currency, price_on_request,
             source_url, project_id,
             category:categories(name_ar, name_en, name_i18n, icon, track, order_mode, slug, group_slug)
           `)
@@ -871,13 +873,13 @@ export default function ListingDetailPage() {
                           </span>
                           {total > 0 && (
                             <span className="text-sm font-black text-[#059669] tabular whitespace-nowrap">
-                              {total.toLocaleString('ar-EG')} {t('common.egp')}
+                              {total.toLocaleString('ar-EG')} {currencyLabel(listing.currency, locale)}
                             </span>
                           )}
                         </div>
                         {perUnit > 0 && (
                           <p className="text-xs text-gray-500">
-                            {perUnit.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')} {t('common.egp')} {t('ld.per_piece')}
+                            {perUnit.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')} {currencyLabel(listing.currency, locale)} {t('ld.per_piece')}
                           </p>
                         )}
                       </div>
@@ -911,7 +913,7 @@ export default function ListingDetailPage() {
                         </span>
                         {p > 0 && (
                           <span className="text-sm font-black text-[#059669] tabular whitespace-nowrap">
-                            {p.toLocaleString('ar-EG')} {t('common.egp')}
+                            {p.toLocaleString('ar-EG')} {currencyLabel(listing.currency, locale)}
                           </span>
                         )}
                       </div>
@@ -1008,7 +1010,7 @@ export default function ListingDetailPage() {
                       <p className="text-xs text-gray-500 mb-1">{t('ld.deposit_refundable')}</p>
                       <p className="text-sm font-bold text-gray-900">
                         {Number(listing.security_deposit_amount) > 0
-                          ? `${Number(listing.security_deposit_amount).toLocaleString('ar-EG')} ${t('common.egp')}`
+                          ? `${Number(listing.security_deposit_amount).toLocaleString('ar-EG')} ${currencyLabel(listing.currency, locale)}`
                           : t('ld.deposit_ask')}
                       </p>
                     </div>
@@ -1215,7 +1217,7 @@ export default function ListingDetailPage() {
                               </span>
                               <span className="text-lg font-black text-[#059669] tabular">
                                 {Number(rule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
-                                <span className="text-xs font-normal text-gray-500 ms-1">{t('common.egp')}</span>
+                                <span className="text-xs font-normal text-gray-500 ms-1">{currencyLabel(listing.currency, locale)}</span>
                               </span>
                             </div>
                           ))}
@@ -1336,7 +1338,7 @@ export default function ListingDetailPage() {
                     )}
                     <p className="text-3xl font-black text-[#059669] tabular mb-1">
                       {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
-                      <span className="text-base font-medium text-gray-500 ms-1">{t('common.egp')}</span>
+                      <span className="text-base font-medium text-gray-500 ms-1">{currencyLabel(listing.currency, locale)}</span>
                     </p>
                     <p className="text-xs text-gray-500 mb-5">
                       {priceIsFlat ? ' ' : t('listing.price_calc_note')}
@@ -1500,7 +1502,7 @@ export default function ListingDetailPage() {
                 )}
                 <p className="text-xl font-black text-[#059669] tabular leading-tight">
                   {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
-                  <span className="text-xs font-medium text-gray-500 ms-1">{t('common.egp')}</span>
+                  <span className="text-xs font-medium text-gray-500 ms-1">{currencyLabel(listing.currency, locale)}</span>
                 </p>
               </>
             ) : (

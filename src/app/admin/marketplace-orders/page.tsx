@@ -8,6 +8,7 @@ import {
   CreditCard, Banknote, CheckCircle, XCircle, AlertCircle,
   ShoppingBag, MessageCircle, Loader2, Copy, MapPin, FileText,
 } from 'lucide-react'
+import { priceLabel } from '@/lib/currency'
 
 // ============================================================================
 // /admin/marketplace-orders
@@ -384,7 +385,7 @@ export default function AdminMarketplaceOrdersPage() {
                             {it.name_snapshot} <span className="text-gray-400 tabular">×{it.quantity}</span>
                           </span>
                           <span className="font-bold tabular flex-shrink-0">
-                            {it.line_total.toLocaleString('ar-EG')} ج.م
+                            {priceLabel(it.line_total, (o as any).currency)}
                           </span>
                         </div>
                       ))}

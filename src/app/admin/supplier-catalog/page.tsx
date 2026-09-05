@@ -14,6 +14,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   Loader2, Search, Eye, EyeOff, Store, Package, Tag, X, ArrowRight, Boxes,
 } from 'lucide-react'
+import { priceLabel, currencyLabel } from '@/lib/currency'
 
 type Biz = { id: string; business_name: string; business_model: string | null; listings_count: number | null }
 type Item = {
@@ -184,7 +185,7 @@ export default function AdminSupplierCatalog() {
                   className="min-w-0 flex-1 text-right">
                   <p className="text-xs font-bold text-gray-900 truncate">{it.name}</p>
                   <p className="text-[11px] text-gray-500">
-                    {k.label} · {Number(it.price || 0).toLocaleString('ar-EG')} ج.م
+                    {k.label} · {priceLabel(it.price || 0, it.currency)}
                     {it.qty != null && ` · متاح ${Number(it.qty).toLocaleString('ar-EG')}`}
                   </p>
                 </button>

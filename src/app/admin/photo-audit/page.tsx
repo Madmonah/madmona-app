@@ -7,6 +7,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { priceLabel, currencyLabel } from '@/lib/currency'
 
 type Photo = {
   id: string
@@ -162,7 +163,7 @@ export default function PhotoAuditPage() {
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     {l.category_name && <span className="rounded-full bg-[#34D399]/10 px-3 py-0.5 text-[#059669] font-medium">{l.category_name}</span>}
                     {l.supplier_name && <span>👤 {l.supplier_name}</span>}
-                    {l.price_egp && <span className="font-bold text-[#059669]">{fmtPrice(l.price_egp)} ج</span>}
+                    {l.price_egp && <span className="font-bold text-[#059669]">{priceLabel(l.price_egp, l.currency)}</span>}
                   </div>
                 </div>
                 <div className="mt-1 text-sm text-gray-500">

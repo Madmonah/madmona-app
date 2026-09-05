@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import ChatBottomNav from '@/components/ChatBottomNav'
+import { priceLabel, currencyLabel } from '@/lib/currency'
 
 type Offer = { id: string; title: string; slug: string; photo: string | null; price: number | null }
 
@@ -20,7 +21,7 @@ export default function OffersScreen() {
       try {
         const { data, error } = await supabaseBrowser
           .from('listings')
-          .select('id, title, slug, photos:listing_photos(url, is_primary), pricing:pricing_rules(price, is_active)')
+          .select('id, title, slug, currency, photos:listing_photos(url, is_primary), pricing:pricing_rules(price, is_active)')
           .eq('status', 'published').eq('is_directory', false)
           .order('created_at', { ascending: false }).limit(24)
         if (!alive) return
@@ -65,7 +66,7 @@ export default function OffersScreen() {
                 </div>
                 <div style={{ padding: 10 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: '#14231E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.title}</div>
-                  {o.price != null && <div style={{ fontSize: 13, color: '#059669', fontWeight: 900, marginTop: 2 }}>{o.price.toLocaleString('ar-EG')} ج.م</div>}
+                  {o.price != null && <div style={{ fontSize: 13, color: '#059669', fontWeight: 900, marginTop: 2 }}>{priceLabel(o.price, (o as any).currency)}</div>}
                 </div>
               </Link>
             ))}

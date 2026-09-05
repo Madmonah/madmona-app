@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { priceLabel, currencyLabel } from '@/lib/currency'
 
 // pSEO: صفحة «تصنيف × مدينة» — /browse/[category]/[city]
 // الهدف: التقاط بحث جوجل العربي الطويل (مثال: «مراكب للايجار في الاسكندرية»)
@@ -119,7 +120,7 @@ export default async function BrowseCityPage({ params }: P) {
                   <p className="text-xs text-gray-500 mt-1">{[l.district, cityAr].filter(Boolean).join(' — ')}</p>
                 </div>
                 <div className="text-left flex-shrink-0">
-                  {l.price ? <p className="text-sm font-black text-[#059669]">{Number(l.price).toLocaleString('ar-EG')} ج.م</p> : <p className="text-xs font-bold text-[#d4a017]">السعر عند الطلب</p>}
+                  {l.price ? <p className="text-sm font-black text-[#059669]">{priceLabel(l.price, l.currency)}</p> : <p className="text-xs font-bold text-[#d4a017]">السعر عند الطلب</p>}
                   {l.rating ? <p className="text-[11px] text-gray-500 mt-0.5">⭐ {l.rating}</p> : null}
                 </div>
               </div>

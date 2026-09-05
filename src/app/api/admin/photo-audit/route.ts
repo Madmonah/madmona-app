@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   let q = supabase
     .from('listings')
-    .select('id, title, slug, city, district, price_egp, status, created_at, supplier_id, category_id')
+    .select('id, title, slug, city, district, price_egp, status, created_at, supplier_id, category_id, currency')
     .eq('needs_photo_audit', true)
     .order('created_at', { ascending: false })
     .limit(limit)
