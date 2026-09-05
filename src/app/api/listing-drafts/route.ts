@@ -49,6 +49,8 @@ async function buildUpdatePayload(body: Record<string, unknown>): Promise<Record
   if (body.title !== undefined)        payload.title         = body.title || '(جاري التحرير)';
   if (body.description !== undefined)  payload.description   = body.description;
   if (body.city !== undefined)         payload.city          = body.city;
+  // 🌍 (٦/٩/٢٠٢٦) الدولة — العملة بتتشتق منها بتريجر في الداتابيز
+  if (body.country !== undefined)      payload.country       = String(body.country).toUpperCase();
   if (body.district !== undefined)     payload.district      = body.district;
   // 🐞 (١٥ أغسطس ٢٠٢٦) `address` كان ناقص من الـPATCH ده — الـPOST بيمرّره
   //    و`claim_listing_draft` بينقله للإعلان، بس الحفظ خطوة-بخطوة كان
@@ -145,6 +147,7 @@ export async function POST(req: NextRequest) {
       title: body.title || null,
       description: body.description || null,
       city: body.city || null,
+      country: (body.country ? String(body.country).toUpperCase() : 'EG'),
       district: body.district || null,
       address: body.address || null,
       latitude: body.latitude ?? null,
@@ -298,7 +301,7 @@ export async function GET(req: NextRequest) {
     // category-specific specs when returning to a draft.
     const { data, error } = await supabase
       .from('listing_drafts')
-      .select('id, claim_token, category_slug, title, description, city, district, price, price_period, pricing_tiers, photos, contact_name, contact_phone, account_type, business_name, current_step, status, created_at, attributes')
+      .select('id, claim_token, category_slug, title, description, city, country, district, price, price_period, pricing_tiers, photos, contact_name, contact_phone, account_type, business_name, current_step, status, created_at, attributes')
       .eq('claim_token', token)
       .single();
 

@@ -243,6 +243,11 @@ function isBeautyCategory(slug?: string | null): boolean {
 // handled via the categories.also_show_in column.
 // See system_runbook: categories_db_driven_consolidation_may17.
 
+// 🌍 (٦/٩/٢٠٢٦) محمد: «لمونة بيزنس في الإمارات — تاب للعملة والدولة عند
+//    التسجيل، ونفتح دول مجلس التعاون». العملة مابتتسألش — بتتشتق من
+//    الدولة هنا وفي الداتابيز بتريجر، فمستحيل سعر بعملة غلط.
+import { COUNTRIES, DEFAULT_COUNTRY, countryOf } from '@/lib/countries'
+
 const CITIES = [
   'القاهرة', 'الجيزة', 'الإسكندرية', 'الساحل الشمالي',
   'العين السخنة', 'رأس الحكمة', 'الغردقة', 'شرم الشيخ',
@@ -1331,6 +1336,7 @@ function StepBasics({
   const initialTitle = draft.title && draft.title !== PLACEHOLDER_TITLE ? draft.title : '';
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(draft.description || '');
+  const [country, setCountry] = useState<string>((draft as any).country || DEFAULT_COUNTRY);
   const [city, setCity] = useState(draft.city || '');
   const [district, setDistrict] = useState(draft.district || '');
   // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «شاشات الإضافة لازم تطابق شاشات العرض»)
@@ -1544,7 +1550,7 @@ function StepBasics({
       .filter((b) => b.name || b.address || b.phone);
     if (isBusiness && cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
 
-    onSubmit({ title, description, city, district, address, latitude, longitude, attributes: finalAttrs, account_type: sellerType });
+    onSubmit({ title, description, country, city, district, address, latitude, longitude, attributes: finalAttrs, account_type: sellerType });
   }
 
   return (
@@ -1600,17 +1606,45 @@ function StepBasics({
         />
       </Field>
 
-      <Field label={t('al.f_city')} error={errors.city} required>
+      <Field label="الدولة والعملة" required>
         <select
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
+          value={country}
+          onChange={(e) => { setCountry(e.target.value); setCity('') }}
           className={inputCls}
         >
-          <option value="">{t('al.choose')}</option>
-          {CITIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
+          {COUNTRIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.flag} {c.nameAr} — {c.currency}
+            </option>
           ))}
         </select>
+        <p className="mt-1 text-[11px] text-gray-500">
+          الأسعار كلها هتبقى بـ{countryOf(country).currency} — بتتحدد من الدولة تلقائيًا.
+        </p>
+      </Field>
+
+      <Field label={t('al.f_city')} error={errors.city} required>
+        {country === 'EG' ? (
+          <select
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className={inputCls}
+          >
+            <option value="">{t('al.choose')}</option>
+            {CITIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        ) : (
+          // مفيش قوايم مدن للخليج لحد ما تتحط في الداتابيز — كتابة حرة
+          <input
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder={country === 'AE' ? 'دبي · أبوظبي · الشارقة…' : 'اكتب المدينة'}
+            className={inputCls}
+          />
+        )}
       </Field>
 
       {/* Jun 13 2026 "drop listing": optional details tucked behind a toggle
