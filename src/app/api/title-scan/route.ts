@@ -76,8 +76,18 @@ ${TITLES.join(' · ')}
    «بيطبخ» → صنّف. «شكله طباخ» → ممنوع.
    احترام كامل — كل شغل شريف، والكلام على الشغل مش على صاحبه.
 
+📌 مطلوب منك **حاجتين مختلفتين** — متخلطهمش:
+   · **المهنة** (حقل job): اسم الشغلانة بالمصري في كلمة أو اتنين —
+     نجار · حدّاد · طبّاخ · ميكانيكي · كوافير · دكتور · مدرّس · سبّاك ·
+     نقّاش · خيّاط · مزارع · سواق · بائع · مبرمج … إلخ.
+     ⚠️ ممنوع وصف مبهم زي «نشاط شخصي» أو «خدمات فردية» — لازم اسم
+     شغلانة الناس بتقولها. لو فعلًا مش باين، اكتب «مش باين».
+   · **النشاط** (حقل title): التصنيف التجاري من القايمة اللي فوق بس.
+
+مثال: راجل ماسك شاكوش قدام سندان → job: "حدّاد" · title: "ورشة".
+
 رد **بـJSON بس** بالشكل ده من غير أي كلام قبله أو بعده:
-{"title":"...","activity":"وصف قصير للنشاط بالمصري","reason":"جملة واحدة عن اللي شوفته في الصورة","confident":true}`
+{"job":"المهنة في كلمة أو اتنين","title":"...","reason":"جملة واحدة عن اللي شوفته في الصورة","confident":true}`
 
 export async function POST(req: NextRequest) {
   try {
@@ -112,7 +122,7 @@ export async function POST(req: NextRequest) {
 
     // الموديل بيلف الـJSON في ```json أحيانًا
     const jsonText = (raw.match(/\{[\s\S]*\}/) || [''])[0]
-    let parsed: { title?: string; activity?: string; reason?: string; confident?: boolean } = {}
+    let parsed: { job?: string; title?: string; reason?: string; confident?: boolean } = {}
     try { parsed = JSON.parse(jsonText) } catch { /* هنقع على الافتراضي تحت */ }
 
     // 🛡️ حارس: لو الموديل اخترع تايتل مش في القايمة، نرجّع "فرد"
@@ -123,7 +133,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       title,
-      activity: parsed.activity || '',
+      job: (parsed.job || '').trim() || 'مش باين',
       reason: parsed.reason || '',
       confident: parsed.confident !== false,
       system: SYSTEMS[title] || SYSTEMS['فرد'],

@@ -16,7 +16,7 @@ import Link from 'next/link'
 
 type Result = {
   title: string
-  activity: string
+  job: string
   reason: string
   confident: boolean
   system: string[]
@@ -109,12 +109,11 @@ export default function TitlePage() {
         {/* النتيجة */}
         {result && (
           <section className="mt-7 rounded-2xl border border-[#DFE3E0] bg-white p-6 shadow-sm">
-            <p className="text-xs font-bold tracking-widest text-[#7C8481]">التايتل بتاعك</p>
-            <p className="mt-1 text-4xl font-black text-[#1F6F5F]">{result.title}</p>
+            <p className="text-xs font-bold tracking-widest text-[#7C8481]">المهنة</p>
+            <p className="mt-1 text-4xl font-black">{result.job}</p>
 
-            {result.activity && (
-              <p className="mt-3 text-lg font-bold">{result.activity}</p>
-            )}
+            <p className="mt-5 text-xs font-bold tracking-widest text-[#7C8481]">النشاط على مضمونة</p>
+            <p className="mt-1 text-4xl font-black text-[#1F6F5F]">{result.title}</p>
             {result.reason && (
               <p className="mt-1 text-sm leading-relaxed text-[#5B6360]">{result.reason}</p>
             )}
@@ -138,7 +137,7 @@ export default function TitlePage() {
               className="mt-6 block rounded-2xl bg-[#1F6F5F] px-6 py-4 text-center text-lg
                          font-extrabold text-[#FAFAF7]"
             >
-              سجّل بيزنسك دلوقتي
+              تعالى نحوّل شغلك أونلاين ←
             </Link>
           </section>
         )}
