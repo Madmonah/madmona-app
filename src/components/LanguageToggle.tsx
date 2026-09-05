@@ -21,7 +21,6 @@ export default function LanguageToggle({
   inactiveClass?: string
 }) {
   const { locale, setLocale } = useT()
-  const short = LOCALE_META[locale].short
 
   return (
     <label
@@ -29,10 +28,12 @@ export default function LanguageToggle({
       aria-label="Language"
       title={LOCALE_META[locale].native}
     >
-      <span className={`px-3 py-1.5 transition-colors ${activeClass}`} aria-hidden="true">
-        🌐 {short}
+      {/* (٥/٩) محمد: «صغّر التاب وحط علامة اللغات بس» — الاسم المختصر
+          اتشال والكرة الأرضية بقت لوحدها. الاسم الكامل في title + الليستة. */}
+      <span className={`px-2 py-1 transition-colors ${activeClass}`} aria-hidden="true">
+        🌐
       </span>
-      <span className={`px-2 py-1.5 ${inactiveClass}`} aria-hidden="true">▾</span>
+      <span className={`pe-1.5 py-1 text-[11px] ${inactiveClass}`} aria-hidden="true">▾</span>
       {/* select شفاف فوق الزرار — يشتغل نيتيف على iOS/أندرويد من غير أي مكتبة */}
       <select
         value={locale}

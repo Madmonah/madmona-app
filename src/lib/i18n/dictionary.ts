@@ -36,7 +36,7 @@ export const DEFAULT_LOCALE: Locale = 'ar'
 export const LANG_STORAGE_KEY = 'madmona_lang'
 
 export const LOCALE_META: Record<Locale, { native: string; short: string; base: Lang; htmlLang: string }> = {
-  'ar':      { native: 'عربي (مصري)',  short: 'مصري',  base: 'ar', htmlLang: 'ar-EG' },
+  'ar':      { native: 'عربي (مصري)',  short: 'عربي',  base: 'ar', htmlLang: 'ar-EG' },
   'ar-gulf': { native: 'عربي (خليجي)', short: 'خليجي', base: 'ar', htmlLang: 'ar-SA' },
   'en':      { native: 'English',       short: 'EN',    base: 'en', htmlLang: 'en' },
   'uk':      { native: 'Українська',    short: 'UA',    base: 'en', htmlLang: 'uk' },

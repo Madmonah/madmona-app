@@ -153,7 +153,6 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
   }, [])
   const [loggedIn, setLoggedIn] = useState(false)
   const [q, setQ] = useState('')
-  const [marid, setMarid] = useState('')
 
   // auth (for drawer login/logout)
   useEffect(() => {
@@ -166,13 +165,6 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
     e.preventDefault()
     const term = q.trim()
     router.push(term ? `/marketplace?q=${encodeURIComponent(term)}` : '/marketplace')
-  }
-
-  // اسأل المارد — بيفتح شات المارد ومعاه السؤال، والمارد يرد جوه الشات
-  const submitMarid = (e: FormEvent) => {
-    e.preventDefault()
-    const term = marid.trim()
-    router.push(term ? `/chat/marid?q=${encodeURIComponent(term)}` : '/chat/marid')
   }
 
   const signOut = async () => {
@@ -237,9 +229,13 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
       >
         <header className="flex items-center justify-between px-4 pb-1">
           <Link href="/" className="flex items-center gap-2.5 no-underline">
-            <span className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)]">
+            {/* 🎨 (٥/٩) محمد: «اتأكد إن نسخة الموبايل ونسخة الويب بنفس اللون».
+                اللون واحد أصلًا — نفس الملف ومفيش أي فلتر. اللي كان مختلف
+                المقاس (30 مقابل 32) والاستدارة (14 مقابل 16) فبيبان أتقل
+                شوية. اتوحّدوا مع TopNav بالظبط. */}
+            <span className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,.06)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/madmona-logo.png" alt="مضمونة" className="w-[30px] h-[30px] object-contain" />
+              <img src="/madmona-logo.png" alt="مضمونة" className="w-8 h-8 object-contain" width={32} height={32} />
             </span>
             <span className="leading-none">
               <span className="block text-[15px] font-black text-white leading-none">{t('tn.brand')}</span>
@@ -285,22 +281,21 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
             placeholder={t('mhome.apartment_car_hall_service')}
             className="flex-1 bg-transparent outline-none text-sm font-medium text-[#1A1A1A] placeholder:text-[#7C8A84] min-w-0"
           />
-          <button type="submit" aria-label="بحث" className="w-[34px] h-[34px] -my-1.5 -ms-2 rounded-[10px] bg-[#34D399] flex items-center justify-center flex-shrink-0">
-            <ArrowLeft className="w-4 h-4 text-white rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
+          {/* 🧞 (٥/٩) محمد: «شيل تاب اسأل المارد وحط علامة المارد جنب إرسال
+              بحيث يبقى تاب واحد — يا يدوس إرسال يا يدوس على المارد».
+              نفس الخانة: الزرار الأخضر بيدوّر في السوق، والمارد بيفتح الشات
+              بنفس الكلام. */}
+          <button
+            type="button"
+            onClick={() => router.push(q.trim() ? `/chat/marid?q=${encodeURIComponent(q.trim())}` : '/chat/marid')}
+            aria-label={t('mhome.ask_madmona_marid')}
+            title={t('mhome.ask_madmona_marid')}
+            className="w-[34px] h-[34px] -my-1.5 rounded-[10px] border border-[#CDE7DD] bg-[#F2FAF7] flex items-center justify-center flex-shrink-0 text-[17px] leading-none"
+          >
+            🧞
           </button>
-        </form>
-
-        {/* 3. Ask Marid row — typeable; opens Marid chat with the message */}
-        <form onSubmit={submitMarid} className="flex items-center gap-2.5 bg-white border-[1.5px] border-[#E5DFD3] rounded-2xl px-4 py-3 mt-2.5 focus-within:border-[#059669] transition-colors">
-          <span className="text-[20px] leading-none flex-shrink-0">🧞</span>
-          <input
-            value={marid}
-            onChange={e => setMarid(e.target.value)}
-            placeholder={t('mhome.ask_madmona_marid')}
-            className="flex-1 bg-transparent outline-none text-[13px] font-semibold text-[#1A1A1A] placeholder:text-[#4B5563] min-w-0"
-          />
-          <button type="submit" aria-label={t('mhome.ask')} className="flex-shrink-0">
-            <ArrowLeft className="w-4 h-4 text-[#059669] rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
+          <button type="submit" aria-label="إرسال" className="w-[34px] h-[34px] -my-1.5 -ms-1 rounded-[10px] bg-[#34D399] flex items-center justify-center flex-shrink-0">
+            <ArrowLeft className="w-4 h-4 text-white rtl:rotate-0 ltr:rotate-180" strokeWidth={2.5} />
           </button>
         </form>
 
@@ -332,7 +327,8 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
                 //    كروت المجموعات الفرعية فوق (drill-down المستوى الأول).
                 //    لو بعتنا group بيدخل جوّه مجموعة واحدة على طول.
                 href={`/marketplace?track=${v.key}`}
-                className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
+                // (٥/٩) محمد: «قلل الهايت بتاع التابات اللي في الهوم» — 16/10 → 16/7
+                className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/7] no-underline"
               >
                 {g?.useImg && g.image_url ? (
                   <>
@@ -369,7 +365,8 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
           {/* بورصة مضمونة العقارية — كارت رابع ثابت بعرض الشاشة كامل */}
           <Link
             href={BOURSE_CARD.href}
-            className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
+            // (٥/٩) محمد: «قلل الهايت بتاع التابات اللي في الهوم» — 16/10 → 16/7
+                className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/7] no-underline"
           >
             <Image src={BOURSE_CARD.img} alt={BOURSE_CARD.ar} fill sizes="100vw" className="object-cover" />
             <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.82), rgba(10,25,20,.1) 60%)' }} />
@@ -383,7 +380,8 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
           {/* بورصة رجال الأعمال — كارت خامس: أخبار + عملات + ذهب */}
           <Link
             href={BUSINESS_CARD.href}
-            className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/10] no-underline"
+            // (٥/٩) محمد: «قلل الهايت بتاع التابات اللي في الهوم» — 16/10 → 16/7
+                className="relative block rounded-[22px] overflow-hidden w-full aspect-[16/7] no-underline"
           >
             <Image src={BUSINESS_CARD.img} alt={BUSINESS_CARD.ar} fill sizes="100vw" className="object-cover" />
             <span className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,25,20,.82), rgba(10,25,20,.1) 60%)' }} />
