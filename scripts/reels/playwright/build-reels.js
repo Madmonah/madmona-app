@@ -72,7 +72,7 @@ ${sc.items.map(it => `      <div class="row ${sc.tone || 'good'}"><span class="t
   </div>`
 
     case 'panels':
-      return `<div class="${cls} panels-sc">
+      return `<div class="${cls} panels-sc${sc.size === 'sm' ? ' panels-sm' : ''}">
 ${sc.items.map(p => `    <div class="panel"><span class="k">${esc(p.k)}</span><b class="v">${esc(p.v)}</b></div>`).join('\n')}
   </div>`
 
@@ -215,6 +215,10 @@ body.go .row{animation:slide .5s both cubic-bezier(.2,.8,.3,1)}
 .panel .k{font-size:5.4cqw;font-weight:700;color:var(--ink-soft)}
 .panel .v{font-size:11cqw;font-weight:900;color:var(--green);letter-spacing:-.03em}
 body.go .panel{animation:slide .55s both cubic-bezier(.2,.8,.3,1)}
+/* size:'sm' — لما البانل فيه نص على الجنبين (نشاط ← تايتل) مش رقم */
+.panels-sm .panel{max-height:19cqw;padding:0 5cqw}
+.panels-sm .panel .k{font-size:4.3cqw;font-weight:600}
+.panels-sm .panel .v{font-size:6.6cqw;letter-spacing:-.02em}
 
 /* end */
 .endcard{background:var(--green);align-items:center;text-align:center;justify-content:center;gap:5.5cqw}
