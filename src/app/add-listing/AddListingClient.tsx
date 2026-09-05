@@ -1337,6 +1337,16 @@ function StepBasics({
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(draft.description || '');
   const [country, setCountry] = useState<string>((draft as any).country || DEFAULT_COUNTRY);
+  // 🏙️ (٦/٩/٢٠٢٦) مدن غير مصر من جدول `cities` (مقروء للكل) — مصر ليها
+  //    قايمة المحافظات الثابتة CITIES فوق ومش بتتجاب من هنا.
+  const [gulfCities, setGulfCities] = useState<string[]>([]);
+  useEffect(() => {
+    if (country === 'EG') { setGulfCities([]); return; }
+    let dead = false;
+    supabaseBrowser.from('cities').select('name_ar').eq('country', country).order('display_order')
+      .then(({ data }) => { if (!dead) setGulfCities((data || []).map((r: any) => r.name_ar)); });
+    return () => { dead = true; };
+  }, [country]);
   const [city, setCity] = useState(draft.city || '');
   const [district, setDistrict] = useState(draft.district || '');
   // 🐞 (١٥ أغسطس ٢٠٢٦ — محمد: «شاشات الإضافة لازم تطابق شاشات العرض»)
@@ -1635,13 +1645,24 @@ function StepBasics({
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
+        ) : gulfCities.length > 0 ? (
+          <select
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className={inputCls}
+          >
+            <option value="">{t('al.choose')}</option>
+            {gulfCities.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
         ) : (
-          // مفيش قوايم مدن للخليج لحد ما تتحط في الداتابيز — كتابة حرة
+          // دولة لسه مالهاش قايمة في `cities` — كتابة حرة كشبكة أمان
           <input
             type="text"
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            placeholder={country === 'AE' ? 'دبي · أبوظبي · الشارقة…' : 'اكتب المدينة'}
+            placeholder="اكتب المدينة"
             className={inputCls}
           />
         )}
