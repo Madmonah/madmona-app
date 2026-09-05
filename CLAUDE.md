@@ -1491,3 +1491,31 @@ select proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
 دلوقتي يفتح: الرئيسية · الفروع · الفريق · الإعدادات · الكتالوج (اتجرّبوا بتوكن
 لمونة). محرر المنيو (`/supplier/marketplace/<listing>/menu`) محتاج جلسة Supabase
 — بتتصكّ مع توثيق الواتساب أصلًا.
+
+## 🌍 الدولة والعملة — فتح الخليج (٦ سبتمبر ٢٠٢٦)
+محمد: «لمونة بيزنس في الإمارات — تاب للعملة والدولة عند التسجيل ونعمّم
+ونفتح دول مجلس التعاون» + «هيعرف منين الدولة والزائر هيتعرض ليه إيه».
+
+- **المرجع:** جدول `countries` (ISO-2 · عملة · كود اتصال · علم) — مصر +
+  ٦ دول خليج. و`cities` (٤٣ مدينة خليجية). نسخة الواجهة `lib/countries.ts`.
+- **العملة مابتتسألش — بتتشتق من الدولة.** تريجر `set_currency_from_country`
+  على listings · listing_drafts · suppliers · marketplace_suppliers.
+  **الدولة بتكسب دايمًا** — اتجرّب: `country='EG'`+`currency='AED'` → EG/EGP.
+  الكتالوج (menu_items · mart_products) **مالوش تريجر** ومربوط بـ`listing_id`
+  مش `supplier_id` — يتحدّد صراحةً عبر إعلانات المورد.
+- **الزائر — `lib/visitor-country.ts`، الترتيب الأكيد قبل التخمين:**
+  كوكي `madmona_country` (اختياره) → هيدر `x-vercel-ip-country` (مجاني،
+  صفر API) → `EG`. كود مش في قايمتنا يقع على مصر.
+  الفلترة في **Server Component** — فزرار الدولة (`CountryToggle`) بيكتب
+  الكوكي **وبيعمل ريلود**. `/marketplace` بقت dynamic (ƒ) عن قصد.
+- `get_marketplace_category_counts(p_country)` — الـ0-arg اتمسحت.
+
+⚠️ **`<TopNav>` مش في الـlayout — بيتركّب لكل صفحة بإيدها** (add-project ·
+business-lounge · real-estate…). **الماركت والهوم عندهم هيدر خاص.** أي
+زرار «في الهيدر» لازم يتحط في ٣ أماكن: TopNav + MobileHome +
+`MarketplaceClient.tsx` (هيدر الماركت) — وإلا بيغيب عن الصفحة اللي بتهم.
+📏 **الفحص:** SSR HTML مش دليل على غياب زرار في هيدر كلاينت. الصح `find`
+في المتصفح — ولما اللغة والدولة يغيبوا **مع بعض** يبقى الهيدر نفسه مش
+متركّب، مش الزرار.
+ℹ️ «القاهرة» في HTML زائر دبي = JSON-LD الشركة في `layout.tsx`
+(`addressCountry: EG`) — عنوان مضمونة نفسها، صح ويفضل.
