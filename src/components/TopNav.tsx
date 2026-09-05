@@ -88,7 +88,7 @@ export default function TopNav() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 bg-[#34D399] ${
+        className={`sticky top-0 z-50 transition-all duration-300 bg-[#04352A] ${
           scrolled ? 'shadow-soft' : ''
         }`}
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
@@ -137,7 +137,7 @@ export default function TopNav() {
             </Link>
             <LanguageToggle
               className="bg-white/15"
-              activeClass="bg-white text-[#059669]"
+              activeClass="text-white"
               inactiveClass="bg-transparent text-white"
             />
             {/* 🔔 (٢٨/٨) الجرس بقى يودّي شاشة الإشعارات —

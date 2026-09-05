@@ -224,7 +224,8 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
           لفوق تحت شريط الحالة نفسه — متطابق مع appleWebApp.statusBarStyle:
           'black-translucent' + viewport-fit=cover في layout.tsx. */}
       <div
-        className="bg-[#34D399] rounded-b-[28px] pb-5"
+        /* 🎨 (٥/٩) محمد: «اعملهم بألوان بورصة مضمونة (اللون الغامق)» */
+        className="bg-[#04352A] rounded-b-[28px] pb-5"
         style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
       >
         <header className="flex items-center justify-between px-4 pb-1">
@@ -245,14 +246,17 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
           <div className="flex gap-2">
             {/* 🌍 (٢٧ أغسطس ٢٠٢٦) محمد: «موجود الكلام ده في نسخة الموبايل؟» —
                 الهوم بتاعة الموبايل ماكانش فيها أي زرار لغة أصلًا. */}
+            {/* 🌐 (٥/٩) محمد: «اتأكد إن علامة اللغة ظاهرة زي ألوان
+                النوتيفيكيشن والتابلت الـ٣ شرط» — نفس المقاس ونفس
+                الخلفية ونفس الاستدارة بالظبط. */}
             <LanguageToggle
-              className="bg-white/15 h-10"
-              activeClass="bg-white text-[#059669]"
-              inactiveClass="bg-transparent text-white"
+              className="w-10 h-10 bg-white/15 !rounded-[14px] justify-center"
+              activeClass="text-white"
+              inactiveClass="hidden"
             />
             <Link href="/notifications" aria-label="الإشعارات" className="relative w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center no-underline">
               <Bell className="w-[19px] h-[19px] text-white" strokeWidth={2} />
-              <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#059669]" />
+              <span className="absolute top-[9px] left-[9px] w-[7px] h-[7px] rounded-full bg-[#E26D5C] border-[1.5px] border-[#04352A]" />
             </Link>
             <button type="button" onClick={() => setMenuOpen(true)} aria-label="القائمة" className="w-10 h-10 bg-white/15 rounded-[14px] flex items-center justify-center">
               <Menu className="w-[19px] h-[19px] text-white" strokeWidth={2} />

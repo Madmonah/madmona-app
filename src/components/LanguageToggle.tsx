@@ -24,7 +24,7 @@ export default function LanguageToggle({
 
   return (
     <label
-      className={`relative inline-flex items-center rounded-full overflow-hidden text-[13px] font-bold select-none cursor-pointer ${className}`}
+      className={`relative inline-flex items-center rounded-full overflow-hidden text-[15px] font-bold select-none cursor-pointer ${className}`}
       aria-label="Language"
       title={LOCALE_META[locale].native}
     >
