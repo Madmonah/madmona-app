@@ -44,7 +44,7 @@ type VKey = 'products' | 'rentals' | 'services' | 'restaurants' | 'industry'
 
 const VERTICALS: { key: VKey; ar: string; en: string; emoji: string; tracks: string[]; tone: string; accent: string }[] = [
   { key: 'products',    ar: 'بيع',        en: 'Buy',         emoji: '🏷️', tracks: ['products', 'sales'],   tone: 'from-[#2C5F8D] to-[#5B9BD5]', accent: '#3D7BB6' },
-  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#34D399] to-[#2FA084]', accent: '#059669' },
+  { key: 'rentals',     ar: 'إيجار',      en: 'Rent',        emoji: '🔑', tracks: ['rentals', 'hybrid'],   tone: 'from-[#34D399] to-[#2FA084]', accent: '#04352A' },
   { key: 'services',    ar: 'خدمات',      en: 'Services',    emoji: '🛠️', tracks: ['services'],            tone: 'from-[#8A6A0F] to-[#D4A017]', accent: '#2B4521' },
   // 🍽️ (١٤ أغسطس ٢٠٢٦ — محمد) رجوع المطاعم. الـ track ده كان موجود في
   //    الداتابيز طول الوقت (١٣ تصنيف · ٢٦ مطعم منشور · ١٬٥٨٤ صنف منيو)،
@@ -66,7 +66,7 @@ const BOURSE_CARD = {
   //    كان بيدّيهم صورة. دلوقتي بقى ليهم صور بالهوية الخضرا الجديدة.
   img: '/hero/bourse.jpg',
   tone: 'from-[#14231E] to-[#34D399]',
-  accent: '#059669',
+  accent: '#04352A',
   href: '/real-estate/market',
 }
 
@@ -79,7 +79,7 @@ const BUSINESS_CARD = {
   emoji: '📈',
   img: '/hero/business-lounge.jpg',
   tone: 'from-[#2B4521] to-[#34D399]',
-  accent: '#059669',
+  accent: '#04352A',
   href: '/business-lounge',
 }
 
@@ -225,8 +225,8 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
           'black-translucent' + viewport-fit=cover في layout.tsx. */}
       <div
         /* 🎨 (٥/٩) محمد: «اعملهم بألوان بورصة مضمونة (اللون الغامق)» */
-        className="bg-[#04352A] rounded-b-[28px] pb-5"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+        className="bg-[#04352A] rounded-b-[24px] pb-3.5"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.5rem)' }}
       >
         <header className="flex items-center justify-between px-4 pb-1">
           <Link href="/" className="flex items-center gap-2.5 no-underline">
@@ -265,9 +265,11 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
         </header>
 
         {/* تاب تحميل التطبيق - في نفس سطر العنوان على الشمال (30 Jul 2026) */}
-        <div className="flex items-start justify-between gap-3 px-4 pt-3.5">
-          <h1 className="text-[22px] font-black text-white leading-[1.25] flex-1 min-w-0">
-            {t('mhome.h1_a')}<br/>{t('mhome.h1_b')} <span className="underline decoration-2 decoration-white/60 underline-offset-4">{t('mhome.h1_c')}</span>
+        <div className="flex items-start justify-between gap-3 px-4 pt-2.5">
+          <h1 className="text-[19px] font-black text-white leading-[1.3] flex-1 min-w-0">
+            {/* (٥/٩) محمد: «شيل كلمة دور على أي حاجة» — العنوان بقى سطر واحد،
+                والهيدر قصر معاه. */}
+            {t('mhome.h1_b')} <span className="underline decoration-2 decoration-white/60 underline-offset-4">{t('mhome.h1_c')}</span>
           </h1>
           <div className="flex-shrink-0 pt-1">
             <DownloadAppBig compact />
@@ -317,7 +319,7 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
       <section className="pt-[22px]">
         <div className="flex items-baseline justify-between mb-3 px-4">
           <h2 className="text-[17px] font-black text-[#0A0A0A]">{t('mhome.choose_your_section')}</h2>
-          <Link href="/marketplace" className="text-xs font-extrabold text-[#059669] no-underline">{t('mhome.see_all')}</Link>
+          <Link href="/marketplace" className="text-xs font-extrabold text-[#04352A] no-underline">{t('mhome.see_all')}</Link>
         </div>
         <div className="flex flex-col gap-3 px-4">
           {VERTICALS.map(v => {
@@ -400,12 +402,12 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
 
       {/* 6. Supplier CTA */}
       <section className="px-4 pt-6 pb-7">
-        <div className="rounded-[20px] px-5 py-[18px] flex items-center gap-3" style={{ background: 'linear-gradient(118deg, #059669, #34D399)' }}>
+        <div className="rounded-[20px] px-5 py-[18px] flex items-center gap-3" style={{ background: 'linear-gradient(118deg, #04352A, #34D399)' }}>
           <span className="flex-1">
             <span className="block text-white text-[15px] font-black">{t('mhome.have_something_to_rent_or_se')}</span>
             <span className="block text-white/75 text-[11px] font-semibold mt-0.5">{t('mhome.list_it_free_in_2_minutes_we')}</span>
           </span>
-          <Link href={`/add-listing${addTrack}`} className="bg-white text-[#059669] rounded-xl px-4 py-2.5 text-[13px] font-black flex-shrink-0 no-underline">{t('mhome.list')}</Link>
+          <Link href={`/add-listing${addTrack}`} className="bg-white text-[#04352A] rounded-xl px-4 py-2.5 text-[13px] font-black flex-shrink-0 no-underline">{t('mhome.list')}</Link>
         </div>
       </section>
 
@@ -421,7 +423,7 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
                   <img src="/madmona-logo.png" alt="مضمونة" className="w-9 h-9 object-contain" />
                 </span>
                 <span>
-                  <span className="block font-black text-[#059669]">{t('tn.brand')}</span>
+                  <span className="block font-black text-[#04352A]">{t('tn.brand')}</span>
                   <span className="block text-[9px] text-gray-500 font-bold tracking-[0.2em]">MADMONA</span>
                 </span>
               </div>
@@ -432,12 +434,12 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
             <nav className="flex-1 overflow-y-auto p-4 space-y-1">
               <DrawerLink href="/account" icon={<User className="w-5 h-5 text-gray-700" />} title={t('mhome.account')} desc={t('mhome.orders_favorites_wallet')} onClose={() => setMenuOpen(false)} />
               <DrawerLink href={`/add-listing${addTrack}`} icon={<Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />} iconBg="bg-[#d4a017]/10" title={t('mhome.add_a_listing')} desc={t('mhome.start_selling_or_renting')} onClose={() => setMenuOpen(false)} />
-              <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={t('mhome.careers')} desc={t('mhome.join_the_madmona_team')} onClose={() => setMenuOpen(false)} />
+              <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#04352A]" />} iconBg="bg-[#34D399]/10" title={t('mhome.careers')} desc={t('mhome.join_the_madmona_team')} onClose={() => setMenuOpen(false)} />
               {/* 🔔 (٢٨/٨) الإشعارات */}
               {/* 🚗 (٢٨/٨) السيارات — ٤٢ إعلان منشور وماكانش ليها رابط في الموبايل */}
               {/* 📦 (٢٨/٨) طلباتي */}
-              <DrawerLink href="/my-orders" icon={<Package className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title="طلباتي" desc="حجوزاتك وطلباتك" onClose={() => setMenuOpen(false)} />
-              <DrawerLink href="/notifications" icon={<Bell className="w-5 h-5 text-[#059669]" />} title="الإشعارات" desc="كل اللي جالك في مكان واحد" onClose={() => setMenuOpen(false)} />
+              <DrawerLink href="/my-orders" icon={<Package className="w-5 h-5 text-[#04352A]" />} iconBg="bg-[#34D399]/10" title="طلباتي" desc="حجوزاتك وطلباتك" onClose={() => setMenuOpen(false)} />
+              <DrawerLink href="/notifications" icon={<Bell className="w-5 h-5 text-[#04352A]" />} title="الإشعارات" desc="كل اللي جالك في مكان واحد" onClose={() => setMenuOpen(false)} />
 
 
               {/* 🎛️ (٢٨ أغسطس ٢٠٢٦) **لوحة واحدة** بدل اتنين — محمد:
@@ -456,7 +458,7 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
                   <span className="flex-1"><span className="block font-bold text-gray-900">{t('mhome.sign_out')}</span></span>
                 </button>
               ) : (
-                <DrawerLink href="/auth/login" icon={<LogIn className="w-5 h-5 text-[#059669]" />} iconBg="bg-[#34D399]/10" title={t('mhome.log_in')} desc={t('mhome.access_your_account')} onClose={() => setMenuOpen(false)} />
+                <DrawerLink href="/auth/login" icon={<LogIn className="w-5 h-5 text-[#04352A]" />} iconBg="bg-[#34D399]/10" title={t('mhome.log_in')} desc={t('mhome.access_your_account')} onClose={() => setMenuOpen(false)} />
               )}
             </nav>
             <div className="p-4 border-t border-gray-100">

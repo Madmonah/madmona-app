@@ -194,7 +194,7 @@ export default function TopNav() {
                   />
                 </div>
                 <div>
-                  <p className="font-black text-[#059669]">{t('tn.brand')}</p>
+                  <p className="font-black text-[#04352A]">{t('tn.brand')}</p>
                   <p className="text-[9px] text-gray-500 font-bold tracking-[0.2em]">
                     MADMONA
                   </p>
@@ -214,10 +214,10 @@ export default function TopNav() {
                 <Link
                   href="/account/work"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#059669]/[0.06] hover:bg-[#059669]/10 no-underline group transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#04352A]/[0.06] hover:bg-[#04352A]/10 no-underline group transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#059669]/10 flex items-center justify-center flex-shrink-0 relative">
-                    <Briefcase className="w-5 h-5 text-[#059669]" />
+                  <div className="w-10 h-10 rounded-xl bg-[#04352A]/10 flex items-center justify-center flex-shrink-0 relative">
+                    <Briefcase className="w-5 h-5 text-[#04352A]" />
                     {((staff.tasks ?? 0) + (staff.due ?? 0)) > 0 && (
                       <span className="absolute -top-1.5 -left-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#b3261e] text-white text-[10px] font-black flex items-center justify-center">
                         {(staff.tasks ?? 0) + (staff.due ?? 0)}
@@ -265,7 +265,7 @@ export default function TopNav() {
                 className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
               >
                 <div className="w-10 h-10 rounded-2xl bg-[#34D399]/12 flex items-center justify-center shrink-0">
-                  <Package className="w-[18px] h-[18px] text-[#059669]" />
+                  <Package className="w-[18px] h-[18px] text-[#04352A]" />
                 </div>
                 <div className="flex-1 text-right">
                   <p className="font-bold text-gray-900">طلباتي</p>
@@ -279,7 +279,7 @@ export default function TopNav() {
                 className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-[#FAFAF7] no-underline"
               >
                 <div className="w-10 h-10 rounded-2xl bg-[#34D399]/12 flex items-center justify-center shrink-0">
-                  <Bell className="w-[18px] h-[18px] text-[#059669]" />
+                  <Bell className="w-[18px] h-[18px] text-[#04352A]" />
                 </div>
                 <div className="flex-1 text-right">
                   <p className="font-bold text-gray-900">الإشعارات</p>
@@ -302,7 +302,7 @@ export default function TopNav() {
                 className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl bg-[#34D399]/10 flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="w-5 h-5 text-[#059669]" />
+                  <Briefcase className="w-5 h-5 text-[#04352A]" />
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900">{t('tn.careers')}</p>
@@ -331,7 +331,7 @@ export default function TopNav() {
                   className="flex items-center gap-3 p-3 rounded-2xl hover:bg-[#FAFAF7] no-underline group transition-colors"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#34D399]/10 flex items-center justify-center flex-shrink-0">
-                    <LogIn className="w-5 h-5 text-[#059669]" />
+                    <LogIn className="w-5 h-5 text-[#04352A]" />
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-gray-900">{t('nav.login')}</p>
