@@ -15,6 +15,8 @@ import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import MarketExplorer, { type Item, type Opportunity } from './MarketExplorer'
 import { PUBLIC_PROJECT_COLUMNS } from '@/lib/projects'
+// 🌍 (٦/٩/٢٠٢٦) محمد: «الصفحات اللي محتاجة تتعرض بدولة زي الماركت بليس والبورصة»
+import { getVisitorCountry } from '@/lib/visitor-country'
 
 export const revalidate = 3600 // ساعة
 
@@ -46,7 +48,7 @@ function sb() {
   )
 }
 
-async function getItems(): Promise<Item[]> {
+async function getItems(country: string): Promise<Item[]> {
   try {
     const { data } = await sb()
       .from('property_market_items')
@@ -54,6 +56,7 @@ async function getItems(): Promise<Item[]> {
       .eq('is_active', true)
       .eq('status', 'published')
       .eq('embargoed', false) // ⛔ المشاريع المحظور نشرها (زي أبراج العلمين) مبتظهرش
+      .eq('country', country)   // 🌍 سوق دولة الزائر بس — نفس منطق الماركت
       .order('sort_order', { ascending: true })
     const rows = (data as unknown as Item[]) || []
     // 🆕 (13 Jul 2026) الصورة هي البطل — المشاريع اللي معاها صورة تظهر الأول،
@@ -101,8 +104,9 @@ async function getOpportunities(): Promise<Opportunity[]> {
 }
 
 export default async function PropertyMarketPage() {
+  const country = await getVisitorCountry()
   const [items, opportunities, openRequests] = await Promise.all([
-    getItems(), getOpportunities(), getOpenRequestsCount(),
+    getItems(country), getOpportunities(), getOpenRequestsCount(),
   ])
 
   return (

@@ -1499,7 +1499,9 @@ select proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
 - **المرجع:** جدول `countries` (ISO-2 · عملة · كود اتصال · علم) — مصر +
   ٦ دول خليج. و`cities` (٤٣ مدينة خليجية). نسخة الواجهة `lib/countries.ts`.
 - **العملة مابتتسألش — بتتشتق من الدولة.** تريجر `set_currency_from_country`
-  على listings · listing_drafts · suppliers · marketplace_suppliers.
+  على listings · listing_drafts · suppliers · marketplace_suppliers ·
+  **property_market_items** (البورصة — اتضافت ٦/٩، وأنون عنده SELECT
+  على مستوى الأعمدة هناك فالعمود الجديد خد GRANT صريح).
   **الدولة بتكسب دايمًا** — اتجرّب: `country='EG'`+`currency='AED'` → EG/EGP.
   الكتالوج (menu_items · mart_products) **مالوش تريجر** ومربوط بـ`listing_id`
   مش `supplier_id` — يتحدّد صراحةً عبر إعلانات المورد.
@@ -1507,7 +1509,8 @@ select proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
   كوكي `madmona_country` (اختياره) → هيدر `x-vercel-ip-country` (مجاني،
   صفر API) → `EG`. كود مش في قايمتنا يقع على مصر.
   الفلترة في **Server Component** — فزرار الدولة (`CountryToggle`) بيكتب
-  الكوكي **وبيعمل ريلود**. `/marketplace` بقت dynamic (ƒ) عن قصد.
+  الكوكي **وبيعمل ريلود**. `/marketplace` و`/real-estate/market` بقوا
+  dynamic (ƒ) عن قصد — `revalidate=3600` في البورصة بقى بلا أثر.
 - `get_marketplace_category_counts(p_country)` — الـ0-arg اتمسحت.
 
 ⚠️ **`<TopNav>` مش في الـlayout — بيتركّب لكل صفحة بإيدها** (add-project ·
