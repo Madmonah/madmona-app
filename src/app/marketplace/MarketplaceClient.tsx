@@ -1,5 +1,7 @@
 'use client'
 
+import CountryToggle from '@/components/CountryToggle'
+import LanguageToggle from '@/components/LanguageToggle'
 import { Suspense, useEffect, useRef, useState, type MouseEvent } from 'react'
 import { resolveTopGroups, TRACK_TAB_ORDER } from '@/lib/categoryGroups'
 import Link from 'next/link'
@@ -836,6 +838,12 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
+            {/* 🌍 (٦/٩/٢٠٢٦) محمد: «هيعرف منين الدولة والزائر هيتعرض ليه إيه».
+                الماركت مش بيركّب TopNav — عنده هيدر خاص — فزرار الدولة (واللغة،
+                اللي كانت ناقصة هنا برضه) لازم يتحطوا هنا مباشرة، وإلا الزائر
+                مايقدرش يغيّر دولته في الصفحة الوحيدة اللي الفلترة بتحصل فيها. */}
+            <CountryToggle className="w-9 h-9 bg-white shadow-soft rounded-full justify-center" activeClass="text-gray-900" />
+            <LanguageToggle className="w-9 h-9 bg-white shadow-soft rounded-full justify-center" activeClass="text-gray-900" inactiveClass="hidden" />
             <CartButton className="w-9 h-9 bg-white shadow-soft hover:shadow-card hover:-translate-y-0.5 rounded-full" iconClass="w-4 h-4" />
             {isAuthed === true ? (
               <Link

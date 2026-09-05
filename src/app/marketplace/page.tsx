@@ -88,7 +88,8 @@ const CATEGORY_PREVIEW = [
 function MarketplaceFallback({ listings = [] }: { listings?: SSRListing[] }) {
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
-      <header className="bg-[#34D399] text-[#FAF7F0] px-5 py-6">
+      {/* 🎨 (٦/٩) اتفوّت في إعادة تلوين امبارح — نفس غامق البورصة زي باقي الهيدرات */}
+      <header className="bg-[#04352A] text-[#FAF7F0] px-5 py-6">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-black mb-1">
             <T k="common.brand" /> <span className="text-[#2FA084]">·</span> <T k="market.title_browse" />
