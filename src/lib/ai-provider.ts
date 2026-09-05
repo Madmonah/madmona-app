@@ -34,9 +34,18 @@ export function currentProvider(): AiProvider {
  * 🔁 الخدمة بترجّع 503 «high demand» أحيانًا — اتأكدت بالتجربة الفعلية.
  *    تلات محاولات بتباعد متزايد بتحلّها.
  */
+/**
+ * 🖼️ صورة للتحليل — base64 من غير الـdata: prefix.
+ * (٥/٩/٢٠٢٦) اتضافت عشان تحليل الصور يمشي على جيميناي المجاني.
+ *    قبلها الصور كانت بتروح لهايكو (`enrichMediaTranscript`) — أنثروبيك،
+ *    يعني بتسحب من الرصيد. جيميناي بيقراها في نفس النداء وبنفس المفتاح.
+ */
+export type AiImage = { mimeType: string; dataBase64: string }
+
 export async function callGemini(opts: {
   systemPrompt: string
   userMessage: string
+  images?: AiImage[]
   maxTokens?: number
   temperature?: number
 }): Promise<string> {
@@ -52,7 +61,16 @@ export async function callGemini(opts: {
         body: JSON.stringify({
           // 🧠 جيميناي بيسمّيه system_instruction مش system
           system_instruction: { parts: [{ text: opts.systemPrompt }] },
-          contents: [{ role: 'user', parts: [{ text: opts.userMessage }] }],
+          contents: [{
+            role: 'user',
+            parts: [
+              // الصور الأول ثم النص — الترتيب ده بيدّي نتيجة أدق مع جيميناي
+              ...(opts.images ?? []).map((im) => ({
+                inline_data: { mime_type: im.mimeType, data: im.dataBase64 },
+              })),
+              { text: opts.userMessage },
+            ],
+          }],
           generationConfig: {
             temperature: opts.temperature ?? 0.7,
             maxOutputTokens: opts.maxTokens ?? 8192,
