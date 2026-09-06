@@ -12,6 +12,7 @@ import {
 import {
   useCart, cartSubtotal, clearCart, buildOrderItemsPayload,
 } from '@/lib/cart'
+import { currencyLabel } from '@/lib/currency'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
 
 // ============================================================================
@@ -363,7 +364,7 @@ export default function CheckoutPage() {
                   {it.name} <span className="text-gray-400 tabular">×{it.quantity}</span>
                 </span>
                 <span className="font-bold text-gray-900 tabular flex-shrink-0">
-                  {nf(it.unit_price * it.quantity)} {t('cart.egp')}
+                  {nf(it.unit_price * it.quantity)} {currencyLabel(cart.currency, locale)}
                 </span>
               </div>
             ))}
@@ -371,20 +372,20 @@ export default function CheckoutPage() {
           <div className="border-t border-gray-100 pt-3 space-y-1.5">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">{t('co.subtotal')}</span>
-              <span className="font-bold tabular">{nf(subtotal)} {t('cart.egp')}</span>
+              <span className="font-bold tabular">{nf(subtotal)} {currencyLabel(cart.currency, locale)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">{t('co.delivery')}</span>
               <span className="font-bold tabular text-gray-500">
                 {deliveryFee === 0
                   ? (freeOver !== null && subtotal >= freeOver ? t('co.free_celebrate') : t('co.free'))
-                  : `${nf(Number(deliveryFee))} ${t('cart.egp')}`}
+                  : `${nf(Number(deliveryFee))} ${currencyLabel(cart.currency, locale)}`}
               </span>
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-100">
               <span className="text-sm font-black text-gray-900">{t('co.total')}</span>
               <span className="text-xl font-black text-[#059669] tabular">
-                {nf(total)} {t('cart.egp')}
+                {nf(total)} {currencyLabel(cart.currency, locale)}
               </span>
             </div>
           </div>
@@ -557,7 +558,7 @@ export default function CheckoutPage() {
                 <div className="flex-1">
                   <p className="font-bold text-sm text-gray-900">{t('co.wallet')}</p>
                   <p className="text-[11px] text-gray-500">
-                    {t('co.wallet_balance')} {walletBalance.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {t('cart.egp')}
+                    {t('co.wallet_balance')} {walletBalance.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currencyLabel(cart.currency, locale)}
                     {walletBalance < total ? t('co.wallet_insufficient') : t('co.wallet_instant')}
                   </p>
                 </div>
@@ -661,7 +662,7 @@ export default function CheckoutPage() {
               </>
             ) : (
               <>
-                {t('co.confirm_btn')} · {nf(total)} {t('cart.egp')}
+                {t('co.confirm_btn')} · {nf(total)} {currencyLabel(cart.currency, locale)}
                 <ChevronLeft className="w-4 h-4" />
               </>
             )}
@@ -684,7 +685,7 @@ export default function CheckoutPage() {
               </>
             ) : (
               <>
-                {t('co.confirm_btn')} · {nf(total)} {t('cart.egp')}
+                {t('co.confirm_btn')} · {nf(total)} {currencyLabel(cart.currency, locale)}
               </>
             )}
           </button>

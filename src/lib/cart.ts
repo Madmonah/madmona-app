@@ -37,6 +37,8 @@ export type Cart = {
   // For restaurants: the restaurant listing id (constant across items).
   // For products: may be null when cart has multiple product listings from same supplier.
   primary_listing_id?: string | null
+  // 🌍 (٦/٩/٢٠٢٦) عملة الكارت — من الإعلان اللي اتضاف منه أول صنف (كارت = مورد واحد = عملة واحدة)
+  currency?: string | null
   items: CartItem[]
 }
 
@@ -49,6 +51,7 @@ function emptyCart(): Cart {
     supplier_name: null,
     order_type: null,
     primary_listing_id: null,
+    currency: null,
     items: [],
   }
 }
@@ -100,6 +103,8 @@ export function addToCart(args: {
   supplier_name?: string | null
   order_type: CartItemKind
   primary_listing_id?: string | null
+  // 🌍 (٦/٩/٢٠٢٦) عملة الكارت — من الإعلان اللي اتضاف منه أول صنف (كارت = مورد واحد = عملة واحدة)
+  currency?: string | null
   item: Omit<CartItem, 'quantity'> & { quantity?: number }
   force?: boolean // if true, clears existing cart first
 }): AddResult {
@@ -131,6 +136,7 @@ export function addToCart(args: {
         supplier_name: args.supplier_name ?? null,
         order_type: args.order_type,
         primary_listing_id: args.primary_listing_id ?? null,
+        currency: args.currency ?? null,
         items: [],
       }
     : { ...current, items: [...current.items] }

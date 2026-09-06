@@ -108,7 +108,7 @@ export default function RestaurantCloud({ business, listing, supplier, items, hi
 
   const add = (it: CloudItem, sz?: CloudSize | null) => {
     const res = addToCart({
-      supplier_id: supplier.id, supplier_name: supplier.business_name, order_type: 'food', primary_listing_id: listing.id,
+      supplier_id: supplier.id, supplier_name: supplier.business_name, order_type: 'food', primary_listing_id: listing.id, currency,
       force: !mine && count > 0,   // كارت من مطعم تاني؟ نبدأ من جديد (نفس حارس OrderActions)
       item: { key: keyFor(it, sz), listing_id: listing.id, menu_item_id: it.id, size_id: sz?.id ?? null, size_name: sz?.name_ar ?? null,
               name: sz ? `${it.name_ar} (${sz.name_ar})` : it.name_ar, photo_url: it.photo_url ?? null, unit_price: sz ? sz.price : it.price },

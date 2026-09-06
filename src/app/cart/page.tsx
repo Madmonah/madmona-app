@@ -11,6 +11,7 @@ import {
 import {
   useCart, setItemQuantity, removeItem, clearCart, cartSubtotal,
 } from '@/lib/cart'
+import { currencyLabel } from '@/lib/currency'
 
 // ============================================================================
 // /cart
@@ -124,7 +125,7 @@ export default function CartPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-gray-900 line-clamp-2 mb-1">{item.name}</h3>
                   <p className="text-xs text-gray-500 tabular mb-2">
-                    {item.unit_price.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')} {t('cart.egp')} × {item.quantity}
+                    {item.unit_price.toLocaleString(locale.startsWith('ar') ? 'ar-EG' : 'en-US')} {currencyLabel(cart.currency, locale)} × {item.quantity}
                   </p>
 
                   {item.notes && (
@@ -160,7 +161,7 @@ export default function CartPage() {
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-black text-[#059669] tabular">
                         {(item.unit_price * item.quantity).toLocaleString('ar-EG')}
-                        <span className="text-[10px] font-medium text-gray-500 ms-1">{t('cart.egp')}</span>
+                        <span className="text-[10px] font-medium text-gray-500 ms-1">{currencyLabel(cart.currency, locale)}</span>
                       </p>
                       <button
                         onClick={() => removeItem(item.key)}
@@ -182,7 +183,7 @@ export default function CartPage() {
               <span className="text-sm font-bold text-gray-700">{t('cart.subtotal')}</span>
               <span className="text-2xl font-black text-[#059669] tabular">
                 {subtotal.toLocaleString('ar-EG')}
-                <span className="text-sm font-medium text-gray-500 ms-1">{t('cart.egp')}</span>
+                <span className="text-sm font-medium text-gray-500 ms-1">{currencyLabel(cart.currency, locale)}</span>
               </span>
             </div>
             <p className="text-[11px] text-gray-500 mt-1">
@@ -217,7 +218,7 @@ export default function CartPage() {
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('cart.total')}</p>
             <p className="text-xl font-black text-[#059669] tabular leading-tight">
               {subtotal.toLocaleString('ar-EG')}
-              <span className="text-xs font-medium text-gray-500 ms-1">{t('cart.egp')}</span>
+              <span className="text-xs font-medium text-gray-500 ms-1">{currencyLabel(cart.currency, locale)}</span>
             </p>
           </div>
           <button

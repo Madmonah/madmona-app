@@ -126,6 +126,7 @@ export function RestaurantMenu({
       supplier_name: supplier.business_name,
       order_type: 'food',
       primary_listing_id: listing.id,
+      currency: listing.currency ?? null,
       item: buildFoodItem(mi, size),
     })
     if (!result.ok) {
@@ -143,6 +144,7 @@ export function RestaurantMenu({
       supplier_name: supplier.business_name,
       order_type: 'food',
       primary_listing_id: listing.id,
+      currency: listing.currency ?? null,
       item: buildFoodItem(crossWarn.mi, crossWarn.size),
       force: true,
     })
@@ -357,6 +359,7 @@ export function MartProductsCatalog({
       supplier_name: supplier.business_name,
       order_type: 'product',
       primary_listing_id: listing.id,
+      currency: listing.currency ?? null,
       item: buildItem(p),
     })
     if (!result.ok) {
@@ -374,6 +377,7 @@ export function MartProductsCatalog({
       supplier_name: supplier.business_name,
       order_type: 'product',
       primary_listing_id: listing.id,
+      currency: listing.currency ?? null,
       item: buildItem(crossWarn),
       force: true,
     })
@@ -515,6 +519,7 @@ export function ProductBuyBox({
       supplier_name: supplier.business_name,
       order_type: 'product',
       primary_listing_id: listing.id,
+      currency: listing.currency ?? null,
       item: {
         key: listing.id,
         listing_id: listing.id,
@@ -540,6 +545,7 @@ export function ProductBuyBox({
       supplier_name: supplier.business_name,
       order_type: 'product',
       primary_listing_id: listing.id,
+      currency: listing.currency ?? null,
       item: {
         key: listing.id,
         listing_id: listing.id,
@@ -561,7 +567,7 @@ export function ProductBuyBox({
         <p className="text-3xl font-black text-[#059669] tabular leading-tight">
           {price.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}
           <span className="text-base font-medium text-gray-500 ms-1">
-            {t('common.egp')}
+            {currencyLabel(listing.currency, lang)}
           </span>
         </p>
       </div>
@@ -660,7 +666,7 @@ export function CartCheckoutBar({ supplierId }: { supplierId: string }) {
           <p className="text-xl font-black text-[#059669] tabular leading-tight">
             {subtotal.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}{' '}
             <span className="text-xs font-normal text-gray-500">
-              {t('common.egp')}
+              {currencyLabel(cart.currency, lang)}
             </span>
           </p>
         </div>
