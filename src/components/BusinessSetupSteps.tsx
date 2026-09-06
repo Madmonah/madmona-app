@@ -41,7 +41,8 @@ export default function BusinessSetupSteps({ supplierId, compact = false }: { su
     if (complete && !next) return null
     return (
       <Link
-        href={next ? stepHref(supplierId, next.href) : `/admin/business-finance/${supplierId}`}
+        // 🧭 (٦/٩/٢٠٢٦) محمد: «هو محتاج توجيه» — الكارت بيودّي على الويزارد خطوة بخطوة
+        href={`/admin/business-finance/${supplierId}/setup`}
         className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 no-underline"
       >
         <div className="relative w-9 h-9 flex-shrink-0">
@@ -81,7 +82,14 @@ export default function BusinessSetupSteps({ supplierId, compact = false }: { su
           <h2 className="text-sm font-black text-[#1A2E26]">استكمال بناء الشركة</h2>
           <p className="text-[11px] text-gray-500">{reqDone} من {required.length} خطوات أساسية — كل خطوة بتتقفل لوحدها أول ما بياناتها تتحط</p>
         </div>
-        <span className="text-lg font-black text-[#059669] tabular-nums">{p.pct}٪</span>
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-black text-[#059669] tabular-nums">{p.pct}٪</span>
+          {/* 🧭 (٦/٩/٢٠٢٦) الويزارد خطوة بخطوة — الفرع قبل الموظفين */}
+          <Link href={`/admin/business-finance/${supplierId}/setup`}
+            className="rounded-xl bg-[#04352A] text-white text-xs font-black px-3 py-2 no-underline whitespace-nowrap">
+            كمّلها خطوة بخطوة ←
+          </Link>
+        </div>
       </div>
       <div className="h-2 rounded-full bg-gray-100 overflow-hidden mb-4">
         <div className="h-full rounded-full bg-[#059669] transition-all" style={{ width: `${p.pct}%` }} />

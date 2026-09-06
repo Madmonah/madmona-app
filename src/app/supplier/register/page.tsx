@@ -51,6 +51,7 @@ export default function SupplierRegisterPage() {
   const router = useRouter()
 
   const [stage, setStage] = useState<Stage>('loading')
+  const [newId, setNewId] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [existing, setExisting] = useState<ExistingSupplier | null>(null)
 
@@ -124,9 +125,11 @@ export default function SupplierRegisterPage() {
     if (commercialReg) insert.commercial_registration = commercialReg.trim()
     if (taxId) insert.tax_id = taxId.trim()
 
-    const { error: insertError } = await supabaseBrowser
+    const { data: created, error: insertError } = await supabaseBrowser
       .from('marketplace_suppliers')
       .insert(insert)
+      .select('id')
+      .single()
 
     setSubmitting(false)
 
@@ -140,6 +143,8 @@ export default function SupplierRegisterPage() {
       return
     }
 
+    // 🧭 (٦/٩/٢٠٢٦) محمد: «هو محتاج توجيه» — بعد التسجيل يروح على ويزارد «كمّل شركتك»
+    setNewId((created as { id?: string } | null)?.id ?? null)
     setStage('success')
   }
 
@@ -147,10 +152,10 @@ export default function SupplierRegisterPage() {
   useEffect(() => {
     if (stage !== 'success') return
     const t = setTimeout(() => {
-      router.push('/supplier/marketplace/new?welcome=1')
+      router.push(newId ? `/admin/business-finance/${newId}/setup?welcome=1` : '/supplier/marketplace/new?welcome=1')
     }, 3500)
     return () => clearTimeout(t)
-  }, [stage, router])
+  }, [stage, router, newId])
 
   // ============================================================================
   // Render: loading

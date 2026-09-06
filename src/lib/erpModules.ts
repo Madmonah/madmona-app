@@ -42,6 +42,8 @@ export type ModuleDef = { href: string; label: string; primary?: boolean; v: VKe
 
 export const MODULE_DEFS: ModuleDef[] = [
   { href: 'confirmations',      label: 'التأكيدات',        primary: true, v: ['core'] },
+  // 🧭 (٦/٩/٢٠٢٦) محمد: «هو محتاج توجيه — مش هيعرف يضيف موظف إلا لما يضيف فرع»
+  { href: 'setup',              label: '🧭 كمّل شركتك',                  v: ['core'] },
   { href: 'links',              label: 'كل اللينكات',                     v: ['core'] },
   // 🤖 (٦/٩/٢٠٢٦) محمد: «نفعّله بحيث يرشّح منتجات البيزنس ويظبط ليه الليد»
   { href: 'whatsapp',           label: '🤖 بوت الواتساب',                 v: ['core'] },
