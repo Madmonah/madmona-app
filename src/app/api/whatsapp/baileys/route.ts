@@ -1384,6 +1384,10 @@ export async function POST(request: NextRequest) {
 
     // اللينكات تتمغنط قبل الإرسال — العميل يدخل بضغطة واحدة
     reply = await magnetizeLinks(reply, phone)
+    if (biz && !parsed.lead) {
+      // 🔎 (٦/٩/٢٠٢٦) تشخيص: الموديل رجّع JSON من غير lead؟ نشوف شكل الرد الخام
+      console.warn('[business-lead] no lead in reply', JSON.stringify({ keys: Object.keys(parsed), head: raw.slice(0, 240) }))
+    }
 
     // 📇 (٦/٩/٢٠٢٦) محمد: «يظبط ليه الليد» — كل عميل بيكلّم رقم البيزنس بيتسجّل في
     //    CRM البيزنس (biz_customers) + إشعار لصاحب البيزنس. مايوقفش الرد لو فشل.
