@@ -1,16 +1,17 @@
 'use client'
 
 // ============================================================================
-// 💼 /pro — «سيستم إدارة بيزنسك: ERP + CRM بـ١٠٠٠ ج بدل ٢٠٠٠» (٦ سبتمبر ٢٠٢٦)
+// 💼 /pro — «سيستم إدارة بيزنسك: ERP + CRM بـ١٠٠٠ ج بدل كتير» (٦ سبتمبر ٢٠٢٦)
 //
-// محمد نصًا: «عايز أستهدف أصحاب البيزنس إنهم يشتركوا معانا بـ١٠٠٠ ج فقط لا غير
-// بدل ٢٠٠٠ ج… والـ١٠٠٠ نظير السيستم الـERP والـCRM». الحملة أورجانيك بالكامل.
+// محمد نصًا: «عايز أستهدف أصحاب البيزنس إنهم يشتركوا معانا بـ١٠٠٠ ج فقط لا غير…
+// والـ١٠٠٠ نظير السيستم الـERP والـCRM» ثم: «العرض ساري لعدد حساب — هنقول
+// بـ١٠٠٠ ج بدل كتيييير، لا هنقول ٢٠٠٠ ولا ٣٠٠٠». الحملة أورجانيك بالكامل.
 //
-// ⚠️ التفرقة اللي لازم تفضل واضحة في أي نص: **العرض على السوق مجاني بالعمولة**
-//    (قاعدة ٢٠ يوليو — «السعر اللي بتطلبه هو اللي بتاخده»)، و**السيستم** (لوحة
-//    الإدارة: فروع · موظفين · CRM · بوت واتساب · دليفري …) هو اللي بـ١٠٠٠.
-//    الرقمين (١٠٠٠/٢٠٠٠) من محمد — مش مخترعين. مدة الاشتراك بتتقرا من site_settings
-//    `erp_offer_period` (لو فاضية مابنكتبش مدة — ماننطقش بحاجة محمد ماقالهاش).
+// ⚠️ قواعد النص هنا:
+//   · **مفيش رقم قديم** (لا ٢٠٠٠ ولا ٣٠٠٠) — «بدل كتير» بس.
+//   · **العرض على السوق مجاني بالعمولة** (قاعدة ٢٠ يوليو) — السيستم هو اللي بـ١٠٠٠.
+//   · عدد الحسابات والمدة من site_settings عبر /api/campaign/offer — لو مش
+//     متحطين بنقول «لعدد محدود من الحسابات» من غير رقم. المتبقي رقم حقيقي.
 //
 // الليد: فورم قصير → /api/campaign/lead (campaign=erp1000 + UTM) → CRM + پوش.
 // أو واتساب على رقم الاستقبال بنص جاهز. صفر تكلفة.
@@ -21,7 +22,6 @@ import { CheckCircle2, MessageCircle, Building2, Users, Bot, Truck, BarChart3, S
 
 const INTAKE_WA = '201002229982'
 const PRICE_NOW = 1000
-const PRICE_WAS = 2000
 
 const FEATURES: { icon: React.ReactNode; title: string; sub: string }[] = [
   { icon: <Building2 className="w-5 h-5" />, title: 'الفروع والمواعيد', sub: 'كل فرع بعنوانه ومواعيده — العميل بيطلب من أقرب فرع' },
@@ -34,11 +34,13 @@ const FEATURES: { icon: React.ReactNode; title: string; sub: string }[] = [
 
 const TYPES = ['مطعم / كافيه', 'صالون / سبا', 'عيادة', 'محل / متجر', 'مصنع / مورد', 'مقاولات', 'عقارات', 'خدمات', 'تاني']
 
+type Offer = { seats: number | null; remaining: number | null; period: string | null; note: string | null }
+
 export default function ProOfferPage() {
   const [form, setForm] = useState({ name: '', phone: '', business_type: '', city: '', message: '' })
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
   const [err, setErr] = useState<string | null>(null)
-  const [period, setPeriod] = useState<string>('')
+  const [offer, setOffer] = useState<Offer>({ seats: null, remaining: null, period: null, note: null })
   const utm = useMemo(() => {
     if (typeof window === 'undefined') return {}
     const q = new URLSearchParams(window.location.search)
@@ -46,9 +48,15 @@ export default function ProOfferPage() {
   }, [])
 
   useEffect(() => {
-    // مدة الاشتراك (لو محمد حددها من site_settings) — مش بنخترعها
-    fetch('/api/site-settings?key=erp_offer_period').then((r) => r.ok ? r.json() : null).then((j) => { if (j?.value) setPeriod(String(j.value)) }).catch(() => {})
+    fetch('/api/campaign/offer').then((r) => (r.ok ? r.json() : null)).then((j) => { if (j?.ok) setOffer(j) }).catch(() => {})
   }, [])
+
+  const price = PRICE_NOW.toLocaleString('ar-EG')
+  const seatsLine = offer.seats
+    ? (offer.remaining != null && offer.remaining <= offer.seats
+        ? `العرض لـ${offer.seats.toLocaleString('ar-EG')} حساب بس — فاضل ${offer.remaining.toLocaleString('ar-EG')}`
+        : `العرض لـ${offer.seats.toLocaleString('ar-EG')} حساب بس`)
+    : 'العرض لعدد محدود من الحسابات'
 
   const waText = encodeURIComponent(`عايز أشترك في سيستم مضمونة (ERP + CRM) بعرض الـ${PRICE_NOW} ج${form.business_type ? ` — نشاطي: ${form.business_type}` : ''}`)
   const waHref = `https://wa.me/${INTAKE_WA}?text=${waText}`
@@ -73,13 +81,12 @@ export default function ProOfferPage() {
             <img src="/madmona-logo.png" alt="مضمونة" className="w-7 h-7 rounded-lg bg-white object-contain" />
             مضمونة
           </Link>
-          <p className="text-[#6FCF97] font-black text-sm mb-2">لأصحاب البيزنس</p>
+          <p className="text-[#6FCF97] font-black text-sm mb-2">لأصحاب البيزنس · {seatsLine}</p>
           <h1 className="text-3xl md:text-4xl font-black leading-[1.25]">
             سيستم يدير بيزنسك كله
             <br />
-            <span className="text-[#6FCF97]">ERP + CRM</span> بـ{PRICE_NOW.toLocaleString('ar-EG')} ج
-            <span className="text-white/50 text-xl font-bold line-through ms-2">{PRICE_WAS.toLocaleString('ar-EG')} ج</span>
-            {period && <span className="text-base font-bold text-white/70"> / {period}</span>}
+            <span className="text-[#6FCF97]">ERP + CRM</span> بـ{price} ج
+            <span className="block text-lg font-bold text-white/70 mt-1">بدل كتييير 😉{offer.period ? ` · ${offer.period}` : ''}</span>
           </h1>
           <p className="mt-4 text-white/80 leading-relaxed">
             فروع · موظفين وحضور · كتالوج · CRM · بوت واتساب بيرد بدالك · دليفري بطيارين مضمونة — من موبايلك.
@@ -87,7 +94,7 @@ export default function ProOfferPage() {
             <b className="text-white">والعرض على سوق مضمونة مجاني زي ما هو</b> — السعر اللي بتطلبه هو اللي بتاخده.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <a href="#subscribe" className="text-center bg-[#6FCF97] text-[#04352A] font-black rounded-2xl px-6 py-3.5 no-underline">اشترك بـ{PRICE_NOW.toLocaleString('ar-EG')} ج ←</a>
+            <a href="#subscribe" className="text-center bg-[#6FCF97] text-[#04352A] font-black rounded-2xl px-6 py-3.5 no-underline">احجز حسابك بـ{price} ج ←</a>
             <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-center bg-white/10 text-white font-bold rounded-2xl px-6 py-3.5 no-underline inline-flex items-center justify-center gap-2">
               <MessageCircle className="w-4 h-4" /> كلّمنا واتساب
             </a>
@@ -97,7 +104,7 @@ export default function ProOfferPage() {
 
       {/* اللي بتاخده */}
       <section className="mx-auto max-w-3xl px-5 py-10">
-        <h2 className="text-xl font-black mb-4">اللي بتاخده بالـ{PRICE_NOW.toLocaleString('ar-EG')} ج</h2>
+        <h2 className="text-xl font-black mb-4">اللي بتاخده بالـ{price} ج</h2>
         <div className="grid sm:grid-cols-2 gap-3">
           {FEATURES.map((f) => (
             <div key={f.title} className="rounded-2xl border border-[#E4DECE] bg-white p-4 flex gap-3">
@@ -130,8 +137,9 @@ export default function ProOfferPage() {
         <div className="rounded-3xl bg-white border-2 border-[#04352A] p-5">
           <div className="flex items-end justify-between gap-3 mb-4">
             <div>
-              <p className="text-xs font-black text-[#059669]">عرض أصحاب البيزنس</p>
-              <p className="text-3xl font-black">{PRICE_NOW.toLocaleString('ar-EG')} ج <span className="text-base text-gray-400 line-through font-bold">{PRICE_WAS.toLocaleString('ar-EG')} ج</span>{period ? <span className="text-sm text-gray-500 font-bold"> / {period}</span> : null}</p>
+              <p className="text-xs font-black text-[#059669]">{seatsLine}</p>
+              <p className="text-3xl font-black">{price} ج <span className="text-sm text-gray-500 font-bold">بدل كتير{offer.period ? ` · ${offer.period}` : ''}</span></p>
+              {offer.note && <p className="text-xs text-gray-500 mt-1">{offer.note}</p>}
             </div>
             <CheckCircle2 className="w-8 h-8 text-[#059669]" />
           </div>
@@ -156,7 +164,7 @@ export default function ProOfferPage() {
               <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="أي حاجة تحب تقولها (اختياري)" rows={2} className="w-full rounded-xl border border-gray-200 px-3 py-3 text-[16px]" />
               {err && <p className="text-xs text-red-600">{err}</p>}
               <button type="submit" disabled={state === 'sending'} className="w-full bg-[#04352A] text-white font-black rounded-2xl py-3.5 disabled:opacity-50">
-                {state === 'sending' ? '…' : `اشترك بـ${PRICE_NOW.toLocaleString('ar-EG')} ج`}
+                {state === 'sending' ? '…' : `احجز حسابك بـ${price} ج`}
               </button>
               <p className="text-[11px] text-gray-400 text-center">من غير دفع دلوقتي — هنكلّمك ونفعّل حسابك ونمشي معاك خطوة خطوة.</p>
             </form>
