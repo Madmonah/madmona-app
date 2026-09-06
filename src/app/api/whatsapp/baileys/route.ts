@@ -1384,14 +1384,15 @@ export async function POST(request: NextRequest) {
 
     // اللينكات تتمغنط قبل الإرسال — العميل يدخل بضغطة واحدة
     reply = await magnetizeLinks(reply, phone)
-    if (biz && !parsed.lead) {
-      // 🔎 (٦/٩/٢٠٢٦) تشخيص: الموديل رجّع JSON من غير lead؟ نشوف شكل الرد الخام
-      console.warn('[business-lead] no lead in reply', JSON.stringify({ keys: Object.keys(parsed), head: raw.slice(0, 240) }))
+    if (biz) {
+      // 🔎 (٦/٩/٢٠٢٦) تشخيص مؤقت: إيه اللي الموديل رجّعه في lead بالظبط
+      console.warn('[business-lead] parsed', JSON.stringify({ keys: Object.keys(parsed), lead: parsed.lead ?? null, head: raw.slice(0, 160) }))
     }
 
     // 📇 (٦/٩/٢٠٢٦) محمد: «يظبط ليه الليد» — كل عميل بيكلّم رقم البيزنس بيتسجّل في
     //    CRM البيزنس (biz_customers) + إشعار لصاحب البيزنس. مايوقفش الرد لو فشل.
-    if (biz && parsed.lead && (parsed.lead.intent ?? 'warm') !== 'none') {
+    // بيتسجّل لو فيه أي اهتمام — «none» بس لما مفيش اسم ولا طلب (سلام وخلاص)
+    if (biz && parsed.lead && ((parsed.lead.intent ?? 'warm') !== 'none' || parsed.lead.interest || parsed.lead.name)) {
       try {
         await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<unknown>)('business_bot_record_lead', {
           p_supplier_id: biz.supplier_id, p_phone: phone, p_name: parsed.lead.name ?? null,
