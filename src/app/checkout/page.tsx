@@ -12,6 +12,7 @@ import {
 import {
   useCart, cartSubtotal, clearCart, buildOrderItemsPayload,
 } from '@/lib/cart'
+import { parseLatLng } from '@/components/marketplace/LocationPicker'
 import { currencyLabel } from '@/lib/currency'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
 
@@ -76,6 +77,23 @@ export default function CheckoutPage() {
   //    set_order_location (محمية بالـreference_code).
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null)
   const [geoState, setGeoState] = useState<'idle' | 'loading' | 'denied' | 'unsupported'>('idle')
+  // 📍 (٦/٩/٢٠٢٦) محمد: «الـcheckout يسجّل موقع العميل» — عشان الدليفري يتسعّر
+  //    بالمسافة (delivery_quote) والطيار يوصل بالظبط. الأوردرات القديمة كلها كانت
+  //    من غير إحداثيات لأن الزرار كان «اختياري» ومستخبي. دلوقتي طريقتين:
+  //    موقعي الحالي، أو لصق لينك لوكيشن (واتساب/خرايط جوجل — القصير بيتفك في السيرفر).
+  const [geoLink, setGeoLink] = useState('')
+  const [geoLinkState, setGeoLinkState] = useState<'idle' | 'loading' | 'bad'>('idle')
+  async function useMapsLink() {
+    const raw = geoLink.trim()
+    if (!raw) return
+    const direct = parseLatLng(raw)
+    if (direct && direct.latitude != null && direct.longitude != null) { setGeo({ lat: direct.latitude, lng: direct.longitude }); setGeoLinkState('idle'); return }
+    setGeoLinkState('loading')
+    try {
+      const r = await fetch(`/api/geo/resolve?url=${encodeURIComponent(raw)}`).then((x) => x.json())
+      if (r?.ok) { setGeo({ lat: r.latitude, lng: r.longitude }); setGeoLinkState('idle') } else setGeoLinkState('bad')
+    } catch { setGeoLinkState('bad') }
+  }
 
   function shareLocation() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) { setGeoState('unsupported'); return }
@@ -465,13 +483,27 @@ export default function CheckoutPage() {
               />
             </div>
 
-            {/* 📍 شارك موقعك — بيتسجّل مع الأوردر عشان المندوب يوصل بالظبط */}
+            {/* 📍 حدد مكانك على الخريطة — بيتسجّل مع الأوردر عشان التوصيل يتسعّر بالمسافة والطيار يوصل بالظبط */}
+            <div className={`rounded-2xl border-2 p-3.5 space-y-2.5 ${geo ? 'border-[#059669] bg-[#34D399]/5' : 'border-amber-300 bg-amber-50/40'}`}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-bold text-sm text-gray-900">{t('co.geo_title')}</p>
+                {geo && <CheckCircle className="w-5 h-5 text-[#059669] flex-shrink-0" />}
+              </div>
+              {!geo && <p className="text-[11px] text-amber-800">{t('co.geo_missing')}</p>}
+              {geo && (
+                <iframe
+                  title="map"
+                  src={`https://maps.google.com/maps?q=${geo.lat},${geo.lng}&z=16&output=embed`}
+                  className="w-full h-40 rounded-xl border border-gray-200"
+                  loading="lazy"
+                />
+              )}
             <button
               type="button"
               onClick={shareLocation}
               disabled={geoState === 'loading'}
-              className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 text-right transition-all ${
-                geo ? 'border-[#059669] bg-[#34D399]/5' : 'border-dashed border-gray-300 bg-white hover:border-gray-400'
+              className={`w-full flex items-center gap-3 p-3 rounded-2xl border text-right transition-all bg-white ${
+                geo ? 'border-[#059669]' : 'border-gray-300 hover:border-gray-400'
               }`}
             >
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -491,8 +523,22 @@ export default function CheckoutPage() {
                     : t('co.geo_hint')}
                 </p>
               </div>
-              {geo && <CheckCircle className="w-5 h-5 text-[#059669] flex-shrink-0" />}
             </button>
+              <div className="flex gap-2">
+                <input
+                  value={geoLink}
+                  onChange={(e) => { setGeoLink(e.target.value); setGeoLinkState('idle') }}
+                  placeholder={t('co.geo_paste')}
+                  dir="ltr"
+                  className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-gray-200 text-[16px] focus:border-[#059669] outline-none"
+                />
+                <button type="button" onClick={useMapsLink} disabled={!geoLink.trim() || geoLinkState === 'loading'}
+                  className="shrink-0 px-3 rounded-xl bg-[#04352A] text-white text-xs font-black disabled:opacity-40">
+                  {geoLinkState === 'loading' ? '…' : t('co.geo_use_link')}
+                </button>
+              </div>
+              {geoLinkState === 'bad' && <p className="text-[11px] text-red-600">{t('co.geo_bad_link')}</p>}
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
