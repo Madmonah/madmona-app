@@ -40,6 +40,15 @@ interface Trip {
   rider_payout_egp: number
   cod_amount_egp: number
   status: string
+  // 🛵 (٦/٩/٢٠٢٦) محمد: «بيجيله الأوردر عبارة عن إيه… والسعر على حسب المسافة ونوع المركبة»
+  order_kind?: string | null
+  items?: Array<{ name: string; qty: number; price?: number }>
+  distance_km?: number | null
+  vehicle_type?: string | null
+  vehicle_name?: string | null
+  vehicle_emoji?: string | null
+  fee_egp?: number | null
+  currency?: string | null
 }
 
 interface Me {
@@ -148,6 +157,19 @@ export default function RiderPage({ params }: { params: { token: string } }) {
           </div>
 
           {/* 📍 كل التفاصيل ظاهرة قبل القبول — دي النقطة كلها */}
+          {/* 🛵 (٦/٩/٢٠٢٦) الأوردر عبارة عن إيه + المسافة والمركبة والأجرة — قبل ما يقبل */}
+          {(t.items?.length || t.distance_km || t.vehicle_name) ? (
+            <div className="rounded-xl bg-[#F3F6F4] px-3 py-2 mb-2 text-xs text-gray-700 space-y-1">
+              {t.items && t.items.length > 0 && (
+                <p>🧾 <b>الأوردر:</b> {t.items.map((i) => `${i.qty}× ${i.name}`).join('، ')}</p>
+              )}
+              <p>
+                {t.vehicle_name ? `${t.vehicle_emoji ?? '🛵'} ${t.vehicle_name}` : ''}
+                {t.distance_km ? ` · 📏 ${t.distance_km} كم` : ''}
+                {t.fee_egp != null ? ` · 💰 أجرة التوصيل ${t.fee_egp} ${t.currency || 'ج'}` : ''}
+              </p>
+            </div>
+          ) : null}
           <Stop icon="📍" title="الاستلام" area={t.pickup_area} address={t.pickup_address}
                 phone={t.pickup_phone} maps={t.pickup_maps_url} />
           <Stop icon="🏁" title="التسليم" area={t.dropoff_area} address={t.dropoff_address}

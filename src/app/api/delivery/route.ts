@@ -30,18 +30,25 @@ function authorized(req: NextRequest): boolean {
 export async function GET(req: NextRequest) {
   if (!authorized(req)) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
 
+  // 🛵 (٦/٩/٢٠٢٦) اللوحة بقت شاشة كاملة (/admin/delivery): الرحلات بتفاصيلها
+  //    (المسافة · المركبة · الأجرة · الأصناف) + كل الطيارين بحالة أوراقهم + التعريفة.
   const { data: trips } = await db
     .from('delivery_trips')
-    .select('id, order_ref, pickup_area, dropoff_area, fee_egp, cod_amount_egp, status, rider_id, created_at')
+    .select('id, order_ref, order_kind, supplier_id, pickup_area, pickup_address, dropoff_area, dropoff_address, fee_egp, rider_payout_egp, cod_amount_egp, currency, distance_km, vehicle_type, fee_source, items, status, rider_id, created_at, delivered_at')
     .in('status', ['new', 'offered', 'accepted', 'picked_up'])
     .order('created_at', { ascending: true })
 
   const { data: riders } = await db
     .from('delivery_riders')
-    .select('id, name, phone, zones, is_active')
-    .eq('is_active', true)
+    .select('id, name, phone, zones, vehicle, is_active, verification_status, created_at')
+    .order('created_at', { ascending: false })
 
-  return NextResponse.json({ ok: true, trips: trips ?? [], riders: riders ?? [] })
+  const { data: vehicleTypes } = await db
+    .from('delivery_vehicle_types')
+    .select('key, name_ar, emoji, base_fee, per_km, min_fee, currency, active, sort')
+    .order('sort')
+
+  return NextResponse.json({ ok: true, trips: trips ?? [], riders: riders ?? [], vehicle_types: vehicleTypes ?? [] })
 }
 
 export async function POST(req: NextRequest) {
@@ -74,7 +81,9 @@ export async function POST(req: NextRequest) {
     const { order_ref, order_id, order_kind, supplier_id,
             pickup_area, pickup_address, pickup_phone, pickup_maps_url,
             dropoff_area, dropoff_address, dropoff_phone, dropoff_maps_url,
-            notes, fee_egp, rider_payout_egp, cod_amount_egp } = body
+            notes, fee_egp, rider_payout_egp, cod_amount_egp,
+            // 🛵 (٦/٩/٢٠٢٦) المسافة والمركبة والأصناف — السعر من التعريفة لو fee_source='auto'
+            pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, vehicle_type, items, currency, fee_source } = body
     if (!pickup_area || !dropoff_area) {
       return NextResponse.json({ ok: false, error: 'منطقة الاستلام والتسليم مطلوبين' })
     }
@@ -91,11 +100,81 @@ export async function POST(req: NextRequest) {
         fee_egp: Number(fee_egp) || 0,
         rider_payout_egp: Number(rider_payout_egp) || 0,
         cod_amount_egp: Number(cod_amount_egp) || 0,
+        pickup_lat: pickup_lat != null && pickup_lat !== '' ? Number(pickup_lat) : null,
+        pickup_lng: pickup_lng != null && pickup_lng !== '' ? Number(pickup_lng) : null,
+        dropoff_lat: dropoff_lat != null && dropoff_lat !== '' ? Number(dropoff_lat) : null,
+        dropoff_lng: dropoff_lng != null && dropoff_lng !== '' ? Number(dropoff_lng) : null,
+        vehicle_type: vehicle_type || null,
+        items: Array.isArray(items) ? items : [],
+        currency: currency || 'EGP',
+        fee_source: fee_source === 'manual' ? 'manual' : 'auto',
       })
-      .select('id')
+      .select('id, fee_egp, distance_km, fee_source, currency')
       .maybeSingle()
     if (error) return NextResponse.json({ ok: false, error: error.message })
-    return NextResponse.json({ ok: true, trip_id: data?.id })
+    return NextResponse.json({ ok: true, trip_id: data?.id, trip: data })
+  }
+
+  // ── تسعيرة قبل الإنشاء: المسافة × تعريفة المركبة ────────────────────────
+  if (action === 'quote') {
+    const { pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, vehicle_type } = body
+    const { data, error } = await db.rpc('delivery_quote', {
+      p_pickup_lat: Number(pickup_lat), p_pickup_lng: Number(pickup_lng),
+      p_drop_lat: Number(dropoff_lat), p_drop_lng: Number(dropoff_lng), p_vehicle: String(vehicle_type || ''),
+    })
+    if (error) return NextResponse.json({ ok: false, error: error.message })
+    return NextResponse.json(data)
+  }
+
+  // ── تعبئة الرحلة من أوردر الماركت: الاستلام من فرع المورد، التسليم من عنوان العميل، الأصناف ──
+  if (action === 'prefill_from_order') {
+    const ref = String(body.order_ref || body.order_id || '').trim()
+    if (!ref) return NextResponse.json({ ok: false, error: 'رقم الأوردر مطلوب' })
+    const isUuid = /^[0-9a-f-]{36}$/i.test(ref)
+    const { data: o } = await db
+      .from('marketplace_orders')
+      .select('id, reference_code, supplier_id, order_type, total_amount, currency, payment_method, delivery_address, delivery_district, delivery_phone, delivery_lat, delivery_lng, guest_name, items:marketplace_order_items(name_snapshot, quantity, unit_price)')
+      .eq(isUuid ? 'id' : 'reference_code', ref)
+      .maybeSingle()
+    if (!o) return NextResponse.json({ ok: false, error: 'الأوردر مش موجود' })
+    const { data: sup } = await db.from('suppliers').select('business_name, contact_phone, city, district, address').eq('id', o.supplier_id).maybeSingle()
+    const { data: br } = await db
+      .from('supplier_branches')
+      .select('name, address, city, district, phone, latitude, longitude')
+      .eq('supplier_id', o.supplier_id)
+      .order('created_at')
+      .limit(1)
+      .maybeSingle()
+    const cod = String(o.payment_method || '').toLowerCase().includes('cash') || String(o.payment_method || '') === 'cod' ? Number(o.total_amount) : 0
+    return NextResponse.json({
+      ok: true,
+      prefill: {
+        order_ref: o.reference_code || o.id, order_id: o.id, order_kind: o.order_type || 'product', supplier_id: o.supplier_id,
+        pickup_area: br?.district || br?.city || sup?.district || sup?.city || '',
+        pickup_address: [sup?.business_name, br?.name, br?.address || sup?.address].filter(Boolean).join(' — '),
+        pickup_phone: br?.phone || sup?.contact_phone || '',
+        pickup_lat: br?.latitude ?? null, pickup_lng: br?.longitude ?? null,
+        dropoff_area: o.delivery_district || '', dropoff_address: o.delivery_address || '', dropoff_phone: o.delivery_phone || '',
+        dropoff_lat: o.delivery_lat ?? null, dropoff_lng: o.delivery_lng ?? null,
+        items: (o.items as Array<{ name_snapshot: string; quantity: number; unit_price: number }> | null ?? []).map((it) => ({ name: it.name_snapshot, qty: it.quantity, price: it.unit_price })),
+        cod_amount_egp: cod, currency: o.currency || 'EGP',
+        notes: o.guest_name ? `العميل: ${o.guest_name}` : '',
+      },
+    })
+  }
+
+  // ── التعريفة: كل مركبة وليها سعر (فتح عدّاد + لكل كيلو + أقل أجرة) ──────
+  if (action === 'save_vehicle_type') {
+    const { key, name_ar, emoji, base_fee, per_km, min_fee, currency, active } = body
+    if (!key) return NextResponse.json({ ok: false, error: 'key مطلوب' })
+    const num = (v: unknown) => (v === '' || v == null ? null : Number(v))
+    const { error } = await db.from('delivery_vehicle_types').upsert({
+      key: String(key), name_ar: String(name_ar || key), emoji: emoji || null,
+      base_fee: num(base_fee), per_km: num(per_km), min_fee: num(min_fee),
+      currency: currency || 'EGP', active: active !== false, updated_at: new Date().toISOString(),
+    }, { onConflict: 'key' })
+    if (error) return NextResponse.json({ ok: false, error: error.message })
+    return NextResponse.json({ ok: true })
   }
 
   // ── إسناد + إشعار الطيار على الواتساب ──────────────────────────────

@@ -56,6 +56,7 @@ const ALL_TOOLS: { title: string; items: { href: string; label: string }[] }[] =
     { href: '/admin/permissions', label: 'الصلاحيات' },
   ] },
   { title: '⚙️ التشغيل', items: [
+    { href: '/admin/delivery', label: '🛵 الدليفري — رحلات · طيارين · تعريفة' },
     { href: '/admin/alerts', label: '🚨 التنبيهات' },
     { href: '/admin/fraud-alerts', label: '🛡️ تنبيهات الاحتيال' },
     { href: '/admin/qc-reports', label: 'تقارير الجودة' },
