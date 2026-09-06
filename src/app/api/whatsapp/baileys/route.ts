@@ -68,6 +68,8 @@ interface BaileysPayload {
 
 interface ConciergeReply {
   reply?: string
+  /** 🤖 (٦/٩/٢٠٢٦) وضع بوت البيزنس بس — بيتسجّل في CRM البيزنس */
+  lead?: { name?: string | null; interest?: string | null; intent?: string | null; wants_human?: boolean | null } | null
   intent_detected?: string
   needs_human_handoff?: boolean
   next_action?: string
@@ -1257,7 +1259,8 @@ export async function POST(request: NextRequest) {
       //    للمكتبة».
       try {
         const parsed = JSON.parse(raw || '{}') as { reply?: string }
-        if (parsed?.reply && parsed.reply.length > 15) {
+        // 🤖 (٦/٩/٢٠٢٦) رد بوت البيزنس مايدخلش مكتبة المارد — كتالوج بيزنس واحد مش معرفة عامة
+        if (!biz && parsed?.reply && parsed.reply.length > 15) {
           void (supabaseAdmin.rpc as unknown as (
             f: string, a: Record<string, unknown>,
           ) => Promise<unknown>)('marid_learn', {
@@ -1374,12 +1377,25 @@ export async function POST(request: NextRequest) {
 
     // ولو الرد نفسه فيه لينك خلاص (لينك إعلان مثلاً) مابنكوّمش لينكين
     // ورا بعض — الدعوة تستنى الرسالة الجاية.
-    if (!alreadyInvited && !reply.includes(SITE_HOST)) {
+    // 🤖 (٦/٩/٢٠٢٦) بوت البيزنس بيمثّل البيزنس مش مضمونة — مفيش دعوة لشات مضمونة
+    if (!biz && !alreadyInvited && !reply.includes(SITE_HOST)) {
       reply += `\n\nومتنساش إن ${CTA_SENTENCE} كمان — تقدر تكمّل معايا من هناك في أي وقت 👇\nhttps://${SITE_HOST}${CTA_MARK}`
     }
 
     // اللينكات تتمغنط قبل الإرسال — العميل يدخل بضغطة واحدة
     reply = await magnetizeLinks(reply, phone)
+
+    // 📇 (٦/٩/٢٠٢٦) محمد: «يظبط ليه الليد» — كل عميل بيكلّم رقم البيزنس بيتسجّل في
+    //    CRM البيزنس (biz_customers) + إشعار لصاحب البيزنس. مايوقفش الرد لو فشل.
+    if (biz && parsed.lead && (parsed.lead.intent ?? 'warm') !== 'none') {
+      try {
+        await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<unknown>)('business_bot_record_lead', {
+          p_supplier_id: biz.supplier_id, p_phone: phone, p_name: parsed.lead.name ?? null,
+          p_interest: parsed.lead.interest ?? null, p_intent: parsed.lead.intent ?? 'warm',
+          p_wants_human: parsed.lead.wants_human === true, p_message: userMessage.slice(0, 300),
+        })
+      } catch (e) { console.warn('[business-lead]', e instanceof Error ? e.message : e) }
+    }
 
     const sent = await sendText({
       to: phone,

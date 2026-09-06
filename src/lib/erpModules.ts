@@ -43,6 +43,8 @@ export type ModuleDef = { href: string; label: string; primary?: boolean; v: VKe
 export const MODULE_DEFS: ModuleDef[] = [
   { href: 'confirmations',      label: 'التأكيدات',        primary: true, v: ['core'] },
   { href: 'links',              label: 'كل اللينكات',                     v: ['core'] },
+  // 🤖 (٦/٩/٢٠٢٦) محمد: «نفعّله بحيث يرشّح منتجات البيزنس ويظبط ليه الليد»
+  { href: 'whatsapp',           label: '🤖 بوت الواتساب',                 v: ['core'] },
   // 📊 (٢٠ أغسطس ٢٠٢٦) كان اسمه «Dashboard» بالإنجليزي، وبيظهر جنب زرار
   //    اسمه «لوحة الإدارة» — اسمين مختلفين لنفس المكان، ومحمد سأل عن الفرق
   //    بينهم: «إيه الفرق بين الداشبورد ولوحة الإدارة اللي موجودة في حسابي؟».

@@ -22,15 +22,27 @@ export interface BusinessChannelContext {
   bot_name?: string | null
   greeting?: string | null
   handoff_phone?: string | null
-  listings?: Array<{ title: string; price?: number | string | null; on_request?: boolean | null; slug?: string | null }>
+  /** 🌍 (٦/٩/٢٠٢٦) عملة البيزنس — الأسعار في الكتالوج بتتقال بيها (لمونة بالدرهم) */
+  currency?: string | null
+  country?: string | null
+  listings?: Array<{ title: string; price?: number | string | null; currency?: string | null; on_request?: boolean | null; slug?: string | null }>
   services?: Array<{ name: string; price?: number | string | null; category?: string | null }>
-  menu?: Array<{ name: string; price?: number | string | null }>
+  menu?: Array<{ name: string; price?: number | string | null; currency?: string | null }>
 }
 
-const price = (p: number | string | null | undefined, onRequest?: boolean | null) => {
+/** 📇 الليد اللي البوت بيطلّعه مع كل رد — بيتسجّل في CRM البيزنس (business_bot_record_lead) */
+export interface BusinessLead {
+  name?: string | null
+  interest?: string | null
+  intent?: 'hot' | 'warm' | 'cold' | 'none' | string | null
+  wants_human?: boolean | null
+}
+
+const CUR_AR: Record<string, string> = { EGP: 'ج', AED: 'د.إ', SAR: 'ر.س', KWD: 'د.ك', QAR: 'ر.ق', BHD: 'د.ب', OMR: 'ر.ع', USD: '$' }
+const price = (p: number | string | null | undefined, onRequest?: boolean | null, cur?: string | null) => {
   const n = Number(p)
   if (onRequest || !Number.isFinite(n) || n <= 0) return 'بعرض سعر'
-  return `${n.toLocaleString('en-US')} ج`
+  return `${n.toLocaleString('en-US')} ${CUR_AR[(cur || 'EGP').toUpperCase()] ?? cur ?? 'ج'}`
 }
 
 /** بيبني برومبت مقفول على بيزنس واحد. الكتالوج يتكتب حرفيًا زي ما هو في الداتابيز. */
@@ -40,11 +52,11 @@ export function buildBusinessPrompt(ctx: BusinessChannelContext): string {
   const store = ctx.store_slug ? `https://www.madmonacairo.com/s/${ctx.store_slug}` : null
 
   const listings = (ctx.listings ?? []).slice(0, 40)
-    .map((l) => `• ${l.title} — ${price(l.price, l.on_request)}${l.slug ? ` · https://www.madmonacairo.com/marketplace/${l.slug}` : ''}`)
+    .map((l) => `• ${l.title} — ${price(l.price, l.on_request, l.currency ?? ctx.currency)}${l.slug ? ` · https://www.madmonacairo.com/marketplace/${l.slug}` : ''}`)
   const services = (ctx.services ?? []).slice(0, 40)
-    .map((s) => `• ${s.name}${s.category ? ` (${s.category})` : ''} — ${price(s.price)}`)
+    .map((s) => `• ${s.name}${s.category ? ` (${s.category})` : ''} — ${price(s.price, null, ctx.currency)}`)
   const menu = (ctx.menu ?? []).slice(0, 60)
-    .map((m) => `• ${m.name} — ${price(m.price)}`)
+    .map((m) => `• ${m.name} — ${price(m.price, null, m.currency ?? ctx.currency)}`)
 
   const catalog = [
     listings.length ? `【المنتجات/الوحدات】\n${listings.join('\n')}` : '',
@@ -87,5 +99,14 @@ ${store ? `\nصفحة ${name} على مضمونة: ${store}` : ''}
 مصري عامية دايمًا. ممنوع الفصحى: مش «هل تود» — قول «تحب؟». لو كتب
 إنجليزي رد إنجليزي. آخر كل رد: خطوة واحدة واضحة (سؤال، أو «الفريق هيأكّد
 معاك»، أو رقم التحويل).
+
+═══════════ شكل الرد (إجباري) ═══════════
+رجّع JSON واحد بس من غير أي كلام قبله أو بعده:
+{"reply": "نص الرسالة للعميل",
+ "lead": {"name": "اسم العميل لو قاله وإلا null",
+          "interest": "اللي العميل عايزه في جملة قصيرة (منتج/خدمة/كمية/ميعاد)",
+          "intent": "hot لو عايز يطلب/يحجز دلوقتي · warm لو بيسأل عن سعر أو تفاصيل · cold لو سلام أو كلام عام · none لو مش عميل",
+          "wants_human": true لو طلب يكلّم حد أو الحالة بره الكتالوج وإلا false}}
+«reply» هو الوحيد اللي العميل بيشوفه — «lead» بيروح لصاحب ${name} عشان يتابع.
 `
 }

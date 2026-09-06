@@ -32,7 +32,9 @@ interface OpenWaWebhook {
 function receivingNumber(data: Record<string, unknown>): string | null {
   for (const key of ['to', 'sessionPhone', 'me']) {
     const digits = String(data[key] ?? '').replace(/\D/g, '')
-    if (/^20\d{10}$/.test(digits)) return digits
+    // 🌍 (٦/٩/٢٠٢٦) كان `^20\d{10}$` بس — أي رقم بيزنس خليجي مربوط بالبوت كان
+    //    بيرجع null فالرسالة تتسجّل من غير session_id ومفيش رد (قاعدة ٤/٩: مش مصر = دولي كامل)
+    if (/^\d{8,15}$/.test(digits)) return digits
   }
   return null
 }
