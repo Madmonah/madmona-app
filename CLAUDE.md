@@ -1543,3 +1543,34 @@ business-lounge · real-estate…). **الماركت والهوم عندهم ه�
 - ⚠️ `src/types/supabase.ts` **ملف يدوي مش متولّد** — أي عمود/جدول جديد يتضاف
   فيه بإيدك (اتضاف: currency/country على ٦ جداول + `cities` + `countries` +
   ويو `v_business`). وإلا PostgREST typing بيرمي `SelectQueryError` على الاستعلام كله.
+
+## 🤖 بوت واتساب البيزنس — ربط ذاتي + ترشيح من الكتالوج + ليد في CRM (٦ سبتمبر ٢٠٢٦)
+محمد: «محتاجين نفعّله بحيث يرشّح منتجات البيزنس لصاحب البيزنس ويظبط ليه الليد».
+- **الربط من لوحة البيزنس** `/admin/business-finance/<id>/whatsapp` (تاب «🤖 بوت
+  الواتساب» + خطوة ⑦ في الاستكمال): `/api/business/wa-channel` بيعمل جلسة
+  OpenWA (`POST /api/sessions` → `/start` → `/webhooks` على `/api/whatsapp/openwa?token=`)
+  وبيعرض QR (`GET /api/sessions/:id/qr` → `{qrCode}` لما الحالة `qr_ready`). أول ما
+  تبقى `ready` بنعرف الرقم ونكتب `supplier_wa_channels.session_id = الرقم` (ده اللي
+  `business_channel_context(data.to)` بتطابق عليه) + صف `wa_number_configs` (openwa).
+- **الرد:** `business-concierge` مقفول على كتالوج البيزنس، أسعاره بعملته (لمونة د.إ)،
+  ومخرجاته JSON `{reply, lead:{name,interest,intent,wants_human}}`. وضع البيزنس =
+  صفر أدوات · مفيش دعوة لشات مضمونة · مايدخلش مكتبة المارد.
+- **الليد:** `business_bot_record_lead()` → upsert في `biz_customers`
+  (`source='whatsapp_bot'` · tags واتساب-بوت + intent · notes بتتراكم بالتاريخ) +
+  إشعار داخلي لصاحب البيزنس (`notification_queue` type `business_lead` بلينك CRM).
+- ✅ **اتجرّب حقيقي على لمونة** بمحاكاة الويبهوك (٥ رسايل): الرد من المنيو بالدرهم،
+  والليد «منى · hot · ٢ أفوكادو توصيل البرشا» اتسجّل + الإشعار اتطبخ. اتمسح بعدها.
+- 🐞 **درسين كلّفوا ٤ نشرات:** (١) `revoke … from public` بيشيل EXECUTE من
+  `service_role` كمان — الدالة اللي السيرفر بيناديها لازم `grant … to service_role`
+  صراحةً. (٢) **supabase-js مابيرميش exception على خطأ RPC** — `try/catch` مابيمسكش
+  حاجة، لازم تقرا `{ error }` من النتيجة. الفشل كان صامت تمامًا (permission denied
+  وبعدها قيد `biz_customers_source_check`) والرد بيطلع عادي.
+- ⚠️ `receivingNumber` في ويبهوك OpenWA كانت مصري بس (`^20\d{10}$`) — بقت أي رقم
+  دولي؛ من غيرها رقم بيزنس خليجي مربوط مايردّش خالص.
+
+## 📅 الحجز: يوم وساعة واحدة لأي خدمة — «من/إلى» للإيجار بس (٦ سبتمبر ٢٠٢٦)
+محمد: «إزاي في حجز العيادات مكتوب من وإلى وهو المفروض يوم واحد؟». صفحة `/book`
+كانت بتحدد «ميعاد واحد» بقايمة أسماء (٣ أنواع) فأي `period_type` جديد
+(`per_session` بتاع العيادات) كان بيقع على فورم الإيجار. القاعدة المعكوسة دلوقتي:
+**المدة (hourly/daily/weekly/monthly) هي الاستثناء، وأي نوع تاني = يوم وساعة**؛
+والساعة = يوم واحد + «عدد الساعات». نوع تسعير جديد مايحتاجش تعديل في الصفحة.
