@@ -1384,21 +1384,20 @@ export async function POST(request: NextRequest) {
 
     // اللينكات تتمغنط قبل الإرسال — العميل يدخل بضغطة واحدة
     reply = await magnetizeLinks(reply, phone)
-    if (biz) {
-      // 🔎 (٦/٩/٢٠٢٦) تشخيص مؤقت: إيه اللي الموديل رجّعه في lead بالظبط
-      console.warn('[business-lead] parsed', JSON.stringify({ keys: Object.keys(parsed), lead: parsed.lead ?? null, head: raw.slice(0, 160) }))
-    }
 
     // 📇 (٦/٩/٢٠٢٦) محمد: «يظبط ليه الليد» — كل عميل بيكلّم رقم البيزنس بيتسجّل في
     //    CRM البيزنس (biz_customers) + إشعار لصاحب البيزنس. مايوقفش الرد لو فشل.
     // بيتسجّل لو فيه أي اهتمام — «none» بس لما مفيش اسم ولا طلب (سلام وخلاص)
     if (biz && parsed.lead && ((parsed.lead.intent ?? 'warm') !== 'none' || parsed.lead.interest || parsed.lead.name)) {
       try {
-        await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<unknown>)('business_bot_record_lead', {
+        // ⚠️ supabase-js مابيرميش على خطأ الـRPC — لازم نقرا error بإيدنا (اتكشف ٦/٩:
+        //    permission denied كان بيتبلع بصمت لأن revoke from public شال service_role كمان)
+        const leadRes = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ error?: { message: string } | null }>)('business_bot_record_lead', {
           p_supplier_id: biz.supplier_id, p_phone: phone, p_name: parsed.lead.name ?? null,
           p_interest: parsed.lead.interest ?? null, p_intent: parsed.lead.intent ?? 'warm',
           p_wants_human: parsed.lead.wants_human === true, p_message: userMessage.slice(0, 300),
         })
+        if (leadRes?.error) console.warn('[business-lead] rpc error', leadRes.error.message)
       } catch (e) { console.warn('[business-lead]', e instanceof Error ? e.message : e) }
     }
 
