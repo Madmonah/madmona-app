@@ -122,18 +122,23 @@ export default function ProOfferPage() {
       {/* 🧩 محمد (٦/٩): «ممكن تقول مضمونة بتضم كام أبليكيشن في بعض» — العدّ من الموديولات
           الموجودة فعلًا (erpModules + الماركت + البورصة + البوت + الدليفري)، مش رقم تسويقي */}
       <section className="mx-auto max-w-3xl px-5 pb-10">
+        {/* محمد (٦/٩): «أنا بتكلم زي بوكينج وأب وورك وأمازون وواتساب وأوبر وأودو وCRM» —
+            كل كارت = موديول موجود عندنا فعلًا + الأبليكيشن المشهور اللي بيعمل نفس الوظيفة (تشبيه، مش شراكة) */}
         <h2 className="text-xl font-black mb-1">مضمونة = <span className="text-[#059669]">١٠ أبليكيشنات</span> في واحد</h2>
         <p className="text-xs text-gray-500 mb-4">بدل ما تشترك في ١٠ برامج وتربطهم بإيدك — كلهم على نفس الداتا ونفس الرقم.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs font-bold">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
           {[
-            ['🛒', 'سوق بيع وإيجار وخدمات'], ['🌐', 'موقع لبيزنسك'], ['🍽️', 'منيو QR وأوردرات'], ['📅', 'حجوزات ومواعيد'], ['📇', 'CRM وليدات'],
-            ['📒', 'حسابات ومخزون'], ['🕘', 'موظفين وحضور ومرتبات'], ['🤖', 'بوت واتساب'], ['🛵', 'دليفري'], ['🏗️', 'بورصة العقارات'],
-          ].map(([e, l]) => (
-            <div key={l} className="rounded-2xl bg-white border border-[#E4DECE] px-2 py-3">
-              <span className="text-2xl block mb-1">{e}</span>{l}
+            ['🛒', 'أمازون', 'سوق بيع وإيجار'], ['📅', 'بوكينج', 'حجوزات ومواعيد'], ['🍽️', 'طلبات', 'منيو QR وأوردرات'], ['🛵', 'أوبر', 'دليفري بطيارين'], ['📒', 'أودو', 'حسابات ومخزون'],
+            ['📇', 'هابسبوت', 'CRM وليدات'], ['🕘', 'بامبو HR', 'موظفين وحضور ومرتبات'], ['🤖', 'واتساب بيزنس', 'بوت بيرد بدالك'], ['💼', 'أب وورك', 'خدمات ومحترفين'], ['🌐', 'شوبيفاي', 'موقع لبيزنسك'],
+          ].map(([e, brand, l]) => (
+            <div key={brand} className="rounded-2xl bg-white border border-[#E4DECE] px-2 py-3">
+              <span className="text-2xl block mb-1">{e}</span>
+              <span className="block text-sm font-black text-[#0C2B22]">{brand}</span>
+              <span className="block text-[11px] text-gray-500">{l}</span>
             </div>
           ))}
         </div>
+        <p className="text-[10px] text-gray-400 mt-2">الأسماء للتشبيه بالوظيفة — مضمونة مش تابعة لأي منهم.</p>
       </section>
 
       {/* إزاي */}
