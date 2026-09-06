@@ -119,6 +119,23 @@ export default function ProOfferPage() {
         <p className="text-xs text-gray-500 mt-3">كله من لوحة واحدة على الموبايل — ودخولك بواتسابك من غير باسورد.</p>
       </section>
 
+      {/* 🧩 محمد (٦/٩): «ممكن تقول مضمونة بتضم كام أبليكيشن في بعض» — العدّ من الموديولات
+          الموجودة فعلًا (erpModules + الماركت + البورصة + البوت + الدليفري)، مش رقم تسويقي */}
+      <section className="mx-auto max-w-3xl px-5 pb-10">
+        <h2 className="text-xl font-black mb-1">مضمونة = <span className="text-[#059669]">١٠ أبليكيشنات</span> في واحد</h2>
+        <p className="text-xs text-gray-500 mb-4">بدل ما تشترك في ١٠ برامج وتربطهم بإيدك — كلهم على نفس الداتا ونفس الرقم.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs font-bold">
+          {[
+            ['🛒', 'سوق بيع وإيجار وخدمات'], ['🌐', 'موقع لبيزنسك'], ['🍽️', 'منيو QR وأوردرات'], ['📅', 'حجوزات ومواعيد'], ['📇', 'CRM وليدات'],
+            ['📒', 'حسابات ومخزون'], ['🕘', 'موظفين وحضور ومرتبات'], ['🤖', 'بوت واتساب'], ['🛵', 'دليفري'], ['🏗️', 'بورصة العقارات'],
+          ].map(([e, l]) => (
+            <div key={l} className="rounded-2xl bg-white border border-[#E4DECE] px-2 py-3">
+              <span className="text-2xl block mb-1">{e}</span>{l}
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* إزاي */}
       <section className="mx-auto max-w-3xl px-5 pb-10">
         <h2 className="text-xl font-black mb-4">٣ خطوات وتبقى شغّال</h2>
