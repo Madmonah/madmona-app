@@ -17,6 +17,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveBusiness, type Business } from '@/lib/business-access'
 import { Loader2, ArrowRight, Store, Eye, EyeOff, Package, Tag, Search, AlertCircle } from 'lucide-react'
 
+import { currencyLabel } from '@/lib/currency'
 type Item = {
   kind: 'product' | 'service' | 'menu_item' | 'rental'
   item_id: string
@@ -148,7 +149,7 @@ export default function CatalogPage() {
                   <p className="text-xs font-bold text-gray-900 truncate">{it.name}</p>
                   <p className="text-[11px] text-gray-500">
                     {k.label}
-                    {it.price ? ` · ${Number(it.price).toLocaleString('ar-EG')} ج.م` : ''}
+                    {it.price ? ` · ${Number(it.price).toLocaleString('ar-EG')} ${currencyLabel(biz?.currency)}` : ''}
                   </p>
                 </div>
                 {isMenu ? (

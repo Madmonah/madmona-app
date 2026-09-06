@@ -248,6 +248,7 @@ function isBeautyCategory(slug?: string | null): boolean {
 //    الدولة هنا وفي الداتابيز بتريجر، فمستحيل سعر بعملة غلط.
 import { COUNTRIES, DEFAULT_COUNTRY, countryOf } from '@/lib/countries'
 
+import { currencyLabel } from '@/lib/currency'
 const CITIES = [
   'القاهرة', 'الجيزة', 'الإسكندرية', 'الساحل الشمالي',
   'العين السخنة', 'رأس الحكمة', 'الغردقة', 'شرم الشيخ',
@@ -263,6 +264,8 @@ interface DraftPayload {
   title?: string;
   description?: string;
   city?: string;
+  // 🌍 (٦/٩/٢٠٢٦) دولة الإعلان — العملة بتتشتق منها
+  country?: string;
   district?: string;
   // 🗺️ (١٥ أغسطس ٢٠٢٦) العنوان التفصيلي — بيغذّي تبويب «الموقع» في صفحة
   //    الإعلان. العمود موجود في `listing_drafts` و`/api/listing-drafts`
@@ -3500,7 +3503,7 @@ function CatalogBuilderStep({
                         <div className='flex gap-2'>
                           <div className='relative flex-1'>
                             <input type='number' value={item.price || ''} onChange={(e) => updateItem(si, ii, { price: Number(e.target.value) || 0 })} placeholder={t('al.price_short')} className={inputCls + ' py-2 text-sm pl-10'} />
-                            <span className='absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500'>ج.م</span>
+                            <span className='absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500'>{currencyLabel(countryOf(draft.country).currency)}</span>
                           </div>
                           <input type='number' inputMode='numeric' value={item.quantity ?? ''} onChange={(e) => updateItem(si, ii, { quantity: Number(e.target.value) || undefined })} placeholder={t('al.qty_short')} className={inputCls + ' py-2 text-sm w-20 text-center'} />
                           <label className='flex items-center gap-1.5 text-xs cursor-pointer whitespace-nowrap px-2'>
@@ -3925,7 +3928,7 @@ function StepPricing({
             className={inputCls + ' pl-16'}
           />
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-            ج.م
+            {currencyLabel(countryOf(draft.country).currency)}
           </span>
         </div>
       </Field>
@@ -3994,7 +3997,7 @@ function StepPricing({
                         } focus:outline-none focus:border-[#059669]`}
                       />
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none">
-                        ج.م
+                        {currencyLabel(countryOf(draft.country).currency)}
                       </span>
                     </div>
                   </div>
@@ -4048,7 +4051,7 @@ function StepPricing({
                         className="w-full p-2 rounded-lg bg-[#F5F4F0] border border-[#E5E5E0] text-sm text-[#1A2E26] placeholder:text-gray-400 focus:outline-none focus:border-[#059669] pl-10"
                       />
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 pointer-events-none">
-                        ج.م
+                        {currencyLabel(countryOf(draft.country).currency)}
                       </span>
                     </div>
                     <button

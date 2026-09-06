@@ -17,6 +17,7 @@ import {
   DollarSign, Bell, Copy, Crown, Users, ShoppingBag, ChefHat, Package,
 } from 'lucide-react'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /supplier/marketplace
 //
@@ -36,6 +37,8 @@ interface SupplierState {
   logo_url?: string | null
   kyc_status: 'pending' | 'approved' | 'rejected' | 'suspended'
   kyc_rejection_reason: string | null
+  /** 🌍 (٦/٩/٢٠٢٦) عملة البيزنس — الإيرادات وأسعار الإعلانات بتتطبع بيها */
+  currency?: string | null
 }
 
 // Permissions for the current user (full set if owner, subset if staff)
@@ -64,6 +67,7 @@ const FULL_ACCESS: AccessState = {
 }
 
 interface ListingSummary {
+  currency?: string | null
   id: string
   title: string
   slug: string
@@ -193,7 +197,7 @@ function SupplierMarketplaceContent() {
       // 🏛️ (٢٨/٨) مصدر واحد — v_business بتجمع الجدولين في صف واحد
       let { data: sup } = await supabaseBrowser
         .from('v_business')
-        .select('id, business_name, logo_url, kyc_status, tracks')
+        .select('id, business_name, logo_url, kyc_status, tracks, currency')
         .eq('owner_id', userId)
         .maybeSingle()
 
@@ -242,7 +246,7 @@ function SupplierMarketplaceContent() {
         if (fallback.allowed && fallback.supplierId) {
           const { data: fsup } = await supabaseBrowser
             .from('v_business')
-            .select('id, business_name, logo_url, kyc_status, tracks')
+            .select('id, business_name, logo_url, kyc_status, tracks, currency')
             .eq('id', fallback.supplierId).maybeSingle()
           if (fsup) {
             sup = fsup as unknown as typeof sup
@@ -264,7 +268,7 @@ function SupplierMarketplaceContent() {
         return
       }
 
-      setSupplier(sup as SupplierState)
+      setSupplier(sup as unknown as SupplierState)
       setAccess(staffPerms || FULL_ACCESS)
       supplierIdRef.current = sup.id
 
@@ -326,7 +330,7 @@ function SupplierMarketplaceContent() {
     const { data } = await supabaseBrowser
       .from('listings')
       .select(`
-        id, title, slug, city, district, status, bookings_count, views_count, created_at, published_at, rejection_reason, pause_reason,
+        id, title, slug, city, district, status, currency, bookings_count, views_count, created_at, published_at, rejection_reason, pause_reason,
         category:categories(name_ar, icon, track),
         photos:listing_photos(url, is_primary),
         pricing:pricing_rules(price, period_type, is_active)
@@ -716,7 +720,7 @@ function SupplierMarketplaceContent() {
               </div>
               <p className="text-base sm:text-lg font-bold text-gray-900">
                 {stats.totalRevenue.toLocaleString('ar-EG')}
-                <span className="text-xs font-normal text-gray-500 mr-1">ج.م</span>
+                <span className="text-xs font-normal text-gray-500 mr-1">{currencyLabel(supplier?.currency)}</span>
               </p>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 p-3">
@@ -889,7 +893,7 @@ function SupplierMarketplaceContent() {
                         {startingPrice !== null ? (
                           <>
                             <span className="font-bold">{startingPrice.toLocaleString('ar-EG')}</span>
-                            <span className="text-xs text-gray-500"> ج.م</span>
+                            <span className="text-xs text-gray-500"> {currencyLabel(listing.currency)}</span>
                           </>
                         ) : (
                           <span className="text-xs text-gray-400">بدون سعر</span>

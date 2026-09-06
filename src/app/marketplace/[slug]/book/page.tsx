@@ -14,6 +14,7 @@ import { useT } from '@/lib/i18n/LanguageProvider'
 import { listingTitleFor, cityFor } from '@/lib/i18n/catName'
 import { periodPer } from '@/lib/pricing-periods'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /marketplace/[slug]/book
 //
@@ -30,6 +31,7 @@ import { periodPer } from '@/lib/pricing-periods'
 // ============================================================================
 
 interface ListingForBooking {
+  currency?: string | null
   id: string
   title: string
   slug: string
@@ -149,7 +151,7 @@ export default function BookingPage() {
       const { data: l, error: listingErr } = await supabaseBrowser
         .from('listings')
         .select(`
-          id, title, i18n, slug, city, district, status, requires_id_verification, available_addons,
+          id, title, i18n, slug, city, district, status, requires_id_verification, available_addons, currency,
           supplier:marketplace_suppliers(id, business_name, commission_rate, kyc_status),
           photos:listing_photos(url, is_primary)
         `)
@@ -746,7 +748,7 @@ export default function BookingPage() {
                   </span>
                 </div>
                 <span className="font-bold text-[#059669]">
-                  {Number(rule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}
+                  {Number(rule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {currencyLabel(listing.currency, lang)}
                 </span>
               </label>
             ))}
@@ -785,7 +787,7 @@ export default function BookingPage() {
                       <span className="text-sm font-medium text-gray-900">{addon.name_ar}</span>
                     </div>
                     <span className={`font-bold text-sm ${isSel ? 'text-[#059669]' : 'text-gray-700'}`}>
-                      +{Number(addon.price_egp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}
+                      +{Number(addon.price_egp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {currencyLabel(listing.currency, lang)}
                     </span>
                   </button>
                 )
@@ -939,20 +941,20 @@ export default function BookingPage() {
                 <span className="text-gray-600">
                   {isFlatRule
                     ? (selectedRule.label_ar || periodPer(selectedRule.period_type, lang))
-                    : `${Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} ${t('common.egp')} × ${pricing.periods} ${['hourly', 'daily', 'weekly', 'monthly'].includes(selectedRule.period_type) ? periodPer(selectedRule.period_type, lang) : ''}`}
+                    : `${Number(selectedRule.price).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} ${currencyLabel(listing.currency, lang)} × ${pricing.periods} ${['hourly', 'daily', 'weekly', 'monthly'].includes(selectedRule.period_type) ? periodPer(selectedRule.period_type, lang) : ''}`}
                 </span>
-                <span>{pricing.baseAmount.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
+                <span>{pricing.baseAmount.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {currencyLabel(listing.currency, lang)}</span>
               </div>
               {/* Phase Z: line item per selected add-on */}
               {selectedAddons.map(a => (
                 <div key={a.slug} className="flex justify-between text-xs text-gray-600">
                   <span>{a.emoji ? `${a.emoji} ` : ''}{a.name_ar}</span>
-                  <span>+{Number(a.price_egp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
+                  <span>+{Number(a.price_egp).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {currencyLabel(listing.currency, lang)}</span>
                 </div>
               ))}
               <div className="flex justify-between font-bold pt-2 border-t border-gray-100 text-base">
                 <span>{t('booking.total')}</span>
-                <span className="text-[#059669]">{pricing.total.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {t('common.egp')}</span>
+                <span className="text-[#059669]">{pricing.total.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} {currencyLabel(listing.currency, lang)}</span>
               </div>
             </div>
           </div>

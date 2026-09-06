@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { currencyLabel } from '@/lib/currency'
 import { jsonObj } from '@/lib/rpc'
 import {
   ChevronLeft, ChevronRight, Check, X, Plus, Upload, Trash2, Star,
@@ -298,6 +299,14 @@ function formatBytes(bytes: number): string {
 export default function ListingForm({ supplierId, userId, existingId, initialData, redirectAfterSubmit }: ListingFormProps) {
   const router = useRouter()
   const isEditing = !!existingId
+  // 🌍 (٦/٩/٢٠٢٦) عملة البيزنس مش «ج.م» ثابتة — لمونة (دبي) بالدرهم. الداتابيز بتفرضها
+  // على pricing_rules بتريجر trg_pricing_rule_currency_from_listing؛ ده للعرض بس.
+  const [currency, setCurrency] = useState<string | null>(null)
+  useEffect(() => {
+    if (!supplierId) return
+    supabaseBrowser.from('marketplace_suppliers').select('currency').eq('id', supplierId).maybeSingle()
+      .then(({ data }) => setCurrency((data as { currency?: string | null } | null)?.currency ?? null))
+  }, [supplierId])
 
   /* ✏️ (٢٠ أغسطس ٢٠٢٦) محمد: «عايز أقدر أعدّل الصور، بس مش لازم لما أدوس
      تعديل أبدأ الإعلان من الأول».
@@ -1805,7 +1814,7 @@ export default function ListingForm({ supplierId, userId, existingId, initialDat
                         placeholder="السعر"
                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm pr-12"
                       />
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">ج.م</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">{currencyLabel(currency)}</span>
                     </div>
                   </div>
                   {form.pricing.length > 1 && (

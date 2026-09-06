@@ -62,7 +62,7 @@ export type MartProduct = {
   display_order?: number
 }
 
-type Listing = { id: string; title: string }
+type Listing = { id: string; title: string; currency?: string | null }
 type Supplier = { id: string; business_name: string }
 
 // ============================================================
@@ -580,7 +580,7 @@ export function ProductBuyBox({
         <p className="text-xl font-black text-[#059669] tabular">
           {(price * qty).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}{' '}
           <span className="text-xs font-normal text-gray-500">
-            {t('common.egp')}
+            {currencyLabel(listing.currency, lang)}
           </span>
         </p>
       </div>

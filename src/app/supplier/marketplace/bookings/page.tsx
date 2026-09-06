@@ -10,6 +10,7 @@ import {
   Image as ImageIcon, Package, User, Users, ShieldCheck, CreditCard,
 } from 'lucide-react'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /supplier/marketplace/bookings
 // Allows owner + staff with can_manage_bookings.
@@ -19,6 +20,7 @@ type Stage = 'loading' | 'unauthenticated' | 'no-supplier' | 'no-permission' | '
 type StatusFilter = 'all' | 'pending_id_verification' | 'pending_payment' | 'confirmed' | 'completed' | 'cancelled'
 
 interface BookingSummary {
+  currency?: string | null
   id: string
   reference_code: string | null
   start_at: string
@@ -135,7 +137,7 @@ export default function SupplierBookingsPage() {
     const { data } = await supabaseBrowser
       .from('marketplace_bookings')
       .select(`
-        id, reference_code, start_at, end_at, total_amount, status, customer_notes, customer_national_id, id_verification_status, created_at,
+        id, reference_code, start_at, end_at, total_amount, currency, status, customer_notes, customer_national_id, id_verification_status, created_at,
         listing:listings(id, title, requires_id_verification, photos:listing_photos(url, is_primary)),
         customer:profiles!marketplace_bookings_customer_id_fkey(id, phone, full_name)
       `)
@@ -410,7 +412,7 @@ export default function SupplierBookingsPage() {
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
                         <span className="text-sm">
                           <strong className="text-[#059669]">{Number(booking.total_amount).toLocaleString('ar-EG')}</strong>
-                          <span className="text-xs text-gray-500"> ج.م</span>
+                          <span className="text-xs text-gray-500"> {currencyLabel(booking.currency)}</span>
                         </span>
                         <ChevronLeft className="w-4 h-4 text-gray-400" />
                       </div>

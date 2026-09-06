@@ -10,6 +10,7 @@ import {
   Image as ImageIcon, ShoppingBag, User, FileText, Copy,
 } from 'lucide-react'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /supplier/marketplace/orders/[id]
 // Order detail page for suppliers. Shows full order + offers status actions
@@ -421,7 +422,7 @@ export default function SupplierOrderDetailPage() {
                 </div>
                 <p className="font-black text-sm text-[#059669] tabular flex-shrink-0">
                   {it.line_total.toLocaleString('ar-EG')}
-                  <span className="text-[10px] font-medium text-gray-500 ms-1">ج.م</span>
+                  <span className="text-[10px] font-medium text-gray-500 ms-1">{currencyLabel(order.currency)}</span>
                 </p>
               </div>
             ))}
@@ -430,30 +431,23 @@ export default function SupplierOrderDetailPage() {
           <div className="bg-gradient-to-l from-[#34D399]/5 to-transparent border-t border-[#059669]/10 p-5 space-y-1.5">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">المجموع الفرعي</span>
-              <span className="font-bold tabular">{order.subtotal_amount.toLocaleString('ar-EG')} ج.م</span>
+              <span className="font-bold tabular">{order.subtotal_amount.toLocaleString('ar-EG')} {currencyLabel(order.currency)}</span>
             </div>
             {order.delivery_fee > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">التوصيل</span>
-                <span className="font-bold tabular">{order.delivery_fee.toLocaleString('ar-EG')} ج.م</span>
+                <span className="font-bold tabular">{order.delivery_fee.toLocaleString('ar-EG')} {currencyLabel(order.currency)}</span>
               </div>
             )}
             <div className="flex justify-between pt-2 border-t border-gray-200">
-              <span className="text-sm font-black text-gray-900">إجمالي العميل</span>
-              <span className="text-base font-black text-gray-900 tabular">
-                {order.total_amount.toLocaleString('ar-EG')} ج.م
-              </span>
-            </div>
-            <div className="flex justify-between text-xs pt-1">
-              <span className="text-gray-400">عمولة مضمونة ({Number(order.commission_rate).toFixed(1)}%)</span>
-              <span className="text-gray-400 tabular">-{order.commission_amount.toLocaleString('ar-EG')} ج.م</span>
-            </div>
-            <div className="flex justify-between pt-2 border-t border-[#059669]/20">
-              <span className="text-sm font-black text-[#059669]">صافي مستحقاتك</span>
+              <span className="text-sm font-black text-gray-900">إجمالي الأوردر</span>
               <span className="text-xl font-black text-[#059669] tabular">
-                {order.supplier_payout.toLocaleString('ar-EG')} ج.م
+                {order.total_amount.toLocaleString('ar-EG')} {currencyLabel(order.currency)}
               </span>
             </div>
+            {/* 💰 (٦/٩/٢٠٢٦) كان هنا «عمولة مضمونة (X%) −…» و«صافي مستحقاتك» — ممنوع في
+                شاشة مورد (قاعدة محمد ٤/٩: البايع بياخد سعره كامل، العمولة فوقه في الباكاند).
+                والعملة من الأوردر (تريجر trg_order_currency_from_supplier). */}
           </div>
         </section>
 

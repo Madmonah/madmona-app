@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import ExcelImportModal from '@/components/supplier/ExcelImportModal'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /supplier/marketplace/[id]/products
 // Supplier products catalog (mart_products) under ONE listing — like the
@@ -21,6 +22,7 @@ import ExcelImportModal from '@/components/supplier/ExcelImportModal'
 type Stage = 'loading' | 'unauthenticated' | 'not-found' | 'is-restaurant' | 'no-permission' | 'ready'
 
 interface ListingMin {
+  currency?: string | null
   id: string
   title: string
   supplier_id: string
@@ -34,6 +36,7 @@ interface Product {
   name_en: string | null
   description_ar: string | null
   price: number
+  currency?: string | null
   compare_at_price: number | null
   category: string | null
   subcategory: string | null
@@ -121,7 +124,7 @@ export default function SupplierProductsPage() {
 
       const { data: l } = await supabaseBrowser
         .from('listings')
-        .select('id, title, supplier_id, category:categories(track)')
+        .select('id, title, supplier_id, currency, category:categories(track)')
         .eq('id', listingId)
         .maybeSingle()
 
@@ -378,7 +381,7 @@ export default function SupplierProductsPage() {
                       {[p.category, p.brand, p.unit].filter(Boolean).join(' · ')}
                     </p>
                     <p className="text-sm font-black text-[#059669] tabular mt-1">
-                      {p.price.toLocaleString('ar-EG')} <span className="text-[10px] font-medium text-gray-500">ج.م</span>
+                      {p.price.toLocaleString('ar-EG')} <span className="text-[10px] font-medium text-gray-500">{currencyLabel(p.currency ?? listing?.currency)}</span>
                       {p.compare_at_price && p.compare_at_price > p.price && (
                         <span className="text-[11px] text-gray-400 line-through mr-2 tabular">{p.compare_at_price.toLocaleString('ar-EG')}</span>
                       )}
@@ -444,7 +447,7 @@ export default function SupplierProductsPage() {
             <div className="p-5 space-y-3">
               <Field label="اسم المنتج *" value={form.name_ar} onChange={(v) => setForm({ ...form, name_ar: v })} placeholder="مثلا: أرز مصري 1 كجم" />
               <div className="grid grid-cols-2 gap-2">
-                <Field label="السعر (ج.م) *" value={form.price} onChange={(v) => setForm({ ...form, price: v.replace(/[^\d.]/g, '') })} placeholder="55" type="tel" />
+                <Field label={`السعر (${currencyLabel(listing?.currency)}) *`} value={form.price} onChange={(v) => setForm({ ...form, price: v.replace(/[^\d.]/g, '') })} placeholder="55" type="tel" />
                 <Field label="قبل الخصم (اختياري)" value={form.compare_at_price} onChange={(v) => setForm({ ...form, compare_at_price: v.replace(/[^\d.]/g, '') })} placeholder="65" type="tel" />
               </div>
               <div className="grid grid-cols-2 gap-2">

@@ -13749,6 +13749,7 @@ export type Database = {
           converted_listing_id: string | null
           created_at: string | null
           currency: string | null
+          country: string | null
           current_step: number | null
           description: string | null
           district: string | null
@@ -13791,6 +13792,7 @@ export type Database = {
           converted_listing_id?: string | null
           created_at?: string | null
           currency?: string | null
+          country?: string | null
           current_step?: number | null
           description?: string | null
           district?: string | null
@@ -13833,6 +13835,7 @@ export type Database = {
           converted_listing_id?: string | null
           created_at?: string | null
           currency?: string | null
+          country?: string | null
           current_step?: number | null
           description?: string | null
           district?: string | null
@@ -14438,6 +14441,19 @@ export type Database = {
           },
         ]
       }
+      // 🌍 (٦/٩/٢٠٢٦) دول ومدن الخليج — اتضافوا يدوي مع فتح دول مجلس التعاون
+      cities: {
+        Row: { id: number; country: string; name_ar: string; name_en: string; display_order: number }
+        Insert: { id?: number; country: string; name_ar: string; name_en: string; display_order?: number }
+        Update: { id?: number; country?: string; name_ar?: string; name_en?: string; display_order?: number }
+        Relationships: []
+      }
+      countries: {
+        Row: { code: string; name_ar: string; name_en: string; currency: string; dial_code: string; flag: string; is_active: boolean; display_order: number }
+        Insert: { code: string; name_ar: string; name_en: string; currency: string; dial_code: string; flag?: string; is_active?: boolean; display_order?: number }
+        Update: { code?: string; name_ar?: string; name_en?: string; currency?: string; dial_code?: string; flag?: string; is_active?: boolean; display_order?: number }
+        Relationships: []
+      }
       listings: {
         Row: {
           accepts_insurance: boolean | null
@@ -14454,6 +14470,7 @@ export type Database = {
           city: string | null
           contact_phone: string | null
           country: string
+          currency: string
           created_at: string
           description: string | null
           directory_source: string | null
@@ -14510,6 +14527,7 @@ export type Database = {
           city?: string | null
           contact_phone?: string | null
           country?: string
+          currency?: string
           created_at?: string
           description?: string | null
           directory_source?: string | null
@@ -14566,6 +14584,7 @@ export type Database = {
           city?: string | null
           contact_phone?: string | null
           country?: string
+          currency?: string
           created_at?: string
           description?: string | null
           directory_source?: string | null
@@ -15719,6 +15738,8 @@ export type Database = {
           description: string | null
           has_erp_crm: boolean
           id: string
+          country: string | null
+          currency: string | null
           is_partner: boolean
           kyc_documents: Json
           kyc_rejection_reason: string | null
@@ -15747,6 +15768,8 @@ export type Database = {
           description?: string | null
           has_erp_crm?: boolean
           id?: string
+          country?: string | null
+          currency?: string | null
           is_partner?: boolean
           kyc_documents?: Json
           kyc_rejection_reason?: string | null
@@ -15775,6 +15798,8 @@ export type Database = {
           description?: string | null
           has_erp_crm?: boolean
           id?: string
+          country?: string | null
+          currency?: string | null
           is_partner?: boolean
           kyc_documents?: Json
           kyc_rejection_reason?: string | null
@@ -18301,6 +18326,8 @@ export type Database = {
           embargo_note: string | null
           embargoed: boolean
           id: string
+          country: string | null
+          currency: string | null
           info_missing: string | null
           info_requested_at: string | null
           is_active: boolean
@@ -18345,6 +18372,8 @@ export type Database = {
           embargo_note?: string | null
           embargoed?: boolean
           id?: string
+          country?: string | null
+          currency?: string | null
           info_missing?: string | null
           info_requested_at?: string | null
           is_active?: boolean
@@ -18389,6 +18418,8 @@ export type Database = {
           embargo_note?: string | null
           embargoed?: boolean
           id?: string
+          country?: string | null
+          currency?: string | null
           info_missing?: string | null
           info_requested_at?: string | null
           is_active?: boolean
@@ -20802,6 +20833,8 @@ export type Database = {
           geofence_enabled: boolean | null
           geofence_radius_meters: number | null
           id: string
+          country: string | null
+          currency: string | null
           image_url: string | null
           latitude: number | null
           longitude: number | null
@@ -20831,6 +20864,8 @@ export type Database = {
           geofence_enabled?: boolean | null
           geofence_radius_meters?: number | null
           id?: string
+          country?: string | null
+          currency?: string | null
           image_url?: string | null
           latitude?: number | null
           longitude?: number | null
@@ -20860,6 +20895,8 @@ export type Database = {
           geofence_enabled?: boolean | null
           geofence_radius_meters?: number | null
           id?: string
+          country?: string | null
+          currency?: string | null
           image_url?: string | null
           latitude?: number | null
           longitude?: number | null
@@ -21555,6 +21592,8 @@ export type Database = {
           gallery: Json | null
           has_erp_crm: boolean
           id: string
+          country: string | null
+          currency: string | null
           industry: string | null
           join_slug: string | null
           logo_url: string | null
@@ -21589,6 +21628,8 @@ export type Database = {
           gallery?: Json | null
           has_erp_crm?: boolean
           id?: string
+          country?: string | null
+          currency?: string | null
           industry?: string | null
           join_slug?: string | null
           logo_url?: string | null
@@ -21623,6 +21664,8 @@ export type Database = {
           gallery?: Json | null
           has_erp_crm?: boolean
           id?: string
+          country?: string | null
+          currency?: string | null
           industry?: string | null
           join_slug?: string | null
           logo_url?: string | null
@@ -23631,6 +23674,21 @@ export type Database = {
       }
     }
     Views: {
+      // 🌍 (٦/٩/٢٠٢٦) v_business — الويو اللي resolveBusiness وصفحة المورد بيقروا منه (ماكانش في الملف)
+      v_business: {
+        Row: {
+          id: string; business_name: string; logo_url: string | null; cover_url: string | null
+          commission_rate: number | null; owner_id: string | null; contact_phone: string | null; contact_name: string | null
+          contact_email: string | null; city: string | null; district: string | null; address: string | null
+          business_type: string | null; industry: string | null; origin: string | null; business_model: string | null
+          max_employees: number | null; status: string | null; kyc_status: string | null; account_type: string | null
+          is_partner: boolean | null; has_erp: boolean | null; is_platform_owner: boolean | null; rating: number | null
+          reviews_count: number | null; listings_count: number | null; bookings_count: number | null; total_revenue: number | null
+          tracks: Json | null; created_at: string | null; missing_marketplace_row: boolean | null; missing_supplier_row: boolean | null
+          country: string | null; currency: string | null
+        }
+        Relationships: []
+      }
       ai_os_dashboard: {
         Row: {
           draft_ads: number | null
@@ -26885,7 +26943,7 @@ export type Database = {
       get_madmona_agents_team: { Args: never; Returns: Json }
       get_madmona_company_overview: { Args: never; Returns: Json }
       get_marketplace_category_counts: {
-        Args: never
+        Args: { p_country?: string | null }
         Returns: {
           category_id: string
           listing_count: number

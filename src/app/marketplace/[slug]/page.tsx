@@ -1081,7 +1081,7 @@ export default function ListingDetailPage() {
                  لإعلانات التجميل والخدمات، الكتالوج ده هو قايمة الخدمات
                  بأسعارها، فالعنوان «الخدمات والأسعار» بدل «المنتجات». */
               <MartProductsCatalog
-                listing={{ id: listing.id, title: displayTitle }}
+                listing={{ id: listing.id, title: displayTitle, currency: listing.currency }}
                 supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
                 products={martProducts}
                 defaultCatLabel={
@@ -1134,7 +1134,7 @@ export default function ListingDetailPage() {
             {isProduct && !isRealEstate && !isDirectory && !isListQuote && listing.supplier && (
               <div className="lg:hidden">
                 <ProductBuyBox
-                  listing={{ id: listing.id, title: displayTitle }}
+                  listing={{ id: listing.id, title: displayTitle, currency: listing.currency }}
                   supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
                   price={startingPrice ?? 0}
                 />
@@ -1436,7 +1436,7 @@ export default function ListingDetailPage() {
 
               {isProduct && !isRealEstate && !isDirectory && !isListQuote && listing.supplier && (
                 <ProductBuyBox
-                  listing={{ id: listing.id, title: displayTitle }}
+                  listing={{ id: listing.id, title: displayTitle, currency: listing.currency }}
                   supplier={{ id: listing.supplier.id, business_name: listing.supplier.business_name }}
                   price={startingPrice ?? 0}
                 />

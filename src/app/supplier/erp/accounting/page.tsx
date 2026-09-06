@@ -2,6 +2,7 @@
 // Madmona ERP — المحاسبة (شجرة حسابات · قيود · قوائم مالية · استيراد Excel)
 import { supabaseBrowser as supabase } from '@/lib/supabase-browser';
 import { useT } from '@/lib/i18n/LanguageProvider'
+import { currencyLabel } from '@/lib/currency'
 import { jsonObj } from '@/lib/rpc';
 import { useEffect, useMemo, useState } from 'react';
 // PERF: xlsx (~430KB raw / ~110KB gzipped) is only used by the import flow
@@ -41,6 +42,8 @@ export default function ErpAccountingPage() {
   // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
   const { t } = useT()
   const [supplierId, setSupplierId] = useState<string>('');
+  // 🌍 (٦/٩/٢٠٢٦) العملة من البيزنس (v_business.currency) مش «ج.م» ثابتة — لمونة بالدرهم
+  const [currency, setCurrency] = useState<string | null>(null);
   const [tab, setTab] = useState<'coa' | 'entry' | 'reports' | 'import'>('reports');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [msg, setMsg] = useState<{ t: 'ok' | 'err'; m: string } | null>(null);
@@ -57,6 +60,9 @@ export default function ErpAccountingPage() {
 
   const loadAccounts = async () => {
     if (!supplierId) return;
+    (supabase as unknown as { from: (t: string) => { select: (c: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: { currency?: string | null } | null }> } } } })
+      .from('v_business').select('currency').eq('id', supplierId).maybeSingle()
+      .then(({ data }) => setCurrency(data?.currency ?? null));
     const { data } = await supabase.from('erp_accounts').select('id,code,name_ar,account_type,is_postable,parent_id')
       .eq('supplier_id', supplierId).eq('is_active', true).order('code');
     setAccounts((data as Account[]) || []);
@@ -270,7 +276,7 @@ export default function ErpAccountingPage() {
                 {income.expenses.map((r: any) => <div key={r.code} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid rgba(0,0,0,.05)' }}><span>{r.code} · {r.name_ar}</span><b>{fmt(r.amount)}</b></div>)}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontWeight: 800 }}><span>{t('erp.total_expense')}</span><span>{fmt(income.total_expenses)}</span></div>
                 <div style={{ ...card, marginTop: 12, background: `linear-gradient(90deg, rgba(212,160,23,.1), rgba(47,160,132,.12))`, display: 'flex', justifyContent: 'space-between', fontWeight: 900, fontSize: 18 }}>
-                  <span>صافي {income.net_income >= 0 ? t('erp.profit') : t('erp.loss')}</span><span style={{ color: income.net_income >= 0 ? G.dark : '#c0392b' }}>{fmt(income.net_income)} ج.م</span>
+                  <span>صافي {income.net_income >= 0 ? t('erp.profit') : t('erp.loss')}</span><span style={{ color: income.net_income >= 0 ? G.dark : '#c0392b' }}>{fmt(income.net_income)} {currencyLabel(currency)}</span>
                 </div>
               </div>)}
 

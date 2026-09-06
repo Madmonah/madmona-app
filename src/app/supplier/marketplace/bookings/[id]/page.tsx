@@ -10,6 +10,7 @@ import {
   User, Hash, FileText, Phone, ShieldCheck, CreditCard, ShieldAlert,
 } from 'lucide-react'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /supplier/marketplace/bookings/[id]
 // Supplier booking detail. Confirm/cancel/complete actions.
@@ -367,17 +368,13 @@ export default function SupplierBookingDetailPage() {
         {/* Pricing */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
           <h2 className="text-sm font-bold text-gray-900 mb-2">المالية</h2>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">المبلغ المستلم</span>
-            <span>{Number(booking.base_amount).toLocaleString('ar-EG')} ج.م</span>
-          </div>
-          <div className="flex justify-between text-sm text-red-600">
-            <span>عمولة Madmona</span>
-            <span>-{Number(booking.commission_amount).toLocaleString('ar-EG')} ج.م</span>
-          </div>
-          <div className="flex justify-between font-bold pt-2 border-t border-gray-100">
-            <span className="text-gray-900">صافيك</span>
-            <span className="text-[#059669]">{Number(booking.supplier_payout).toLocaleString('ar-EG')} ج.م</span>
+          {/* 💰 (٦/٩/٢٠٢٦) قاعدة محمد ٤/٩: «السعر اللي بيحطه لمضمونة هو اللي بيحصله» —
+              كانت الشاشة بتعرض «عمولة Madmona −X» و«صافيك» للمورد. العمولة بتتحط
+              فوق السعر في الباكاند ومالهاش مكان في أي شاشة مورد. بيشوف مبلغه كامل بس.
+              والعملة من الحجز نفسه (تريجر trg_booking_currency_from_listing). */}
+          <div className="flex justify-between font-bold">
+            <span className="text-gray-900">مستحقاتك عن الحجز</span>
+            <span className="text-[#059669]">{Number(booking.base_amount).toLocaleString('ar-EG')} {currencyLabel(booking.currency)}</span>
           </div>
         </div>
 

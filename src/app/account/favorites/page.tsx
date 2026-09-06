@@ -9,6 +9,7 @@ import {
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { catNameFor, listingTitleFor, cityFor } from '@/lib/i18n/catName'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /account/favorites
 // Customer's saved/favorited listings.
@@ -20,6 +21,7 @@ interface FavoriteListing {
   listing_id: string
   created_at: string
   listing: {
+    currency?: string | null
     id: string
     title: string
     i18n?: Record<string, { title?: string | null; description?: string | null } | null> | null
@@ -56,7 +58,7 @@ export default function FavoritesPage() {
         .select(`
           listing_id, created_at,
           listing:listings(
-            id, title, i18n, slug, city, district, rating, reviews_count, status,
+            id, title, i18n, slug, city, district, rating, reviews_count, status, currency,
             category:categories(name_ar, name_en, name_i18n, icon),
             photos:listing_photos(url, is_primary),
             pricing:pricing_rules(price, is_active)
@@ -205,7 +207,7 @@ export default function FavoritesPage() {
                           <>
                             <span className="text-xs text-gray-500">{t('market.starts_from')}</span>
                             <p className="font-bold text-[#059669]">
-                              {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} <span className="text-xs font-normal">{t('common.egp')}</span>
+                              {startingPrice.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')} <span className="text-xs font-normal">{currencyLabel(listing.currency, lang)}</span>
                             </p>
                           </>
                         ) : (

@@ -17,6 +17,7 @@ type Photo = {
 }
 
 type Listing = {
+  currency?: string | null
   id: string
   title: string
   slug: string | null

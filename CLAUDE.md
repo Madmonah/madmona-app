@@ -1522,3 +1522,24 @@ business-lounge · real-estate…). **الماركت والهوم عندهم ه�
 متركّب، مش الزرار.
 ℹ️ «القاهرة» في HTML زائر دبي = JSON-LD الشركة في `layout.tsx`
 (`addressCountry: EG`) — عنوان مضمونة نفسها، صح ويفضل.
+
+## 💱 العملة من الصف في كل شاشة — تريجرات الأصناف والحجوزات (٦ سبتمبر ٢٠٢٦)
+محمد: «اتأكد إن كل الصفحات والشاشات متوافقة مع الشغل الجديد». صفحة لمونة كان
+فيها «٢٢ ج.م» وسط ٢٠ سعر بالدرهم — مصدره `ProductBuyBox` في `OrderActions.tsx`
+(`t('common.egp')`)، وكل شاشات الحجز/الأوردرات/ERP كانت بتطبع «ج.م» حرفيًا.
+- **أي سعر بيتطبع = `currencyLabel(row.currency)`** — ممنوع `t('common.egp')`
+  أو «ج.م» حرفيًا في أي شاشة عميل/مورد. الفحص: `grep -rn "common\.egp\| ج\.م" src/app`.
+  الاستثناء الوحيد: أسعار الصرف والذهب (`FinancialTicker` · بورصة رجال الأعمال) —
+  دي بالجنيه فعلًا.
+- **العملة بتتوارث بتريجرات مش بالكود:** الحجز من الإعلان
+  (`trg_booking_currency_from_listing`)، الأوردر من المورد
+  (`trg_order_currency_from_supplier`)، والأصناف (`pricing_rules` ·
+  `restaurant_menu_items` · `mart_products`) من الإعلان
+  (`set_child_currency_from_listing`). الكود يبعت أي حاجة، المصدر بيكسب.
+- `v_business` بقى فيه `country` + `currency` — شاشات ERP تاخد العملة من
+  `biz.currency` (نوع `Business` في `business-access.ts`).
+- 🔴 `supplier/marketplace/bookings/[id]` و`orders/[id]` كانوا بيعرضوا «عمولة
+  مضمونة −X» و«صافيك» للمورد من زمان — اتشالوا (قاعدة ٤/٩).
+- ⚠️ `src/types/supabase.ts` **ملف يدوي مش متولّد** — أي عمود/جدول جديد يتضاف
+  فيه بإيدك (اتضاف: currency/country على ٦ جداول + `cities` + `countries` +
+  ويو `v_business`). وإلا PostgREST typing بيرمي `SelectQueryError` على الاستعلام كله.

@@ -12,6 +12,7 @@ import {
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { cityFor } from '@/lib/i18n/catName'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /bookings/[id]
 // Booking detail with InstaPay payment instructions for pending bookings.
@@ -387,7 +388,7 @@ t('bkd.wa_receipt', { ref: refCode, amount: totalFmt, title: booking.listing?.ti
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">{t('bdetail.amount_due')}</p>
                 <p className="text-3xl font-black tabular leading-none">
                   {totalFmt}
-                  <span className="text-sm font-medium text-white/80 ms-1">{t('common.egp')}</span>
+                  <span className="text-sm font-medium text-white/80 ms-1">{currencyLabel(booking.currency, lang)}</span>
                 </p>
               </div>
 

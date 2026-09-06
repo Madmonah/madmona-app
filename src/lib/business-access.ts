@@ -52,6 +52,9 @@ export type Business = {
   rating: number | null
   listings_count: number | null
   bookings_count: number | null
+  /** 🌍 (٦/٩/٢٠٢٦) دولة/عملة البيزنس من v_business — أي سعر في شاشات ERP بيتطبع بيها */
+  country: string | null
+  currency: string | null
   /** 🎯 الأنشطة الفعلية — كل واحد بيفتح تاب في نافذة الإدارة */
   tracks: BusinessTrack[]
 }

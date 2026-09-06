@@ -22,6 +22,7 @@ import {
   ExternalLink, Search, LinkIcon,
 } from 'lucide-react'
 
+import { currencyLabel } from '@/lib/currency'
 type Project = {
   project_id: string
   title: string
@@ -149,7 +150,7 @@ export default function MyProjectsPage() {
                   <p className="font-black text-sm text-gray-900">{p.title}</p>
                   <p className="text-[11px] text-gray-500 mt-0.5">
                     {[p.area_label, p.city].filter(Boolean).join(' · ') || '—'}
-                    {p.price_from ? ` · من ${Number(p.price_from).toLocaleString('ar-EG')} ج.م` : ''}
+                    {p.price_from ? ` · من ${Number(p.price_from).toLocaleString('ar-EG')} ${currencyLabel(biz?.currency)}` : ''}
                   </p>
                 </div>
                 {p.مربوط_بإعلان && (

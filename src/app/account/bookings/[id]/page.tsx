@@ -12,6 +12,7 @@ import {
 import InstaPayPaymentBox from '@/components/payment/InstaPayPaymentBox'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /account/bookings/[id]
 // Customer booking detail. Shows status, payment instructions, review form.
@@ -370,17 +371,17 @@ export default function CustomerBookingDetailPage() {
           <h2 className="text-sm font-bold text-gray-900 mb-2">{t('bdetail.amount_title')}</h2>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">{t('bdetail.base_price')}</span>
-            <span>{Number(booking.base_amount).toLocaleString(locale)} {t('common.egp')}</span>
+            <span>{Number(booking.base_amount).toLocaleString(locale)} {currencyLabel(booking.currency, lang)}</span>
           </div>
           {Number(booking.tax_amount) > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">{t('bdetail.tax')}</span>
-              <span>{Number(booking.tax_amount).toLocaleString(locale)} {t('common.egp')}</span>
+              <span>{Number(booking.tax_amount).toLocaleString(locale)} {currencyLabel(booking.currency, lang)}</span>
             </div>
           )}
           <div className="flex justify-between font-bold pt-2 border-t border-gray-100">
             <span>{t('booking.total')}</span>
-            <span className="text-[#059669]">{Number(booking.total_amount).toLocaleString(locale)} {t('common.egp')}</span>
+            <span className="text-[#059669]">{Number(booking.total_amount).toLocaleString(locale)} {currencyLabel(booking.currency, lang)}</span>
           </div>
         </div>
 
@@ -391,6 +392,7 @@ export default function CustomerBookingDetailPage() {
         {booking.status === 'pending_payment' && (
           <InstaPayPaymentBox
             amount={Number(booking.total_amount)}
+            currency={booking.currency}
             reference={booking.reference_code || booking.id.slice(0, 8)}
           />
         )}

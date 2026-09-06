@@ -22,6 +22,7 @@ import {
   AlertTriangle, Boxes, Tag,
 } from 'lucide-react'
 
+import { currencyLabel } from '@/lib/currency'
 type Item = {
   id: string
   name_ar: string
@@ -201,7 +202,7 @@ export default function ProductsPage() {
                   <button onClick={() => setForm(r)} className="min-w-0 flex-1 text-right">
                     <p className="text-xs font-black text-gray-900 truncate">{r.name_ar}</p>
                     <p className="text-[11px] text-gray-500 mt-0.5">
-                      {Number(r.selling_price_egp || 0).toLocaleString('ar-EG')} ج.م
+                      {Number(r.selling_price_egp || 0).toLocaleString('ar-EG')} {currencyLabel(biz?.currency)}
                       {r.qty_on_hand != null && (
                         <span className={isLow ? 'text-amber-700 font-bold' : ''}>
                           {' · '}متاح {Number(r.qty_on_hand).toLocaleString('ar-EG')} {r.unit}

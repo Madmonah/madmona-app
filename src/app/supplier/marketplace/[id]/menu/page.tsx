@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import ExcelImportModal from '@/components/supplier/ExcelImportModal'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /supplier/marketplace/[id]/menu
 // Restaurant menu management. Only available when listing.category.track === 'restaurants'.
@@ -21,6 +22,7 @@ import ExcelImportModal from '@/components/supplier/ExcelImportModal'
 type Stage = 'loading' | 'unauthenticated' | 'not-found' | 'not-restaurant' | 'no-permission' | 'ready'
 
 interface ListingMin {
+  currency?: string | null
   id: string
   title: string
   supplier_id: string
@@ -99,7 +101,7 @@ export default function SupplierMenuPage() {
       // Load listing (with track + supplier_id) to verify ownership + category type
       const { data: l } = await supabaseBrowser
         .from('listings')
-        .select('id, title, supplier_id, category:categories(track)')
+        .select('id, title, supplier_id, currency, category:categories(track)')
         .eq('id', listingId)
         .maybeSingle()
 
@@ -376,7 +378,7 @@ export default function SupplierMenuPage() {
                       </div>
                     ) : (
                       <p className="text-sm font-black text-[#059669] tabular mt-1">
-                        {it.price.toLocaleString('ar-EG')} <span className="text-[10px] font-medium text-gray-500">ج.م</span>
+                        {it.price.toLocaleString('ar-EG')} <span className="text-[10px] font-medium text-gray-500">{currencyLabel(it.currency)}</span>
                       </p>
                     )}
                   </div>
@@ -503,7 +505,7 @@ export default function SupplierMenuPage() {
               </div>
 
               {form.sizes.length === 0 && (
-                <Field label="السعر (ج.م) *" value={form.price} onChange={(v) => setForm({ ...form, price: v.replace(/[^\d.]/g, '') })} placeholder="85" type="tel" />
+                <Field label={`السعر (${currencyLabel(listing?.currency)}) *`} value={form.price} onChange={(v) => setForm({ ...form, price: v.replace(/[^\d.]/g, '') })} placeholder="85" type="tel" />
               )}
               <Field label="القسم (اختياري)" value={form.category} onChange={(v) => setForm({ ...form, category: v })} placeholder="الأطباق الرئيسية / الفطار / المشروبات" />
               <Field label="الوصف (اختياري)" value={form.description_ar} onChange={(v) => setForm({ ...form, description_ar: v })} placeholder="مكوّنات + ملاحظات تساعد العميل" multiline />

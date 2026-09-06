@@ -15,6 +15,7 @@ import { supabaseBrowser } from '@/lib/supabase-browser'
 import { resolveBusiness, type Business } from '@/lib/business-access'
 import { Loader2, Plus, Users, ArrowRight, X, Phone, MessageCircle, Search } from 'lucide-react'
 
+import { currencyLabel } from '@/lib/currency'
 type Cust = {
   id: string; full_name: string; phone: string | null; email: string | null
   city: string | null; source: string | null; status: string | null
@@ -136,7 +137,7 @@ export default function BizCrmPage() {
                     </p>
                     {Number(r.total_orders) > 0 && (
                       <p className="text-[11px] text-[#059669] font-bold mt-1">
-                        {r.total_orders} طلب · {Number(r.total_spent || 0).toLocaleString('ar-EG')} ج.م
+                        {r.total_orders} طلب · {Number(r.total_spent || 0).toLocaleString('ar-EG')} {currencyLabel(biz?.currency)}
                       </p>
                     )}
                   </div>

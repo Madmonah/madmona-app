@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /account/bookings
 // Customer bookings list.
@@ -201,7 +202,7 @@ export default function CustomerBookingsPage() {
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
                         <span className="text-sm">
                           <strong className="text-[#059669]">{Number(booking.total_amount).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-US')}</strong>
-                          <span className="text-xs text-gray-500"> {t('common.egp')}</span>
+                          <span className="text-xs text-gray-500"> {currencyLabel(booking.currency, lang)}</span>
                         </span>
                         <ChevronLeft className="w-4 h-4 text-gray-400" />
                       </div>

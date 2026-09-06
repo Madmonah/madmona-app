@@ -18,6 +18,7 @@ import { priceLabel, currencyLabel } from '@/lib/currency'
 
 type Biz = { id: string; business_name: string; business_model: string | null; listings_count: number | null }
 type Item = {
+  currency?: string | null
   kind: string; item_id: string; name: string; price: number | null
   unit: string | null; qty: number | null; on_marketplace: boolean; is_active: boolean
 }

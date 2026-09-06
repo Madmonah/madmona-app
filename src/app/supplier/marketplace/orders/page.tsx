@@ -7,7 +7,8 @@ import {
   Loader2, ArrowRight, AlertCircle, ShoppingBag, ChevronLeft, Phone, MapPin,
   Clock, CheckCircle, ChefHat, Package, Truck, Home, X, CreditCard,
 } from 'lucide-react'
-
+
+import { currencyLabel } from '@/lib/currency'
 // ============================================================================
 // /supplier/marketplace/orders
 // Orders dashboard for a supplier (restaurant + product verticals).
@@ -27,6 +28,7 @@ interface OrderSummary {
   order_type: 'food' | 'product'
   status: OrderStatus
   total_amount: number
+  currency?: string | null
   supplier_payout: number
   guest_name: string | null
   guest_phone: string | null
@@ -136,7 +138,7 @@ export default function SupplierOrdersPage() {
     const { data } = await supabaseBrowser
       .from('marketplace_orders')
       .select(`
-        id, reference_code, order_type, status, total_amount, supplier_payout,
+        id, reference_code, order_type, status, total_amount, currency, supplier_payout,
         guest_name, guest_phone, customer_id,
         delivery_address, delivery_district, delivery_phone,
         payment_method, created_at,
@@ -279,7 +281,7 @@ export default function SupplierOrdersPage() {
                         {o.items_count} صنف
                       </span>
                       <span className="font-black text-[#059669] tabular">
-                        {o.total_amount.toLocaleString('ar-EG')} ج.م
+                        {o.total_amount.toLocaleString('ar-EG')} {currencyLabel(o.currency)}
                       </span>
                     </div>
 

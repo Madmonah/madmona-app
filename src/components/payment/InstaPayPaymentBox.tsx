@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
+
+import { currencyLabel } from '@/lib/currency';
 // =====================================================================
 // InstaPayPaymentBox — bank-transfer payment instructions
 //
@@ -41,9 +42,12 @@ type PaymentConfig = {
 export default function InstaPayPaymentBox({
   amount,
   reference,
+  currency,
 }: {
   amount?: number;
   reference?: string;
+  /** 🌍 (٦/٩/٢٠٢٦) عملة الحجز — مش «ج.م» ثابتة */
+  currency?: string | null;
 }) {
   const [config, setConfig] = useState<PaymentConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,7 +109,7 @@ export default function InstaPayPaymentBox({
         <div className="mb-4 p-4 rounded-xl bg-gradient-to-l from-[#34D399]/8 to-[#34D399]/4 border border-[#059669]/20">
           <div className="text-xs text-gray-600 mb-1">المبلغ المطلوب</div>
           <div className="text-2xl font-bold text-[#059669]">
-            {amount.toLocaleString('ar-EG')} <span className="text-base">ج.م</span>
+            {amount.toLocaleString('ar-EG')} <span className="text-base">{currencyLabel(currency)}</span>
           </div>
           {reference && (
             <div className="mt-2 text-xs text-gray-500">
