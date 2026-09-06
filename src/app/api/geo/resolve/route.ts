@@ -8,7 +8,7 @@
 // lat/lng من اللينك النهائي. صفر مفاتيح، صفر API مدفوع: fetch + regex بس.
 // ============================================================================
 import { NextRequest, NextResponse } from 'next/server'
-import { parseLatLng } from '@/components/marketplace/LocationPicker'
+import { parseLatLng } from '@/lib/geo'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

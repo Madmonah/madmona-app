@@ -12,7 +12,7 @@ import {
 import {
   useCart, cartSubtotal, clearCart, buildOrderItemsPayload,
 } from '@/lib/cart'
-import { parseLatLng } from '@/components/marketplace/LocationPicker'
+import { parseLatLng } from '@/lib/geo'
 import { currencyLabel } from '@/lib/currency'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
 
