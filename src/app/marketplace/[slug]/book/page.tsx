@@ -87,7 +87,12 @@ const PERIOD_MS: Record<string, number> = {
 // A salon service / package / event is booked for ONE time slot, so the
 // customer shouldn't be asked for an end time. We auto-derive a 60-min slot
 // so the existing conflict-check + insert (which need start/end) keep working.
-const FLAT_PERIOD_TYPES = ['per_service', 'per_package', 'per_event']
+// 📅 (٦/٩/٢٠٢٦) محمد: «إزاي في حجز العيادات مكتوب من وإلى وهو المفروض يوم واحد؟»
+//    القايمة القديمة كانت بتحدد اللي «ميعاد واحد» بالاسم (٣ أنواع بس) — فأي نوع
+//    جديد (per_session بتاع العيادات · per_unit …) كان بيقع على «من/إلى» بتاعة
+//    الإيجار. العكس هو الصح: المدة (ساعة/يوم/أسبوع/شهر) هي الاستثناء، وأي حاجة
+//    تانية = يوم وساعة واحدة. والساعة كمان يوم واحد + عدد ساعات، مش من/إلى.
+const DURATION_PERIOD_TYPES = ['hourly', 'daily', 'weekly', 'monthly']
 function addMinutesLocal(localStr: string, mins: number): string {
   const d = new Date(localStr)
   if (isNaN(d.getTime())) return localStr
@@ -229,7 +234,9 @@ export default function BookingPage() {
   }, [slug])
 
   const selectedRule = pricingRules.find(r => r.id === selectedRuleId) || null
-  const isFlatRule = !!selectedRule && FLAT_PERIOD_TYPES.includes(selectedRule.period_type)
+  const isFlatRule = !!selectedRule && !DURATION_PERIOD_TYPES.includes(selectedRule.period_type)
+  const isHourlyRule = !!selectedRule && selectedRule.period_type === 'hourly'
+  const [hoursCount, setHoursCount] = useState(1)
 
   // Phase Z (May 18 2026): available add-ons + selected list + addons amount.
   const availableAddons: ListingAddon[] = Array.isArray(listing?.available_addons)
@@ -851,6 +858,31 @@ export default function BookingPage() {
                 required
               />
               <p className="text-[11px] text-gray-500 mt-2">{t('bk.slot_hint')}</p>
+            </div>
+          ) : isHourlyRule ? (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">{t('bk.day_time')}</label>
+                <input
+                  type="datetime-local"
+                  value={startAt}
+                  onChange={e => { const v = e.target.value; setStartAt(v); setEndAt(v ? addMinutesLocal(v, hoursCount * 60) : '') }}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">{t('bk.hours_count')}</label>
+                <select
+                  value={hoursCount}
+                  onChange={e => { const h = Number(e.target.value) || 1; setHoursCount(h); if (startAt) setEndAt(addMinutesLocal(startAt, h * 60)) }}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#059669]/30"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
