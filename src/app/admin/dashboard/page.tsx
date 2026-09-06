@@ -16,6 +16,7 @@ import { adminRpc } from '@/lib/adminRpc'
 import { ActionHub } from '@/components/admin/ActionHub'
 import { AgentDirectives } from '@/components/admin/AgentDirectives'
 import { QuickHub } from '@/components/admin/QuickHub'
+import { CampaignLinks } from '@/components/admin/CampaignLinks'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
 
@@ -88,6 +89,8 @@ const ALL_TOOLS: { title: string; items: { href: string; label: string }[] }[] =
     { href: '/admin/partnerships', label: 'الشراكات' },
   ] },
   { title: '📣 ماركتنج', items: [
+    { href: '/title', label: '🏷️ حملة: من صورتك هنقولك شغلك' },
+    { href: '/expo', label: '🏗️ صفحة عارضي المعرض' },
     { href: '/admin/marketing-hq', label: 'مقر الماركتنج' },
     { href: '/admin/ad-creatives', label: 'كرياتيف الإعلانات' },
     { href: '/admin/sponsorships', label: 'الرعايات' },
@@ -351,7 +354,8 @@ export default function AdminOverview() {
               <button className="icon-btn" onClick={load} title="تحديث">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={refreshing ? 'spin' : ''}><path d="M21 12a9 9 0 11-3-6.7L21 8" /><path d="M21 3v5h-5" /></svg>
               </button>
-              <Link className="icon-btn" href="/admin/overview" title="كل الأدوات">
+              {/* 🔗 (٦/٩/٢٠٢٦) كان بيودّي /admin/overview اللي بتحوّل تاني للداشبورد — دايرة مقفولة، محمد: «لينك الأوفرفيو مش متظبط». الأدوات كلها هنا تحت. */}
+              <Link className="icon-btn" href="#tools" title="كل الأدوات">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="5" cy="5" r="1.6" /><circle cx="12" cy="5" r="1.6" /><circle cx="19" cy="5" r="1.6" /><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /><circle cx="5" cy="19" r="1.6" /><circle cx="12" cy="19" r="1.6" /><circle cx="19" cy="19" r="1.6" /></svg>
               </Link>
             </div>
@@ -568,8 +572,11 @@ export default function AdminOverview() {
             </section>
 
     
+        {/* 📣 (٦/٩/٢٠٢٦) لينكات الحملات قدام الأدمن */}
+        <CampaignLinks />
+
         {/* 🗂️ (٢٨/٨) كل الأدوات — الأوفرفيو اتدمجت هنا */}
-        <section style={{ marginTop: 28 }}>
+        <section id="tools" style={{ marginTop: 28 }}>
           <h2 style={{ fontSize: 15, fontWeight: 900, color: '#14231E', marginBottom: 4 }}>كل الأدوات</h2>
           <p style={{ fontSize: 12, color: '#8A9690', marginBottom: 14 }}>
             كل شاشات الأدمن مقسّمة زي القايمة الجانبية بالظبط.
