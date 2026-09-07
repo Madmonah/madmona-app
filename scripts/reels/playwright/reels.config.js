@@ -277,6 +277,46 @@ module.exports = [
     ],
   },
 
+
+  {
+    // 🎬 (٧/٩ مساءً) محمد: «فين عنصر المفاجأة؟ إنت بتشرح إحنا بنعمل إيه» +
+    //    «صاحب بيزنس دي عايزها صاحب ورشة نجارة، صاحب مكتب تأجير سيارات».
+    //    فالترتيب: الخطاف بتاعه أول ما يفتح → المشاهير واحد واحد من غير أي شرح →
+    //    المفاجأة في الآخر: «دي مش نكت — دي نتايج الموديل بجد».
+    // ⚠️ كل النتايج **مخرجات حقيقية** من /api/title-scan اللايف (كوميت 93ca551 —
+    //    البرومبت بقى يطلّع «صاحب + النشاط»: ماسك → صاحب مصنع · ساويرس → صاحب شركة)
+    //    اتشغّلت ٧/٩ مساءً. أي تغيير يتجرّب تاني — ممنوع يتكتب من الدماغ.
+    slug: 'title-celebs-v2',
+    title: 'من صورتك بقى؟ هنقولك تايتلك',
+    caption: 'من صورتك بقى؟ يلا بينا — هنقولك تايتلك 👇\n\n🏛️ ترمب ← مسؤول تسويق · فرد\n⚽ ميسي ← لاعب كرة قدم · جيم\n🎙️ بيل جيتس ← مذيع · مكتب\n🏭 إيلون ماسك ← صاحب مصنع\n🏢 ساويرس ← صاحب شركة · مكتب\n🎭 عادل إمام ← ممثل · فعاليات ومناسبات\n🩺 مجدي يعقوب ← مذيع · فعاليات\n🔨 الحدّاد ← حدّاد · ورشة\n\nدي مش نكت. دي نتايج الموديل بجد 😅\n\nأي شغل مش عيب — العيب إن مالكش شغل.\n\nجرّب إنت: madmonacairo.com/title\n\n#مضمونة #من_صورتك_هنقولك_شغلك #تايتلك #شغلك_ايه #بيزنس #ريادة_أعمال #مصر #fyp',
+    scenes: [
+      { type: 'big', len: 3.6, reveal: 1.2, text: 'من صورتك بقى؟', em: 'يلا بينا — هنقولك تايتلك', note: '👇' },
+
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'ترمب', bg: 'celeb-trump.jpg',
+        em: 'مسؤول تسويق · فرد' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'ميسي', bg: 'celeb-messi.jpg',
+        em: 'لاعب كرة قدم · جيم' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'بيل جيتس', bg: 'celeb-gates.jpg',
+        em: 'مذيع · مكتب' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'إيلون ماسك', bg: 'celeb-musk.jpg',
+        em: 'صاحب مصنع' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'ساويرس', bg: 'celeb-sawiris.jpg',
+        em: 'صاحب شركة · مكتب' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'عادل إمام', bg: 'celeb-adelemam.jpg',
+        em: 'ممثل · فعاليات ومناسبات' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'مجدي يعقوب', bg: 'celeb-yacoub.jpg',
+        em: 'مذيع · فعاليات' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'حدّاد', bg: 'celeb-smith.jpg',
+        em: 'حدّاد · ورشة' },
+
+      { type: 'big', len: 4.8, reveal: 1.8, text: 'دي مش نكت.', em: 'دي نتايج الموديل بجد',
+        note: '😅' },
+      { type: 'big', len: 4.2, reveal: 1.6, text: 'أي شغل مش عيب.', em: 'العيب إن مالكش شغل' },
+      { type: 'big', len: 3.8, reveal: 1.3, text: 'جرّب إنت.', em: 'ارفع صورة من شغلك',
+        note: 'madmonacairo.com/title' },
+      { type: 'end', len: 3.0, line: 'إيه تايتلك؟', sub: 'madmonacairo.com/title' },
+    ],
+  },
   {
     // 🎬 (٥/٩) محمد: «عايز الموضوع ترفيهي يوصل رسالة» + «ابدأ بصورة لترمب»
     //    + المثل: «شغل الشخص بيبان عليه».
@@ -295,16 +335,16 @@ module.exports = [
         em: 'النتايج حقيقية', note: 'دي مخرجات الموديل نفسه 😅' },
 
       { type: 'big', len: 5.2, reveal: 2.4, text: 'ترمب', bg: 'celeb-trump.jpg',
-        em: 'فرد', note: '«وش بس — مفيش نشاط ظاهر. ابعت صورة من مكان شغلك»' },
+        em: 'فرد' },
 
       { type: 'big', len: 4.8, reveal: 2.1, text: 'محمد صلاح', bg: 'celeb-salah.jpg',
-        em: 'جيم', note: 'اشتراكات · حصص · حضور 💪' },
+        em: 'جيم' },
 
       { type: 'big', len: 5.0, reveal: 2.2, text: 'حدّاد', bg: 'celeb-smith.jpg',
-        em: 'ورشة', note: '«ماسك شاكوش وواقف قدام سندان»' },
+        em: 'ورشة' },
 
       { type: 'big', len: 5.0, reveal: 2.2, text: 'حد بيطبخ في مطبخ بسيط', bg: 'celeb-chef.jpg',
-        em: 'شيف منزلي', note: '«بتحضّر أكل في بيئة منزلية بسيطة»' },
+        em: 'شيف منزلي' },
 
       { type: 'big', len: 4.4, reveal: 1.8, text: 'الحدّاد', em: 'كسب الرئيس',
         note: 'الموديل مابيعرفش مشاهير — بيعرف شغل.' },
@@ -334,26 +374,26 @@ module.exports = [
       { type: 'big', len: 4.4, reveal: 1.8, text: 'رفعنا صور مشاهير على', em: 'من صورتك هنقولك شغلك',
         note: 'النتايج حقيقية — دي مخرجات الموديل نفسه 😅' },
 
-      { type: 'big', len: 4.6, reveal: 2.2, text: 'ترمب', bg: 'celeb-trump.jpg',
-        em: 'صاحب بيزنس · فرد', note: '«وش وبدلة — مفيش أدوات شغل ظاهرة»' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'ترمب', bg: 'celeb-trump.jpg',
+        em: 'صاحب بيزنس · فرد' },
 
-      { type: 'big', len: 4.6, reveal: 2.2, text: 'ميسي', bg: 'celeb-messi.jpg',
-        em: 'لاعب كرة قدم · جيم', note: 'اشتراكات · حصص · حضور ⚽' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'ميسي', bg: 'celeb-messi.jpg',
+        em: 'لاعب كرة قدم · جيم' },
 
-      { type: 'big', len: 4.6, reveal: 2.2, text: 'عادل إمام', bg: 'celeb-adelemam.jpg',
-        em: 'موديل دعاية', note: '«بدلة وقبعة في عرض فني» — الزعيم طلع موديل 🎩' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'عادل إمام', bg: 'celeb-adelemam.jpg',
+        em: 'موديل دعاية' },
 
       { type: 'big', len: 4.8, reveal: 2.2, text: 'مجدي يعقوب', bg: 'celeb-yacoub.jpg',
-        em: 'مذيع · فعاليات', note: 'الموديل شاف حفل التكريم… مش غرفة العمليات 🩺' },
+        em: 'مذيع · فعاليات' },
 
-      { type: 'big', len: 4.6, reveal: 2.2, text: 'محمد منير', bg: 'celeb-mounir.jpg',
-        em: 'مذيع', note: '«ماسك مايك في حدث عام» — الكينج بقى مذيع 🎤' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'محمد منير', bg: 'celeb-mounir.jpg',
+        em: 'مذيع' },
 
-      { type: 'big', len: 4.6, reveal: 2.2, text: 'عمرو دياب', bg: 'celeb-amrdiab.jpg',
-        em: 'صاحب بيزنس · مكتب', note: '٧ جوايز عالمية اتحسبت… أثاث مكتب 🏆' },
+      { type: 'big', len: 3.4, reveal: 1.6, text: 'عمرو دياب', bg: 'celeb-amrdiab.jpg',
+        em: 'صاحب بيزنس · مكتب' },
 
       { type: 'big', len: 4.8, reveal: 2.2, text: 'حدّاد', bg: 'celeb-smith.jpg',
-        em: 'حدّاد · ورشة', note: 'الوحيد اللي طلع بالظبط. الشاكوش ماكدبش 🔨' },
+        em: 'حدّاد · ورشة' },
 
       { type: 'big', len: 4.2, reveal: 1.7, text: 'الموديل مابيعرفش مشاهير.', em: 'بيعرف شغل' },
 
