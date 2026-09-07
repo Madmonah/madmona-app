@@ -44,18 +44,39 @@ type Lead = { id: string; campaign: string; name: string | null; phone: string; 
 
 const STATUS_AR: Record<string, string> = { new: '🆕 جديد', contacted: '📞 اتكلمنا', converted: '✅ اشترك', lost: '✖️ مش مهتم' }
 
+// 📣 (٧/٩/٢٠٢٦) محمد: «عايز أتابع الحملات» — سجل المنشورات من /api/admin/campaign-posts
+//    (جدول campaign_posts). الأرقام بتتكتب يدوي من هنا: المنصات مابتديناش API للأورجانيك،
+//    وممنوع نخترع رقم — الخانة الفاضية معناها «لسه ماتسجّلش».
+type Post = { id: string; campaign: string; platform: string; url: string | null; title: string | null; reel_slug: string | null
+  published_at: string; views: number | null; likes: number | null; comments: number | null; shares: number | null; metrics_at: string | null; notes: string | null }
+const PLATFORM_AR: Record<string, string> = { instagram: 'IG', tiktok: 'TikTok', facebook: 'FB', youtube: 'YouTube', linkedin: 'LinkedIn', whatsapp: 'WA', other: 'تاني' }
+
 export function CampaignLinks() {
   const [copied, setCopied] = useState<string | null>(null)
   const [counts, setCounts] = useState<Counts>({})
   const [recent, setRecent] = useState<Lead[]>([])
   const [showLeads, setShowLeads] = useState(false)
+  const [posts, setPosts] = useState<Post[]>([])
+  const [showPosts, setShowPosts] = useState(false)
+  const [draft, setDraft] = useState<Record<string, Record<string, string>>>({})
 
   const load = useCallback(async () => {
     try {
       const r = await fetch('/api/admin/campaign-leads', { cache: 'no-store' }).then((x) => x.json())
       if (r?.ok) { setCounts(r.counts || {}); setRecent(r.recent || []) }
     } catch { /* الداشبورد بيشتغل من غيرها */ }
+    try {
+      const p = await fetch('/api/admin/campaign-posts', { cache: 'no-store' }).then((x) => x.json())
+      if (p?.ok) setPosts(p.posts || [])
+    } catch { /* نفس الكلام */ }
   }, [])
+
+  async function saveMetrics(id: string) {
+    const d = draft[id] || {}
+    await fetch('/api/admin/campaign-posts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, ...d }) })
+    setDraft((x) => { const n = { ...x }; delete n[id]; return n })
+    load()
+  }
   useEffect(() => { load(); const t = setInterval(load, 60_000); return () => clearInterval(t) }, [load])
 
   async function copy(url: string) {
@@ -72,6 +93,11 @@ export function CampaignLinks() {
     <section id="campaigns" style={{ marginTop: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
         <h2 style={{ fontSize: 15, fontWeight: 900, color: '#14231E', margin: 0 }}>📣 الحملات وليداتها</h2>
+        <button type="button" onClick={() => setShowPosts((v) => !v)}
+          style={{ border: '1px solid rgba(0,0,0,.08)', borderRadius: 999, padding: '5px 12px', fontSize: 12, fontWeight: 800, cursor: 'pointer',
+            background: '#fff', color: '#14231E', marginInlineStart: 'auto' }}>
+          🎬 المنشورات ({posts.length}) {showPosts ? '▴' : '▾'}
+        </button>
         <button type="button" onClick={() => setShowLeads((v) => !v)}
           style={{ border: 'none', borderRadius: 999, padding: '5px 12px', fontSize: 12, fontWeight: 800, cursor: 'pointer',
             background: totalNew ? '#B4552F' : '#F3F6F4', color: totalNew ? '#fff' : '#14231E' }}>
@@ -127,6 +153,44 @@ export function CampaignLinks() {
           )
         })}
       </div>
+
+      {showPosts && (
+        <div style={{ marginTop: 12, background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 14, padding: '10px 12px' }}>
+          <p style={{ fontSize: 11.5, color: '#8A9690', margin: '0 0 6px' }}>
+            كل ريل اتنشر ومكانه. الأرقام اكتبها بإيدك من المنصة (مشاهدات · لايك · تعليق) واضغط حفظ — الخانة الفاضية = لسه ماتسجّلتش.
+          </p>
+          {posts.length === 0 ? (
+            <p style={{ fontSize: 12, color: '#8A9690', margin: 0 }}>لسه مفيش منشورات مسجّلة.</p>
+          ) : posts.map((p) => {
+            const d = draft[p.id] || {}
+            const val = (k: 'views' | 'likes' | 'comments') => (k in d ? d[k] : p[k] == null ? '' : String(p[k]))
+            const dirty = Object.keys(d).length > 0
+            return (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderTop: '1px solid rgba(0,0,0,.05)', fontSize: 12, flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 800, minWidth: 64 }}>{CAMPAIGNS.find((c) => c.key === p.campaign)?.emoji ?? '📣'} {p.campaign}</span>
+                <span style={{ background: '#F3F6F4', borderRadius: 8, padding: '3px 8px', fontWeight: 800, minWidth: 48, textAlign: 'center' }}>{PLATFORM_AR[p.platform] ?? p.platform}</span>
+                <span style={{ flex: 1, minWidth: 160 }}>
+                  <b>{p.title || p.reel_slug || '—'}</b>
+                  <span style={{ display: 'block', color: '#5A6660' }}>{new Date(p.published_at).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                </span>
+                {(['views', 'likes', 'comments'] as const).map((k) => (
+                  <label key={k} style={{ display: 'flex', flexDirection: 'column', fontSize: 10, color: '#8A9690', gap: 2 }}>
+                    {k === 'views' ? 'مشاهدات' : k === 'likes' ? 'لايك' : 'تعليق'}
+                    <input inputMode="numeric" value={val(k)} onChange={(e) => setDraft((x) => ({ ...x, [p.id]: { ...(x[p.id] || {}), [k]: e.target.value } }))}
+                      style={{ width: 64, fontSize: 12, fontWeight: 800, borderRadius: 8, border: '1px solid rgba(0,0,0,.1)', padding: '4px 6px', textAlign: 'center' }} />
+                  </label>
+                ))}
+                <button type="button" disabled={!dirty} onClick={() => saveMetrics(p.id)}
+                  style={{ border: 'none', borderRadius: 9, padding: '6px 10px', fontSize: 11, fontWeight: 800, cursor: dirty ? 'pointer' : 'default',
+                    background: dirty ? '#04352A' : '#F3F6F4', color: dirty ? '#fff' : '#8A9690' }}>حفظ</button>
+                {p.url ? (
+                  <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, fontWeight: 800, color: '#1F6F5F', textDecoration: 'none' }}>افتح ↗</a>
+                ) : <span style={{ fontSize: 11, color: '#B4552F', fontWeight: 800 }}>الرابط لسه</span>}
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {showLeads && (
         <div style={{ marginTop: 12, background: '#fff', border: '1px solid rgba(0,0,0,.07)', borderRadius: 14, padding: '10px 12px' }}>
