@@ -145,6 +145,10 @@ export default function ProOfferPage() {
         </div>
         <p className="text-xs text-gray-500 mb-4">ده الاشتراك الوحيد: سيستم يدير بيزنسك من موبايلك — {seatsLine}.</p>
         <AppGrid items={MANAGEMENT} cols="sm:grid-cols-5" />
+        {/* 🧭 (٧/٩) محمد: «عايز أعرف الناس نظام الـERP والـCRM يقدر يعمل إيه» → صفحة /system */}
+        <a href="/system" className="mt-3 block rounded-xl border border-[#1F6F5F] px-4 py-3 text-center text-sm font-extrabold text-[#1F6F5F]">
+          السيستم بيعمل إيه بالظبط وبيفيدك إزاي؟ اقرا الشرح الكامل ←
+        </a>
         <p className="text-[10px] text-gray-400 mt-2">الأسماء للتشبيه بالوظيفة — مضمونة مش تابعة لأي منهم.</p>
       </section>
 
