@@ -171,10 +171,42 @@ async function main() {
   // هو Analytics). يعني نشر بالغلط = الفيديو محروق ولازم يتمسح ويترفع
   // تاني. الدرافت بيخلّي الحالة الافتراضية آمنة.
   let saved = false
+  // 🎵 (٧/٩/٢٠٢٦) استكشاف لوحة الأصوات من الويب (TT_SOUND=1): نضغط Sounds ونصوّر ونطبع النص — عشان نعرف نختار صوت من غير الموبايل
+  if (process.env.TT_SOUND) {
+    try {
+      const sb = page.locator('text=Sounds').first()
+      await sb.click({ timeout: 10000 })
+      await page.waitForTimeout(4000)
+      await page.screenshot({ path: path.join(__dirname, '..', 'diag', 'tt-sound', 'panel.png') }).catch(() => {})
+      const t = (await page.locator('body').innerText().catch(() => '')).replace(/s+/g, ' ')
+      const i = t.indexOf('Sounds')
+      console.log('[tt] sounds panel text:', t.slice(Math.max(0, i - 50), i + 700))
+      const html = await page.evaluate(() => { const els = [...document.querySelectorAll('button, div[role="button"]')].filter(e => /use|add|select/i.test(e.textContent || '') && (e.textContent || '').length < 30); return els.slice(0, 12).map(e => e.outerHTML.slice(0, 160)) })
+      console.log('[tt] candidate buttons:', JSON.stringify(html))
+    } catch (e) { console.log('[tt] sounds probe failed:', e.message.slice(0, 120)) }
+  }
+  // 🔊 (٧/٩/٢٠٢٦) TT_POST=1: الفيديو فيه صوت مدمج (فويس أوفر) → مفيش داعي لاختيار ساوند → Post مباشرة
+  //    بعد ما فحص حقوق الموسيقى يخلص. محمد: «اتصرف — تولى كل حاجة».
+  if (process.env.TT_POST) {
+    for (let i = 0; i < 36; i++) { const t = await page.locator('body').innerText().catch(() => ''); if ((t.match(/No issues found/g) || []).length >= 1 && !/Checking in progress/.test(t)) break; await page.waitForTimeout(5000) }
+    const postBtn = page.locator('button:text-is("Post")').first()
+    await postBtn.click({ timeout: 15000 })
+    console.log('[tt] 🚀 Post clicked')
+    await page.waitForTimeout(4000)
+    const confirm = page.locator('button:has-text("Post now"), button:has-text("Post anyway")').first()
+    if (await confirm.count()) { await confirm.click().catch(() => {}); console.log('[tt] confirm clicked') }
+    for (let i = 0; i < 24; i++) { await page.waitForTimeout(5000); const t = (await page.locator('body').innerText().catch(() => '')).replace(/s+/g, ' '); if (/uploaded|posted|Your video|View post|Manage your posts|Manage posts/i.test(t)) { console.log('[tt] ✅', t.slice(0, 160)); break } }
+    await page.screenshot({ path: path.join(__dirname, '..', 'diag', 'tt-posted.png') }).catch(() => {})
+    await browser.close(); process.exit(0)
+  }
   const draftBtn = page.locator('button:has-text("Save draft"), div[role="button"]:has-text("Save draft")').first()
   if (await draftBtn.count()) {
     console.log('[tt] saving draft…')
     await draftBtn.click({ timeout: 15000 }).catch(e => console.log('[tt] ⚠️ الحفظ فشل:', e.message))
+    // 🐞 (٧/٩/٢٠٢٦) حوار «Save draft? — copyright check still running» كان بيبلع الحفظ بصمت: الدرافت ماكانش بيتحفظ خالص
+    await page.waitForTimeout(1500)
+    const anyway = page.locator('button:has-text("Save anyway"), div[role="button"]:has-text("Save anyway")').first()
+    if (await anyway.count()) { await anyway.click({ timeout: 10000 }).catch(() => {}); console.log('[tt] Save anyway ✓'); await page.waitForTimeout(3000) }
     await page.waitForTimeout(5000)
     saved = true
   } else {
