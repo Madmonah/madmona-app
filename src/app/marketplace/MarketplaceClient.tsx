@@ -363,6 +363,17 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
   // 🔢 العدد الإجمالي الحقيقي لكل الإعلانات المطابقة (مش المُحمّل) — عشان العدّاد
   //    فوق يقول الرقم الصح (272 مثلًا) مش 60 (عدد أول دفعة).
   const [totalCount, setTotalCount] = useState<number | null>(null)
+  // 📱 (٧/٩/٢٠٢٦ — مراجعة حية على الموبايل) محمد: «الفلاتر والتصنيف مش بيظهر صح في
+  //    نسخة الموبايل». اللي طلع: (١) شريط التابات بيتسكرول والتاب النشط (مطاعم) بره
+  //    الشاشة فبيبان كأنه مش مختار، (٢) رقم التاب كان عدد الأقسام مش الإعلانات
+  //    («بيع 20» جنب «323 نتيجة»)، (٣) فلتر البائع نصه مستخبي في السكرول،
+  //    (٤) المطاعم ١٣ كارت نصهم «قريبًا» بيزقّوا النتايج تحت الشاشة.
+  const [showLocked, setShowLocked] = useState(false)
+  useEffect(() => {
+    try {
+      document.querySelector('[data-track-strip] [data-active="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
+    } catch { /* SSR / متصفح قديم */ }
+  }, [activeTrack])
   const loadSeqRef = useRef(0)
   // 👁️ مرساة التحميل التلقائي عند التمرير — بدل ما المستخدم يكبس «حمّل المزيد» ٤ مرات
   //    عشان يشوف كل الإعلانات (٢٧٢+). أول ما توصل لآخر القايمة نجيب الباقي لوحدنا.
@@ -877,11 +888,13 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
           </div>
 
           {/* Track tabs — الكل + بيع · إيجار · خدمات · مطاعم (colour per vertical, matching the hero) */}
-          <div className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4">
+          <div data-track-strip className="flex gap-2 mt-4 overflow-x-auto pb-1 -mx-4 px-4 scroll-smooth">
             {(TRACK_TAB_ORDER as readonly string[] as TrackTab[]).map(tab => {
-              const count = tab === 'all'
-                ? allRootCategories.length
-                : allRootCategories.filter(c => c.track === tab || (tab === 'rentals' && c.track === 'hybrid') || (tab === 'products' && c.track === 'sales')).length
+              const inTab = (c: Category) => tab === 'all' || c.track === tab || (tab === 'rentals' && c.track === 'hybrid') || (tab === 'products' && c.track === 'sales')
+              // 📱 (٧/٩) الرقم = إعلانات منشورة (مجموع عدّادات تصنيفات التراك) — كان عدد الأقسام
+              const count = categoryCounts
+                ? allCategories.filter(inTab).reduce((a, c) => a + (categoryCounts[c.id] || 0), 0)
+                : allRootCategories.filter(inTab).length
               const isActive = activeTrack === tab || (tab === 'rentals' && activeTrack === 'hybrid') || (tab === 'products' && activeTrack === 'sales')
               const col = TRACK_ACCENT[tab]
               return (
@@ -926,6 +939,7 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
                     color: isActive ? '#fff' : '#374151',
                     boxShadow: isActive ? `0 8px 20px -6px ${col.accent}` : undefined,
                   }}
+                  data-active={isActive ? 'true' : 'false'}
                   className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold border transition-all shadow-soft flex items-center gap-1.5 hover:-translate-y-0.5"
                 >
                   <span>{TRACK_EMOJI[tab]}</span>
@@ -1012,7 +1026,7 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
             //    أعلى يتعرض، فالرووتس نفسها بتبقى الكروت — نفس شكل بيع
             //    وإيجار بالظبط، والضغط بيختار التصنيف على طول.
             <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2">
-              {sortByData(rootCategories).map(cat => {
+              {sortByData(rootCategories).filter(cat => showLocked || categoryHasData(cat)).map(cat => {
                 const n = catCountDeep(cat)
                 const locked = !categoryHasData(cat)
                 return (
@@ -1033,6 +1047,14 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
                   </button>
                 )
               })}
+              {!showLocked && rootCategories.some(cat => !categoryHasData(cat)) && (
+                <button
+                  onClick={() => setShowLocked(true)}
+                  className="col-span-2 md:col-span-3 text-[11px] font-bold text-gray-500 bg-gray-50 border border-dashed border-gray-200 rounded-2xl py-2"
+                >
+                  + {rootCategories.filter(cat => !categoryHasData(cat)).length} {comingSoonLabel}
+                </button>
+              )}
             </div>
           ) : (
             <div className="flex gap-2 mt-2 overflow-x-auto pb-1 -mx-4 px-4">
@@ -1185,7 +1207,7 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
             }
             const opts = [{ key: 'all', label: t('mk.f_all'), count: 0 }, ...sellerOpts]
             return (
-              <div className="flex gap-2 mt-3 overflow-x-auto pb-1 -mx-4 px-4">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {opts.map(o => {
                   const isActive = sellerClass === o.key
                   const label = o.key === 'all' ? o.label : ((o as SellerFilterOpt).label_i18n?.[lang] || o.label)
