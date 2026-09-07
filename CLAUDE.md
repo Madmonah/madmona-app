@@ -1707,3 +1707,15 @@ business-lounge · real-estate…). **الماركت والهوم عندهم ه�
   ماتولّدش. الملف في Audio Archive (أحدث `audio_file?S3=…` أول واحد).
 - ريل التايتل v2 (`title-celebs-v2`، ٤٧ ث): اتنشر ٧/٩ مساءً على إنستجرام (script ✅)
   وفيسبوك (من كروم محمد) وتيك توك.
+
+## 📣 باقي المنصات — اللي اتنشر عليه ٧/٩ مساءً من كروم محمد (محمد: «انشر على باقي المنصات»)
+- **يوتيوب ✅** قناة Madmona (`studio.youtube.com/channel/UCQJFRUo9XMkSAthYw_I-c8g`): `/upload`
+  → input الملف المخفي → العنوان (ctrl+a وبعدين اكتب) → الوصف → «No, it's not made for
+  kids» (إجباري) → Next ×٣ → Public → **استنى «Checks complete. No issues found»** (٢–٣
+  دقايق، وإلا حوار «still checking») → Publish. الشورت: `youtube.com/shorts/dotYm_EmhFw`.
+- **ثريدز ✅** `threads.com` مسجّل بـ@madmona.cairo: New thread → input الملف (بيقبل mp4)
+  → النص → Post. `threads.com/@madmona.cairo/post/Dc_3l_HjGc8`.
+- **لينكدإن ⛔** حساب Madmona Cairo موجود بس الجلسة مقفولة (صفحة باسورد) — ماينفعش أدخل
+  باسورد؛ محمد يسجّل مرة وبعدها أنشر. **إكس ⛔** `x.com/home` بيحوّل لـpremium_sign_up ومفيش
+  زرار تغريد — الحساب مش مسجّل فعليًا.
+- سجل `campaign_posts` بقى فيه `threads` و`x` في قيد المنصات.

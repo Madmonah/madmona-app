@@ -14,7 +14,7 @@ import { supabaseUntyped as admin } from '@/lib/supabase'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const PLATFORMS = ['instagram', 'tiktok', 'facebook', 'youtube', 'linkedin', 'whatsapp', 'other']
+const PLATFORMS = ['instagram', 'tiktok', 'facebook', 'youtube', 'threads', 'linkedin', 'x', 'whatsapp', 'other']
 
 type Post = { id: string; campaign: string; platform: string; url: string | null; title: string | null; reel_slug: string | null
   published_at: string; views: number | null; likes: number | null; comments: number | null; shares: number | null; metrics_at: string | null; notes: string | null }

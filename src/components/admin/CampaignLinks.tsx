@@ -49,7 +49,7 @@ const STATUS_AR: Record<string, string> = { new: '🆕 جديد', contacted: '�
 //    وممنوع نخترع رقم — الخانة الفاضية معناها «لسه ماتسجّلش».
 type Post = { id: string; campaign: string; platform: string; url: string | null; title: string | null; reel_slug: string | null
   published_at: string; views: number | null; likes: number | null; comments: number | null; shares: number | null; metrics_at: string | null; notes: string | null }
-const PLATFORM_AR: Record<string, string> = { instagram: 'IG', tiktok: 'TikTok', facebook: 'FB', youtube: 'YouTube', linkedin: 'LinkedIn', whatsapp: 'WA', other: 'تاني' }
+const PLATFORM_AR: Record<string, string> = { instagram: 'IG', tiktok: 'TikTok', facebook: 'FB', youtube: 'YouTube', threads: 'Threads', linkedin: 'LinkedIn', x: 'X', whatsapp: 'WA', other: 'تاني' }
 
 export function CampaignLinks() {
   const [copied, setCopied] = useState<string | null>(null)
