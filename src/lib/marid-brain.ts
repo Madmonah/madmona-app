@@ -538,6 +538,17 @@ ${Object.entries(MADMONA_LINKS)
         if (!existing.length) toolInput = { ...toolInput, image_urls: [opts.savedMediaUrl] }
       }
 
+      // ☎️ (٧/٩/٢٠٢٦) محمد: «مينفعش يسأل حد على رقم — الراجل مكلّمه على الواتساب فأكيد
+      //    ده رقمه». أي أداة فيها خانة phone/supplier_phone فاضية أو placeholder → رقم
+      //    المتكلّم نفسه، عشان الموديل ماتبقاش عنده حجة يسأل.
+      for (const k of ['phone', 'supplier_phone'] as const) {
+        const v = toolInput[k]
+        const digits = typeof v === 'string' ? v.replace(/\D/g, '') : ''
+        if (k in (MARID_TOOLS.find((t) => t.name === tu.name)?.input_schema?.properties ?? {}) && digits.length < 8 && opts.senderPhone) {
+          toolInput = { ...toolInput, [k]: opts.senderPhone }
+        }
+      }
+
       const out = isAdminTool
         ? await runAdminTool(tu.name, toolInput)
         : await runMaridTool(tu.name, toolInput)
