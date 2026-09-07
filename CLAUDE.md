@@ -1668,26 +1668,20 @@ business-lounge · real-estate…). **الماركت والهوم عندهم ه�
   لينك «Posts» في السايدبار ويطلّع «exit?». `TT_POST=1` بينشر مباشرة (للفيديو اللي
   فيه صوت مدمج). محرر الويب فيه لوحة Sounds بتاب «Unlimited» (المكتبة التجارية)
   بس الصفحة بتقع «Something went wrong» بعد أي تدخل تاني — ماتعتمدش عليها.
-- **فيسبوك ⛔ الويب مش بيوزّع (٧/٩ مساءً — محمد: «مش شايف بوستات في الفيسبوك»):** الريل
-  اللي «اتنشر» من كروم محمد بيفتح لصاحب الحساب بس (Shared with Public · View insights)،
-  لكن الزائر من غير تسجيل دخول بيشوف «This page isn't available» (ريل قديم من نفس
-  البروفايل بيظهر عادي للزائر — دي المقارنة اللي حسمتها)، ومش بيظهر في تاب Reels ولا
-  Videos بعد ساعتين. `publishing_flow: FALLBACK` + توست «saved as a draft» = **مش نشر
-  فعلي**. **القرار: ريلز فيسبوك تتنزل من تطبيق الموبايل** (محمد/سامية) — الأداة بتجهّز
-  الملف والكابشن بس. الكلام اللي تحت عن المسار مرجع لو اتحلّت:
-  (إضافة Claude in Chrome — مش كروم
-  السوشيال، الجلسة هناك مش مسجّلة). المسار: `/reels/create/` → `file_upload` على
-  input الفيديو → Next → Next → «Describe your reel» → Post. ريل البراند:
-  `facebook.com/reel/1349077553877303`.
-  🐞 **التاب لازم يكون مرئي** (`document.visibilityState === 'visible'`) وإلا كروم
-  بيأجّل تحميل الفيديو والرفع مابيبدأش — الرفع فضل «Uploading video» للأبد مرتين
-  وتطبيق Claude كان مغطّي نافذة كروم. الحل: ثبّت نافذة كروم فوق (`SetWindowPos
-  HWND_TOPMOST` من PowerShell) طول الرفع وفكّها بعدها.
-  🐞 توست «Your post was saved as a draft» بعد Post **مش فشل**: الميوتيشن
-  `ComposerStoryCreateMutation` بترجّع `post_id` و`publishing_flow: FALLBACK`
-  (الفيديو لسه بيتعالج). التأكيد = افتح `facebook.com/<post_id>` — بيحوّل للريل.
-  شبكة الأعمدة في تاب Reels بتتأخر دقايق قبل ما تعرضه.
-  `posters/post-facebook-reel.cjs` (Playwright على كروم السوشيال) لسه مش مجرّب مسجّل.
+- **فيسبوك ✅ الطريق اللي بيوزّع (٧/٩ مساءً — محمد: «انشر على صفحتي الشخصية»):**
+  من كروم محمد (إضافة Claude in Chrome): الهوم → input الملف اللي جنب «Photo/video»
+  في كومبوزر «Create a post» → `file_upload` → اكتب الكابشن في «What's on your mind»
+  → Next → Next (بيحوّل لـ«Edit reel» / «Reel settings») → Post. الميوتيشن بترجّع
+  `publishing_flow: ASYNC_NOTIF` والريل بيبقى **ظاهر للزائر من غير تسجيل دخول خلال
+  دقيقة**. البراند: `facebook.com/reel/2014437112571368` · التايتل: `reel/1642548764244953`.
+  ⛔ **شاشة `/reels/create/` ماتستخدمهاش:** بتدّي `FALLBACK` + توست «saved as a draft»،
+  الريل بيفتح لصاحبه بس (Shared with Public · View insights) والزائر بيشوف «This page
+  isn't available» ومش بيظهر في تاب Reels — اتأكدت بمقارنة ريل قديم من نفس البروفايل.
+  🧪 **التحقق الوحيد المعتمد:** افتح رابط البوست من كروم السوشيال (مش مسجّل في فيسبوك)
+  — `caption visible: true` = موزّع. «Shared with Public» عند صاحب الحساب مش دليل.
+  🐞 التاب لازم يكون **مرئي** (`visibilityState === 'visible'`) وإلا الرفع مابيبدأش:
+  ثبّت نافذة كروم فوق (`SetWindowPos HWND_TOPMOST`) + فعّل التاب من شريط التابات
+  (Windows-MCP Click) لو محمد فاتح تاب تاني، وفكّها بعد النشر.
 - **الصوت:** `voiceover-edge.cjs` = فويس أوفر مصري مجاني من Edge (`ar-EG-ShakirNeural`،
   `msedge-tts` متسطّب في `scripts/node_modules`) + دمج بـffmpeg مع `tpad` لو الصوت
   أطول من الفيديو. محمد: «استخدم لهجتي للصوت» — `voiceover-lahajati.cjs` (صوت بدر ·
