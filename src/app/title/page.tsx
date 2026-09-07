@@ -138,6 +138,11 @@ export default function TitlePage() {
             >
               تعالى نحوّل شغلك أونلاين ←
             </Link>
+
+            {/* 📤 تاب الشير — محمد (٧/٩/٢٠٢٦): «اعمل تاب لشير التايتل». كارت صورة بيتولّد
+                على الجهاز (canvas — صفر API) + مشاركة بالـWeb Share (بالصورة لو المتصفح
+                بيدعم) + واتساب + نسخ + تحميل. الرابط بيرجّع على /title بـUTM عشان الليد يتتبّع. */}
+            <ShareTab job={result.job} title={result.title} />
           </section>
         )}
 
@@ -156,5 +161,114 @@ export default function TitlePage() {
         </p>
       </div>
     </main>
+  )
+}
+
+// ============================================================================
+// 📤 ShareTab — كارت «تايتلي على مضمونة» + أزرار المشاركة (٧/٩/٢٠٢٦)
+//    الكارت بيترسم بـcanvas على جهاز المستخدم (١٠٨٠×١٣٥٠ — مقاس بوست/ستوري) ومافيش
+//    أي نداء سيرفر. النص اللي بيتشير فيه الخطاف بتاع الحملة «من صورتك بقى؟ يلا بينا —
+//    هنقولك تايتلك» + لينك /title بـutm_source=share عشان الزيارة تتحسب في الحملة.
+// ============================================================================
+const SHARE_URL = 'https://www.madmonacairo.com/title?utm_source=share&utm_medium=organic&utm_content=title'
+
+function shareText(job: string, title: string) {
+  return `تايتلي على مضمونة: ${job} · ${title} 😎\nمن صورتك بقى؟ يلا بينا — هنقولك تايتلك 👇\n${SHARE_URL}`
+}
+
+function drawCard(job: string, title: string): HTMLCanvasElement {
+  const W = 1080, H = 1350
+  const c = document.createElement('canvas'); c.width = W; c.height = H
+  const g = c.getContext('2d')!
+  g.fillStyle = '#0C2B22'; g.fillRect(0, 0, W, H)
+  g.fillStyle = '#1F6F5F'; g.beginPath(); g.arc(W - 120, 140, 260, 0, Math.PI * 2); g.fill()
+  g.fillStyle = 'rgba(111,207,151,.18)'; g.beginPath(); g.arc(120, H - 160, 300, 0, Math.PI * 2); g.fill()
+  g.direction = 'rtl'; g.textAlign = 'center'; g.textBaseline = 'middle'
+  const font = (px: number, w = 900) => `${w} ${px}px "Cairo", "Tajawal", "Segoe UI", system-ui, sans-serif`
+  g.fillStyle = '#6FCF97'; g.font = font(44, 800); g.fillText('تايتلي على مضمونة', W / 2, 300)
+  g.fillStyle = '#FAFAF7'; g.font = font(120)
+  fit(g, job, W - 160, 120, (f) => g.font = font(f)); g.fillText(job, W / 2, 470)
+  g.fillStyle = '#6FCF97'; g.font = font(92)
+  fit(g, title, W - 160, 92, (f) => g.font = font(f)); g.fillText(title, W / 2, 630)
+  g.fillStyle = 'rgba(250,250,247,.85)'; g.font = font(48, 800)
+  g.fillText('من صورتك بقى؟ يلا بينا —', W / 2, 860)
+  g.fillText('هنقولك تايتلك 👇', W / 2, 930)
+  g.fillStyle = '#FAFAF7'; g.font = font(52, 800); g.direction = 'ltr'
+  g.fillText('madmonacairo.com/title', W / 2, 1140)
+  g.fillStyle = '#6FCF97'; g.font = font(36, 700); g.direction = 'rtl'
+  g.fillText('أي شغل مش عيب — العيب إن مالكش شغل', W / 2, 1230)
+  return c
+}
+
+function fit(g: CanvasRenderingContext2D, text: string, maxW: number, start: number, setFont: (px: number) => void) {
+  let px = start
+  setFont(px)
+  while (g.measureText(text).width > maxW && px > 36) { px -= 4; setFont(px) }
+}
+
+function ShareTab({ job, title }: { job: string; title: string }) {
+  const [tab, setTab] = useState<'result' | 'share'>('result')
+  const [img, setImg] = useState<string | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+  const text = shareText(job, title)
+
+  function openShare() {
+    setTab('share')
+    if (!img) { try { setImg(drawCard(job, title).toDataURL('image/png')) } catch { /* الكارت اختياري */ } }
+  }
+  async function cardFile(): Promise<File | null> {
+    try {
+      const blob: Blob | null = await new Promise((res) => drawCard(job, title).toBlob(res, 'image/png'))
+      return blob ? new File([blob], 'madmona-title.png', { type: 'image/png' }) : null
+    } catch { return null }
+  }
+  async function nativeShare() {
+    const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean }
+    if (!nav.share) { await copy(); return }
+    const f = await cardFile()
+    const withFile: ShareData = f ? { files: [f], text } : { text }
+    try {
+      if (f && nav.canShare?.(withFile)) await nav.share(withFile)
+      else await nav.share({ text, url: SHARE_URL })
+    } catch { /* المستخدم قفل الشير */ }
+  }
+  async function copy() {
+    try { await navigator.clipboard.writeText(text); setMsg('اتنسخ — الصقه في أي مكان'); setTimeout(() => setMsg(null), 1800) } catch { setMsg('انسخ النص بإيدك من فوق') }
+  }
+  function download() {
+    if (!img) return
+    const a = document.createElement('a'); a.href = img; a.download = 'madmona-title.png'; a.click()
+  }
+
+  return (
+    <div className="mt-6">
+      <div className="flex rounded-xl bg-[#FAFAF7] p-1 text-sm font-extrabold">
+        <button type="button" onClick={() => setTab('result')}
+          className={`flex-1 rounded-lg px-3 py-2 ${tab === 'result' ? 'bg-white shadow text-[#0A0A0A]' : 'text-[#7C8481]'}`}>النتيجة</button>
+        <button type="button" onClick={openShare}
+          className={`flex-1 rounded-lg px-3 py-2 ${tab === 'share' ? 'bg-white shadow text-[#0A0A0A]' : 'text-[#7C8481]'}`}>📤 شير تايتلك</button>
+      </div>
+
+      {tab === 'share' && (
+        <div className="mt-4">
+          {img && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={img} alt="كارت تايتلك" className="w-full rounded-2xl border border-[#DFE3E0]" />
+          )}
+          <p className="mt-3 whitespace-pre-line rounded-xl bg-[#FAFAF7] px-4 py-3 text-sm leading-relaxed text-[#0A0A0A]">{text}</p>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-sm font-extrabold">
+            <button type="button" onClick={nativeShare}
+              className="col-span-2 rounded-xl bg-[#1F6F5F] px-4 py-3 text-[#FAFAF7]">📲 شير (إنستجرام · تيك توك · ستوري…)</button>
+            <a href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer"
+              className="rounded-xl bg-[#25D366] px-4 py-3 text-center text-white">واتساب</a>
+            <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}&quote=${encodeURIComponent(text)}`} target="_blank" rel="noopener noreferrer"
+              className="rounded-xl bg-[#1877F2] px-4 py-3 text-center text-white">فيسبوك</a>
+            <button type="button" onClick={copy} className="rounded-xl border border-[#DFE3E0] bg-white px-4 py-3">نسخ النص</button>
+            <button type="button" onClick={download} disabled={!img} className="rounded-xl border border-[#DFE3E0] bg-white px-4 py-3 disabled:opacity-50">تحميل الكارت</button>
+          </div>
+          {msg && <p className="mt-2 text-center text-xs font-bold text-[#1F6F5F]">{msg}</p>}
+        </div>
+      )}
+    </div>
   )
 }
