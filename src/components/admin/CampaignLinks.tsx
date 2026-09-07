@@ -19,7 +19,7 @@ const CAMPAIGNS: { key: string; emoji: string; name: string; path: string; note:
   {
     key: 'erp1000',
     emoji: '💼',
-    name: 'سيستم إدارة البيزنس — ١٠٠٠ ج بدل كتير',
+    name: 'برنامج الإدارة — ١٠٠٠ ج بدل كتير (المنصة بعمولة)',
     path: '/pro',
     note: 'الحملة الأساسية لأصحاب البيزنس (أورجانيك): ERP + CRM + بوت واتساب + دليفري. فورم → ليد هنا + پوش.',
   },
