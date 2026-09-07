@@ -189,8 +189,10 @@ async function main() {
   //    بعد ما فحص حقوق الموسيقى يخلص. محمد: «اتصرف — تولى كل حاجة».
   if (process.env.TT_POST) {
     for (let i = 0; i < 36; i++) { const t = await page.locator('body').innerText().catch(() => ''); if ((t.match(/No issues found/g) || []).length >= 1 && !/Checking in progress/.test(t)) break; await page.waitForTimeout(5000) }
-    const postBtn = page.locator('button:text-is("Post")').first()
-    await postBtn.click({ timeout: 15000 })
+    // (٧/٩) الضغط من الـDOM مباشرة — overlay الجولة بيعترض الكليك العادي، و«Posts» في السايدبار بيطابق has-text
+    await page.evaluate(() => { document.querySelectorAll('#react-joyride-portal, .react-joyride__overlay').forEach((e) => e.remove()) }).catch(() => {})
+    const clicked = await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find((x) => x.innerText.trim() === 'Post'); if (b) { b.scrollIntoView(); b.click(); return true } return false })
+    if (!clicked) throw new Error('زرار Post مش لاقيه')
     console.log('[tt] 🚀 Post clicked')
     await page.waitForTimeout(4000)
     const confirm = page.locator('button:has-text("Post now"), button:has-text("Post anyway")').first()

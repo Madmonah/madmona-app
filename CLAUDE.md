@@ -1668,11 +1668,25 @@ business-lounge · real-estate…). **الماركت والهوم عندهم ه�
   لينك «Posts» في السايدبار ويطلّع «exit?». `TT_POST=1` بينشر مباشرة (للفيديو اللي
   فيه صوت مدمج). محرر الويب فيه لوحة Sounds بتاب «Unlimited» (المكتبة التجارية)
   بس الصفحة بتقع «Something went wrong» بعد أي تدخل تاني — ماتعتمدش عليها.
-- **فيسبوك:** الجلسة **مش مسجّلة** في كروم السوشيال، و`/reel/create` بقت 404؛
-  `posters/post-facebook-reel.cjs` بيمشي من الهوم (Reel → Add video → Next → Publish)
-  — محتاج تسجيل دخول مرة. البروفايل القديم `profile/` بيعتمد على كروميوم المدمج البايظ.
+- **فيسبوك ✅ اتنشر ٧/٩ من كروم محمد الحقيقي** (إضافة Claude in Chrome — مش كروم
+  السوشيال، الجلسة هناك مش مسجّلة). المسار: `/reels/create/` → `file_upload` على
+  input الفيديو → Next → Next → «Describe your reel» → Post. ريل البراند:
+  `facebook.com/reel/1349077553877303`.
+  🐞 **التاب لازم يكون مرئي** (`document.visibilityState === 'visible'`) وإلا كروم
+  بيأجّل تحميل الفيديو والرفع مابيبدأش — الرفع فضل «Uploading video» للأبد مرتين
+  وتطبيق Claude كان مغطّي نافذة كروم. الحل: ثبّت نافذة كروم فوق (`SetWindowPos
+  HWND_TOPMOST` من PowerShell) طول الرفع وفكّها بعدها.
+  🐞 توست «Your post was saved as a draft» بعد Post **مش فشل**: الميوتيشن
+  `ComposerStoryCreateMutation` بترجّع `post_id` و`publishing_flow: FALLBACK`
+  (الفيديو لسه بيتعالج). التأكيد = افتح `facebook.com/<post_id>` — بيحوّل للريل.
+  شبكة الأعمدة في تاب Reels بتتأخر دقايق قبل ما تعرضه.
+  `posters/post-facebook-reel.cjs` (Playwright على كروم السوشيال) لسه مش مجرّب مسجّل.
 - **الصوت:** `voiceover-edge.cjs` = فويس أوفر مصري مجاني من Edge (`ar-EG-ShakirNeural`،
   `msedge-tts` متسطّب في `scripts/node_modules`) + دمج بـffmpeg مع `tpad` لو الصوت
   أطول من الفيديو. محمد: «استخدم لهجتي للصوت» — `voiceover-lahajati.cjs` (صوت بدر ·
   مصري قاهري · إعلاني، ٢٥٠ حرف/مقطع) بس **الديمو المجاني بيرجّع 200 فاضي** من الجهاز
-  ده — محتاج حساب محمد مسجّل في كروم السوشيال.
+  ده. ✅ **اللي اشتغل ٧/٩ (محمد: «سجلت في لهجتي»):** حساب محمد في كروم الحقيقي
+  (Claude in Chrome) → أداة TTS-Voiceover → صوت «بدر» (id 1408) → النص كامل (٤٣٧ حرف،
+  نقطة/حرف) → الملف في Audio Archive برابط عام `audio_file?S3=…` (المحتوى mp3) → ينزّل
+  ويتدمج بـffmpeg (`tpad`). الناتج `output/reel-brand-12-apps-lahajati.mp4` (٣٩ ث) —
+  ده اللي اتنشر على تيك توك وفيسبوك. أي ريل جاي = صوت لهجتي مش Edge.
