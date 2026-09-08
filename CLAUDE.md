@@ -1748,3 +1748,24 @@ business-lounge · real-estate…). **الماركت والهوم عندهم ه�
   لمونة مهمة لمحمد شخصيًا (`flow_tasks`، دبي، أنشط مورد). السكريبت:
   `docs/business/sales-script-erp1000.md` (رسالة الواتساب تتبعت بإيد الموظف من /crm).
 - القياس بكرة: `crm_calls` لكل موظف + `crm_contacts.status` (won/interested/lost).
+
+## 🔎 الترافيك — الحقيقة من Search Console (٨ سبتمبر ٢٠٢٦)
+- محمد: «زهقت من الترافيك القليل» · «مترجعليش أنا صفر في الكلام ده» — التسويق كله عليّا.
+- Search Console اتوثّق تلقائي لـ`https://www.madmonacairo.com/` تحت madmona@madmonacairo.com
+  (Domain name provider — سجل DNS بتاع Google Workspace). السايت ماب مبعوت من ٤/٨ وبيتقري.
+- **الأرقام (٢٨ يوم):** ١٦ نقرة · ٣٦ ظهور · ترتيب ٨.٧. **مفهرس ٦٣ صفحة بس من ١٬٠٣٤:**
+  ٩٢٦ «Discovered – currently not indexed» (جوجل شاف الرابط ومازحفش) · ٢٨ canonical بديل ·
+  ٩ redirect error · ٥ crawled-not-indexed · ٣ duplicate. ده السبب الحقيقي: جوجل بيتجاهل
+  ٩٤٪ من الموقع. العلاج: محتوى حقيقي في صفحات الأقسام + روابط داخلية + Request indexing
+  للصفحات المهمة (اتعمل لـ/system و/title — من URL inspection، الزرار «Request indexing»،
+  حصة يومية محدودة) + إصلاح الـredirect errors.
+- IndexNow: مفتاح `public/<key>.txt` (`scripts/indexnow.key`) — الـ١٬٢٥٥ رابط اتبعتوا لـBing/Yandex (200).
+- Vercel Analytics آخر ٢٤ ساعة: ١٧ زائر · ٨٨ مشاهدة · ٥ من فيسبوك.
+- ⚠️ لهجتي: الجلسة في كروم محمد بتخرج (بيحوّل لـ/login) — لو كده استخدم Edge مؤقتًا **وقول
+  لمحمد صراحة** إن الصوت مش لهجتي (سأل «بتستخدم لهجتي؟»). الريل #1 (order-lost-whatsapp)
+  نزل ٨/٩ على إنستجرام وتيك توك بصوت Edge — يتبدّل.
+- 🐞 ffmpeg: `tpad` + `apad` مع بعض بيرمي «No space left on device» (مش مساحة فعلًا) —
+  استخدم `tpad` بس مع `-map 1:a -shortest`.
+- Google Play Console: الحساب على moh91arabco@gmail.com (شخصي) — البروفايل والتطبيقات
+  اتشالت ٢٨/٨ (هوية مش متحققة + رقم مش موثّق) — الحل من صاحب الحساب بس.
+- Google AI Studio (المارد): Free tier متخطّي (٥٤٣/٥٠٠ طلب/يوم · ٢٤/١٥ في الدقيقة) → 429.
