@@ -1813,3 +1813,14 @@ business-lounge · real-estate…). **الماركت والهوم عندهم ه�
   `ytcp-form-input-container[invalid]`). **Escape بيقفل حوار الرفع** (بيتحفظ درافت — يتفتح من
   `/video/<id>/edit` → «Edit draft»). الناتج: `youtu.be/FyyoF7WVW4E` · فيسبوك
   `reel/28174678648868724`.
+
+## 🎙️ لهجتي: أداة Voiceover بتتجاهل اللهجة — استخدم V2 (٨ سبتمبر ٢٠٢٦ — بليل)
+محمد: «اللغة مش مصري ليه ومش واضحة». اتأكدت بالتقاط طلب التوليد نفسه (FormData):
+- **`/tools/text-to-speech-voiceover`** و**`/tools/text-to-speech-superior` (V1)**: الطلب فيه
+  `id_voice` بس — **مفيش `dialect_id` خالص** حتى لو قايمة «اختر اللهجة» متغيّرة. اللهجة = لهجة
+  الصوت الأصلية (جابر/عازم خليجي → ده اللي طلع «مش مصري»). بدر لهجته مصرية أصلًا.
+- **`/tools/text-to-speech-superior-v2`**: الطلب فيه `dialect_id=7` (المصرية القاهرية) ✅ —
+  نفس الكروت والـ`#simple-text-input` والزرار `#generate-btn`. **أي توليد مصري = V2 + قيمة 7.**
+- «Custom Prompt» و«emotion mode» **للمشتركين بس** (توست «متاح فقط للمشتركين») — مش متاحين بالنقاط.
+- الفحص السريع قبل أي توليد: لفّ `fetch`/`XMLHttpRequest.send` واطبع مفاتيح الـFormData
+  (من غير `_token`) — لو مفيش `dialect_id` يبقى الأداة غلط.
