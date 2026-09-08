@@ -1,0 +1,5 @@
+file 'E:/madmona-app/scripts/reels/playwright/erp/vo/silence.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/erp/vo/g1.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/erp/vo/g2.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/erp/vo/g3.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/erp/vo/g4.mp3'

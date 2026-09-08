@@ -127,3 +127,7 @@ _probe*.js
 .commitmsg.txt
 
 _i18n/
+scripts/reels/playwright/erp/shots/
+scripts/reels/playwright/erp/seg/
+scripts/reels/playwright/erp/frames/
+scripts/reels/playwright/erp/video_only.mp4
