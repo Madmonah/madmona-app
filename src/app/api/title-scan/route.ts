@@ -15,6 +15,7 @@
 // ============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseUntyped as admin } from '@/lib/supabase'
 import { callGemini } from '@/lib/ai-provider'
 
 export const runtime = 'nodejs'
@@ -119,11 +120,31 @@ ${TITLES.join(' · ')}
 رد **بـJSON بس** بالشكل ده من غير أي كلام قبله أو بعده:
 {"job":"المهنة في كلمة أو اتنين","title":"...","reason":"جملة واحدة عن اللي شوفته في الصورة","confident":true}`
 
-export async function POST(req: NextRequest) {
+// 🏷️ (٨/٩/٢٠٢٦) محمد: «اعمل عدّاد تجارب التايتل» — كل محاولة (ناجحة أو فاشلة) صف في
+//    title_scans: النتيجة + مصدر الزيارة (utm من الصفحة · referer · الدولة · الجهاز).
+//    ⚠️ مفيش صورة بتتخزن — الصفحة بتوعد بكده. supabase-js مابيرميش على الخطأ، فبنقرا {error}.
+async function logScan(req: NextRequest, body: { utm?: string; referer?: string } | null, row: Record<string, unknown>) {
   try {
-    const body = await req.json().catch(() => null) as
-      | { imageBase64?: string; mimeType?: string }
-      | null
+    const utm = new URLSearchParams((body?.utm || '').replace(/^\?/, ''))
+    const ua = req.headers.get('user-agent') || ''
+    const { error } = await admin.from('title_scans').insert({
+      ...row,
+      utm_source: utm.get('utm_source') || null,
+      utm_content: utm.get('utm_content') || null,
+      referer: (body?.referer || req.headers.get('referer') || '').slice(0, 300) || null,
+      country: req.headers.get('x-vercel-ip-country') || null,
+      device: /Mobi|Android|iPhone/i.test(ua) ? 'mobile' : 'desktop',
+    })
+    if (error) console.error('[title-scan] log failed', error.message)
+  } catch (e) { console.error('[title-scan] log threw', e instanceof Error ? e.message : e) }
+}
+
+type ScanBody = { imageBase64?: string; mimeType?: string; utm?: string; referer?: string }
+
+export async function POST(req: NextRequest) {
+  let body: ScanBody | null = null
+  try {
+    body = (await req.json().catch(() => null)) as ScanBody | null
 
     const b64 = (body?.imageBase64 || '').replace(/^data:[^;]+;base64,/, '')
     const mime = body?.mimeType || 'image/jpeg'
@@ -160,17 +181,21 @@ export async function POST(req: NextRequest) {
       ? (parsed.title as string)
       : 'فرد'
 
+    const job = (parsed.job || '').trim() || 'صاحب بيزنس'
+    await logScan(req, body, { ok: true, job, title, confident: parsed.confident !== false })
+
     return NextResponse.json({
       ok: true,
       title,
       // مفيش حالة «مش باين» — البرومبت بيلزمه بمهنة، ودي شبكة أمان بس
-      job: (parsed.job || '').trim() || 'صاحب بيزنس',
+      job,
       reason: parsed.reason || '',
       confident: parsed.confident !== false,
       system: SYSTEMS[title] || SYSTEMS['فرد'],
     })
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'خطأ غير معروف'
+    await logScan(req, body, { ok: false, error: msg.slice(0, 200) })
     // الحد اليومي المجاني لجيميناي ١٥٠٠ نداء — الرسالة دي بتبان لو اتخطى
     const busy = /429|quota|exhaust/i.test(msg)
     return NextResponse.json(

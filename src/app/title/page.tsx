@@ -45,7 +45,8 @@ export default function TitlePage() {
       const r = await fetch('/api/title-scan', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ imageBase64: dataUrl, mimeType: file.type || 'image/jpeg' }),
+        // 🏷️ (٨/٩) عدّاد التجارب — بنبعت مصدر الزيارة (utm) والـreferrer مع الصورة، من غير ما الصورة تتخزن
+        body: JSON.stringify({ imageBase64: dataUrl, mimeType: file.type || 'image/jpeg', utm: window.location.search, referer: document.referrer }),
       })
       const j = await r.json()
       if (!j.ok) throw new Error(j.error || 'مش قادرين نحلل الصورة')

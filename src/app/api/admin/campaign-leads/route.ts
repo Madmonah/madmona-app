@@ -26,7 +26,18 @@ export async function GET() {
     if (r.status === 'new') c.new++
     if (r.status === 'converted') c.converted++
   }
-  return NextResponse.json({ ok: true, counts, recent: list.slice(0, 20) })
+  // 🏷️ (٨/٩/٢٠٢٦) عدّاد تجارب التايتل (title_scans) — محمد: «اعمل عدّاد تجارب التايتل»
+  const { data: scans } = await admin.from('title_scans').select('created_at, ok, utm_source').order('created_at', { ascending: false }).limit(2000)
+  const sList = (scans as Array<{ created_at: string; ok: boolean; utm_source: string | null }> | null) ?? []
+  const bySource: Record<string, number> = {}
+  for (const s of sList) { const k = s.utm_source || 'direct'; bySource[k] = (bySource[k] || 0) + 1 }
+  const title_scans = {
+    total: sList.length,
+    today: sList.filter((s) => new Date(s.created_at) >= today).length,
+    ok: sList.filter((s) => s.ok).length,
+    by_source: bySource,
+  }
+  return NextResponse.json({ ok: true, counts, recent: list.slice(0, 20), title_scans })
 }
 
 export async function POST(req: NextRequest) {

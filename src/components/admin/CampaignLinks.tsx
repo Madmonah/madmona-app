@@ -59,11 +59,13 @@ export function CampaignLinks() {
   const [posts, setPosts] = useState<Post[]>([])
   const [showPosts, setShowPosts] = useState(false)
   const [draft, setDraft] = useState<Record<string, Record<string, string>>>({})
+  // 🏷️ (٨/٩) عدّاد تجارب «من صورتك هنقولك تايتلك» — من title_scans (كل رفعة صورة = تجربة)
+  const [scans, setScans] = useState<{ total: number; today: number; ok: number; by_source: Record<string, number> } | null>(null)
 
   const load = useCallback(async () => {
     try {
       const r = await fetch('/api/admin/campaign-leads', { cache: 'no-store' }).then((x) => x.json())
-      if (r?.ok) { setCounts(r.counts || {}); setRecent(r.recent || []) }
+      if (r?.ok) { setCounts(r.counts || {}); setRecent(r.recent || []); setScans(r.title_scans || null) }
     } catch { /* الداشبورد بيشتغل من غيرها */ }
     try {
       const p = await fetch('/api/admin/campaign-posts', { cache: 'no-store' }).then((x) => x.json())
@@ -123,6 +125,12 @@ export function CampaignLinks() {
                 <span style={{ background: '#F3F6F4', borderRadius: 8, padding: '3px 8px' }}>النهارده {k?.today ?? 0}</span>
                 <span style={{ background: k?.new ? '#FDECE4' : '#F3F6F4', color: k?.new ? '#B4552F' : '#14231E', borderRadius: 8, padding: '3px 8px' }}>جديد {k?.new ?? 0}</span>
                 <span style={{ background: '#E6F4EE', color: '#1F6F5F', borderRadius: 8, padding: '3px 8px' }}>اشترك {k?.converted ?? 0}</span>
+                {c.key === 'title' && scans && (
+                  <span title={Object.entries(scans.by_source).map(([s, n]) => `${s}: ${n}`).join(' · ') || 'لسه مفيش'}
+                    style={{ background: '#FFF4D6', color: '#7A5A00', borderRadius: 8, padding: '3px 8px' }}>
+                    🏷️ تجارب {scans.total} · النهارده {scans.today}
+                  </span>
+                )}
               </div>
               <code dir="ltr" style={{ display: 'block', fontSize: 12, color: '#1F6F5F', background: '#F3F6F4',
                 borderRadius: 8, padding: '6px 8px', marginBottom: 8, overflowX: 'auto', textAlign: 'left' }}>
