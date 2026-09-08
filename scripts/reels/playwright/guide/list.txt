@@ -1,0 +1,6 @@
+file 'E:/madmona-app/scripts/reels/playwright/guide/c1.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/guide/c2.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/guide/c3.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/guide/c4.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/guide/c5.mp3'
+file 'E:/madmona-app/scripts/reels/playwright/guide/c6.mp3'
