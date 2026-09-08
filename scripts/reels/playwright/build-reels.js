@@ -77,10 +77,14 @@ ${sc.items.map(p => `    <div class="panel"><span class="k">${esc(p.k)}</span><b
   </div>`
 
     case 'end':
+      // كرت النهاية = CTA واضح (محمد ٨/٩: «الريل يخلص بـCTA»).
+      // اللينك في بادج أبيض كبير + سطر «اللينك في أول كومنت»
+      // لأن فيسبوك مابيخليش روابط الكابشن قابلة للضغط في الريلز.
       return `<div class="${cls} endcard">
     <span class="end-mark"><img src="${LOGO}" alt="مضمونة"></span>
     <div class="end-line">${esc(sc.line)}</div>
     <p class="end-sub">${esc(sc.sub)}</p>
+    <p class="end-hint">${esc(sc.hint || 'اللينك في أول كومنت 👇')}</p>
   </div>`
 
     default:
@@ -240,7 +244,9 @@ body.go .panel{animation:slide .55s both cubic-bezier(.2,.8,.3,1)}
           place-items:center;overflow:hidden;opacity:0}
 .end-mark img{width:29cqw;height:29cqw;object-fit:contain}
 .end-line{font-size:10.5cqw;font-weight:900;color:var(--neutral);line-height:1.35;letter-spacing:-.03em}
-.end-sub{font-size:4.6cqw;font-weight:600;color:#BFE0D6}
+.end-sub{font-size:6.4cqw;font-weight:900;color:var(--green);background:#FFF;
+         padding:2.2cqw 5cqw;border-radius:99cqw;letter-spacing:-.02em;direction:ltr}
+.end-hint{font-size:5.2cqw;font-weight:800;color:#FFF;opacity:.95;margin-top:-1.5cqw}
 body.go .end-mark{animation:drop .55s both cubic-bezier(.2,.9,.25,1.12)}
 
 .bar{position:absolute;top:0;right:0;height:.6cqw;background:var(--green-2);width:0;opacity:.8}
