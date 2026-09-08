@@ -1,0 +1,5 @@
+const fs=require('fs'); const {execFileSync,spawnSync}=require('child_process'); const ff=require('E:/madmona-app/node_modules/ffmpeg-static');
+const D='E:/madmona-app/scripts/reels/playwright/'; const dur=f=>{const m=spawnSync(ff,['-i',f],{encoding:'utf8'}).stderr.match(/Duration: (\d+):(\d+):([\d.]+)/);return m?(+m[2])*60+parseFloat(m[3]):0};
+const slugs=process.argv.slice(2); let s=fs.readFileSync(D+'reels.config.js','utf8');
+for(const slug of slugs){ const vo=D+'vo-'+slug+'-lahajati.mp3'; const target=dur(vo)+0.6; const i=s.indexOf("slug: '"+slug+"'"); const a=s.indexOf('scenes: [',i); const b=s.indexOf('],',a)+1; const arr=eval(s.slice(a+8,b)); const total=arr.reduce((x,y)=>x+y.len,0); const k=target/total; arr.forEach(sc=>{sc.len=+(sc.len*k).toFixed(2); if(sc.reveal) sc.reveal=+Math.min(sc.reveal*k,2.2).toFixed(2);}); s=s.slice(0,a)+'scenes: '+JSON.stringify(arr)+s.slice(b); console.log(slug,'vo',dur(vo).toFixed(1),'scenes',total.toFixed(1),'->',target.toFixed(1)); }
+fs.writeFileSync(D+'reels.config.js',s);
