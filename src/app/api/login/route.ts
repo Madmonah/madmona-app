@@ -104,7 +104,33 @@ export async function POST(req: Request) {
     'login_with_password', { p_identifier: identifier, p_secret: password },
   )
   if (emp?.success && emp.token) {
-    return NextResponse.json({ ok: true, source: 'employee', token: emp.token, name: emp.employee_name || null })
+    // 🚪🚪 (٩/٩/٢٠٢٦) محمد: «تاب حسابي بيلود على الفاضي… المشكلة لسه قايمة».
+    //    الجذر الحقيقي: دخول الموظف بالـPIN كان بيفتح **باب واحد** (madmona_token)
+    //    — و«شغلي» (/account/work → get_my_work_home) وباقي التطبيق (RLS · ٧٩ شاشة
+    //    بتسأل getSession) محتاجين **الباب التاني** (جلسة Supabase). فالموظف يدخل
+    //    و«شغلي» تقوله «سجّل دخولك الأول». نفس «الدرس الأكبر» ٢٥/٨ بالظبط.
+    //    ✅ زي دخول الواتساب: نفس الدخلة بتطلع token_hash (magiclink) والواجهة
+    //    بتعمل verifyOtp → جلسة Supabase حقيقية. best-effort — لو فشل الموظف
+    //    بيكمّل بالتوكن زي قبل. (auth_user_for_employee_login: service_role بس)
+    let tokenHash: string | null = null
+    let email: string | null = null
+    try {
+      const { data: found } = await (db.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<{ data: { found?: boolean; user_id?: string; email?: string } | null }>)(
+        'auth_user_for_employee_login', { p_identifier: identifier },
+      )
+      if (found?.found && found.email) {
+        const { data: link } = await db.auth.admin.generateLink({ type: 'magiclink', email: found.email })
+        if (link?.properties?.hashed_token) { tokenHash = link.properties.hashed_token; email = found.email }
+      }
+    } catch (e) {
+      console.error('[login] supabase session for employee failed (continuing with token):', e)
+    }
+    return NextResponse.json({
+      ok: true, source: 'employee', token: emp.token, name: emp.employee_name || null,
+      token_hash: tokenHash, email,
+    })
   }
 
   return NextResponse.json({

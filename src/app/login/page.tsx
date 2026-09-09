@@ -18,6 +18,7 @@ import { useT } from '@/lib/i18n/LanguageProvider'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Phone, CheckCircle2, ShieldCheck, KeyRound, MessageCircle } from 'lucide-react'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
+import { supabaseBrowser } from '@/lib/supabase-browser'
 import { GoogleSignInButton } from '@/components/GoogleSignInButton'
 import { resolveLanding, LANDING_AUTO } from '@/lib/landing'
 
@@ -81,6 +82,14 @@ export default function MadmonaLoginPage() {
         return
       }
       if (data.token) safeStorage.set('madmona_token', data.token)
+      // 🚪🚪 (٩/٩/٢٠٢٦) الباب التاني: جلسة Supabase من نفس الدخلة (زي الواتساب)
+      //    — من غيرها «شغلي» وأي شاشة RLS بتقول «سجّل دخولك» للموظف اللي داخل فعلًا.
+      if (data.token_hash) {
+        try {
+          const { error: vErr } = await supabaseBrowser.auth.verifyOtp({ type: 'email', token_hash: data.token_hash })
+          if (vErr) console.error('[login] verifyOtp failed:', vErr.status, vErr.message)
+        } catch (e) { console.error('[login] verifyOtp threw:', e) }
+      }
       // أدمن → لوحة الأدمن مباشرة (الكوكي اتفتحت)، موظف → /me
       // أدمن اللوحة (معاه الكوكي) → الإعلانات مباشرة؛ غيره → القرار الموحّد (موظف → شغلي · مالك → لوحته)
       router.push(data.source === 'admin' && nextPath() === LANDING_AUTO ? '/admin/listings' : await resolveLanding(nextPath(), '/home'))
