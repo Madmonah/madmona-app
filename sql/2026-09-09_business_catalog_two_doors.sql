@@ -1,0 +1,11 @@
+-- 🧩 (٩/٩/٢٠٢٦ — آخر الليل) المنتجات والخدمات بالبابين + صور الكتالوج — مطبّق لايف بميجريشنين:
+-- business_catalog_bundle_token_doors · catalog_image_url_and_listing_photo_sync
+-- محمد: «المنتجات والخدمات بتعلق كل مرة… لازم تدخل جوه السيستم كمنتج نهائي أو خدمة نهائية ويبقى
+-- ليها احجز/اشتري في واجهة العملاء وتسمع في الماركتبليس» + «لازم يكون ليها مكان للصور».
+--   business_catalog_bundle(p_supplier_id, p_token)   → business + products (inventory_products) + services (services_catalog)
+--   business_product_save/delete · business_service_save/delete (jsonb · schedule_edit_ok)
+--   toggle_catalog_visibility(p_kind, p_item_id, p_publish, p_token) — كانت can_edit_supplier_listings (جلسة بس)
+--   inventory_products.image_url · services_catalog.image_url (+ GRANT select) — تريجر catalog_sync_listing_photo
+--   بيحط الصورة في listing_photos (caption 'catalog-image') أول ما الصنف يتنشر أو الصورة تتغيّر.
+-- الرفع: /api/catalog/photo (Bearer أو madmona_token → schedule_edit_ok) → bucket listing-photos/catalog/<supplier>/
+select 1;

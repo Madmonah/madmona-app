@@ -2256,3 +2256,19 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   `clinic-1000-protocol` (٦٠ ثانية بالظبط، صوت جابر V2 من لهجتي — محتاج كروم محمد).
 - **بيان العهدة:** الموظف يعدّل/يمسح بنده طول ما العهدة `held` (`employee_custody_purchase_update/delete`)؛
   بعد التسوية `locked` من الداتابيز والواجهة.
+
+## 🧩 المنتجات والخدمات بالبابين + الصور + «اخفي مضمونة ADMIN» (٩ سبتمبر ٢٠٢٦ — آخر الليل)
+محمد: «المنتجات والخدمات بتعلق كل مرة بيكتب الصفحة للمورد… لازم تدخل جوه السيستم كمنتج نهائي أو
+خدمة نهائية ويبقى ليها احجز/اشتري وتسمع في الماركتبليس» + «مكان للصور» + «اخفي كلمة مضمونة أدمن المنصة».
+- 🐞 **«بتعلق»:** شاشة الخدمات كانت `supabase.from('suppliers')` بعميل anon (مقفول ٢٨/٨) → `if (!supplier)
+  return <Loader/>` للأبد؛ وشاشة المنتجات على `resolveBusiness` (جلسة Supabase بس) → صاحب البيزنس بتوكن
+  الواتساب مرفوض. ✅ كتابة جديدة `/admin/business-finance/<id>/products` على `financeRpc` بالبابين
+  (`business_catalog_bundle` · `business_product_save/delete` · `business_service_save/delete` ·
+  `toggle_catalog_visibility(...,p_token)`). `services-catalog` و`materials` بقوا تحويل لتابات جوّاها.
+  الكود القديم: `LegacyServicesCatalog.tsx` · `/supplier/erp/products` (لسه بيستخدم Legacy).
+- **الصور:** `image_url` على `inventory_products` و`services_catalog` (GRANT select) · رفع عبر
+  `/api/catalog/photo` (Bearer أو madmona_token) · تريجر `catalog_sync_listing_photo` بيحطها في
+  `listing_photos` (caption `catalog-image`) → تظهر في السوق أول ما الصنف «في السوق».
+- **«مضمونة ADMIN»:** الشيل بيختفي على أي `/admin/business-finance/*` حتى لموظفي مضمونة.
+- ⚠️ **قاعدة:** أي شاشة جوّه لوحة البيزنس = `financeRpc` + دوال بـ`p_token`. `createClient(anon)` أو
+  `resolveBusiness` هناك = «بتعلق» لصاحب البيزنس.

@@ -175,7 +175,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
-  if (adminRole === 'owner') {
+  // 🏛️ (٩/٩/٢٠٢٦ — آخر الليل) محمد: «اخفي كلمة مضمونة أدمن المنصة» — لوحة أي بيزنس
+  //    (/admin/business-finance/*) بتتعرض من غير شيل «مضمونة ADMIN» حتى لموظفي مضمونة:
+  //    اللوحة ليها هيدرها وأزرارها، والشيل ده للإدارة الداخلية بس.
+  if (adminRole === 'owner' || pathname.startsWith('/admin/business-finance')) {
     return <div style={{ minHeight: '100vh', background: '#FAFAF7' }}>{children}</div>
   }
 

@@ -24,7 +24,7 @@ import {
 
 import { currencyLabel } from '@/lib/currency'
 import ManualSaleModal, { type SaleItem } from '@/components/ManualSaleModal'
-import ServicesCatalogPage from '@/app/admin/business-finance/[supplierId]/services-catalog/page'
+import ServicesCatalogPage from '@/app/admin/business-finance/[supplierId]/services-catalog/LegacyServicesCatalog'
 import MaterialsPage from '@/app/supplier/erp/materials/page'
 import ProductMaterialsModal from '@/components/ProductMaterialsModal'
 type Item = {

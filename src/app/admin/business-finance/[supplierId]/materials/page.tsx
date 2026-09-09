@@ -1,9 +1,11 @@
 'use client'
-// 🧭 (٩/٩/٢٠٢٦) محمد: «خلي كل حاجة تودّي على اللوحة الكاملة».
-//    الشاشة دي كانت عايشة بره اللوحة (/supplier/erp/materials) — نفس الكومبوننت
-//    بيتركّب هنا بمعرّف البيزنس من المسار. مفيش نسختين.
-import MaterialsPage from '@/app/supplier/erp/materials/page'
+// 🧱 (٩/٩/٢٠٢٦ — آخر الليل) الخامات بقت تاب جوّه «المنتجات والخدمات» (بالبابين) — تحويل بس.
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Loader2 } from 'lucide-react'
 
-export default function Page({ params }: { params: { supplierId: string } }) {
-  return <MaterialsPage supplierId={params.supplierId} />
+export default function MaterialsRedirect({ params }: { params: { supplierId: string } }) {
+  const router = useRouter()
+  useEffect(() => { router.replace(`/admin/business-finance/${params.supplierId}/products?tab=materials`) }, [router, params.supplierId])
+  return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 }
