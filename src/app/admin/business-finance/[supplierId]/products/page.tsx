@@ -22,6 +22,7 @@ import { currencyLabel } from '@/lib/currency'
 import ManualSaleModal, { type SaleItem } from '@/components/ManualSaleModal'
 import ProductMaterialsModal from '@/components/ProductMaterialsModal'
 import CatalogPhotoField from '@/components/CatalogPhotoField'
+import ProductsImportModal from '@/components/ProductsImportModal'
 
 type Product = { id: string; name_ar: string; sku: string | null; selling_price_egp: number | null; cost_price_egp: number | null; current_stock: number | null; reorder_threshold: number | null; unit: string | null; active: boolean; notes: string | null; item_class: 'sellable' | 'material' | 'consumable'; publish_to_marketplace: boolean; listing_id: string | null; image_url: string | null }
 type Service = { id: string; name_ar: string; category: string | null; price_egp: number | null; duration_minutes: number | null; performer_commission_pct: number | null; status: string; description: string | null; publish_to_marketplace: boolean; listing_id: string | null; image_url: string | null }
@@ -45,6 +46,7 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
   const [sForm, setSForm] = useState<Partial<Service> | null>(null)
   const [sale, setSale] = useState<SaleItem | null>(null)
   const [comp, setComp] = useState<Product | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true); setErr(null)
@@ -140,7 +142,10 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
               <section className="space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-black text-[#6B7280]">{products.length} منتج نهائي · {products.filter(p => p.publish_to_marketplace).length} في السوق</p>
-                  <button onClick={() => setPForm({ item_class: 'sellable', unit: 'قطعة', active: true, current_stock: 0 })} className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black flex items-center gap-1.5"><Plus className="w-4 h-4" /> منتج جديد</button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setImportOpen(true)} className="px-3 py-2 rounded-xl bg-white border border-[#059669]/30 text-[#059669] text-sm font-black">📥 استيراد إكسيل</button>
+                    <button onClick={() => setPForm({ item_class: 'sellable', unit: 'قطعة', active: true, current_stock: 0 })} className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black flex items-center gap-1.5"><Plus className="w-4 h-4" /> منتج جديد</button>
+                  </div>
                 </div>
                 {products.length === 0 && <Empty icon={<Package className="w-8 h-8" />} text="مفيش منتجات لسه — ضيف أول منتج وفعّل «في السوق» عشان العميل يشتريه من صفحتك." />}
                 {products.map(p => {
@@ -262,6 +267,7 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
         </Modal>
       )}
       {sale && <ManualSaleModal supplierId={supplierId} item={sale} currency={cur} onClose={() => setSale(null)} onDone={(r) => { setSale(null); flash(`✅ اتسجّل بيع ${sale.name} بـ${fmt(r.amount)} ${cur} في الحسابات${r.stock_left != null ? ` · المتبقي ${fmt(r.stock_left)}` : ''}`); void load() }} />}
+      {importOpen && <ProductsImportModal supplierId={supplierId} onClose={() => setImportOpen(false)} onDone={(r) => { setImportOpen(false); flash(`📥 اتستورد: ${r.inserted} جديد · ${r.updated} اتحدّث · ${r.skipped} من غير اسم`); void load() }} />}
       {comp && <ProductMaterialsModal supplierId={supplierId} productId={comp.id} productName={comp.name_ar} onClose={() => setComp(null)} onSaved={(n) => { setComp(null); flash(`🧱 اتربط ${n} خامة بـ«${comp.name_ar}»`) }} />}
     </div>
   )
