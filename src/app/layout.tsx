@@ -4,6 +4,7 @@ import { LanguageProvider } from '@/lib/i18n/LanguageProvider'
 import SiteAnalytics from '@/components/SiteAnalytics'
 import { Suspense } from 'react'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import ChunkReload from '@/components/ChunkReload'
 import DeferredWidgets from '@/components/DeferredWidgets'
 import { safeStorage } from '@/lib/safe-storage'
 // 🔴 شبكة أمان: أي RPC تفشل، بيظهر تنبيه أحمر بدل ما تعدّي في صمت (13 Jul 2026)
@@ -247,6 +248,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LanguageProvider>
         {children}
         <ServiceWorkerRegister />
+        <ChunkReload />
         {/* (31 Jul 2026) التتبّع اتلمّ في مكوّن واحد بيتخطّى نفسه جوّه /chat */}
         <SiteAnalytics />
         <Suspense fallback={null}>

@@ -1,5 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 🛡️ (٩/٩/٢٠٢٦) Skew Protection — محمد: «الـ٣ شرط مش بيفتح وحسابي بيلود على
+  //    الفاضي من تليفون محمد» بينما كل جهاز تاني شغّال. الجذر: التطبيق المثبّت
+  //    بيفضل مفتوح أيام، وإحنا بننشر كذا مرة في اليوم — الكلاينت القديم بيطلب
+  //    chunks من نسخة اتشالت → hydration بتفشل → أزرار ميتة وشاشات بتلف.
+  //    ✅ Skew Protection **مفعّل في إعدادات فيرسل** (Settings → Advanced) —
+  //    وفي Next 14.2 بيشتغل تلقائي من غير أي مفتاح هنا (`useDeploymentId`
+  //    اتشال من experimental في 14.2 وبيطلّع «Unrecognized key»). الحماية دي
+  //    ليها «Maximum Age» — بعدها الكلاينت القديم بيرجع يقع؛ عشان كده فيه
+  //    شبكة أمان تانية: components/ChunkReload.tsx (reload مرة عند أي ChunkLoadError).
+
   // KNOWN ISSUE: Supabase JS v2.45+ resolves Insert<T> generic to `never` when
   // the Database type lacks the new `__InternalSupabase` schema marker.
   // Proper fix requires migrating to @supabase/ssr (separate session).
