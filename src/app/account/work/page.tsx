@@ -568,7 +568,12 @@ function CustodyCard({ supplierId, onRefresh }: { supplierId: string; onRefresh:
   // موديل العهدة الموجود: status='held' = معاه دلوقتي (REQ_STATUS فوق)
   const openCash = (led?.custody || []).filter(c => c.kind === 'cash' && c.status === 'held')
   const fmtN = (n: number | null | undefined) => Number(n || 0).toLocaleString('ar-EG')
+  // 🐞 (٩/٩) محمد: «كل بند بيتسجل مرتين» — الضغطة المزدوجة على الموبايل كانت بتعدّي قبل ما
+  //    الزرار يتقفل (state متأخر). قفل فوري بـref + حارس في الداتابيز (نفس العملية خلال دقيقتين).
+  const lockRef = useRef(false)
   const submit = async () => {
+    if (lockRef.current) return
+    lockRef.current = true
     setBusy(true); setErr(null)
     try {
       const { data } = await (supabaseBrowser.rpc as unknown as (
@@ -579,7 +584,7 @@ function CustodyCard({ supplierId, onRefresh }: { supplierId: string; onRefresh:
       })
       if (!data?.ok) { setErr(data?.error || 'ماتسجّلش'); return }
       setAmount(''); setTitle(''); setVendor(''); setBuying(false); await load(); onRefresh()
-    } catch { setErr('حصلت مشكلة — جرّب تاني') } finally { setBusy(false) }
+    } catch { setErr('حصلت مشكلة — جرّب تاني') } finally { setBusy(false); lockRef.current = false }
   }
   return (
     <div className="px-5 py-4 border-b border-gray-100">

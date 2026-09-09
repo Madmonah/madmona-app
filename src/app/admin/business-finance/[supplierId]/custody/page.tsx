@@ -109,7 +109,7 @@ export default function CustodyPage({ params }: { params: { supplierId: string }
               <section>
                 <h2 className="text-xs font-black text-[#6B7280] mb-2">المقفولة ({closed.length})</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {closed.map(i => <Card key={i.id} i={i} />)}
+                  {closed.map(i => <Card key={i.id} i={i} onSettle={i.status === 'settled' && i.kind === 'cash' ? () => setSettling(i) : undefined} />)}
                 </div>
               </section>
             )}
@@ -163,6 +163,10 @@ function Card({ i, onSettle, onReturn }: { i: Item; onSettle?: () => void; onRet
           </details>
         )}
         {settled && <p className="mt-2 text-[11px] text-[#1A2E26] bg-[#FAFAF7] rounded-lg px-2 py-1">✅ التسوية: {settled.note || `رجّع ${fmt(settled.amount)} ج`}</p>}
+        {/* ✏️ (٩/٩) محمد: «محتاج تاب لتعديل تسوية العهدة» — التعديل بيعيد حساب الفرق وسلفة العجز */}
+        {i.status === 'settled' && cash && onSettle && (
+          <button onClick={onSettle} className="w-full mt-2 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-[#1A2E26] text-xs font-bold">✏️ تعديل التسوية</button>
+        )}
       </div>
       {isOpen && (cash
         ? <button onClick={onSettle} className="w-full mt-3 px-3 py-2 rounded-lg bg-[#34D399] text-[#04352A] text-xs font-black flex items-center justify-center gap-1"><Scale className="w-3.5 h-3.5" /> تسوية العهدة</button>
@@ -224,7 +228,9 @@ function AssignModal({ supplierId, employees, onClose, onSaved }: { supplierId: 
 }
 
 function SettleModal({ supplierId, item, onClose, onDone }: { supplierId: string; item: Item; onClose: () => void; onDone: () => void }) {
-  const [returned, setReturned] = useState(String(item.remaining > 0 ? item.remaining : 0))
+  const isEdit = item.status === 'settled'
+  const prev = item.events.find(e => e.event === 'settled')
+  const [returned, setReturned] = useState(String(isEdit && prev?.amount != null ? prev.amount : item.remaining > 0 ? item.remaining : 0))
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -232,13 +238,13 @@ function SettleModal({ supplierId, item, onClose, onDone }: { supplierId: string
   const diff = r - item.remaining
   async function settle() {
     setErr(null); setBusy(true)
-    const { data, error } = await financeRpc('admin_custody_settle', { p_supplier_id: supplierId, p_id: item.id, p_returned_cash: r, p_note: note || null })
+    const { data, error } = await financeRpc(isEdit ? 'admin_custody_settle_edit' : 'admin_custody_settle', { p_supplier_id: supplierId, p_id: item.id, p_returned_cash: r, p_note: note || null })
     setBusy(false)
     if (error || !data?.ok) { setErr(error?.message || data?.error || 'التسوية ماتمّتش'); return }
     onDone()
   }
   return (
-    <Modal title={`تسوية «${item.title || 'العهدة'}»`} onClose={onClose}>
+    <Modal title={`${isEdit ? 'تعديل تسوية' : 'تسوية'} «${item.title || 'العهدة'}»`} onClose={onClose}>
       <div className="grid grid-cols-3 gap-2">
         <Stat l="المسلَّم" v={item.value} /><Stat l="المشتريات" v={item.spent} /><Stat l="المفروض يرجّع" v={item.remaining} strong />
       </div>
@@ -249,7 +255,7 @@ function SettleModal({ supplierId, item, onClose, onDone }: { supplierId: string
       <Field label="ملاحظة (اختياري)"><input value={note} onChange={e => setNote(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
       {err && <p className="text-xs text-red-600">{err}</p>}
       <button onClick={settle} disabled={busy} className="w-full py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
-        {busy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التسوية...</> : <><Scale className="w-4 h-4" /> اقفل العهدة</>}
+        {busy ? <><Loader2 className="w-4 h-4 animate-spin" /> جاري التسوية...</> : <><Scale className="w-4 h-4" /> {isEdit ? 'احفظ التعديل' : 'اقفل العهدة'}</>}
       </button>
     </Modal>
   )

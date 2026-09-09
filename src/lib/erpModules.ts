@@ -121,7 +121,7 @@ export const MODULE_DEFS: ModuleDef[] = [
   //    فيها «سجّل بيع» يدوي. «قائمة الخدمات» بقت جوّه نفس الشاشة، و«ربط خدمة-منتج» اتسمّت بوضوح.
   { href: 'products',           label: 'المنتجات والخدمات', primary: true, v: ['core'], perm: 'can_manage_inventory' },
   { href: 'marketplace-catalog',label: 'اللي يظهر في السوق',              v: ['core'], perm: 'can_manage_inventory' },
-  { href: 'materials',          label: 'الخامات والأدوات',                v: ['core'], perm: 'can_manage_inventory' },
+  // 🧱 (٩/٩) الخامات (المنتج الأولي) بقت تاب جوّه «المنتجات والخدمات» — الراوت /materials شغال، بس من غير تاب مكرر
   { href: 'production',         label: 'أوامر التشغيل',                   v: ['factory', 'restaurant', 'contracting'] },
   { href: 'media',              label: 'الصور',                           v: ['core'] },
   { href: 'vendors',            label: 'الموردين',                        v: ['core'] },

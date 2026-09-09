@@ -25,6 +25,8 @@ import {
 import { currencyLabel } from '@/lib/currency'
 import ManualSaleModal, { type SaleItem } from '@/components/ManualSaleModal'
 import ServicesCatalogPage from '@/app/admin/business-finance/[supplierId]/services-catalog/page'
+import MaterialsPage from '@/app/supplier/erp/materials/page'
+import ProductMaterialsModal from '@/components/ProductMaterialsModal'
 type Item = {
   id: string
   name_ar: string
@@ -58,10 +60,12 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
   // 🧩 (٩/٩/٢٠٢٦ — آخر الليل) محمد: «تاب منتجات وخدمات وتاب تاني قائمة الخدمات… عاملين تعارض»
   //    شاشة واحدة بتابين: منتجات (المخزون) · خدمات (قائمة الخدمات/المنيو اللي الحجوزات بتقرا منها).
   //    و«سجّل بيع» يدوي للاتنين — محمد: «لو هيتم تسجيلهم يدوي مش عن طريق إدارة الحجوزات هيحصل إزاي؟»
-  const [tab, setTab] = useState<'products' | 'services'>(() => {
-    try { return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'services' ? 'services' : 'products' } catch { return 'products' }
+  const [tab, setTab] = useState<TabKey>(() => {
+    try { const t0 = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tab') : null; return t0 === 'services' || t0 === 'materials' ? t0 : 'products' } catch { return 'products' }
   })
   const [sale, setSale] = useState<SaleItem | null>(null)
+  // 🧱 (٩/٩) ربط المنتج النهائي بالخامات (المنتج الأولي)
+  const [comp, setComp] = useState<Item | null>(null)
   const [saleMsg, setSaleMsg] = useState<string | null>(null)
 
   const db = supabaseBrowser as unknown as {
@@ -146,6 +150,14 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
       <div dir="rtl">
         <TabBar tab={tab} setTab={setTab} />
         <ServicesCatalogPage params={{ supplierId }} />
+      </div>
+    )
+  }
+  if (supplierId && tab === 'materials') {
+    return (
+      <div dir="rtl">
+        <TabBar tab={tab} setTab={setTab} />
+        <MaterialsPage supplierId={supplierId} />
       </div>
     )
   }
@@ -235,6 +247,12 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
                       {r.sku ? ` · ${r.sku}` : ''}
                     </p>
                   </button>
+                  {supplierId && (
+                    <button onClick={() => setComp(r)} title="المكوّنات — الخامات اللي بتدخل في المنتج"
+                      className="shrink-0 px-2.5 py-2 rounded-xl text-[11.5px] font-black bg-white border border-gray-200 text-[#1A2E26]">
+                      🧱
+                    </button>
+                  )}
                   <button onClick={() => setSale({ id: r.id, name: r.name_ar, unitPrice: r.selling_price_egp, kind: 'product', unit: r.unit })}
                     className="shrink-0 px-3 py-2 rounded-xl text-[11.5px] font-black bg-[#04352A] text-white">
                     بيع
@@ -254,6 +272,10 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
       )}
 
       {saleMsg && <p className="mb-3 text-xs font-bold text-[#059669] bg-[#34D399]/10 rounded-xl px-3 py-2">{saleMsg}</p>}
+      {comp && biz && (
+        <ProductMaterialsModal supplierId={biz.id} productId={comp.id} productName={comp.name_ar} onClose={() => setComp(null)}
+          onSaved={(n) => { setComp(null); setSaleMsg(`🧱 اتربط ${n} خامة بـ«${comp.name_ar}» — هتتخصم مع كل بيع`); setTimeout(() => setSaleMsg(null), 6000) }} />
+      )}
       {sale && biz && (
         <ManualSaleModal supplierId={biz.id} item={sale} currency={currencyLabel(biz.currency)} onClose={() => setSale(null)}
           onDone={async (r) => { setSale(null); setSaleMsg(`✅ اتسجّل بيع ${sale.name} بـ${r.amount.toLocaleString('ar-EG')} في الحسابات${r.stock_left != null ? ` · المتبقي في المخزون ${r.stock_left}` : ''}`); await load(biz.id); setTimeout(() => setSaleMsg(null), 6000) }} />
@@ -309,15 +331,16 @@ function Stat({ label, v, good, warn }: { label: string; v: number; good?: boole
 }
 
 /* 🧩 (٩/٩/٢٠٢٦) تابين جوّه شاشة واحدة: منتجات · خدمات — بدل تلات تابات متعارضة في اللوحة */
-function TabBar({ tab, setTab }: { tab: 'products' | 'services'; setTab: (t: 'products' | 'services') => void }) {
-  const B = (k: 'products' | 'services', label: string) => (
+type TabKey = 'products' | 'services' | 'materials'
+function TabBar({ tab, setTab }: { tab: TabKey; setTab: (t: TabKey) => void }) {
+  const B = (k: TabKey, label: string) => (
     <button onClick={() => setTab(k)} className={`flex-1 py-2.5 rounded-xl text-sm font-black ${tab === k ? 'bg-[#04352A] text-white' : 'bg-white text-[#1A2E26] border border-gray-200'}`}>{label}</button>
   )
   return (
     <div className="max-w-4xl mx-auto px-4 pt-4">
       <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-2">المنتجات والخدمات</h2>
-      <div className="flex gap-2 mb-2">{B('products', '📦 المنتجات (المخزون)')}{B('services', '✂️ الخدمات / المنيو (للحجز)')}</div>
-      <p className="text-[11px] text-gray-500 mb-2">المنتج = حاجة بتتباع من المخزون · الخدمة = حاجة بتتحجز بميعاد. زرار «بيع» بيسجّل البيع اليدوي في الحسابات على طول.</p>
+      <div className="flex gap-2 mb-2">{B('products', '📦 المنتجات')}{B('services', '✂️ الخدمات / المنيو')}{B('materials', '🧱 الخامات (منتج أولي)')}</div>
+      <p className="text-[11px] text-gray-500 mb-2">المنتج = بيتباع من المخزون · الخدمة = بتتحجز بميعاد · الخامة = منتج أولي بيدخل في منتج أو خدمة (زرار 🧱 على المنتج للربط). «بيع» بيسجّل البيع اليدوي في الحسابات على طول وبيخصم الخامات المربوطة.</p>
     </div>
   )
 }
