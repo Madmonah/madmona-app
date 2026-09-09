@@ -2272,3 +2272,7 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
 - **«مضمونة ADMIN»:** الشيل بيختفي على أي `/admin/business-finance/*` حتى لموظفي مضمونة.
 - ⚠️ **قاعدة:** أي شاشة جوّه لوحة البيزنس = `financeRpc` + دوال بـ`p_token`. `createClient(anon)` أو
   `resolveBusiness` هناك = «بتعلق» لصاحب البيزنس.
+- 🐞 **النشر للسوق من الكتالوج كان مستحيل (٣ أسباب اتصلحوا ٩/٩):** `toggle_catalog_visibility` بتعمل
+  `order by sort_order` على categories (مش موجود) · بتعمل الإعلان published من غير صورة فتريجر الحد
+  الأدنى بيرفضه · `schedule_edit_ok(NULL)` بترجّع true للأدمن. دلوقتي: صورة إجبارية → إعلان draft →
+  الصورة بتتزامن → published. `sql/2026-09-09_toggle_catalog_visibility_fixes.sql`.
