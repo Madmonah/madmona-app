@@ -1,0 +1,21 @@
+const {chromium}=require('playwright');
+const TOKEN=process.argv[2];
+(async()=>{
+ const b=await chromium.connectOverCDP('http://127.0.0.1:9222');
+ const ctx=b.contexts()[0]; const p=await ctx.newPage(); await p.setViewportSize({width:412,height:900});
+ const errs=[]; p.on('pageerror',e=>errs.push(e.message.slice(0,120))); p.on('console',m=>{ if(m.type()==='error') errs.push(m.text().slice(0,120)); });
+ await p.goto('https://www.madmonacairo.com/home',{waitUntil:'domcontentloaded',timeout:60000});
+ await p.evaluate((t)=>{ localStorage.setItem('madmona_token', t); }, TOKEN);
+ const out={};
+ await p.goto('https://www.madmonacairo.com/login',{waitUntil:'domcontentloaded',timeout:60000}); await p.waitForTimeout(8000);
+ out.loginLandsOn=p.url();
+ await p.goto('https://www.madmonacairo.com/me',{waitUntil:'domcontentloaded',timeout:60000}); await p.waitForTimeout(9000);
+ out.me={url:p.url(), text:(await p.evaluate(()=>document.body.innerText)).replace(/\s+/g,' ').slice(0,260)};
+ await p.goto('https://www.madmonacairo.com/account',{waitUntil:'domcontentloaded',timeout:60000}); await p.waitForTimeout(9000);
+ out.account={url:p.url(), text:(await p.evaluate(()=>document.body.innerText)).replace(/\s+/g,' ').slice(0,260)};
+ await p.screenshot({path:'output/_emp_account.png'});
+ out.errors=errs.slice(0,5);
+ await p.evaluate(()=>localStorage.removeItem('madmona_token'));
+ console.log(JSON.stringify(out,null,1));
+ await p.close(); await b.close();
+})().catch(e=>console.log('ERR',e.message));
