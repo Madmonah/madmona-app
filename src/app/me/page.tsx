@@ -226,7 +226,12 @@ export default function MyDashboard() {
           </div>
         </section>
 
-        {/* ===== TIPS ===== */}
+        {/* ===== TIPS =====
+            🎁 (٩/٩/٢٠٢٦) محمد: «مكتوب له بقشيش وأنا كنت قلت إن تاب بقشيش ده مش
+            المفروض يتفتح كده» — عن محمد عبدالجابر (أوفيس بوي في مضمونة).
+            الكارت كان بيتعرض لكل موظف حتى لو مفيش أي بقشيش في حياته. القاعدة:
+            يظهر **بس** لو فيه بقشيش فعلًا (إجمالي الشهر أو معلّق أو حركة). */}
+        {(tips.month_total > 0 || tips.pending_count > 0 || (tips.recent?.length || 0) > 0) && (
         <section className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5"><Gift className="w-4 h-4 text-[#059669]" /><p className="text-sm font-black text-[#1A2E26]">البقشيش</p></div>
@@ -257,6 +262,7 @@ export default function MyDashboard() {
             </div>
           ) : <p className="text-xs text-[#6B7280]">لسه مفيش بقشيش</p>}
         </section>
+        )}
 
         {/* ===== TODAY BOOKINGS ===== */}
         <section>
