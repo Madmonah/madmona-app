@@ -395,9 +395,17 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
   //    rootGroups.length > 1)، يعني المطاعم والصناعة المستخدم عمره ما بيقدر
   //    يختار مجموعة فيهم فالفلتر عمره ما بيظهر. دلوقتي: مجموعة لو مختارة،
   //    وإلا التراك كله (p_track — كان في توقيع الدالة ومستخدمش).
+  // 🐞 (٩/٩/٢٠٢٦) محمد: «في الفلتر لما بدوس على تاب بيع بيظهرلي (الكل · أفراد ·
+  //    شركات ومعارض · معارض عربيات · من المطور) من قبل ما اختار الصب كاتيجوري».
+  //    الجذر: إصلاح ١/٩ خلّى الفلتر يتبني على التراك كله لما مفيش مجموعة مختارة —
+  //    فتاب «بيع» بيدمج تسميات أقسام مالهاش علاقة ببعض (معارض عربيات + من المطوّر
+  //    + شركات) في صف واحد قبل ما المستخدم يحدد قسمه. القاعدة دلوقتي:
+  //    الفلتر يظهر **لما النطاق يبقى محدد** — مجموعة مختارة، أو تراك رووته واحد
+  //    (مطاعم · شركات وصناعة) اللي المستخدم مايقدرش يختار فيه مجموعة أصلًا.
   useEffect(() => {
     setSellerClass('all')
-    if (!selectedGroupSlug && (!activeTrack || activeTrack === 'all')) { setSellerOpts([]); return }
+    if (!activeTrack || activeTrack === 'all') { setSellerOpts([]); return }
+    if (!selectedGroupSlug && showGroupHeadings) { setSellerOpts([]); return }
     let alive = true
     ;(async () => {
       const { data } = await (supabaseBrowser.rpc as unknown as (
@@ -411,7 +419,7 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
       setSellerOpts(withData.length >= 2 ? (data || []) : [])
     })()
     return () => { alive = false }
-  }, [selectedGroupSlug, activeTrack])
+  }, [selectedGroupSlug, activeTrack, showGroupHeadings])
   useEffect(() => {
     try { setSelectedGroupSlug(new URLSearchParams(window.location.search).get('group')) } catch { /* ssr */ }
   }, [])
