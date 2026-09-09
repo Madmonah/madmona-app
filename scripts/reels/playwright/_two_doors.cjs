@@ -1,0 +1,25 @@
+const {chromium}=require('playwright');
+(async()=>{
+ const b=await chromium.connectOverCDP('http://127.0.0.1:9222');
+ const ctx=b.contexts()[0]; const p=await ctx.newPage(); await p.setViewportSize({width:412,height:900});
+ const errs=[]; p.on('pageerror',e=>errs.push(e.message.slice(0,100))); p.on('console',m=>{ if(m.type()==='error') errs.push(m.text().slice(0,140)); });
+ await p.goto('https://www.madmonacairo.com/login',{waitUntil:'domcontentloaded',timeout:60000});
+ await p.evaluate(()=>{ try{localStorage.clear()}catch{} });
+ await p.goto('https://www.madmonacairo.com/login',{waitUntil:'domcontentloaded',timeout:60000});
+ await p.waitForSelector('input[autocomplete="username"]',{timeout:20000});
+ await p.fill('input[autocomplete="username"]','01999888779');
+ await p.fill('input[autocomplete="current-password"]','4321');
+ await p.click('button:has-text("دخول")');
+ await p.waitForTimeout(9000);
+ const out={landedOn:p.url()};
+ out.hasSupabaseSession = await p.evaluate(()=>Object.keys(localStorage).some(k=>/^sb-.*-auth-token$/.test(k)));
+ out.hasMadmonaToken = await p.evaluate(()=>!!localStorage.getItem('madmona_token'));
+ await p.goto('https://www.madmonacairo.com/account/work',{waitUntil:'domcontentloaded',timeout:60000}); await p.waitForTimeout(10000);
+ out.work={spinner:!!(await p.$('.animate-spin')), text:(await p.evaluate(()=>document.body.innerText)).replace(/\s+/g,' ').slice(0,200)};
+ out.bottomTabs = await p.evaluate(()=>[...document.querySelectorAll('nav a')].map(a=>(a.innerText||'').trim().replace(/\n/g,' ')+'→'+a.getAttribute('href')).slice(0,6));
+ await p.goto('https://www.madmonacairo.com/me',{waitUntil:'domcontentloaded',timeout:60000}); await p.waitForTimeout(8000); const meT=(await p.evaluate(()=>document.body.innerText)).replace(/s+/g,' '); out.me={hasTips:/البقشيش/.test(meT), name:/اختبار البابين/.test(meT)}; await p.screenshot({path:'output/_two_doors.png'});
+ out.errors=errs.slice(0,4);
+ await p.evaluate(()=>{ try{localStorage.clear()}catch{} });
+ console.log(JSON.stringify(out,null,1));
+ await p.close(); await b.close();
+})().catch(e=>console.log('ERR',e.message));
