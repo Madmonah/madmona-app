@@ -135,6 +135,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: false,
-    error: emp?.error || 'البيانات غلط — جرّب بباسورد لوحة الأدمن أو باسورد الموظفين أو الـPIN',
+    error: emp?.error || 'البيانات غلط — جرّب بباسورد لوحة الأدمن أو باسورد الموظفين',
   }, { status: 401 })
 }
