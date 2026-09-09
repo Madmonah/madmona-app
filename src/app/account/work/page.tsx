@@ -225,8 +225,9 @@ export default function MyWorkPage() {
       )}
 
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-5">
-        {/* ☎️ مكالماتي — بيبان لموظفين مضمونة بس */}
-        {home?.authenticated && <MyCallsCard />}
+        {/* ☎️ مكالماتي — بيبان لموظفين مضمونة بس (٩/٩/٢٠٢٦: مش للأوفيس بوي —
+            محمد: «الأوفيس بوي يشوف الحضور والتاسكات بس») */}
+        {home?.authenticated && !list.some((b) => b.relation === 'employee' && b.role_ar === 'أوفيس بوي') && <MyCallsCard />}
 
         {!home?.authenticated ? (
           <Empty icon={<LogIn className="w-8 h-8" />} title="سجّل دخولك الأول"
@@ -284,6 +285,11 @@ function MyCallsCard() {
 function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void; wizCount?: number }) {
   const isOwner = b.relation === 'owner'
   const can = (k: string) => isOwner || b.permissions?.[k] === true
+  // 🧹 (٩/٩/٢٠٢٦) محمد: «الأوفيس بوي يشوف الحضور والتاسكات بس ويدخل الشات
+  //    يوثّق الشغل». الصفة من الداتابيز (business_employees.role_ar) — مش فلاج
+  //    في المتصفح. بيخفي: الطلبات (إجازة/سلفة/عهدة) وأي حاجة تانية غير
+  //    الحضور ومهامي، وبيضيف كارت الشات.
+  const officeBoy = !isOwner && b.role_ar === 'أوفيس بوي'
   const att = b.attendance
   const inAt = att?.clock_in_at ?? null
   const outAt = att?.clock_out_at ?? null
@@ -340,7 +346,19 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
         </div>
       )}
 
-      {/* 📝 الطلبات — الموديل الموحّد: إجازة · إذن · سلفة · عهدة */}
+      {/* 💬 (٩/٩/٢٠٢٦) الأوفيس بوي بيوثّق شغله في الشات */}
+      {officeBoy && (
+        <div className="px-5 py-4 border-b border-gray-100">
+          <SectionTitle icon={<MessageCircle className="w-3.5 h-3.5" />} title="وثّق شغلك" />
+          <Link href="/chat" className="mt-2 flex items-center justify-between gap-3 rounded-2xl bg-[#34D399]/10 border border-[#059669]/20 px-4 py-3 no-underline">
+            <span className="text-[13px] font-bold text-[#04352A]">اكتب في الشات اللي عملته النهارده — الإدارة بتشوفه على طول</span>
+            <span className="text-[#059669] font-black text-sm whitespace-nowrap">افتح الشات ←</span>
+          </Link>
+        </div>
+      )}
+
+      {/* 📝 الطلبات — الموديل الموحّد: إجازة · إذن · سلفة · عهدة — مش للأوفيس بوي */}
+      {!officeBoy && (
       <div className="px-5 py-4 border-b border-gray-100">
         <SectionTitle
           icon={<Inbox className="w-3.5 h-3.5" />}
@@ -381,6 +399,7 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
           </Link>
         )}
       </div>
+      )}
 
       {/* 🏷️ الإعلانات — (٢٥ أغسطس ٢٠٢٦) محمد: «صلاحيات الموظفين للإعلانات
           تكون مفتوحة ويكون ليها تاب». الشاشة الواحدة لكل الإعلانات هي
