@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 import { readMadmonaToken } from '@/lib/madmona-token'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { getSessionSafe } from '@/lib/session-safe'
 import {
   LayoutDashboard, LayoutGrid, Package, Boxes, ShoppingCart, CalendarDays,
   Star, Users, Wallet, UtensilsCrossed, KeyRound, Factory, Workflow,
@@ -140,7 +141,8 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         //     للفريق لازم تقبل **البابين**. workspace_menu_context بترد
         //     من الاتنين — جلسة لو موجودة، وإلا التوكن.
         const wtok = readMadmonaToken()
-        const { data: { session } } = await supabaseBrowser.auth.getSession()
+        // ⏱️ (٩/٩/٢٠٢٦) بمهلة — قفل navigator.locks كان بيعلّق الدرج على الـPWA
+        const session = await getSessionSafe(4000)
         if (!session?.user && !wtok) return
 
         const { data: ctxRaw } = await (supabaseBrowser.rpc as unknown as (

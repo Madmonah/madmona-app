@@ -21,6 +21,7 @@ import {
   LayoutDashboard, Car, Package,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { getSessionSafe } from '@/lib/session-safe'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import LanguageToggle from './LanguageToggle'
 import CountryToggle from './CountryToggle'
@@ -157,7 +158,7 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
 
   // auth (for drawer login/logout)
   useEffect(() => {
-    supabaseBrowser.auth.getSession().then(({ data }) => setLoggedIn(!!data.session))
+    getSessionSafe(4000).then((session) => setLoggedIn(!!session))
     const { data: sub } = supabaseBrowser.auth.onAuthStateChange((_e, s) => setLoggedIn(!!s))
     return () => sub.subscription.unsubscribe()
   }, [])
