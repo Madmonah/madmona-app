@@ -187,6 +187,20 @@ export function canOpenModule(
   return perms?.[need] === true
 }
 
+// 🏛️ (٩/٩/٢٠٢٦ — آخر الليل) محمد: «ليه فاتح كل التابات لمضمونة؟ تابات مضمونة تخص بيزنس وشغل
+//    مضمونة اللي هو العمولات من الماركتبليس ونظام الاشتراكات — ده اللي يكون ظاهر لحد ما أقولك
+//    إن عندنا نشاط جديد». لوحة مضمونة نفسها = الفلوس (عمولات · حسابات · مصاريف · كاش · مرتبات)
+//    + الفريق (حضور · تاسكات · طلبات · عهد · صلاحيات) + العملاء (CRM). مفيش منتجات/خدمات/حجوزات.
+export const PLATFORM_SUPPLIER_ID = 'c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
+export const PLATFORM_MODULE_KEYS = [
+  'dashboard', 'accounting', 'expenses', 'cash-recon', 'payroll', 'reports', 'vat-report',
+  'team', 'permissions', 'requests', 'custody', 'schedule', 'monitor', 'attendance', 'attendance-devices', 'flow-tasks',
+  'crm', 'customers', 'at-risk', 'documents', 'audit-log', 'identity', 'branches', 'links',
+]
+export function modulesForPlatform(): ModuleDef[] {
+  return MODULE_DEFS.filter(m => PLATFORM_MODULE_KEYS.includes(m.href))
+}
+
 // الموديولات اللي تخص بيزنس حسب نشاطه (core + الـvertical بتاعه)
 export function modulesForIndustry(industry: string | null | undefined): ModuleDef[] {
   const vk = verticalOf(industry)

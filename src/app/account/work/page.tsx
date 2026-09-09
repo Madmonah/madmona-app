@@ -547,7 +547,7 @@ type Ledger = {
   ok: boolean; error?: string
   custody: { id: string; title: string | null; kind: string; value: number | null; spent: number; remaining: number; status: string }[]
   advances: { id: string; amount: number | null; repaid: number; remaining: number; status: string; reason: string | null }[]
-  purchases: { id: string; amount: number | null; title: string; vendor: string | null; date: string | null }[]
+  purchases: { id: string; amount: number | null; title: string; vendor: string | null; date: string | null; locked?: boolean }[]
 }
 function CustodyCard({ supplierId, onRefresh }: { supplierId: string; onRefresh: () => void }) {
   const [led, setLed] = useState<Ledger | null>(null)
@@ -571,6 +571,31 @@ function CustodyCard({ supplierId, onRefresh }: { supplierId: string; onRefresh:
   // 🐞 (٩/٩) محمد: «كل بند بيتسجل مرتين» — الضغطة المزدوجة على الموبايل كانت بتعدّي قبل ما
   //    الزرار يتقفل (state متأخر). قفل فوري بـref + حارس في الداتابيز (نفس العملية خلال دقيقتين).
   const lockRef = useRef(false)
+  // ✏️ تعديل/مسح بند من بيان العهدة (طول ما العهدة مفتوحة)
+  const [editId, setEditId] = useState<string | null>(null)
+  const [eTitle, setETitle] = useState('')
+  const [eAmount, setEAmount] = useState('')
+  const rpcJ = async (fn: string, args: Record<string, unknown>) => {
+    const { data } = await (supabaseBrowser.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: { ok?: boolean; error?: string } | null }>)(fn, args)
+    return data
+  }
+  const saveEdit = async (id: string) => {
+    setBusy(true); setErr(null)
+    try {
+      const d = await rpcJ('employee_custody_purchase_update', { p_supplier_id: supplierId, p_expense_id: id, p_amount: Number(eAmount) || null, p_title: eTitle || null, p_vendor: null })
+      if (!d?.ok) { setErr(d?.error || 'ماتعدّلش'); return }
+      setEditId(null); await load(); onRefresh()
+    } finally { setBusy(false) }
+  }
+  const deletePurchase = async (id: string) => {
+    if (!confirm('تمسح البند ده من بيان العهدة؟')) return
+    setBusy(true); setErr(null)
+    try {
+      const d = await rpcJ('employee_custody_purchase_delete', { p_supplier_id: supplierId, p_expense_id: id })
+      if (!d?.ok) { setErr(d?.error || 'ماتمسحش'); return }
+      await load(); onRefresh()
+    } finally { setBusy(false) }
+  }
   const submit = async () => {
     if (lockRef.current) return
     lockRef.current = true
@@ -618,10 +643,27 @@ function CustodyCard({ supplierId, onRefresh }: { supplierId: string; onRefresh:
           {led.purchases.length > 0 && (
             <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3">
               <p className="text-[11px] font-bold text-[#6B7280] mb-1">مشترياتي الشهر ده</p>
-              {led.purchases.map(x => (
-                <div key={x.id} className="flex items-center justify-between text-[12.5px] py-1 border-b border-gray-50 last:border-0">
-                  <span className="text-[#1A2E26]">{x.title}{x.vendor ? ` · ${x.vendor}` : ''}</span>
+              {/* ✏️ (٩/٩) محمد: «تعديل لبيان العهدة بس بعد المراجعة يتقفل التعديل» — البند بيتعدّل/يتمسح
+                  طول ما العهدة مفتوحة (locked=false)؛ بعد التسوية بيتقفل من الداتابيز كمان */}
+              {led.purchases.map(x => editId === x.id ? (
+                <div key={x.id} className="py-2 border-b border-gray-50 space-y-1.5">
+                  <input value={eTitle} onChange={e => setETitle(e.target.value)} className="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-[16px] md:text-[12.5px] bg-white" />
+                  <div className="flex gap-2">
+                    <input value={eAmount} onChange={e => setEAmount(e.target.value)} inputMode="decimal" dir="ltr" className="w-24 rounded-lg border border-gray-200 px-2 py-1.5 text-[16px] md:text-[12.5px] bg-white" />
+                    <button onClick={() => void saveEdit(x.id)} disabled={busy} className="px-3 rounded-lg bg-[#34D399] text-[#04352A] text-[12px] font-black disabled:opacity-50">حفظ</button>
+                    <button onClick={() => setEditId(null)} className="px-3 rounded-lg border border-gray-200 text-[12px] font-bold">إلغاء</button>
+                  </div>
+                </div>
+              ) : (
+                <div key={x.id} className="flex items-center justify-between gap-2 text-[12.5px] py-1 border-b border-gray-50 last:border-0">
+                  <span className="text-[#1A2E26] flex-1 min-w-0 truncate">{x.title}{x.vendor ? ` · ${x.vendor}` : ''}</span>
                   <span className="font-bold font-mono">{fmtN(x.amount)} ج</span>
+                  {x.locked ? <span className="text-[10px] text-[#9CA3AF]">🔒</span> : (
+                    <span className="flex gap-1">
+                      <button onClick={() => { setEditId(x.id); setETitle(x.title || ''); setEAmount(String(x.amount ?? '')) }} className="text-[11px] px-1.5 py-0.5 rounded bg-[#FAFAF7]" aria-label="تعديل">✏️</button>
+                      <button onClick={() => void deletePurchase(x.id)} className="text-[11px] px-1.5 py-0.5 rounded bg-red-50" aria-label="مسح">🗑</button>
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

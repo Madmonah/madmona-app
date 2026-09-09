@@ -148,7 +148,7 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
   if (supplierId && tab === 'services') {
     return (
       <div dir="rtl">
-        <TabBar tab={tab} setTab={setTab} />
+        <TabBar tab={tab} setTab={setTab} isRestaurant={!!biz?.tracks?.includes("restaurants")} />
         <ServicesCatalogPage params={{ supplierId }} />
       </div>
     )
@@ -156,7 +156,7 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
   if (supplierId && tab === 'materials') {
     return (
       <div dir="rtl">
-        <TabBar tab={tab} setTab={setTab} />
+        <TabBar tab={tab} setTab={setTab} isRestaurant={!!biz?.tracks?.includes("restaurants")} />
         <MaterialsPage supplierId={supplierId} />
       </div>
     )
@@ -164,7 +164,7 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
 
   return (
     <div className="max-w-4xl mx-auto p-4 pb-24" dir="rtl">
-      {supplierId && <TabBar tab={tab} setTab={setTab} />}
+      {supplierId && <TabBar tab={tab} setTab={setTab} isRestaurant={!!biz?.tracks?.includes("restaurants")} />}
       <div className="flex items-center justify-between mb-3 gap-2">
         <div>
           <Link href={supplierId ? `/admin/business-finance/${supplierId}` : '/supplier/erp'} className="text-[11px] text-gray-500 font-bold flex items-center gap-1 mb-1">
@@ -332,14 +332,14 @@ function Stat({ label, v, good, warn }: { label: string; v: number; good?: boole
 
 /* 🧩 (٩/٩/٢٠٢٦) تابين جوّه شاشة واحدة: منتجات · خدمات — بدل تلات تابات متعارضة في اللوحة */
 type TabKey = 'products' | 'services' | 'materials'
-function TabBar({ tab, setTab }: { tab: TabKey; setTab: (t: TabKey) => void }) {
+function TabBar({ tab, setTab, isRestaurant }: { tab: TabKey; setTab: (t: TabKey) => void; isRestaurant?: boolean }) {
   const B = (k: TabKey, label: string) => (
     <button onClick={() => setTab(k)} className={`flex-1 py-2.5 rounded-xl text-sm font-black ${tab === k ? 'bg-[#04352A] text-white' : 'bg-white text-[#1A2E26] border border-gray-200'}`}>{label}</button>
   )
   return (
     <div className="max-w-4xl mx-auto px-4 pt-4">
       <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-2">المنتجات والخدمات</h2>
-      <div className="flex gap-2 mb-2">{B('products', '📦 المنتجات')}{B('services', '✂️ الخدمات / المنيو')}{B('materials', '🧱 الخامات (منتج أولي)')}</div>
+      <div className="flex gap-2 mb-2">{B('products', '📦 المنتجات')}{B('services', isRestaurant ? '🍽️ المنيو' : '✂️ قائمة الخدمات')}{B('materials', '🧱 الخامات (منتج أولي)')}</div>
       <p className="text-[11px] text-gray-500 mb-2">المنتج = بيتباع من المخزون · الخدمة = بتتحجز بميعاد · الخامة = منتج أولي بيدخل في منتج أو خدمة (زرار 🧱 على المنتج للربط). «بيع» بيسجّل البيع اليدوي في الحسابات على طول وبيخصم الخامات المربوطة.</p>
     </div>
   )

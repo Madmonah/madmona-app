@@ -1,0 +1,15 @@
+-- 🏛️ (٩/٩/٢٠٢٦ — آخر الليل) مطبّق لايف بميجريشنات: commission_only_when_customer_via_madmona ·
+-- employee_custody_purchase_edit_delete · employee_custody_purchase_dedupe · custody_settle_edit_and_product_materials
+--
+-- ① بروتوكول الاشتراك (docs/business/clinic-subscription-protocol.md):
+--    auto_calc_madmona_commission_gross → عمولة مضمونة **بس** لو العميل جاي من مضمونة:
+--    reference_type in ('marketplace_order','order') أو حجز category 'حجز Madmona' (source='madmona').
+--    mart_order بتيجي محسوبة من create_mart_order. البيع اليدوي (manual_sale) والحجز المباشر/التليفون/
+--    واتساب البيزنس = عمولة صفر. اختبار: record_manual_sale كجلسة محمد → madmona_commission_amount = 0.
+-- ② بيان العهدة: employee_custody_purchase_update/delete — للبند بتاع الموظف نفسه وطول ما العهدة
+--    status='held'؛ بعد التسوية «العهدة اتراجعت واتسوّت — البيان مقفول». my_custody_ledger بترجّع
+--    purchases[].locked عشان الواجهة تخفي ✏️/🗑. التعديل بيظبط cash_spent والقيد المرايا (void عند المسح).
+-- ③ employee_custody_purchase: نفس العهدة+المبلغ+الوصف خلال دقيقتين = مكررة (بترجّع الصف القديم).
+-- ④ admin_custody_settle_edit + product_material_consumption + admin_list/set_product_materials
+--    + record_manual_sale بتخصم الخامات المربوطة (منتج ← product_material_consumption · خدمة ← service_product_consumption).
+select 1;

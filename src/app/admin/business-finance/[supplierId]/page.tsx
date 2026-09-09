@@ -57,7 +57,7 @@ const MADMONA_ID = 'c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
    (Phase 2: move this to a `supplier_modules` table = per-client toggles.)
    ============================================================ */
 // ⬇️ مصدر واحد لقائمة الموديولات — من src/lib/erpModules.ts (نفس اللي يستخدمه تبويب الإعدادات)
-import { MODULE_DEFS, VERTICAL_ALIAS, canOpenModule, verticalOf, type VKey } from '@/lib/erpModules'
+import { MODULE_DEFS, VERTICAL_ALIAS, canOpenModule, verticalOf, PLATFORM_MODULE_KEYS, PLATFORM_SUPPLIER_ID, type VKey } from '@/lib/erpModules'
 // الأيقونات تفضل هنا (بيانات الموديولات نفسها في src/lib/erpModules.ts)
 const ICON_MAP: Record<string, any> = {
   confirmations: CheckCircle2, links: Link2, dashboard: BarChart3, team: Users,
@@ -267,7 +267,12 @@ export default function BusinessFinancePage({
     //    الموديولات الكاملة لأنها بتلخبط العميل». نفس قاعدة erpModules:
     //    نشاط مش متعرّف (فاضي أو عربي مش في الخريطة) = كل الموديولات.
     const industry = verticalOf(supplier?.industry)
-    const baseVisible = (m: { v: VKey[] }) => !industry || m.v.includes('core') || m.v.includes(industry)
+    // 🏛️ (٩/٩) لوحة مضمونة نفسها = الفلوس والفريق والعملاء بس (PLATFORM_MODULE_KEYS) — محمد:
+    //    «تابات مضمونة تخص شغل مضمونة: العمولات ونظام الاشتراكات — لحد ما أقولك إن عندنا نشاط جديد»
+    const isPlatform = supplierId === PLATFORM_SUPPLIER_ID || (supplier as { is_platform_owner?: boolean } | null)?.is_platform_owner === true
+    const baseVisible = (m: { href: string; v: VKey[] }) => isPlatform
+      ? PLATFORM_MODULE_KEYS.includes(m.href)
+      : (!industry || m.v.includes('core') || m.v.includes(industry))
     return MODULE_REGISTRY
       .map((m, idx) => {
         const o = modOverrides[m.href]
