@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import { getSessionSafe } from '@/lib/session-safe'
+import { ensureSupabaseSession } from '@/lib/session-upgrade'
 import { safeStorage } from '@/lib/safe-storage'
 import {
   ArrowRight, Calendar, Building2, ShoppingBag,
@@ -62,7 +62,8 @@ export default function AccountPage() {
       //    ماكانش بيرجّع أبدًا. وأي خطأ في التحميل مايسيبش الشاشة على «loading».
       const waTokenEarly = typeof window !== 'undefined' ? safeStorage.get('madmona_token') : null
       if (waTokenEarly) setStage('ready')
-      const session = await getSessionSafe(4000)
+      // 🚪🚪 (٩/٩/٢٠٢٦) توكن بس؟ نرقّيه لجلسة Supabase في نفس الشاشة (session-upgrade.ts)
+      const session = await ensureSupabaseSession(4000)
       if (!session?.user) {
         // ⚠️ (15 Jul 2026) مفيش جلسة Supabase ≠ مش مسجّل دخول.
         // فيه ناس داخلة بالواتساب (توكن في localStorage) — دول كانوا بيشوفوا

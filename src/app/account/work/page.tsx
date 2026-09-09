@@ -7,6 +7,7 @@ import {
   Building2, Crown, Check, ClipboardList, LogIn, Plus, AlertCircle, Phone, ChevronLeft,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { ensureSupabaseSession } from '@/lib/session-upgrade'
 import BottomNav from '@/components/BottomNav'
 import AttendancePulse from '@/components/AttendancePulse'
 import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
@@ -124,7 +125,9 @@ export default function MyWorkPage() {
 
   const load = useCallback(async (): Promise<boolean> => {
     try {
-      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      // 🚪🚪 (٩/٩/٢٠٢٦) لو الجهاز داخل بتوكن بس (باب واحد) — نفتح الباب التاني
+      //    لوحدنا بدل «سجّل دخولك» لواحد داخل فعلًا. التفاصيل في session-upgrade.ts
+      const session = await ensureSupabaseSession()
       if (!session?.user) return false
       const { data } = await (supabaseBrowser.rpc as unknown as (
         fn: string,
