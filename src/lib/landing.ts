@@ -10,7 +10,7 @@
 //   ومحدش فيهم بيودّي صاحب البيزنس للوحته.
 //
 // القاعدة دلوقتي:
-//   • موظف مضمونة       → /admin/listings   (شاشة الإعلانات — مكان شغل الفريق)
+//   • موظف مضمونة       → /me   («شغلي» — بتشتغل بالتوكن؛ /admin/* محتاجة كوكي اللوحة)
 //   • صاحب/مدير بيزنس   → /admin/business-finance/<بيزنسه>   (اللوحة الكاملة)
 //   • غير كده           → /home
 //
@@ -31,7 +31,14 @@ export async function landingAfterLogin(fallback = '/home'): Promise<string> {
     const { data } = await (supabaseBrowser.rpc as unknown as (
       f: string, a: Record<string, unknown>,
     ) => Promise<{ data: Ctx | null }>)('workspace_menu_context', { p_token: wtok || null })
-    if (data?.is_staff === true) return '/admin/listings'
+    // 🐞 (٩/٩/٢٠٢٦ — بعد ساعة من الإطلاق) محمد: «مش عارف أدخل بحساب محمد
+    //    عبدالجابر أصلًا». الموظف اللي بيدخل بالـPIN معاه توكن واتساب بس —
+    //    مفيش كوكي لوحة ولا جلسة Supabase — والميدلوير بيحرس /admin/* بكوكي
+    //    اللوحة، فكان بيتحوّل لـ/admin-entry (باسورد مايملكوش) = «مش عارف
+    //    أدخل». شاشة الموظف اللي بتشتغل بالتوكن هي «شغلي» /me (زي ما كانت
+    //    قبل التوحيد). أدمن اللوحة بباسورد بيروح /admin/listings من /login
+    //    مباشرة (source==='admin') مش من هنا.
+    if (data?.is_staff === true) return '/me'
     if (data?.ok && data.supplier_id) return `/admin/business-finance/${data.supplier_id}`
   } catch { /* نرجع للافتراضي */ }
   return fallback

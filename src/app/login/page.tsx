@@ -82,7 +82,8 @@ export default function MadmonaLoginPage() {
       }
       if (data.token) safeStorage.set('madmona_token', data.token)
       // أدمن → لوحة الأدمن مباشرة (الكوكي اتفتحت)، موظف → /me
-      router.push(await resolveLanding(nextPath(), data.source === 'admin' ? '/admin/listings' : '/home'))
+      // أدمن اللوحة (معاه الكوكي) → الإعلانات مباشرة؛ غيره → القرار الموحّد (موظف → شغلي · مالك → لوحته)
+      router.push(data.source === 'admin' && nextPath() === LANDING_AUTO ? '/admin/listings' : await resolveLanding(nextPath(), '/home'))
     } catch {
       setError(t('lg.err_conn'))
       setSending(false)
