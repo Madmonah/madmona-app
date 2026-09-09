@@ -49,10 +49,10 @@ export default function JoinPage({ params }: { params: { code: string } }) {
 
   const canVerify = name.trim().length > 1 && !!branchId
 
-  if (loadingInfo) return <div className="min-h-screen bg-[#34D399] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
+  if (loadingInfo) return <div className="min-h-screen bg-[#04352A] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
 
   if (!info) return (
-    <div className="min-h-screen bg-[#34D399] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#04352A] flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-3xl p-8 max-w-md text-center">
         <h2 className="text-xl font-black text-[#1A2E26]">اللينك مش صحيح</h2>
         <p className="text-sm text-[#6B7280] mt-2">تأكد من اللينك أو تواصل مع إدارتك.</p>
@@ -61,7 +61,7 @@ export default function JoinPage({ params }: { params: { code: string } }) {
   )
 
   return (
-    <div className="min-h-screen bg-[#34D399] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#04352A] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">

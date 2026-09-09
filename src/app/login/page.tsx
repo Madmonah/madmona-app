@@ -108,12 +108,14 @@ export default function MadmonaLoginPage() {
     }
   }
 
-  if (checking) return <div className="min-h-screen bg-[#34D399] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
+  if (checking) return <div className="min-h-screen bg-[#04352A] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
 
   return (
-    <div className="min-h-screen bg-[#34D399] flex items-center justify-center p-4" dir="rtl">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+    <div className="min-h-screen bg-[#FAFAF7]" dir="rtl">
+      {/* 🎨 (٩/٩/٢٠٢٦) محمد: «ألوان صفحات الأبليكيشن زي الهوم» — هيدر #04352A + أرضية #FAFAF7 (نفس MobileHome) */}
+      <div className="bg-[#04352A] h-44 rounded-b-[2.5rem]" />
+      <div className="w-full max-w-md mx-auto px-4 -mt-36 pb-10">
+        <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">
             <span className="text-3xl font-black text-[#059669]">م</span>
           </div>
@@ -121,7 +123,7 @@ export default function MadmonaLoginPage() {
           <p className="text-sm text-white/80 mt-1">{t('common.slogan')}</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-2xl">
+        <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
           <h2 className="text-lg font-black text-[#1A2E26] mb-1">{t('lg.title')}</h2>
           <p className="text-sm text-[#6B7280] mb-5">{t('lg.sub')}</p>
 
@@ -184,7 +186,7 @@ export default function MadmonaLoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-[10px] text-white/60 mt-6">madmonacairo.com</p>
+        <p className="text-center text-[10px] text-[#6B7280] mt-6">madmonacairo.com</p>
       </div>
     </div>
   )

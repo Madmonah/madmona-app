@@ -80,10 +80,10 @@ export default function OwnerLoginPage() {
     }
   }
 
-  if (checking) return <div className="min-h-screen bg-[#34D399] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
+  if (checking) return <div className="min-h-screen bg-[#04352A] flex items-center justify-center"><Loader2 className="w-8 h-8 text-white animate-spin" /></div>
 
   return (
-    <div className="min-h-screen bg-[#34D399] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-[#04352A] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-white grid place-items-center mx-auto mb-4">

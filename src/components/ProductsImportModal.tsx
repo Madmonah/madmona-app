@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { Loader2, X, FileSpreadsheet } from 'lucide-react'
 import { financeRpc } from '@/lib/financeRpc'
 
-type Row = { name_ar: string; selling_price_egp?: number | null; cost_price_egp?: number | null; current_stock?: number | null; reorder_threshold?: number | null; unit?: string | null; sku?: string | null; item_class?: string | null; notes?: string | null; image_url?: string | null }
+type Row = { name_ar: string; selling_price_egp?: number | null; cost_price_egp?: number | null; current_stock?: number | null; reorder_threshold?: number | null; unit?: string | null; sku?: string | null; item_class?: string | null; notes?: string | null; image_url?: string | null; category?: string | null }
 
 const HEADERS: Record<keyof Row, string[]> = {
   name_ar: ['الاسم', 'اسم المنتج', 'المنتج', 'الصنف', 'name', 'product', 'item', 'name_ar'],
@@ -22,6 +22,7 @@ const HEADERS: Record<keyof Row, string[]> = {
   item_class: ['النوع', 'نوع', 'type', 'class', 'item_class'],
   notes: ['ملاحظات', 'وصف', 'notes', 'description'],
   image_url: ['الصورة', 'رابط الصورة', 'image', 'image_url', 'photo'],
+  category: ['القسم', 'التصنيف', 'الفئة', 'قسم السوق', 'category', 'cat', 'section'],
 }
 const norm = (s: string) => String(s || '').trim().toLowerCase().replace(/[_\-\s]+/g, ' ')
 function mapHeader(h: string): keyof Row | null {
@@ -32,7 +33,7 @@ function mapHeader(h: string): keyof Row | null {
 }
 const num = (v: unknown) => { const x = Number(String(v ?? '').replace(/[^\d.\-]/g, '')); return Number.isFinite(x) ? x : null }
 
-export default function ProductsImportModal({ supplierId, onClose, onDone }: { supplierId: string; onClose: () => void; onDone: (r: { inserted: number; updated: number; skipped: number }) => void }) {
+export default function ProductsImportModal({ supplierId, onClose, onDone }: { supplierId: string; onClose: () => void; onDone: (r: { inserted: number; updated: number; skipped: number; guessed: number }) => void }) {
   const [rows, setRows] = useState<Row[]>([])
   const [cols, setCols] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
@@ -57,7 +58,7 @@ export default function ProductsImportModal({ supplierId, onClose, onDone }: { s
         for (const h of headers) {
           const k = map[h]; if (!k) continue
           const v = r[h]
-          if (k === 'name_ar' || k === 'unit' || k === 'sku' || k === 'item_class' || k === 'notes' || k === 'image_url') (o as Record<string, unknown>)[k] = String(v ?? '').trim() || null
+          if (k === 'name_ar' || k === 'unit' || k === 'sku' || k === 'item_class' || k === 'notes' || k === 'image_url' || k === 'category') (o as Record<string, unknown>)[k] = String(v ?? '').trim() || null
           else (o as Record<string, unknown>)[k] = num(v)
         }
         return o as Row
@@ -71,7 +72,7 @@ export default function ProductsImportModal({ supplierId, onClose, onDone }: { s
     const { data, error } = await financeRpc('business_products_import', { p_supplier_id: supplierId, p_rows: rows })
     setBusy(false)
     if (error || !data?.ok) { setErr(error?.message || data?.error || 'الاستيراد ماتمّش'); return }
-    onDone({ inserted: Number(data.inserted || 0), updated: Number(data.updated || 0), skipped: Number(data.skipped || 0) })
+    onDone({ inserted: Number(data.inserted || 0), updated: Number(data.updated || 0), skipped: Number(data.skipped || 0), guessed: Number(data.guessed_category || 0) })
   }
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" dir="rtl">
@@ -82,7 +83,7 @@ export default function ProductsImportModal({ supplierId, onClose, onDone }: { s
           <button onClick={onClose}><X className="w-5 h-5 text-[#6B7280]" /></button>
         </header>
         <div className="p-5 space-y-3">
-          <p className="text-[12px] text-[#6B7280] leading-relaxed">الملف (.xlsx أو .csv) أول صف فيه أسماء الأعمدة. المطلوب عمود <b>الاسم</b> بس، والباقي اختياري: <b>سعر البيع · التكلفة · المخزون · الوحدة · الكود · النوع</b> (منتج/خامة/مستهلك) · ملاحظات · رابط الصورة. المنتج اللي اسمه أو كوده موجود بيتحدّث مش بيتكرر.</p>
+          <p className="text-[12px] text-[#6B7280] leading-relaxed">الملف (.xlsx أو .csv) أول صف فيه أسماء الأعمدة. المطلوب عمود <b>الاسم</b> بس، والباقي اختياري: <b>سعر البيع · التكلفة · المخزون · الوحدة · الكود · النوع</b> (منتج/خامة/مستهلك) · <b>القسم</b> (اسم قسم السوق — لو ناقص بنحدده من اسم المنتج) · ملاحظات · رابط الصورة. المنتج اللي اسمه أو كوده موجود بيتحدّث مش بيتكرر.</p>
           <label className="block">
             <span className="px-3 py-2 rounded-xl border border-[#059669]/30 text-[#059669] text-[12px] font-black inline-flex items-center gap-1.5 cursor-pointer">{busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />} اختار الملف</span>
             <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={onFile} />

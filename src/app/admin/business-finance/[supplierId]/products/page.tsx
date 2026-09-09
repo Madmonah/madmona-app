@@ -24,8 +24,9 @@ import ProductMaterialsModal from '@/components/ProductMaterialsModal'
 import CatalogPhotoField from '@/components/CatalogPhotoField'
 import ProductsImportModal from '@/components/ProductsImportModal'
 
-type Product = { id: string; name_ar: string; sku: string | null; selling_price_egp: number | null; cost_price_egp: number | null; current_stock: number | null; reorder_threshold: number | null; unit: string | null; active: boolean; notes: string | null; item_class: 'sellable' | 'material' | 'consumable'; publish_to_marketplace: boolean; listing_id: string | null; image_url: string | null }
-type Service = { id: string; name_ar: string; category: string | null; price_egp: number | null; duration_minutes: number | null; performer_commission_pct: number | null; status: string; description: string | null; publish_to_marketplace: boolean; listing_id: string | null; image_url: string | null }
+type Product = { id: string; name_ar: string; sku: string | null; selling_price_egp: number | null; cost_price_egp: number | null; current_stock: number | null; reorder_threshold: number | null; unit: string | null; active: boolean; notes: string | null; item_class: 'sellable' | 'material' | 'consumable'; publish_to_marketplace: boolean; listing_id: string | null; image_url: string | null; category_id: string | null }
+type Service = { id: string; name_ar: string; category: string | null; price_egp: number | null; duration_minutes: number | null; performer_commission_pct: number | null; status: string; description: string | null; publish_to_marketplace: boolean; listing_id: string | null; image_url: string | null; category_id: string | null }
+type Cat = { id: string; slug: string; name_ar: string; track: string; parent: string | null }
 type Bundle = { ok: boolean; error?: string; business?: { id: string; business_name: string; industry: string | null; currency: string; is_restaurant: boolean }; products: Product[]; services: Service[] }
 type Tab = 'products' | 'services' | 'materials'
 
@@ -47,6 +48,9 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
   const [sale, setSale] = useState<SaleItem | null>(null)
   const [comp, setComp] = useState<Product | null>(null)
   const [importOpen, setImportOpen] = useState(false)
+  // 🗂️ (٩/٩) محمد: «مش عايز إعلانات تنزل في أقسام غلط تاني» — صاحب البيزنس بيختار قسم السوق بنفسه (مقترحة من نشاطه أولًا)
+  const [cats, setCats] = useState<Cat[]>([])
+  const [sugg, setSugg] = useState<string[]>([])
 
   const load = useCallback(async () => {
     setLoading(true); setErr(null)
@@ -54,6 +58,8 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
     if (error || !data?.ok) { setErr(error?.message || data?.error || 'مش قادرين نحمّل الكتالوج'); setB({ ok: false, products: [], services: [] }) }
     else setB(data)
     setLoading(false)
+    const { data: cd } = await financeRpc('catalog_categories', { p_supplier_id: supplierId })
+    if (cd?.ok) { setCats(cd.all || []); setSugg(cd.suggested || []) }
   }, [supplierId])
   useEffect(() => { void load() }, [load])
 
@@ -101,6 +107,21 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
     void load()
   }
 
+  const catName = (id: string | null | undefined) => cats.find(c => c.id === id)?.name_ar || ''
+  const CategorySelect = ({ kind, value, onChange }: { kind: 'product' | 'service'; value: string | null | undefined; onChange: (v: string | null) => void }) => {
+    const tracks = kind === 'product' ? ['products'] : (isRest ? ['restaurants', 'services'] : ['services'])
+    const pool = cats.filter(c => tracks.includes(c.track))
+    const suggested = pool.filter(c => sugg.includes(c.id))
+    return (
+      <F label="القسم في السوق (اللي العميل بيلاقيك فيه)">
+        <select value={value || ''} onChange={e => onChange(e.target.value || null)} className={INP}>
+          <option value="">— هنحدده من الاسم تلقائيًا —</option>
+          {suggested.length > 0 && <optgroup label="مقترح لنشاطك">{suggested.map(c => <option key={'s' + c.id} value={c.id}>{c.parent ? c.parent + ' › ' : ''}{c.name_ar}</option>)}</optgroup>}
+          <optgroup label="كل الأقسام">{pool.map(c => <option key={c.id} value={c.id}>{c.parent ? c.parent + ' › ' : ''}{c.name_ar}</option>)}</optgroup>
+        </select>
+      </F>
+    )
+  }
   const TabBtn = ({ k, label }: { k: Tab; label: string }) => (
     <button onClick={() => setTab(k)} className={`flex-1 py-2.5 rounded-xl text-sm font-black ${tab === k ? 'bg-[#04352A] text-white' : 'bg-white text-[#1A2E26] border border-gray-200'}`}>{label}</button>
   )
@@ -157,7 +178,7 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
                           {p.image_url ? <img src={p.image_url} alt="" className="w-11 h-11 rounded-lg object-cover shrink-0" /> : <span className="w-11 h-11 rounded-lg bg-[#FAFAF7] grid place-items-center shrink-0">📷</span>}
                           <span className="min-w-0">
                           <p className="text-[13px] font-black text-[#1A2E26] truncate">{p.name_ar}</p>
-                          <p className="text-[11px] text-[#6B7280] mt-0.5">{fmt(p.selling_price_egp)} {cur}{p.current_stock != null && <span className={low ? 'text-amber-700 font-bold' : ''}> · متاح {fmt(p.current_stock)} {p.unit || ''}</span>}{p.sku ? ` · ${p.sku}` : ''}</p>
+                          <p className="text-[11px] text-[#6B7280] mt-0.5">{catName(p.category_id) ? `🗂️ ${catName(p.category_id)} · ` : ''}{fmt(p.selling_price_egp)} {cur}{p.current_stock != null && <span className={low ? 'text-amber-700 font-bold' : ''}> · متاح {fmt(p.current_stock)} {p.unit || ''}</span>}{p.sku ? ` · ${p.sku}` : ''}</p>
                           </span>
                         </button>
                         <button onClick={() => setComp(p)} title="المكوّنات (الخامات)" className="shrink-0 px-2.5 py-2 rounded-xl text-[11.5px] font-black bg-white border border-gray-200">🧱</button>
@@ -184,7 +205,7 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
                         {s.image_url ? <img src={s.image_url} alt="" className="w-11 h-11 rounded-lg object-cover shrink-0" /> : <span className="w-11 h-11 rounded-lg bg-[#FAFAF7] grid place-items-center shrink-0">📷</span>}
                         <span className="min-w-0">
                         <p className="text-[13px] font-black text-[#1A2E26] truncate">{s.name_ar}</p>
-                        <p className="text-[11px] text-[#6B7280] mt-0.5">{fmt(s.price_egp)} {cur}{!isRest && s.duration_minutes ? ` · ${s.duration_minutes} د` : ''}{s.category ? ` · ${s.category}` : ''}</p>
+                        <p className="text-[11px] text-[#6B7280] mt-0.5">{fmt(s.price_egp)} {cur}{!isRest && s.duration_minutes ? ` · ${s.duration_minutes} د` : ''}{s.category ? ` · ${s.category}` : ''}{catName(s.category_id) ? ` · 🗂️ ${catName(s.category_id)}` : ''}</p>
                         </span>
                       </button>
                       <button onClick={() => setSale({ id: s.id, name: s.name_ar, unitPrice: Number(s.price_egp) || null, kind: 'service' })} className="shrink-0 px-3 py-2 rounded-xl text-[11.5px] font-black bg-[#04352A] text-white">بيع</button>
@@ -229,6 +250,7 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
         <Modal title={pForm.id ? 'تعديل' : (pForm.item_class === 'sellable' ? 'منتج نهائي جديد' : 'خامة جديدة')} onClose={() => setPForm(null)}>
           <CatalogPhotoField supplierId={supplierId} value={pForm.image_url} onChange={(url) => setPForm({ ...pForm, image_url: url })} label={pForm.item_class === 'sellable' ? 'صورة المنتج (بتظهر في السوق)' : 'صورة الخامة (اختياري)'} />
           <F label="الاسم *"><input value={pForm.name_ar || ''} onChange={e => setPForm({ ...pForm, name_ar: e.target.value })} className={INP} /></F>
+          {(pForm.item_class || 'sellable') === 'sellable' && <CategorySelect kind="product" value={pForm.category_id} onChange={v => setPForm({ ...pForm, category_id: v })} />}
           <F label="النوع">
             <select value={pForm.item_class || 'sellable'} onChange={e => setPForm({ ...pForm, item_class: e.target.value as Product['item_class'] })} className={INP}>
               <option value="sellable">منتج نهائي (بيتباع)</option><option value="material">خامة (منتج أولي)</option><option value="consumable">مستهلك</option>
@@ -253,6 +275,7 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
         <Modal title={sForm.id ? 'تعديل' : (isRest ? 'صنف جديد' : 'خدمة جديدة')} onClose={() => setSForm(null)}>
           <CatalogPhotoField supplierId={supplierId} value={sForm.image_url} onChange={(url) => setSForm({ ...sForm, image_url: url })} label={isRest ? 'صورة الصنف (بتظهر في السوق)' : 'صورة الخدمة (بتظهر في السوق)'} />
           <F label="الاسم *"><input value={sForm.name_ar || ''} onChange={e => setSForm({ ...sForm, name_ar: e.target.value })} className={INP} /></F>
+          <CategorySelect kind="service" value={sForm.category_id} onChange={v => setSForm({ ...sForm, category_id: v })} />
           <div className="grid grid-cols-2 gap-2">
             <F label={`السعر (${cur})`}><input type="number" inputMode="decimal" dir="ltr" value={sForm.price_egp ?? ''} onChange={e => setSForm({ ...sForm, price_egp: Number(e.target.value) })} className={INP} /></F>
             {!isRest && <F label="المدة (دقيقة)"><input type="number" inputMode="numeric" dir="ltr" value={sForm.duration_minutes ?? 30} onChange={e => setSForm({ ...sForm, duration_minutes: Number(e.target.value) })} className={INP} /></F>}
@@ -267,7 +290,7 @@ export default function ProductsServicesPage({ params }: { params: { supplierId:
         </Modal>
       )}
       {sale && <ManualSaleModal supplierId={supplierId} item={sale} currency={cur} onClose={() => setSale(null)} onDone={(r) => { setSale(null); flash(`✅ اتسجّل بيع ${sale.name} بـ${fmt(r.amount)} ${cur} في الحسابات${r.stock_left != null ? ` · المتبقي ${fmt(r.stock_left)}` : ''}`); void load() }} />}
-      {importOpen && <ProductsImportModal supplierId={supplierId} onClose={() => setImportOpen(false)} onDone={(r) => { setImportOpen(false); flash(`📥 اتستورد: ${r.inserted} جديد · ${r.updated} اتحدّث · ${r.skipped} من غير اسم`); void load() }} />}
+      {importOpen && <ProductsImportModal supplierId={supplierId} onClose={() => setImportOpen(false)} onDone={(r) => { setImportOpen(false); flash(`📥 اتستورد: ${r.inserted} جديد · ${r.updated} اتحدّث · ${r.skipped} من غير اسم${r.guessed ? ` · ${r.guessed} قسمهم اتحدد من الاسم — راجعهم` : ''}`); void load() }} />}
       {comp && <ProductMaterialsModal supplierId={supplierId} productId={comp.id} productName={comp.name_ar} onClose={() => setComp(null)} onSaved={(n) => { setComp(null); flash(`🧱 اتربط ${n} خامة بـ«${comp.name_ar}»`) }} />}
     </div>
   )

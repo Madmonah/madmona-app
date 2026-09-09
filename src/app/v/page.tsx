@@ -40,7 +40,7 @@ export default function VisitRouter() {
   useEffect(() => { locate() }, [])
 
   return (
-    <div className="min-h-screen bg-[#34D399] flex flex-col" dir="rtl">
+    <div className="min-h-screen bg-[#04352A] flex flex-col" dir="rtl">
       <header className="text-white px-5 pt-10 pb-6 text-center">
         <p className="text-[10px] font-bold tracking-[0.4em] uppercase text-white/55 mb-2">MADMONA</p>
         <h1 className="text-2xl font-black">أهلاً بيكي 👋</h1>

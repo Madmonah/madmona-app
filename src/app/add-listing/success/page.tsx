@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 export default function ListingSuccessPage() {
   return (
     <Suspense fallback={
-      <div dir="rtl" lang="ar" className="min-h-screen bg-[#34D399] text-[#FAF7F0] flex items-center justify-center">
+      <div dir="rtl" lang="ar" className="min-h-screen bg-[#04352A] text-[#FAF7F0] flex items-center justify-center">
         جاري التحميل...
       </div>
     }>
@@ -29,7 +29,7 @@ function ListingSuccessPageInner() {
   }, [token]);
 
   return (
-    <div dir="rtl" lang="ar" className="min-h-screen bg-[#34D399] text-[#FAF7F0] flex items-center justify-center px-5">
+    <div dir="rtl" lang="ar" className="min-h-screen bg-[#04352A] text-[#FAF7F0] flex items-center justify-center px-5">
       <div className="max-w-lg w-full text-center">
         <div className="text-6xl mb-4">🎉</div>
         <h1 className="text-2xl font-bold mb-2">تم استلام المنتج!</h1>

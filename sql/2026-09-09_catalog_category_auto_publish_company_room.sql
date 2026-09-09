@@ -1,0 +1,16 @@
+-- 🗂️🚀👥 (٩/٩/٢٠٢٦ — آخر الليل) مطبّق لايف كميجريشنز: company_room_ghost_owner_and_setup_hrefs · catalog_category_and_auto_publish
+-- محمد: «إعلان تيكوود أثاث مكتبي نزل في المنزلي — صاحب البيزنس يصنّف أو نصنّف من الشيت/السياق، مش عايز أقسام غلط تاني»
+--       «أي إعلان كامل المواصفات ينزل — المراجعة مش يدوي» · «فضّي الدرافتات القديمة» · «مش عارف أحذف من جروب شركة مضمونة»
+--       «تاب استكمال البيانات يروح على المنتجات والخدمات مش إضافة الزائر» · «البيانات اللي بتتقرا من جداول فاضية تتعدل».
+-- ١) inventory_products.category_id · services_catalog.category_id (+GRANT) · guess_category_id(text,kind) (جذور كلمات اسم القسم، بدون AI)
+--    · catalog_categories(supplier, token) (مقترحة + الكل) · business_product/service_save بيكتبوا القسم وبيحدّثوا الإعلان المربوط
+--    · toggle_catalog_visibility: قسم الصنف → تخمين → آخر قسم منشور → عام · business_products_import: عمود «القسم» أو تخمين.
+--    اتجرّب: «كرسي مكتب» → sale-furniture-office والإعلان اتنشر فيه. Techwood: ١١ إعلان «مكتب» اتنقلوا لأثاث مكتبي.
+-- ٢) try_auto_publish_listing(id) + تريجرات trg_auto_publish_on_photo (listing_photos) و trg_auto_publish_on_listing (listings draft)
+--    — التريجرات القديمة (صورة حقيقية · سعر · رقم/business_account · حد أدنى) هي المراجع؛ الفشل في auto_publish_log(reason).
+-- ٣) الدرافتات القديمة (>يومين): ٢٨ listings → سلة المهملات (restore_listing) · ٣٤ ويزارد → _backup_wizard_drafts_20260909 ·
+--    ٣١٠ instant → _backup_instant_drafts_20260909. الباقي: درافت واحد + ويزارد واحد (جداد).
+-- ٤) profile_canonical(uuid) (شاهد القبر dup:/merged: → الحساب الحقيقي بالرقم) · sync_company_group مالك واحد + بتتجاهل الأشباح ·
+--    remove_room_member بيسمح بشيل مالك زيادة لو فيه مالك تاني · الأشباح اتمسحت من جروبات الشركات (٢).
+-- ٥) business_setup_progress: catalog/published → products · menu fallback → products?tab=services · العدّ من inventory_products + services_catalog.
+select 1;
