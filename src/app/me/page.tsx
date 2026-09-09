@@ -49,6 +49,13 @@ export default function MyDashboard() {
   const load = useCallback(async () => {
     const t = token()
     if (!t) { router.push('/login'); return }
+    // 🔢 (٩/٩/٢٠٢٦ — بليل) محمد: «الأرقام اللي ظاهرة عند محمد مش المفروض تظهر».
+    //    الشاشة دي فيها عمولة الشهر والمستحق وإدارة الفريق — للي بيدير بس.
+    //    موظف مضمونة مش مدير (أوفيس بوي…) → «شغلي» /account/work. نفس قاعدة landing.ts.
+    try {
+      const { data: ctx } = await supabase.rpc('workspace_menu_context', { p_token: t })
+      if (ctx?.is_staff === true && ctx?.staff_can_manage !== true) { router.replace('/account/work'); return }
+    } catch { /* لو الفحص وقع نكمّل عادي */ }
     const { data: s } = await supabase.rpc('madmona_employee_summary', { p_token: t })
     if (!s?.ok) { setNotEmployee(true); setLoading(false); return }
     setData(s)

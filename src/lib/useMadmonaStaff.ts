@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------------
 import { useEffect, useState } from 'react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { ensureSupabaseSession } from '@/lib/session-upgrade'
 
 export type StaffBadge = { staff: boolean; tasks?: number; due?: number }
 
@@ -36,7 +37,10 @@ export function useMadmonaStaff(): StaffBadge {
 
     async function check() {
       try {
-        const { data: { session } } = await supabaseBrowser.auth.getSession()
+        // 🚪🚪 (٩/٩/٢٠٢٦) محمد: «الهوم بيدج فيه تاب شغلي؟» — الجهاز الداخل بتوكن بس
+        //    كان بيشوف «حسابي» بدل «شغلي» لأن getSession فاضية. ensureSupabaseSession
+        //    بتفتح الباب التاني من التوكن (session-upgrade.ts) فالتاب بيظهر من الهوم.
+        const session = await ensureSupabaseSession()
         if (!session?.user) {
           // زائر عادي — مفيش نداء، ونظّف أي أثر قديم من يوزر خرج
           try { sessionStorage.removeItem(KEY) } catch { /* — */ }

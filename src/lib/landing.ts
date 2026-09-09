@@ -38,7 +38,10 @@ export async function landingAfterLogin(fallback = '/home'): Promise<string> {
     //    أدخل». شاشة الموظف اللي بتشتغل بالتوكن هي «شغلي» /me (زي ما كانت
     //    قبل التوحيد). أدمن اللوحة بباسورد بيروح /admin/listings من /login
     //    مباشرة (source==='admin') مش من هنا.
-    if (data?.is_staff === true) return '/me'
+    // 🔢 (٩/٩/٢٠٢٦ — بليل) محمد: «الأرقام اللي ظاهرة عند محمد مش المفروض تظهر».
+    //    /me بتعرض «عمولة الشهر» و«مستحق لسه» وإدارة الفريق — دي للي بيدير بس.
+    //    موظف مضمونة اللي مش بيدير (أوفيس بوي…) → «شغلي» /account/work مباشرة.
+    if (data?.is_staff === true) return (data as { staff_can_manage?: boolean }).staff_can_manage === true ? '/me' : '/account/work'
     // 🚫 (٩/٩/٢٠٢٦) موظف في بيزنس (مش مالك/مدير) → «شغلي» مش لوحة الإدارة
     if (data?.ok && data.supplier_id && (data as { can_manage?: boolean }).can_manage !== true) return '/account/work'
     if (data?.ok && data.supplier_id) return `/admin/business-finance/${data.supplier_id}`
