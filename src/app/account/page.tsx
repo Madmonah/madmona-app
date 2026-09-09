@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { ensureSupabaseSession } from '@/lib/session-upgrade'
+import { signOutEverywhere } from '@/lib/sign-out'
 import { safeStorage } from '@/lib/safe-storage'
 import {
   ArrowRight, Calendar, Building2, ShoppingBag,
@@ -161,9 +162,9 @@ export default function AccountPage() {
   const handleSignOut = async () => {
     if (!confirm(t('account.confirm_signout'))) return
     setSigningOut(true)
-    await supabaseBrowser.auth.signOut()
-    router.push('/')
-    router.refresh()
+    // 🚪 (٩/٩/٢٠٢٦) كل الأبواب مش Supabase بس — التفاصيل في lib/sign-out.ts
+    await signOutEverywhere()
+    window.location.href = '/'
   }
 
   const startEditingName = () => {

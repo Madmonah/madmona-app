@@ -11,6 +11,7 @@ import Link from 'next/link'
 import WorkspaceMenu from '@/components/WorkspaceMenu'
 import { LayoutDashboard, Car, Package, Bell, Menu, X, User, LogIn, LogOut, Share2, Briefcase, Plus } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { signOutEverywhere } from '@/lib/sign-out'
 import NotificationButton from './NotificationButton'
 import LanguageToggle from './LanguageToggle'
 import CountryToggle from './CountryToggle'
@@ -57,7 +58,7 @@ export default function TopNav() {
 
   const signOut = async () => {
     setMobileOpen(false)
-    await supabaseBrowser.auth.signOut()
+    await signOutEverywhere() // 🚪 (٩/٩) كل الأبواب — lib/sign-out.ts
     if (typeof window !== 'undefined') window.location.href = '/'
   }
 

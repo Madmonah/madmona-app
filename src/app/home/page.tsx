@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { safeStorage } from '@/lib/safe-storage'
+import { signOutEverywhere } from '@/lib/sign-out'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 import {
@@ -154,11 +155,9 @@ export default function MadmonaHome() {
   }
 
   async function logout() {
-    const token = safeStorage.get('madmona_token')
-    if (token) {
-      await rpcSafe(supabase, 'madmona_logout', { p_token: token })
-      safeStorage.remove('madmona_token')
-    }
+    // 🚪 (٩/٩/٢٠٢٦) كان بيمسح التوكن بس ويسيب جلسة Supabase — عكس باقي الأزرار
+    //    اللي كانت بتقفل Supabase وتسيب التوكن. دلوقتي الكل على lib/sign-out.ts
+    await signOutEverywhere()
     router.push('/login')
   }
 

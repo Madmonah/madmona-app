@@ -8,6 +8,7 @@ import {
   Loader2, Phone,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { signOutEverywhere } from '@/lib/sign-out'
 import { getSavedAccounts, removeSavedAccount, type SavedAccount } from '@/lib/saved-accounts'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
@@ -83,8 +84,8 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
     if (switching) return
     setSwitching(account.phone)
     try {
-      // Sign out current Supabase session
-      await supabaseBrowser.auth.signOut()
+      // 🚪 (٩/٩) كل الأبواب مش Supabase بس — lib/sign-out.ts
+      await signOutEverywhere()
       // Clear admin password if any
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem('madmona_admin_pw')
@@ -236,7 +237,7 @@ export default function AccountSwitcher({ currentPhone, currentLabel, currentRol
         <button
           type="button"
           onClick={async () => {
-            await supabaseBrowser.auth.signOut()
+            await signOutEverywhere()
             if (typeof window !== 'undefined') {
               sessionStorage.removeItem('madmona_admin_pw')
             }

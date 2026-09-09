@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { signOutEverywhere } from '@/lib/sign-out'
 import ChatBottomNav from '@/components/ChatBottomNav'
 import AvatarUpload from '@/components/AvatarUpload'
 import { subscribeToPush, unsubscribeFromPush, getNotificationPermission, isPushSupported, isSubscribed } from '@/lib/push-subscription'
@@ -63,7 +64,7 @@ export default function ChatSettings() {
   }
 
   async function signOut() {
-    await supabaseBrowser.auth.signOut()
+    await signOutEverywhere() // 🚪 (٩/٩) كل الأبواب — lib/sign-out.ts
     router.push('/chat')
   }
 

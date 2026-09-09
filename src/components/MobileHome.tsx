@@ -21,6 +21,7 @@ import {
   LayoutDashboard, Car, Package,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { signOutEverywhere } from '@/lib/sign-out'
 import { getSessionSafe } from '@/lib/session-safe'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import LanguageToggle from './LanguageToggle'
@@ -171,7 +172,7 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
 
   const signOut = async () => {
     setMenuOpen(false)
-    await supabaseBrowser.auth.signOut()
+    await signOutEverywhere() // 🚪 (٩/٩) كل الأبواب — lib/sign-out.ts
     if (typeof window !== 'undefined') window.location.href = '/'
   }
 
