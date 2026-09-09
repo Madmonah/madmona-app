@@ -38,7 +38,11 @@ type Item = {
   notes: string | null
 }
 
-export default function ProductsPage() {
+// 🧭 (٩/٩/٢٠٢٦) نفس الشاشة بتتركّب جوّه اللوحة الكاملة
+//    (/admin/business-finance/<id>/products) — محمد: «خلي كل حاجة تودّي على
+//    اللوحة الكاملة». `supplierId` اختياري: لو جه من مسار اللوحة بنستخدمه،
+//    وإلا بنحلّ بيزنس المستخدم زي الأول.
+export default function ProductsPage({ supplierId }: { supplierId?: string } = {}) {
   // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
   const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
@@ -65,7 +69,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     (async () => {
-      const acc = await resolveBusiness()
+      const acc = await resolveBusiness(supplierId || null)
       if (!acc.business) { setLoading(false); return }
       setBiz(acc.business); await load(acc.business.id); setLoading(false)
     })()

@@ -10,7 +10,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
-import MediaTab from './MediaTab'
+import MediaTab from '@/components/business/MediaTab'
 
 type Stage = 'loading' | 'unauthenticated' | 'no_supplier' | 'ready'
 type Tab = 'overview' | 'branches' | 'team' | 'services' | 'media' | 'settings'

@@ -30,49 +30,49 @@ type Mod = { key: string; label: string; href: string; icon: React.ElementType }
 //    الباقي تابات جوّاها بالـhash.
 // 🏛️ (١/٩) تابات الـERP — كل واحد زرار مباشر (?tab=) بدل ما يفتح ويدوّر
 const FINANCE: Mod[] = [
-  { key: 'overview',  label: 'نظرة عامة',  href: '/supplier/erp?tab=overview',  icon: TrendingUp },
-  { key: 'finance',   label: 'الحسابات',   href: '/supplier/erp?tab=finance',   icon: Wallet },
-  { key: 'journal',   label: 'القيود',     href: '/supplier/erp/accounting',    icon: Receipt },
-  { key: 'staff',     label: 'الموظفين',   href: '/supplier/erp?tab=staff',     icon: Users },
-  { key: 'inventory', label: 'المخزون',    href: '/supplier/erp?tab=inventory', icon: Warehouse },
-  { key: 'products',  label: 'المنتجات',   href: '/supplier/erp?tab=products',  icon: Package },
-  { key: 'orders',    label: 'الطلبات',    href: '/supplier/erp/crm#orders',    icon: ShoppingCart },
-  { key: 'bookings',  label: 'الحجوزات',   href: '/supplier/erp/crm#bookings',  icon: CalendarDays },
-  { key: 'crm',       label: 'العملاء',    href: '/supplier/erp?tab=crm',       icon: Phone },
+  { key: 'overview',  label: 'نظرة عامة',  href: '',  icon: TrendingUp },
+  { key: 'finance',   label: 'الحسابات',   href: 'accounting',   icon: Wallet },
+  { key: 'journal',   label: 'القيود',     href: 'accounting',    icon: Receipt },
+  { key: 'staff',     label: 'الموظفين',   href: 'team',     icon: Users },
+  { key: 'inventory', label: 'المخزون',    href: 'inventory', icon: Warehouse },
+  { key: 'products',  label: 'المنتجات',   href: 'products',  icon: Package },
+  { key: 'orders',    label: 'الطلبات',    href: 'customers',    icon: ShoppingCart },
+  { key: 'bookings',  label: 'الحجوزات',   href: 'bookings',  icon: CalendarDays },
+  { key: 'crm',       label: 'العملاء',    href: 'customers',       icon: Phone },
 ]
 
 /** 🗂️ موديولات النشاط — بتعرض الإعلانات بالشكل المناسب لكل مسار */
 const BUSINESS: Record<string, Omit<Mod, 'key'>> = {
   // 🛍️ بيع — الإعلانات كمنتجات
-  products:         { label: 'منتجاتي',       href: '/supplier/erp/products',    icon: Package },
-  inventory:        { label: 'المخزون',       href: '/supplier/erp/products#inventory',   icon: Warehouse },
-  catalog:          { label: 'الكتالوج',      href: '/supplier/erp/catalog',     icon: Tag },
-  orders:           { label: 'الطلبات',       href: '/supplier/erp/crm#orders',      icon: ShoppingCart },
+  products:         { label: 'منتجاتي',       href: 'products',    icon: Package },
+  inventory:        { label: 'المخزون',       href: 'inventory',   icon: Warehouse },
+  catalog:          { label: 'الكتالوج',      href: 'marketplace-catalog',     icon: Tag },
+  orders:           { label: 'الطلبات',       href: 'customers',      icon: ShoppingCart },
   // 🔑 إيجار — الإعلانات كوحدات
-  units:            { label: 'الوحدات',       href: '/supplier/erp/products#units',       icon: KeyRound },
-  bookings:         { label: 'الحجوزات',      href: '/supplier/erp/crm#bookings',    icon: CalendarDays },
-  contracts:        { label: 'العقود',        href: '/supplier/erp/crm#contracts',   icon: ClipboardList },
-  maintenance:      { label: 'الصيانة',       href: '/supplier/erp/products#maintenance', icon: Wrench },
+  units:            { label: 'الوحدات',       href: 'units',       icon: KeyRound },
+  bookings:         { label: 'الحجوزات',      href: 'bookings',    icon: CalendarDays },
+  contracts:        { label: 'العقود',        href: 'customers',   icon: ClipboardList },
+  maintenance:      { label: 'الصيانة',       href: 'products', icon: Wrench },
   // 💇 خدمات — الإعلانات كخدمات
-  services_catalog: { label: 'خدماتي',        href: '/supplier/erp/catalog',    icon: Wrench },
-  schedule:         { label: 'المواعيد',      href: '/supplier/erp/crm#schedule',    icon: CalendarDays },
+  services_catalog: { label: 'خدماتي',        href: 'services-catalog',    icon: Wrench },
+  schedule:         { label: 'المواعيد',      href: 'appointments',    icon: CalendarDays },
   // 🍽️ مطاعم — الإعلانات كمنيو
-  menu:             { label: 'المنيو',        href: '/supplier/erp/catalog',        icon: UtensilsCrossed },
-  tables:           { label: 'الطاولات',      href: '/supplier/erp/catalog#tables',      icon: UtensilsCrossed },
-  kitchen:          { label: 'المطبخ',        href: '/supplier/erp/production',     icon: UtensilsCrossed },
+  menu:             { label: 'المنيو',        href: 'services-catalog',        icon: UtensilsCrossed },
+  tables:           { label: 'الطاولات',      href: 'services-catalog',      icon: UtensilsCrossed },
+  kitchen:          { label: 'المطبخ',        href: 'production',     icon: UtensilsCrossed },
   // 🏗️ مطوّر — موديل المقاولات كامل
-  projects:         { label: 'مشاريعي',       href: '/supplier/erp/projects',    icon: Building2 },
-  stages:           { label: 'مراحل التنفيذ', href: '/supplier/erp/production',      icon: Workflow },
-  materials:        { label: 'الخامات',       href: '/supplier/erp/materials',   icon: Boxes },
-  production:       { label: 'أوامر التشغيل', href: '/supplier/erp/production',  icon: Factory },
-  contractors:      { label: 'المقاولين',     href: '/supplier/erp/projects#contractors', icon: HardHat },
-  surveys:          { label: 'المساحات',      href: '/supplier/erp/projects#surveys',     icon: Ruler },
+  projects:         { label: 'مشاريعي',       href: 'projects',    icon: Building2 },
+  stages:           { label: 'مراحل التنفيذ', href: 'production',      icon: Workflow },
+  materials:        { label: 'الخامات',       href: 'materials',   icon: Boxes },
+  production:       { label: 'أوامر التشغيل', href: 'production',  icon: Factory },
+  contractors:      { label: 'المقاولين',     href: 'subcontractors', icon: HardHat },
+  surveys:          { label: 'المساحات',      href: 'projects',     icon: Ruler },
   // 👥 مشترك
-  listings:         { label: 'إعلاناتي',      href: '/supplier/erp/products',    icon: LayoutGrid },
-  crm:              { label: 'عملائي',        href: '/supplier/erp/crm',         icon: Users },
-  leads:            { label: 'الليدز',        href: '/supplier/erp/crm#leads',       icon: Users },
-  team:             { label: 'فريقي',         href: '/supplier/erp/crm#team',        icon: Users },
-  reviews:          { label: 'التقييمات',     href: '/supplier/erp/crm#reviews',     icon: Star },
+  listings:         { label: 'إعلاناتي',      href: 'products',    icon: LayoutGrid },
+  crm:              { label: 'عملائي',        href: 'customers',         icon: Users },
+  leads:            { label: 'الليدز',        href: 'customers',       icon: Users },
+  team:             { label: 'فريقي',         href: 'team',        icon: Users },
+  reviews:          { label: 'التقييمات',     href: 'ratings',     icon: Star },
 }
 
 /** 🏗️ موديل المقاولات الكامل للمطوّر */
@@ -103,15 +103,15 @@ const PLATFORM: Mod[] = [
 
 // 🏛️ (١/٩) لمضمونة: نفس تابات الـERP + المرتبات والعمولات
 const PLATFORM_FINANCE: Mod[] = [
-  { key: 'overview',  label: 'نظرة عامة',  href: '/supplier/erp?tab=overview',  icon: TrendingUp },
-  { key: 'finance',   label: 'الحسابات',   href: '/supplier/erp?tab=finance',   icon: Wallet },
-  { key: 'journal',   label: 'القيود',     href: '/supplier/erp/accounting',    icon: Receipt },
-  { key: 'staff',     label: 'الموظفين',   href: '/supplier/erp?tab=staff',     icon: Users },
-  { key: 'inventory', label: 'المخزون',    href: '/supplier/erp?tab=inventory', icon: Warehouse },
-  { key: 'products',  label: 'المنتجات',   href: '/supplier/erp?tab=products',  icon: Package },
+  { key: 'overview',  label: 'نظرة عامة',  href: '',  icon: TrendingUp },
+  { key: 'finance',   label: 'الحسابات',   href: 'accounting',   icon: Wallet },
+  { key: 'journal',   label: 'القيود',     href: 'accounting',    icon: Receipt },
+  { key: 'staff',     label: 'الموظفين',   href: 'team',     icon: Users },
+  { key: 'inventory', label: 'المخزون',    href: 'inventory', icon: Warehouse },
+  { key: 'products',  label: 'المنتجات',   href: 'products',  icon: Package },
   { key: 'orders',    label: 'الطلبات',    href: '/admin/marketplace-orders',   icon: ShoppingCart },
   { key: 'bookings',  label: 'الحجوزات',   href: '/admin/marketplace-bookings', icon: CalendarDays },
-  { key: 'crm',       label: 'العملاء',    href: '/supplier/erp?tab=crm',       icon: Phone },
+  { key: 'crm',       label: 'العملاء',    href: 'customers',       icon: Phone },
   { key: 'payroll',   label: 'المرتبات',   href: '/admin/payroll',              icon: Wallet },
   { key: 'commission',label: 'العمولات',   href: '/admin/commissions',          icon: Receipt },
 ]
@@ -156,7 +156,8 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         if (ctx.is_staff === true) {
           if (!alive) return
           setTitle('لوحة مضمونة')
-          setHref('/supplier/erp')
+          // 🧭 (٩/٩/٢٠٢٦) لوحة المنصة نفسها = اللوحة الكاملة لبيزنس مضمونة
+          setHref(nullStr(ctx.platform_supplier_id) ? `/admin/business-finance/${ctx.platform_supplier_id}` : '/supplier/erp')
           setFinance(PLATFORM_FINANCE)
           // 🗂️ (٢ سبتمبر ٢٠٢٦) محمد: «مش شايف الكلام ده في نسخة الموبايل».
           //    السبب: فرع الفريق كان بيعمل return **قبل** ما يوصل للينكات
@@ -176,17 +177,22 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         const s = { id: ctx.supplier_id, business_name: ctx.business_name || '', industry: ctx.industry }
 
         setTitle(s.business_name || 'بيزنسي')
+        // 🧭 (٩/٩/٢٠٢٦) محمد: «خلي كل حاجة تودّي على اللوحة الكاملة». كل
+        //    لينكات الدرج (الفلوس + موديولات النشاط) بقت **جوّه**
+        //    /admin/business-finance/<id>/… — مفيش لينك واحد بيطلع لـ/supplier/erp.
+        const admin = (seg: string) => seg ? `/admin/business-finance/${s.id}/${seg}` : `/admin/business-finance/${s.id}`
+        const withAdmin = (m: Mod): Mod => ({ ...m, href: admin(m.href) })
         // 🏢 (٣ سبتمبر ٢٠٢٦) محمد: «عايزين نخلي صفحة الموبايل تفتح في
         //    الإدارة الصفحة دي: /admin/business-finance/<supplier>».
         //    كان بيفتح /supplier/erp — دي الشاشة المختصرة (٨ تابات).
         //    لوحة الإدارة الكاملة (فلوس · فريق · فروع · حضور · مرتبات …)
         //    عايشة على المسار ده، وهي اللي المفروض تفتح من الموبايل.
         setHref(`/admin/business-finance/${s.id}`)
-        setFinance(FINANCE)
+        setFinance(FINANCE.map(withAdmin))
 
         // 🏗️ مطوّر عقاري → موديل المقاولات الكامل
         if (s.industry === 'مطوّر عقاري') {
-          setMods(DEVELOPER_MODULES.filter((k) => BUSINESS[k]).map((k) => ({ key: k, ...BUSINESS[k] })))
+          setMods(DEVELOPER_MODULES.filter((k) => BUSINESS[k]).map((k) => withAdmin({ key: k, ...BUSINESS[k] })))
           return
         }
 
@@ -205,7 +211,6 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
         //    · مرتبات · صلاحيات …) عايشة في
         //    /admin/business-finance/<supplier>/*.
         //    الشاشات **موجودة** — كانت مش موصولة بس.
-        const admin = (seg: string) => `/admin/business-finance/${s.id}/${seg}`
         const FULL_ADMIN: Mod[] = [
           { key: 'team_full',   label: 'الموظفين',  href: admin('team'),       icon: Users },
           { key: 'branches',    label: 'الفروع',    href: admin('branches'),   icon: Building2 },
@@ -224,7 +229,7 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
           href: `/admin/business-finance/${s.id}`, icon: LayoutGrid,
         })
         setMods([
-          ...keys.filter((k) => BUSINESS[k]).map((k) => ({ key: k, ...BUSINESS[k] })),
+          ...keys.filter((k) => BUSINESS[k]).map((k) => withAdmin({ key: k, ...BUSINESS[k] })),
           ...FULL_ADMIN,
         ])
       } catch { /* مش مسجّل — مايظهرش حاجة */ }

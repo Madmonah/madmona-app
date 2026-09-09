@@ -19,6 +19,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Loader2, Phone, CheckCircle2, ShieldCheck, KeyRound, MessageCircle } from 'lucide-react'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
 import GoogleSignInButton from '@/components/GoogleSignInButton'
+import { resolveLanding, LANDING_AUTO } from '@/lib/landing'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,9 +27,13 @@ const supabase = createClient(
 )
 
 // (30 Jul 2026) دعم ?next= — الشرط !// بيمنع open redirect.
-function nextPath(fallback = '/home'): string {
+// 🧭 (٩/٩/٢٠٢٦) «بعد الدخول أروح فين؟» — لو مفيش وجهة مطلوبة بنسيب القرار
+//    لـresolveLanding (موظف مضمونة → الإعلانات · صاحب بيزنس → لوحته الكاملة
+//    · غيرهم → الهوم). محمد: «خلي كل حاجة تودّي على اللوحة الكاملة».
+function nextPath(fallback = LANDING_AUTO): string {
   if (typeof window === 'undefined') return fallback
-  const n = new URLSearchParams(window.location.search).get('next') || ''
+  const sp = new URLSearchParams(window.location.search)
+  const n = sp.get('next') || sp.get('redirect') || ''
   return n.startsWith('/') && !n.startsWith('//') ? n : fallback
 }
 
@@ -48,7 +53,7 @@ export default function MadmonaLoginPage() {
       const token = safeStorage.get('madmona_token')
       if (token) {
         const { data, error } = await supabase.rpc('madmona_resolve', { p_token: token })
-        if (data?.authenticated) { router.push(nextPath()); return }
+        if (data?.authenticated) { router.push(await resolveLanding(nextPath())); return }
         // نمسح التوكن فقط لو الـresolve أكّد إنه باطل — فشل الاتصال المؤقت مايمسحش توكن صالح.
         if (!error && data && data.authenticated === false) safeStorage.remove('madmona_token')
       }
@@ -77,7 +82,7 @@ export default function MadmonaLoginPage() {
       }
       if (data.token) safeStorage.set('madmona_token', data.token)
       // أدمن → لوحة الأدمن مباشرة (الكوكي اتفتحت)، موظف → /me
-      router.push(nextPath(data.source === 'admin' ? '/admin/listings' : '/me'))
+      router.push(await resolveLanding(nextPath(), data.source === 'admin' ? '/admin/listings' : '/home'))
     } catch {
       setError(t('lg.err_conn'))
       setSending(false)
@@ -138,7 +143,7 @@ export default function MadmonaLoginPage() {
                 <p className="text-xs font-bold text-[#1A2E26] mb-2 flex items-center gap-1.5">
                   <MessageCircle className="w-3.5 h-3.5 text-[#059669]" /> {t('lg.wa_hint')}
                 </p>
-                <WhatsAppLogin onDone={() => { router.push(nextPath()); router.refresh() }} />
+                <WhatsAppLogin onDone={async () => { router.push(await resolveLanding(nextPath())); router.refresh() }} />
               </>
             ) : (
               <button onClick={() => setShowWa(true)} className="w-full py-2.5 rounded-xl border border-[#059669]/25 text-[#059669] font-bold text-[13px] flex items-center justify-center gap-1.5">

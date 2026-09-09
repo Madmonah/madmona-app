@@ -35,7 +35,11 @@ const KIND: Record<string, { label: string; icon: typeof Package }> = {
   rental: { label: 'للإيجار', icon: Store },
 }
 
-export default function CatalogPage() {
+// 🧭 (٩/٩/٢٠٢٦) نفس الشاشة بتتركّب جوّه اللوحة الكاملة
+//    (/admin/business-finance/<id>/catalog) — محمد: «خلي كل حاجة تودّي على
+//    اللوحة الكاملة». `supplierId` اختياري: لو جه من مسار اللوحة بنستخدمه،
+//    وإلا بنحلّ بيزنس المستخدم زي الأول.
+export default function CatalogPage({ supplierId }: { supplierId?: string } = {}) {
   // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
   const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
@@ -54,7 +58,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     (async () => {
-      const acc = await resolveBusiness()
+      const acc = await resolveBusiness(supplierId || null)
       if (!acc.business) { setLoading(false); return }
       setBiz(acc.business); await load(acc.business.id); setLoading(false)
     })()

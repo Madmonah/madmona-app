@@ -114,6 +114,13 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'crm',                label: 'متابعة العملاء',   primary: true, v: ['core'], perm: 'can_manage_customers' },
   { href: 'promotions',         label: 'العروض',                          v: ['core'] },
   { href: 'inventory',          label: 'المخزون',                         v: ['core'], perm: 'can_manage_inventory' },
+  // 🧭 (٩/٩/٢٠٢٦) محمد: «خلي كل حاجة تودّي على اللوحة الكاملة». الشاشات دي
+  //    كانت عايشة بره اللوحة في /supplier/erp/* (٢٨/٨) — بقت موديولات هنا.
+  { href: 'products',           label: 'منتجاتي وخدماتي',  primary: true, v: ['core'], perm: 'can_manage_inventory' },
+  { href: 'marketplace-catalog',label: 'اللي يظهر في السوق',              v: ['core'], perm: 'can_manage_inventory' },
+  { href: 'materials',          label: 'الخامات والأدوات',                v: ['core'], perm: 'can_manage_inventory' },
+  { href: 'production',         label: 'أوامر التشغيل',                   v: ['factory', 'restaurant', 'contracting'] },
+  { href: 'media',              label: 'الصور',                           v: ['core'] },
   { href: 'vendors',            label: 'الموردين',                        v: ['core'] },
   { href: 'purchase-orders',    label: 'طلبات شراء',                      v: ['core'] },
   { href: 'bookings',           label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency', 'real_estate', 'tourism', 'marine', 'home_services', 'gym'], perm: 'can_manage_bookings' },

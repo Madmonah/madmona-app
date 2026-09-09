@@ -36,7 +36,11 @@ const CLASS_LABEL: Record<string, string> = {
   asset: 'أداة / جهاز',
 }
 
-export default function MaterialsPage() {
+// 🧭 (٩/٩/٢٠٢٦) نفس الشاشة بتتركّب جوّه اللوحة الكاملة
+//    (/admin/business-finance/<id>/materials) — محمد: «خلي كل حاجة تودّي على
+//    اللوحة الكاملة». `supplierId` اختياري: لو جه من مسار اللوحة بنستخدمه،
+//    وإلا بنحلّ بيزنس المستخدم زي الأول.
+export default function MaterialsPage({ supplierId }: { supplierId?: string } = {}) {
   // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
   const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
@@ -63,7 +67,7 @@ export default function MaterialsPage() {
 
   useEffect(() => {
     (async () => {
-      const acc = await resolveBusiness()
+      const acc = await resolveBusiness(supplierId || null)
       if (!acc.business) { setLoading(false); return }
       setBiz(acc.business); await load(acc.business.id); setLoading(false)
     })()

@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { resolveLanding, LANDING_AUTO } from '@/lib/landing'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { syncModuleSession } from '@/lib/madmonaSession'
 import { Loader2, AlertCircle } from 'lucide-react'
@@ -16,7 +17,8 @@ function hasRealPhone(phone: string | null | undefined): boolean {
 function CallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/account'
+  // 🧭 (٩/٩/٢٠٢٦) مفيش وجهة أو «__auto» → resolveLanding يقرّر (لوحة البيزنس للمالك)
+  const redirectTo = searchParams.get('redirect') || LANDING_AUTO
   const [error, setError] = useState<string | null>(null)
   const handled = useRef(false)
 
@@ -39,7 +41,7 @@ function CallbackContent() {
         void waVerified
         // 🔗 وحّد جلسة المارد/الأقسام بعد دخول جوجل (whoami → module token)
         try { await syncModuleSession() } catch { /* non-blocking */ }
-        router.replace(redirectTo)
+        router.replace(await resolveLanding(redirectTo, '/account'))
         router.refresh()
       } catch (e) {
         console.error('[auth/callback] routing error:', e)

@@ -26,7 +26,11 @@ const STATUS: Record<string, { label: string; bg: string; fg: string }> = {
 }
 const PRIORITY: Record<string, string> = { low: 'عادي', normal: 'عادي', high: 'مهم', urgent: '🔴 عاجل' }
 
-export default function ProductionPage() {
+// 🧭 (٩/٩/٢٠٢٦) نفس الشاشة بتتركّب جوّه اللوحة الكاملة
+//    (/admin/business-finance/<id>/production) — محمد: «خلي كل حاجة تودّي على
+//    اللوحة الكاملة». `supplierId` اختياري: لو جه من مسار اللوحة بنستخدمه،
+//    وإلا بنحلّ بيزنس المستخدم زي الأول.
+export default function ProductionPage({ supplierId }: { supplierId?: string } = {}) {
   // 🌍 (٢ سبتمبر ٢٠٢٦) ترجمة شاشات الإدارة
   const { t } = useT()
   const [biz, setBiz] = useState<Business | null>(null)
@@ -47,7 +51,7 @@ export default function ProductionPage() {
 
   useEffect(() => {
     (async () => {
-      const acc = await resolveBusiness()
+      const acc = await resolveBusiness(supplierId || null)
       if (!acc.business) { setLoading(false); return }
       setBiz(acc.business)
       await load(acc.business.id)

@@ -232,7 +232,9 @@ export default function MyAssetsCard() {
           icon={<Store className="w-4 h-4" />}
           label="نشاطي التجاري"
           count={data.businesses.length}
-          href="/supplier/dashboard"
+          // 🧭 (٩/٩/٢٠٢٦) محمد: «خلي كل حاجة تودّي على اللوحة الكاملة» — كان
+          //    بيودّي للشاشة القديمة /supplier/dashboard.
+          href={data.businesses.length === 1 ? `/admin/business-finance/${data.businesses[0].id}` : '/supplier/dashboard'}
         >
           <div className="space-y-1.5">
             {data.businesses.map((b) => (
