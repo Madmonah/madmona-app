@@ -128,6 +128,20 @@ export async function POST(req: NextRequest) {
 
   const fromDigits = fromRaw.replace(/@.*/, '').replace(/\D/g, '')
 
+  // 🛡️ (٩/٩/٢٠٢٦) محمد: «المارد بيرد على ناوي شير». الجذر: رسايل **جروبات
+  //    ونشرات (newsletter/broadcast)** بتوصل للويبهوك زي أي رسالة، ومفيش حارس
+  //    بيفرّق — فالمارد كان بيرد على إعلانات Nawy Partners اللي جاية على
+  //    جروب (المعرّف 120363427111651564 — ١٨ رقم، مش رقم تليفون). المارد
+  //    بيرد على **أفراد بس**: أي معرّف جروب/نشرة/بث بيتسجّل ويتعدّى.
+  //    (E.164 أقصاه ١٥ رقم — أي معرّف أطول من كده مش رقم إنسان.)
+  const groupLike =
+    data.isGroup === true || data.isGroupMsg === true ||
+    /@(g\.us|newsletter|broadcast)$/i.test(chatId) || /@(g\.us|newsletter|broadcast)$/i.test(fromRaw) ||
+    chatId.replace(/@.*/, '').replace(/\D/g, '').length >= 16 || fromDigits.length >= 16
+  if (groupLike) {
+    return NextResponse.json({ ok: true, skipped: 'group_or_broadcast', chatId })
+  }
+
   // ── ميديا → base64 (لو ميديا) ────────────────────────────────────────
   // OpenWA بيدّي رابط للميديا في الحمولة. أسماء الحقول المحتملة بنجرّبها،
   // والتشخيص فوق بيوري الاسم الحقيقي على أول رسالة ميديا فنظبّطه لو لزم.
