@@ -79,11 +79,13 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
             }
             const { data: ctx } = await (supabaseBrowser.rpc as unknown as (
               f: string, a: Record<string, unknown>,
-            ) => Promise<{ data: { is_staff?: boolean } | null }>)(
+            ) => Promise<{ data: { is_staff?: boolean; staff_can_manage?: boolean } | null }>)(
               'workspace_menu_context', { p_token: wtok },
             )
             if (!alive) return
-            if (ctx?.is_staff === true) { setState('staff'); return }
+            // 🚫 (٩/٩/٢٠٢٦) موظف مضمونة من غير صلاحية إدارة = مش «staff» هنا (محمد: «أي أكونت
+            //    متسجّل كموظف مش لازم يتصنف كصاحب بيزنس»). اللي بيدير بس هو اللي بيفتح /admin.
+            if (ctx?.is_staff === true && ctx.staff_can_manage === true) { setState('staff'); return }
           } catch { /* التوكن مش صالح — بنكمّل على guest */ }
         }
         if (alive) setState('guest')
@@ -91,11 +93,16 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
       }
       try {
         // 🔐 السؤال الوحيد: هو موظف مضمونة؟ الدالة بتشوف is_platform_owner
-        const { data } = await (supabaseBrowser.rpc as unknown as (
-          f: string, a?: Record<string, unknown>,
-        ) => Promise<{ data: unknown }>)('is_madmona_staff')
+        // 🚫 (٩/٩/٢٠٢٦) نفس القاعدة بباب الجلسة: workspace_menu_context بترجّع
+        //    is_staff + staff_can_manage — الموظف العادي مايفتحش لوحة مضمونة.
+        const { data: sctx } = await (supabaseBrowser.rpc as unknown as (
+          f: string, a: Record<string, unknown>,
+        ) => Promise<{ data: { is_staff?: boolean; staff_can_manage?: boolean } | null }>)(
+          'workspace_menu_context', { p_token: null },
+        )
         if (!alive) return
-        if (data === true) { setState('staff'); return }
+        if (sctx?.is_staff === true && sctx.staff_can_manage === true) { setState('staff'); return }
+        if (sctx?.is_staff === true) { setState('supplier'); return }
 
         // مش موظف مضمونة — بس ممكن يكون داخل على لوحة بيزنسه هو
         if (bizId) {

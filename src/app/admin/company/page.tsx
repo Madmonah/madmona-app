@@ -15,7 +15,7 @@ const fmt = (n: any) => Number(n || 0).toLocaleString('en-US')
 /* ============ label maps (DB stores English keys; we show Arabic) ============ */
 const EXPENSE_CATS: [string, string][] = [
   ['infra_tech', 'بنية تحتية تقنية'], ['ai_apis', 'واجهات AI / APIs'], ['software', 'سوفتوير واشتراكات'],
-  ['internet', 'إنترنت'], ['marketing', 'تسويق وإعلانات'], ['salaries', 'مرتبات'], ['salaries_advance', 'سلفة مرتب'],
+  ['internet', 'إنترنت'], ['marketing', 'تسويق وإعلانات'], ['salaries', 'مرتبات'], ['salaries_advance', 'سلفة مرتب'], ['custody_purchase', 'مشتريات من العهدة'],
   ['equipment', 'معدات وأجهزة'], ['licenses', 'تراخيص'], ['payment_fees', 'رسوم دفع'], ['rent', 'إيجار'],
   ['utilities', 'مرافق (كهربا/مياه/غاز)'], ['maintenance', 'صيانة'], ['supplies', 'مستلزمات'],
   ['transportation', 'مواصلات'], ['training', 'تدريب'], ['other', 'أخرى'],

@@ -16,7 +16,7 @@ import { Loader2 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { readMadmonaToken } from '@/lib/madmona-token'
 
-type Ctx = { ok?: boolean; is_staff?: boolean; supplier_id?: string | null; platform_supplier_id?: string | null }
+type Ctx = { ok?: boolean; is_staff?: boolean; staff_can_manage?: boolean; can_manage?: boolean; supplier_id?: string | null; platform_supplier_id?: string | null }
 
 function ErpRedirectInner() {
   const router = useRouter()
@@ -36,10 +36,13 @@ function ErpRedirectInner() {
         ctx = data
       } catch { /* نكمّل */ }
       if (!alive) return
+      // 🚫 (٩/٩/٢٠٢٦) الموظف اللي مش بيدير (أوفيس بوي…) → «شغلي» مش لوحة الإدارة
+      if (ctx?.is_staff && ctx.staff_can_manage !== true) { router.replace('/account/work'); return }
       if (ctx?.is_staff) {
         const target = business || ctx.platform_supplier_id || ''
         router.replace(target ? `/admin/business-finance/${target}` : '/admin/listings'); return
       }
+      if (ctx?.ok && ctx.supplier_id && ctx.can_manage !== true) { router.replace('/account/work'); return }
       if (ctx?.ok && ctx.supplier_id) { router.replace(`/admin/business-finance/${ctx.supplier_id}`); return }
       router.replace('/home')
     })()

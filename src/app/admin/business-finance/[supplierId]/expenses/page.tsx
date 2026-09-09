@@ -17,6 +17,7 @@ const CATEGORIES = [
   { value: 'supplies', label: 'لوازم' },
   { value: 'marketing', label: 'تسويق' },
   { value: 'salaries_advance', label: 'سلف موظفين' },
+  { value: 'custody_purchase', label: 'مشتريات من العهدة' },
   { value: 'transportation', label: 'مواصلات' },
   { value: 'licenses', label: 'تراخيص' },
   { value: 'equipment', label: 'معدات' },

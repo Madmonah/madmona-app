@@ -39,6 +39,8 @@ export async function landingAfterLogin(fallback = '/home'): Promise<string> {
     //    قبل التوحيد). أدمن اللوحة بباسورد بيروح /admin/listings من /login
     //    مباشرة (source==='admin') مش من هنا.
     if (data?.is_staff === true) return '/me'
+    // 🚫 (٩/٩/٢٠٢٦) موظف في بيزنس (مش مالك/مدير) → «شغلي» مش لوحة الإدارة
+    if (data?.ok && data.supplier_id && (data as { can_manage?: boolean }).can_manage !== true) return '/account/work'
     if (data?.ok && data.supplier_id) return `/admin/business-finance/${data.supplier_id}`
   } catch { /* نرجع للافتراضي */ }
   return fallback

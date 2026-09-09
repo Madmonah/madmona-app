@@ -160,7 +160,7 @@ export default function DashboardPage({ params }: { params: { supplierId: string
 
 const CATEGORY_LABELS: Record<string, string> = {
   rent: 'إيجار', utilities: 'كهرباء/ماء/غاز', internet: 'إنترنت', maintenance: 'صيانة',
-  supplies: 'لوازم', marketing: 'تسويق', salaries_advance: 'سلف موظفين',
+  supplies: 'لوازم', marketing: 'تسويق', salaries_advance: 'سلف موظفين', custody_purchase: 'مشتريات من العهدة',
   transportation: 'مواصلات', licenses: 'تراخيص', equipment: 'معدات', training: 'تدريب', other: 'أخرى',
 }
 

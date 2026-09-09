@@ -149,9 +149,23 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
           f: string, a: Record<string, unknown>,
         ) => Promise<{ data: unknown }>)('workspace_menu_context', { p_token: wtok || null })
         const ctx = (ctxRaw || {}) as {
-          ok?: boolean; is_staff?: boolean
+          ok?: boolean; is_staff?: boolean; staff_can_manage?: boolean
           supplier_id?: string; business_name?: string; industry?: string
           platform_supplier_id?: string
+        }
+
+        // 🚫 (٩/٩/٢٠٢٦) محمد: «أي أكونت متسجّل كموظف مش لازم يتصنف كصاحب بيزنس
+        //    لأنه بيدخل على داشبورد مضمونة الكاملة وصلاحيات بيزنس كاملة».
+        //    الموظف العادي (أوفيس بوي…) is_staff=true بس staff_can_manage=false →
+        //    مالوش لوحة مضمونة ولا موديولاتها — «شغلي» بس. اللي بيدير (owner/admin
+        //    أو permissions.all/can_manage_team/can_view_finance) هو اللي بيشوف اللوحة.
+        if (ctx.is_staff === true && ctx.staff_can_manage !== true) {
+          if (!alive) return
+          setTitle('شغلي')
+          setHref('/account/work')
+          setFinance([])
+          setMods([{ key: 'my_work', label: 'شغلي', href: '/account/work', icon: LayoutGrid }])
+          return
         }
 
         // 🏛️ أدمن مضمونة → لوحة المنصة (فينانس أولًا)
@@ -176,6 +190,15 @@ export default function WorkspaceMenu({ onNavigate }: { onNavigate?: () => void 
 
         // 🏪 صاحب بيزنس → فينانس + موديولات نشاطه
         if (!ctx.ok || !ctx.supplier_id || !alive) return
+        // 🚫 (٩/٩/٢٠٢٦) موظف في بيزنس (مش مالكه ولا معاه صلاحية إدارة) → «شغلي» بس —
+        //    مش لوحة الإدارة الكاملة. محمد: «أي أكونت متسجّل كموظف مش لازم يتصنف كصاحب بيزنس».
+        if ((ctx as { can_manage?: boolean }).can_manage !== true) {
+          setTitle('شغلي')
+          setHref('/account/work')
+          setFinance([])
+          setMods([{ key: 'my_work', label: 'شغلي', href: '/account/work', icon: LayoutGrid }])
+          return
+        }
         const s = { id: ctx.supplier_id, business_name: ctx.business_name || '', industry: ctx.industry }
 
         setTitle(s.business_name || 'بيزنسي')

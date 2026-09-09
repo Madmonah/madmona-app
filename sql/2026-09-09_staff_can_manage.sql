@@ -1,0 +1,8 @@
+-- 🚫 (٩/٩/٢٠٢٦) محمد: «أي أكونت متسجّل كموظف مش لازم يتصنف كصاحب بيزنس لأنه بيدخل على
+-- داشبورد مضمونة الكاملة وصلاحيات بيزنس كاملة». مطبّق لايف ٩/٩/٢٠٢٦.
+-- workspace_menu_context(p_token) بقت ترجّع:
+--   • لموظف مضمونة:  is_staff=true + staff_can_manage (bool)
+--   • لموظف/مالك بيزنس: relation ('owner'|'employee') + can_manage (bool)
+-- «إدارة» = role in ('owner','admin') أو permissions.all / can_manage_team / can_view_finance / can_manage_listings.
+-- الواجهة: WorkspaceMenu (الدرج) وAdminGuard (/admin/*) بيفتحوا لوحة الإدارة للي بيدير بس؛
+-- الموظف العادي (أوفيس بوي…) بيشوف «شغلي» بس. التعريف الكامل في الداتابيز.
