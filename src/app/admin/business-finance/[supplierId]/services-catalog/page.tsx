@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import { ChevronLeft, Loader2, RefreshCw, Plus, X, Scissors, Edit2, Trash2, Save, Clock, Percent, Wrench, Tag, UtensilsCrossed } from 'lucide-react'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe, withToken } from '@/lib/rpc'
+import ManualSaleModal, { type SaleItem } from '@/components/ManualSaleModal'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 // 🔐 (٥/٩/٢٠٢٦) نفس العميل + p_token للدوال المحروسة — شوف withToken في lib/rpc.ts
@@ -58,6 +59,9 @@ function catsFor(industry?: string) {
 export default function ServicesCatalogPage({ params }: { params: { supplierId: string } }) {
   const { supplierId } = params
   const [supplier, setSupplier] = useState<any>(null)
+  // 🧾 (٩/٩/٢٠٢٦) بيع يدوي لخدمة من غير حجز — record_manual_sale (قيد «مبيعات» في الحسابات)
+  const [sale, setSale] = useState<SaleItem | null>(null)
+  const [saleMsg, setSaleMsg] = useState<string | null>(null)
   const [services, setServices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -181,6 +185,7 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
                       </div>
                     )}
                     <div className="col-span-1 flex justify-end gap-1">
+                      <button onClick={() => setSale({ id: svc.id, name: svc.name_ar, unitPrice: Number(svc.price_egp) || null, kind: 'service' })} className="px-2 py-1 rounded-lg bg-[#04352A] text-white text-[10px] font-black">بيع</button>
                       <button onClick={() => setEditingService(svc)} className="p-1.5 rounded-lg hover:bg-gray-100" style={{ color: accent }}><Edit2 className="w-3.5 h-3.5" /></button>
                       <button onClick={() => deleteService(svc.id, svc.name_ar)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
@@ -194,6 +199,9 @@ export default function ServicesCatalogPage({ params }: { params: { supplierId: 
 
       {showAdd && <ServiceModal supplierId={supplierId} categories={cats} isMenu={isMenu} accent={accent} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); load() }} />}
       {editingService && <ServiceModal supplierId={supplierId} categories={cats} isMenu={isMenu} accent={accent} service={editingService} onClose={() => setEditingService(null)} onSaved={() => { setEditingService(null); load() }} />}
+      {saleMsg && <p className="fixed bottom-4 inset-x-4 z-40 text-xs font-bold text-[#04352A] bg-[#34D399] rounded-xl px-4 py-3 shadow-lg text-center">{saleMsg}</p>}
+      {sale && <ManualSaleModal supplierId={supplierId} item={sale} onClose={() => setSale(null)}
+        onDone={(r) => { setSale(null); setSaleMsg(`✅ اتسجّل بيع ${sale.name} بـ${r.amount.toLocaleString('ar-EG')} ج في الحسابات`); setTimeout(() => setSaleMsg(null), 6000) }} />}
     </div>
   )
 }

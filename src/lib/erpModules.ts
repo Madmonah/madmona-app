@@ -116,7 +116,10 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'inventory',          label: 'المخزون',                         v: ['core'], perm: 'can_manage_inventory' },
   // 🧭 (٩/٩/٢٠٢٦) محمد: «خلي كل حاجة تودّي على اللوحة الكاملة». الشاشات دي
   //    كانت عايشة بره اللوحة في /supplier/erp/* (٢٨/٨) — بقت موديولات هنا.
-  { href: 'products',           label: 'منتجاتي وخدماتي',  primary: true, v: ['core'], perm: 'can_manage_inventory' },
+  // 🧩 (٩/٩/٢٠٢٦ — آخر الليل) محمد: «تاب منتجات وخدمات وتاب تاني قائمة الخدمات وتاب تاني خدمات —
+  //    الاتنين عاملين تعارض». شاشة واحدة «المنتجات والخدمات» (تابين جوّاها: منتجات · خدمات)
+  //    فيها «سجّل بيع» يدوي. «قائمة الخدمات» بقت جوّه نفس الشاشة، و«ربط خدمة-منتج» اتسمّت بوضوح.
+  { href: 'products',           label: 'المنتجات والخدمات', primary: true, v: ['core'], perm: 'can_manage_inventory' },
   { href: 'marketplace-catalog',label: 'اللي يظهر في السوق',              v: ['core'], perm: 'can_manage_inventory' },
   { href: 'materials',          label: 'الخامات والأدوات',                v: ['core'], perm: 'can_manage_inventory' },
   { href: 'production',         label: 'أوامر التشغيل',                   v: ['factory', 'restaurant', 'contracting'] },
@@ -124,8 +127,7 @@ export const MODULE_DEFS: ModuleDef[] = [
   { href: 'vendors',            label: 'الموردين',                        v: ['core'] },
   { href: 'purchase-orders',    label: 'طلبات شراء',                      v: ['core'] },
   { href: 'bookings',           label: 'إدارة الحجوزات',                  v: ['beauty_salon', 'vehicle_agency', 'real_estate', 'tourism', 'marine', 'home_services', 'gym'], perm: 'can_manage_bookings' },
-  { href: 'services-catalog',   label: 'قائمة الخدمات / المنيو',          v: ['beauty_salon', 'vehicle_agency', 'restaurant', 'retail', 'factory', 'tourism', 'marine', 'home_services', 'gym'], perm: 'can_manage_services' },
-  { href: 'services',           label: 'ربط خدمة-منتج',                   v: ['beauty_salon', 'vehicle_agency'], perm: 'can_manage_services' },
+  { href: 'services',           label: 'استهلاك الخدمة من المخزون',       v: ['beauty_salon', 'vehicle_agency'], perm: 'can_manage_services' },
   { href: 'shifts',             label: 'مواعيد العمل',                    v: ['beauty_salon', 'polyclinic', 'gym', 'home_services'] },
   { href: 'waitlist',           label: 'قائمة الانتظار',                  v: ['beauty_salon', 'polyclinic'], perm: 'can_manage_bookings' },
   { href: 'appointments',       label: 'المواعيد',                        v: ['polyclinic'], perm: 'can_manage_bookings' },

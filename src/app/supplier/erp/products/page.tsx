@@ -23,14 +23,16 @@ import {
 } from 'lucide-react'
 
 import { currencyLabel } from '@/lib/currency'
+import ManualSaleModal, { type SaleItem } from '@/components/ManualSaleModal'
+import ServicesCatalogPage from '@/app/admin/business-finance/[supplierId]/services-catalog/page'
 type Item = {
   id: string
   name_ar: string
   sku: string | null
   selling_price_egp: number | null
   cost_price_egp: number | null
-  qty_on_hand: number | null
-  reorder_level: number | null
+  current_stock: number | null
+  reorder_threshold: number | null
   unit: string | null
   listing_id: string | null
   publish_to_marketplace: boolean | null
@@ -53,6 +55,14 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
   const [form, setForm] = useState<Partial<Item> | null>(null)
   const [saving, setSaving] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
+  // 🧩 (٩/٩/٢٠٢٦ — آخر الليل) محمد: «تاب منتجات وخدمات وتاب تاني قائمة الخدمات… عاملين تعارض»
+  //    شاشة واحدة بتابين: منتجات (المخزون) · خدمات (قائمة الخدمات/المنيو اللي الحجوزات بتقرا منها).
+  //    و«سجّل بيع» يدوي للاتنين — محمد: «لو هيتم تسجيلهم يدوي مش عن طريق إدارة الحجوزات هيحصل إزاي؟»
+  const [tab, setTab] = useState<'products' | 'services'>(() => {
+    try { return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'services' ? 'services' : 'products' } catch { return 'products' }
+  })
+  const [sale, setSale] = useState<SaleItem | null>(null)
+  const [saleMsg, setSaleMsg] = useState<string | null>(null)
 
   const db = supabaseBrowser as unknown as {
     from: (t: string) => {
@@ -84,8 +94,8 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
       sku: form.sku || null,
       selling_price_egp: Number(form.selling_price_egp) || 0,
       cost_price_egp: Number(form.cost_price_egp) || 0,
-      qty_on_hand: Number(form.qty_on_hand) || 0,
-      reorder_level: Number(form.reorder_level) || 0,
+      current_stock: Number(form.current_stock) || 0,
+      reorder_threshold: Number(form.reorder_threshold) || 0,
       unit: form.unit || t('erp.unit_piece'),
       active: form.active ?? true,
       notes: form.notes || null,
@@ -123,26 +133,36 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
     </div>
   )
 
-  const low = rows.filter((r) => Number(r.reorder_level) > 0 && Number(r.qty_on_hand) <= Number(r.reorder_level))
+  const low = rows.filter((r) => Number(r.reorder_threshold) > 0 && Number(r.current_stock) <= Number(r.reorder_threshold))
   const shown = rows
     .filter((r) => filter === 'all' ? true
       : filter === 'shown' ? r.publish_to_marketplace
       : filter === 'hidden' ? !r.publish_to_marketplace
-      : Number(r.reorder_level) > 0 && Number(r.qty_on_hand) <= Number(r.reorder_level))
+      : Number(r.reorder_threshold) > 0 && Number(r.current_stock) <= Number(r.reorder_threshold))
     .filter((r) => !q.trim() || (r.name_ar || '').includes(q.trim()))
+
+  if (supplierId && tab === 'services') {
+    return (
+      <div dir="rtl">
+        <TabBar tab={tab} setTab={setTab} />
+        <ServicesCatalogPage params={{ supplierId }} />
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-4 pb-24" dir="rtl">
+      {supplierId && <TabBar tab={tab} setTab={setTab} />}
       <div className="flex items-center justify-between mb-3 gap-2">
         <div>
-          <Link href="/supplier/erp" className="text-[11px] text-gray-500 font-bold flex items-center gap-1 mb-1">
+          <Link href={supplierId ? `/admin/business-finance/${supplierId}` : '/supplier/erp'} className="text-[11px] text-gray-500 font-bold flex items-center gap-1 mb-1">
             <ArrowRight className="w-3 h-3" /> نظام الإدارة
           </Link>
           <h1 className="text-lg font-black text-gray-900 flex items-center gap-2">
-            <Package className="w-5 h-5 text-[#059669]" /> منتجاتي
+            <Package className="w-5 h-5 text-[#059669]" /> المنتجات
           </h1>
         </div>
-        <button onClick={() => setForm({ unit: t('erp.unit_piece'), qty_on_hand: 0, active: true })}
+        <button onClick={() => setForm({ unit: t('erp.unit_piece'), current_stock: 0, active: true })}
           className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-sm font-black flex items-center gap-1.5">
           <Plus className="w-4 h-4" /> منتج جديد
         </button>
@@ -199,7 +219,7 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
       ) : (
         <div className="space-y-1.5">
           {shown.map((r) => {
-            const isLow = Number(r.reorder_level) > 0 && Number(r.qty_on_hand) <= Number(r.reorder_level)
+            const isLow = Number(r.reorder_threshold) > 0 && Number(r.current_stock) <= Number(r.reorder_threshold)
             return (
               <div key={r.id} className={`rounded-2xl border bg-white p-3 ${isLow ? 'border-amber-300' : 'border-gray-200'}`}>
                 <div className="flex items-start justify-between gap-2">
@@ -207,13 +227,17 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
                     <p className="text-xs font-black text-gray-900 truncate">{r.name_ar}</p>
                     <p className="text-[11px] text-gray-500 mt-0.5">
                       {Number(r.selling_price_egp || 0).toLocaleString('ar-EG')} {currencyLabel(biz?.currency)}
-                      {r.qty_on_hand != null && (
+                      {r.current_stock != null && (
                         <span className={isLow ? 'text-amber-700 font-bold' : ''}>
-                          {' · '}متاح {Number(r.qty_on_hand).toLocaleString('ar-EG')} {r.unit}
+                          {' · '}متاح {Number(r.current_stock).toLocaleString('ar-EG')} {r.unit}
                         </span>
                       )}
                       {r.sku ? ` · ${r.sku}` : ''}
                     </p>
+                  </button>
+                  <button onClick={() => setSale({ id: r.id, name: r.name_ar, unitPrice: r.selling_price_egp, kind: 'product', unit: r.unit })}
+                    className="shrink-0 px-3 py-2 rounded-xl text-[11.5px] font-black bg-[#04352A] text-white">
+                    بيع
                   </button>
                   <button onClick={() => togglePublish(r)} disabled={busy === r.id}
                     className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11.5px] font-black ${
@@ -229,6 +253,12 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
         </div>
       )}
 
+      {saleMsg && <p className="mb-3 text-xs font-bold text-[#059669] bg-[#34D399]/10 rounded-xl px-3 py-2">{saleMsg}</p>}
+      {sale && biz && (
+        <ManualSaleModal supplierId={biz.id} item={sale} currency={currencyLabel(biz.currency)} onClose={() => setSale(null)}
+          onDone={async (r) => { setSale(null); setSaleMsg(`✅ اتسجّل بيع ${sale.name} بـ${r.amount.toLocaleString('ar-EG')} في الحسابات${r.stock_left != null ? ` · المتبقي في المخزون ${r.stock_left}` : ''}`); await load(biz.id); setTimeout(() => setSaleMsg(null), 6000) }} />
+      )}
+
       {form && (
         <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-3" onClick={() => setForm(null)}>
           <div className="bg-white rounded-2xl w-full max-w-md p-4 max-h-[88vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
@@ -242,11 +272,11 @@ export default function ProductsPage({ supplierId }: { supplierId?: string } = {
               <F label={t('erp.cost_price')}><input type="number" value={form.cost_price_egp ?? 0} onChange={(e) => setForm({ ...form, cost_price_egp: Number(e.target.value) })} className={INP} /></F>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <F label={t('erp.qty_available')}><input type="number" value={form.qty_on_hand ?? 0} onChange={(e) => setForm({ ...form, qty_on_hand: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.qty_available')}><input type="number" value={form.current_stock ?? 0} onChange={(e) => setForm({ ...form, current_stock: Number(e.target.value) })} className={INP} /></F>
               <F label={t('erp.unit')}><input value={form.unit || ''} onChange={(e) => setForm({ ...form, unit: e.target.value })} className={INP} placeholder="قطعة · متر · كيلو" /></F>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <F label={t('erp.reorder_level')}><input type="number" value={form.reorder_level ?? 0} onChange={(e) => setForm({ ...form, reorder_level: Number(e.target.value) })} className={INP} /></F>
+              <F label={t('erp.reorder_level')}><input type="number" value={form.reorder_threshold ?? 0} onChange={(e) => setForm({ ...form, reorder_threshold: Number(e.target.value) })} className={INP} /></F>
               <F label={t('erp.sku')}><input value={form.sku || ''} onChange={(e) => setForm({ ...form, sku: e.target.value })} className={INP} dir="ltr" /></F>
             </div>
             {form.listing_id && (
@@ -274,6 +304,20 @@ function Stat({ label, v, good, warn }: { label: string; v: number; good?: boole
     <div className="rounded-2xl border border-gray-200 bg-white p-3">
       <p className="text-[11px] text-gray-500 font-bold mb-0.5">{label}</p>
       <p className={`font-black tabular text-lg ${warn ? 'text-amber-700' : good ? 'text-[#059669]' : 'text-gray-900'}`}>{v}</p>
+    </div>
+  )
+}
+
+/* 🧩 (٩/٩/٢٠٢٦) تابين جوّه شاشة واحدة: منتجات · خدمات — بدل تلات تابات متعارضة في اللوحة */
+function TabBar({ tab, setTab }: { tab: 'products' | 'services'; setTab: (t: 'products' | 'services') => void }) {
+  const B = (k: 'products' | 'services', label: string) => (
+    <button onClick={() => setTab(k)} className={`flex-1 py-2.5 rounded-xl text-sm font-black ${tab === k ? 'bg-[#04352A] text-white' : 'bg-white text-[#1A2E26] border border-gray-200'}`}>{label}</button>
+  )
+  return (
+    <div className="max-w-4xl mx-auto px-4 pt-4">
+      <h2 className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#059669] mb-2">المنتجات والخدمات</h2>
+      <div className="flex gap-2 mb-2">{B('products', '📦 المنتجات (المخزون)')}{B('services', '✂️ الخدمات / المنيو (للحجز)')}</div>
+      <p className="text-[11px] text-gray-500 mb-2">المنتج = حاجة بتتباع من المخزون · الخدمة = حاجة بتتحجز بميعاد. زرار «بيع» بيسجّل البيع اليدوي في الحسابات على طول.</p>
     </div>
   )
 }
