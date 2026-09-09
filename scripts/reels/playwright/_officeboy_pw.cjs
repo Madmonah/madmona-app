@@ -1,0 +1,22 @@
+const {chromium}=require('playwright');
+(async()=>{
+ const b=await chromium.connectOverCDP('http://127.0.0.1:9222');
+ const ctx=b.contexts()[0]; const p=await ctx.newPage(); await p.setViewportSize({width:412,height:900});
+ const errs=[]; p.on('pageerror',e=>errs.push(e.message.slice(0,100)));
+ await p.goto('https://www.madmonacairo.com/login',{waitUntil:'domcontentloaded',timeout:60000});
+ await p.evaluate(()=>{ try{localStorage.clear()}catch{} });
+ await p.goto('https://www.madmonacairo.com/login',{waitUntil:'domcontentloaded',timeout:60000});
+ await p.waitForSelector('input[autocomplete="username"]',{timeout:20000});
+ await p.fill('input[autocomplete="username"]','01999888779'); await p.fill('input[autocomplete="current-password"]','Madmona!2026');
+ await p.click('button:has-text("دخول")'); await p.waitForTimeout(9000);
+ const out={landedOn:p.url()};
+ await p.goto('https://www.madmonacairo.com/account/work',{waitUntil:'domcontentloaded',timeout:60000}); await p.waitForTimeout(10000);
+ const t=(await p.evaluate(()=>document.body.innerText)).replace(/\s+/g,' ');
+ out.work={ attendance:/الحضور والانصراف/.test(t), tasks:/مهامي/.test(t), chatCard:/وثّق شغلك/.test(t), calls:/مكالماتي/.test(t), requests:/الطلبات/.test(t), expenses:/المصاريف/.test(t), listings:/الإعلانات/.test(t), roleShown:(t.match(/أوفيس بوي/)||[])[0]||null };
+ out.bottomTab5 = await p.evaluate(()=>[...document.querySelectorAll('nav a')].map(a=>(a.innerText||'').trim().replace(/\n/g,' ')+'→'+a.getAttribute('href')).slice(-1)[0]);
+ await p.screenshot({path:'output/_officeboy.png'});
+ out.errors=errs.slice(0,3);
+ await p.evaluate(()=>{ try{localStorage.clear()}catch{} });
+ console.log(JSON.stringify(out,null,1));
+ await p.close(); await b.close();
+})().catch(e=>console.log('ERR',e.message));
