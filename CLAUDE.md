@@ -2325,3 +2325,6 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   (كان بيعدّ `mart_products` بس = «جداول فاضية»).
 - **الألوان:** `/login` · `/owner/login` · `/join` · `/add-listing/success` · `/v` = هيدر `#04352A` + أرضية `#FAFAF7` زي الهوم.
 - `sql/2026-09-09_catalog_category_auto_publish_company_room.sql`.
+- 🎙️ **ريل العيادات (٩/٩ بليل):** محمد: «فتحت لهجتي — استخدم صوت مصري فورمال» → **بدر** (id 1408) على V2 بـdialect 7 + أسلوب
+  «احترافي» (الطلب اتأكد: `dialect_id=7 · id_voice=1408`). الناتج `output/reel-clinic-1000-protocol-badr-egy.mp4` (٤٣ ث).
+  الصوت `vo-clinic-1000-protocol-lahajati.mp3` · المشاهد اتظبطت عليه بـ`_fit_reels.cjs`. **مش منشور** — مستني كلمة محمد.
