@@ -1,9 +1,9 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
-  Loader2, ArrowRight, Clock, Inbox, Wallet, MessageCircle,
+  Loader2, ArrowRight, Clock, Inbox, Wallet, MessageCircle, Camera,
   Building2, Crown, Check, ClipboardList, LogIn, Plus, AlertCircle, Phone, ChevronLeft,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -496,7 +496,7 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
             title="مهامي"
             extra={b.tasks_done_today > 0 ? `${b.tasks_done_today} خلصت النهاردة` : undefined}
           />
-          <MyTasks tasks={b.my_tasks || []} onRefresh={onRefresh} />
+          <MyTasks tasks={b.my_tasks || []} onRefresh={onRefresh} photoRequired={officeBoy} />
         </div>
       )}
 
@@ -801,9 +801,39 @@ function RequestForm({ supplierId, onDone, kinds }: { supplierId: string; onDone
 /* ---------------------------------------------------------------------------
    TaskRow — مهمة واحدة، تتقفل من هنا على طول
    --------------------------------------------------------------------------- */
-function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
+function TaskRow({ t, onDone, photoRequired }: { t: Task; onDone: () => void; photoRequired?: boolean }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  // 📷 (٩/٩/٢٠٢٦) محمد: «التوثيق خليه وهو بيقفل التاسك يوثّق بصورة ومتنساش تقلل
+  //    الجودة». الصورة بتتضغط في المتصفح (lib/image-compress) وبتترفع عبر
+  //    /api/tasks/proof وبتتبعت p_proof_url مع الإقفال. photoRequired (الأوفيس بوي —
+  //    الصفة من الداتابيز) = الإقفال نفسه بيفتح الكاميرا؛ غيره الصورة اختيارية.
+  const fileRef = useRef<HTMLInputElement | null>(null)
+  const [proofUrl, setProofUrl] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const pickPhoto = () => fileRef.current?.click()
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = ''
+    if (!f) return
+    setUploading(true); setErr(null)
+    try {
+      const { compressImage } = await import('@/lib/image-compress')
+      const img = await compressImage(f)
+      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      const r = await fetch('/api/tasks/proof', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token || ''}` },
+        body: JSON.stringify({ taskId: t.id, dataBase64: img.dataBase64, mimetype: img.mimetype }),
+      })
+      const j = await r.json().catch(() => null)
+      if (!r.ok || !j?.ok || !j.url) { setErr(j?.error || 'الصورة ماترفعتش — جرّب تاني'); return }
+      setProofUrl(j.url)
+      // الصورة اترفعت → اقفل التاسك بيها على طول
+      await complete(proofText || undefined, j.url)
+    } catch (e) {
+      console.error('[work] proof upload failed:', e)
+      setErr('الصورة ماترفعتش — جرّب تاني')
+    } finally { setUploading(false) }
+  }
   // 📎 (٢٨/٨) نوع الإثبات المطلوب لما الداتابيز ترفض الإقفال
   const [needsProof, setNeedsProof] = useState<string | null>(null)
   const [proofText, setProofText] = useState('')
@@ -853,12 +883,17 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
     }`}>
       <button
         type="button"
-        onClick={() => complete(proofText || undefined)}
-        disabled={busy}
+        onClick={() => (photoRequired && !proofUrl ? pickPhoto() : complete(proofText || undefined, proofUrl || undefined))}
+        disabled={busy || uploading}
         className="w-6 h-6 rounded-lg border-2 border-gray-300 hover:border-[#059669] hover:bg-[#34D399]/10 flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors"
-        aria-label="خلّصت المهمة"
+        aria-label={photoRequired ? 'خلّصت المهمة — صوّر الإثبات' : 'خلّصت المهمة'}
       >
-        {busy ? <Loader2 className="w-3 h-3 animate-spin text-[#059669]" /> : null}
+        {busy || uploading ? <Loader2 className="w-3 h-3 animate-spin text-[#059669]" /> : null}
+      </button>
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} />
+      <button type="button" onClick={pickPhoto} disabled={busy || uploading} aria-label="صوّر إثبات"
+        className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 disabled:opacity-50 ${proofUrl ? 'bg-[#34D399] text-[#04352A]' : 'text-[#059669] bg-white border border-gray-200'}`}>
+        <Camera className="w-3.5 h-3.5" />
       </button>
       <span className="text-[12.5px] font-bold text-[#1A2E26] flex-1 leading-snug">
         {t.title}
@@ -914,9 +949,15 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
       </div>
     )}
 
-    {needsProof && needsProof !== 'text' && (
+    {needsProof && (needsProof === 'photo' || needsProof === 'screenshot') && (
+      <button type="button" onClick={pickPhoto} disabled={uploading}
+        className="mt-2 w-full py-2 rounded-xl bg-[#34D399] text-[#04352A] text-[12px] font-black flex items-center justify-center gap-1.5 disabled:opacity-50">
+        <Camera className="w-3.5 h-3.5" /> {needsProof === 'photo' ? 'صوّر الإثبات واقفل التاسك' : 'ارفع الاسكرينشوت واقفل التاسك'}
+      </button>
+    )}
+    {needsProof && needsProof !== 'text' && needsProof !== 'photo' && needsProof !== 'screenshot' && (
       <p className="mt-2 text-[11.5px] text-amber-700 font-bold">
-        📎 التاسك ده محتاج {needsProof === 'photo' ? 'صورة' : needsProof === 'screenshot' ? 'اسكرينشوت' : needsProof === 'link' ? 'لينك' : 'مكالمة موثّقة'} — ارفعه من صفحة التاسك.
+        📎 التاسك ده محتاج {needsProof === 'link' ? 'لينك' : 'مكالمة موثّقة'} — ارفعه من صفحة التاسك.
       </p>
     )}
 
@@ -935,7 +976,7 @@ function TaskRow({ t, onDone }: { t: Task; onDone: () => void }) {
    المهام متقسّمة ٣ مجاميع واضحة بدل ليستة واحدة طويلة:
    متأخر 🔥 (الأهم فوق) → النهارده بمعاد (مترتبة بالساعة) → من غير معاد.
    --------------------------------------------------------------------------- */
-function MyTasks({ tasks, onRefresh }: { tasks: Task[]; onRefresh: () => void }) {
+function MyTasks({ tasks, onRefresh, photoRequired }: { tasks: Task[]; onRefresh: () => void; photoRequired?: boolean }) {
   const overdue = tasks.filter(t => t.overdue)
   const timed = tasks.filter(t => !t.overdue && t.due_time)
     .sort((a, b) => String(a.due_time).localeCompare(String(b.due_time)))
@@ -960,7 +1001,7 @@ function MyTasks({ tasks, onRefresh }: { tasks: Task[]; onRefresh: () => void })
                 {g.label} <span className="opacity-60">({g.items.length})</span>
               </p>
               <div className="space-y-1.5">
-                {g.items.map(t => <TaskRow key={t.id} t={t} onDone={onRefresh} />)}
+                {g.items.map(t => <TaskRow key={t.id} t={t} onDone={onRefresh} photoRequired={photoRequired} />)}
               </div>
             </div>
           ))}

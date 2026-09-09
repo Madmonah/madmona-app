@@ -968,7 +968,8 @@ function linkifyText(text: string): React.ReactNode {
 
   // المالك يشيل عضو
   async function kickMember(m: Member) {
-    if (!active || !iAmOwner || m.is_me) return
+    // 👥 (٩/٩/٢٠٢٦) محمد: «عايز إمكانية حذف الموظفين من شات مضمونة» — المالك أو أدمن الروم
+    if (!active || !(iAmOwner || active.role === 'admin') || m.is_me || m.member_role === 'owner') return
     if (!confirm(`تشيل ${m.member_name} من الجروب؟`)) return
     const { error } = await supabaseBrowser.rpc('remove_room_member', { _room: active.id, _member: m.member_id })
     if (error) { setToast('مقدرتش أشيله'); setTimeout(() => setToast(''), 3000); return }
@@ -1393,7 +1394,7 @@ function linkifyText(text: string): React.ReactNode {
                   <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{maskedRoom && !iAmTeam && !m.is_me ? aliasOf(m.member_id, null) : m.member_name}{m.is_me ? ' (انت)' : ''}</div>
                   <div style={{ fontSize: 12, color: m.member_role === 'owner' ? '#0a7d6e' : '#888' }}>{m.member_role === 'owner' ? '👑 مالك الجروب' : 'عضو'}</div>
                 </div>
-                {iAmOwner && !m.is_me && (
+                {(iAmOwner || active?.role === 'admin') && !m.is_me && m.member_role !== 'owner' && (
                   <button onClick={() => kickMember(m)} style={{ background: '#fdecea', color: '#c0392b', border: 'none', borderRadius: 10, padding: '6px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>شيل</button>
                 )}
               </div>

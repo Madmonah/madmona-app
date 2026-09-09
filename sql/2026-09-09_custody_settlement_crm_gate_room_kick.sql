@@ -1,0 +1,21 @@
+-- 🧾 (٩/٩/٢٠٢٦ — آخر الليل) العهدة وتسويتها + CRM لمن عنده صلاحيات + حذف عضو من الروم
+-- مطبّق لايف بميجريشنين: admin_custody_settlement · crm_needs_permissions_and_room_admin_kick
+--
+-- محمد: «تسوية العهدة هل اندمجت ولا لسه؟» — كانت لسه: شاشة اللوحة كانت بتكتب
+-- status='assigned' (القيد بيرفضها) ومن غير employee_id ومفيش تسوية.
+-- الدوال (حارس schedule_access_ok / schedule_edit_ok — بابين الدخول):
+--   admin_custody_board(p_supplier_id, p_token)            → العهد + مشتريات كل عهدة + أحداثها + الموظفين
+--   admin_custody_assign(p_supplier_id, p_employee_id, p_kind, p_title, p_value_egp, p_notes, p_due_back_at, p_token)
+--       → status='held' + employee_id (عشان تظهر في «عهدتي» في شغلي) + حدث assigned
+--   admin_custody_settle(p_supplier_id, p_id, p_returned_cash, p_note, p_token)
+--       → المسلَّم − المشتريات = المتبقي · الفرق: عجز → employee_advances (pending) · status='settled'
+--   admin_custody_return(p_supplier_id, p_id, p_note, p_token)   → للعهدة العينية بس
+--
+-- محمد: «لسه أرقام التليفون بتظهر لمحمد الأوفيس بوي» — crm_can_use(): موظف مضمونة
+-- بصلاحيات فاضية (permissions = {}) ومش في crm_staff_settings → crm_my_queue بترفض.
+--
+-- محمد: «عايز إمكانية حذف الموظفين من شات مضمونة» — remove_room_member بقت للـowner أو admin.
+--
+-- النص الكامل للدوال في الميجريشنين (list_migrations). اختبار مطبّق بجلسة محمد ناصف:
+-- assign 100 → board → settle 80 → diff −20 → سلفة اتقيّدت · اتمسح بعدها.
+select 1;
