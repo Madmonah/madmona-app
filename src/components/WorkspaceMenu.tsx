@@ -89,7 +89,7 @@ const DEVELOPER_MODULES = [
 //    اللي المفروض تكون موجودة في تاب الإدارة». كل صفحة لها زرار.
 const PLATFORM: Mod[] = [
   { key: 'clock',      label: 'حضوري',          href: '/account/work#attendance', icon: Clock },
-  { key: 'team_att',   label: 'حضور الفريق',    href: '/me/team',                icon: CalendarDays },
+  { key: 'team_att',   label: 'حضور الفريق',    href: '/admin/business-finance/c8b7b9d7-6178-4d0c-abdf-66f34b628e9d/attendance', icon: CalendarDays },
   { key: 'mywork',     label: 'شغلي',           href: '/account/work',           icon: ClipboardList },
   { key: 'tasks',      label: 'مراجعة التاسكات',href: '/admin/task-review',      icon: ClipboardList },
   { key: 'staff',      label: 'الفريق',         href: '/admin/staff',            icon: Users },

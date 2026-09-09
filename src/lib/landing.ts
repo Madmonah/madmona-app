@@ -41,7 +41,11 @@ export async function landingAfterLogin(fallback = '/home'): Promise<string> {
     // 🔢 (٩/٩/٢٠٢٦ — بليل) محمد: «الأرقام اللي ظاهرة عند محمد مش المفروض تظهر».
     //    /me بتعرض «عمولة الشهر» و«مستحق لسه» وإدارة الفريق — دي للي بيدير بس.
     //    موظف مضمونة اللي مش بيدير (أوفيس بوي…) → «شغلي» /account/work مباشرة.
-    if (data?.is_staff === true) return (data as { staff_can_manage?: boolean }).staff_can_manage === true ? '/me' : '/account/work'
+    //    (آخر الليل) شاشة موظف واحدة: /me اتقفلت. اللي بيدير → اللوحة الكاملة، غيره → «شغلي».
+    if (data?.is_staff === true) {
+      const d = data as { staff_can_manage?: boolean; platform_supplier_id?: string | null }
+      return d.staff_can_manage === true && d.platform_supplier_id ? `/admin/business-finance/${d.platform_supplier_id}` : '/account/work'
+    }
     // 🚫 (٩/٩/٢٠٢٦) موظف في بيزنس (مش مالك/مدير) → «شغلي» مش لوحة الإدارة
     if (data?.ok && data.supplier_id && (data as { can_manage?: boolean }).can_manage !== true) return '/account/work'
     if (data?.ok && data.supplier_id) return `/admin/business-finance/${data.supplier_id}`
