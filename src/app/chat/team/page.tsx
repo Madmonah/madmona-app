@@ -95,6 +95,16 @@ export default function TeamPage() {
   const [recording, setRecording] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)          // قائمة (⋮) في هيدر المحادثة
   const [membersOpen, setMembersOpen] = useState(false)    // شيت عرض الأعضاء
+  // 👥 (٩/٩/٢٠٢٦) مدير مضمونة؟ (is_platform_manager) — عشان يقدر يشيل أعضاء من جروبات الشركات
+  const [platformMgr, setPlatformMgr] = useState(false)
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await (supabaseBrowser.rpc as unknown as (f: string) => Promise<{ data: boolean | null }>)('is_platform_manager')
+        setPlatformMgr(data === true)
+      } catch { /* مش مدير */ }
+    })()
+  }, [])
   const [members, setMembers] = useState<Member[]>([])
   const [membersLoading, setMembersLoading] = useState(false)
   const [showEmoji, setShowEmoji] = useState(false)        // لوحة الإيموجي (زي شات المارد)
@@ -953,6 +963,8 @@ function linkifyText(text: string): React.ReactNode {
   }
 
   const iAmOwner = active?.role === 'owner'
+  // 👥 (٩/٩) مدير مضمونة يقدر يشيل أعضاء من أي «جروب شركة» — نفس قاعدة remove_room_member في الداتابيز
+  const canKick = iAmOwner || active?.role === 'admin' || (platformMgr && active?.kind === 'company')
 
   // فتح شيت الأعضاء + تحميل اللستة من الـRPC (آمن — عضو الغرفة بس)
   async function openMembers() {
@@ -968,8 +980,9 @@ function linkifyText(text: string): React.ReactNode {
 
   // المالك يشيل عضو
   async function kickMember(m: Member) {
-    // 👥 (٩/٩/٢٠٢٦) محمد: «عايز إمكانية حذف الموظفين من شات مضمونة» — المالك أو أدمن الروم
-    if (!active || !(iAmOwner || active.role === 'admin') || m.is_me || m.member_role === 'owner') return
+    // 👥 (٩/٩/٢٠٢٦) محمد: «عايز إمكانية حذف الموظفين من شات مضمونة» — المالك أو أدمن الروم،
+    //    أو مدير في مضمونة لجروبات الشركات (محمد عضو عادي فيها والمالك صاحب البيزنس) — is_platform_manager
+    if (!active || !canKick || m.is_me || m.member_role === 'owner') return
     if (!confirm(`تشيل ${m.member_name} من الجروب؟`)) return
     const { error } = await supabaseBrowser.rpc('remove_room_member', { _room: active.id, _member: m.member_id })
     if (error) { setToast('مقدرتش أشيله'); setTimeout(() => setToast(''), 3000); return }
@@ -1394,7 +1407,7 @@ function linkifyText(text: string): React.ReactNode {
                   <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{maskedRoom && !iAmTeam && !m.is_me ? aliasOf(m.member_id, null) : m.member_name}{m.is_me ? ' (انت)' : ''}</div>
                   <div style={{ fontSize: 12, color: m.member_role === 'owner' ? '#0a7d6e' : '#888' }}>{m.member_role === 'owner' ? '👑 مالك الجروب' : 'عضو'}</div>
                 </div>
-                {(iAmOwner || active?.role === 'admin') && !m.is_me && m.member_role !== 'owner' && (
+                {canKick && !m.is_me && m.member_role !== 'owner' && (
                   <button onClick={() => kickMember(m)} style={{ background: '#fdecea', color: '#c0392b', border: 'none', borderRadius: 10, padding: '6px 10px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>شيل</button>
                 )}
               </div>
