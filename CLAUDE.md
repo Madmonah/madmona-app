@@ -2128,3 +2128,29 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   والتريجر `trg_enforce_employee_cap` افتراضيه ٢ (بيعدّ الصفوف النشطة بما فيها المالك).
   ⚠️ «Elite Beauty Salon & Spa» عنده ٥ موظفين نشطين من قبل — التريجر بيمنع الإضافة بس، مابيمسحش.
 - 🧪 سكريبتات الإثبات: `_gate_e2e.cjs` · `_custody_e2e.cjs` · `_officeboy_pw.cjs`.
+
+## 🚪🚪 «بيبان مسجّل دخول وتسجيل الخروج مش بتسمع» — البابين على الخروج كمان (٩ سبتمبر ٢٠٢٦ — بليل)
+محمد: «حساب محمد… مش عارف بيسجل دخول إزاي» ثم «لما بيفتح الأبليكيشن بيبان كأنه مسجّل
+دخول وكل ما أكتب تسجيل خروج مش بتسمع».
+- 🐞 **الجذر الأول (من الداتا):** تليفون محمد عبدالجابر ماسك `madmona_token` صالح
+  و`auth.users.last_sign_in_at` بتاعه من ٢٩/٧ — كل دخلاته فتحت باب واحد. إصلاح `/login`
+  بيصلّح الدخلات الجاية بس. ✅ `/api/auth/upgrade` + `ensureSupabaseSession()`
+  (`src/lib/session-upgrade.ts`): توكن صالح → الرقم → مستخدم Supabase
+  (`auth_user_for_account_phone`: موظف الأول وإلا أي حساب بنفس الرقم) → magiclink →
+  verifyOtp في نفس الشاشة. «شغلي» و«حسابي» بيناديوها بدل getSession.
+- 🐞 **الجذر التاني:** ٧ أزرار خروج كلها `supabaseBrowser.auth.signOut()` **بس** — بتسيب
+  التوكن وصفّه في `madmona_sessions`، فالتطبيق يرجّعه «داخل» (ومن النهارده الترقية كمان
+  تفتحله الباب التاني من التوكن ده). و`/home` كان بالعكس (توكن بس).
+  ✅ `src/lib/sign-out.ts` → `signOutEverywhere()`: `madmona_logout` + `owner_logout` +
+  `DELETE /api/admin-entry` + مسح مفاتيح الجلسة المحلية + `signOut({scope:'local'})` بمهلة.
+  **أي زرار خروج جديد ينادي دي** — الفحص: `grep -rn "auth.signOut(" src` لازم يطلع فاضي.
+- 🧪 **الإثبات لايف** (`_logout_e2e.cjs` بموظف اختبار باسورد، اتمسح بعده): دخول → البابين
+  مفتوحين وشغلي بتفتح → خروج من حسابي → التوكن وجلسة Supabase اتمسحوا · صف الجلسة اتمسح
+  من السيرفر · `/login` بيعرض الفورم · شغلي «سجّل دخولك». والترقية اتجرّبت بتوكن حقيقي:
+  `found:true · via:employee · token_hash ✓`.
+- ⚠️ **`.env.vercel-prod` قيم Supabase (URL · service key) فاضية** (`""`) — الموجود فيه
+  `WA_SERVICE_SECRET` بس. عايز مستخدم Supabase للاختبار؟ محاكاة الواتساب
+  (start → webhook → finish) هي الطريق، مش `auth.admin.createUser`.
+- 🔑 **دخول محمد عبدالجابر:** `/login` → `01009303858` + الباسورد اللي محمد كاتبه في
+  `/admin/staff` (الـPIN مابقاش بيدخّل). حسابه في الداتابيز: `is_staff:true ·
+  staff_can_manage:false · relation:employee · أوفيس بوي`.
