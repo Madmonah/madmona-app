@@ -349,16 +349,9 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
         </div>
       )}
 
-      {/* 💬 (٩/٩/٢٠٢٦) الأوفيس بوي بيوثّق شغله في الشات */}
-      {officeBoy && (
-        <div className="px-5 py-4 border-b border-gray-100">
-          <SectionTitle icon={<MessageCircle className="w-3.5 h-3.5" />} title="وثّق شغلك" />
-          <Link href="/chat" className="mt-2 flex items-center justify-between gap-3 rounded-2xl bg-[#34D399]/10 border border-[#059669]/20 px-4 py-3 no-underline">
-            <span className="text-[13px] font-bold text-[#04352A]">اكتب في الشات اللي عملته النهارده — الإدارة بتشوفه على طول</span>
-            <span className="text-[#059669] font-black text-sm whitespace-nowrap">افتح الشات ←</span>
-          </Link>
-        </div>
-      )}
+      {/* 📝 (٩/٩/٢٠٢٦ — بليل) محمد: «توثيق إتمام التاسك لازم يكون من شاشة شغلي زي
+          باقي الناس». كارت «وثّق شغلك → الشات» اتشال — الأوفيس بوي بيقفل مهامه
+          بالإثبات (complete_my_task p_proof/p_proof_url) من قايمة «مهامي» زي الكل. */}
 
       {/* 🧾 (٩/٩/٢٠٢٦) محمد: «ليه تاب للعهد والسلف والمشتريات الخاصة بيه علشان
           تتسوي في العهدة… مش عايز أي تداخل». الأوفيس بوي بيشوف عهدته وسلفه
