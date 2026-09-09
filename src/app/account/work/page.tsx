@@ -357,6 +357,12 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
         </div>
       )}
 
+      {/* 🧾 (٩/٩/٢٠٢٦) محمد: «ليه تاب للعهد والسلف والمشتريات الخاصة بيه علشان
+          تتسوي في العهدة… مش عايز أي تداخل». الأوفيس بوي بيشوف عهدته وسلفه
+          ومشترياته **هو بس**، ومشترياته بتتخصم من عهدته النقدية فورًا
+          (employee_custody_purchase → branch_expenses category=custody_purchase). */}
+      {officeBoy && b.employee_id && <CustodyCard supplierId={b.supplier_id} onRefresh={onRefresh} />}
+
       {/* 📝 الطلبات — الموديل الموحّد: إجازة · إذن · سلفة · عهدة — مش للأوفيس بوي */}
       {!officeBoy && (
       <div className="px-5 py-4 border-b border-gray-100">
@@ -541,12 +547,126 @@ function Empty({ icon, title, sub, href, cta }: {
 }
 
 /* ---------------------------------------------------------------------------
+   CustodyCard — «عهدتي» للأوفيس بوي: عهدة نقدية · سلفة · مشتريات من العهدة
+   (٩/٩/٢٠٢٦) محمد: «ليه تاب للعهد والسلف والمشتريات الخاصة بيه علشان تتسوي
+   في العهدة… مش عايز أي تداخل». الداتا من my_custody_ledger (للموظف نفسه بس)،
+   والمشتريات بـemployee_custody_purchase (مصروف custody_purchase + cash_spent).
+   --------------------------------------------------------------------------- */
+type Ledger = {
+  ok: boolean; error?: string
+  custody: { id: string; title: string | null; kind: string; value: number | null; spent: number; remaining: number; status: string }[]
+  advances: { id: string; amount: number | null; repaid: number; remaining: number; status: string; reason: string | null }[]
+  purchases: { id: string; amount: number | null; title: string; vendor: string | null; date: string | null }[]
+}
+function CustodyCard({ supplierId, onRefresh }: { supplierId: string; onRefresh: () => void }) {
+  const [led, setLed] = useState<Ledger | null>(null)
+  const [buying, setBuying] = useState(false)
+  const [custodyId, setCustodyId] = useState('')
+  const [amount, setAmount] = useState('')
+  const [title, setTitle] = useState('')
+  const [vendor, setVendor] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+  const load = useCallback(async () => {
+    const { data } = await (supabaseBrowser.rpc as unknown as (
+      fn: string, args: Record<string, unknown>,
+    ) => Promise<{ data: Ledger | null }>)('my_custody_ledger', { p_supplier_id: supplierId })
+    setLed(data)
+  }, [supplierId])
+  useEffect(() => { void load() }, [load])
+  // موديل العهدة الموجود: status='held' = معاه دلوقتي (REQ_STATUS فوق)
+  const openCash = (led?.custody || []).filter(c => c.kind === 'cash' && c.status === 'held')
+  const fmtN = (n: number | null | undefined) => Number(n || 0).toLocaleString('ar-EG')
+  const submit = async () => {
+    setBusy(true); setErr(null)
+    try {
+      const { data } = await (supabaseBrowser.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<{ data: { ok?: boolean; error?: string } | null }>)('employee_custody_purchase', {
+        p_supplier_id: supplierId, p_custody_id: custodyId || openCash[0]?.id || null,
+        p_amount: amount ? Number(amount) : null, p_title: title || null, p_vendor: vendor || null,
+      })
+      if (!data?.ok) { setErr(data?.error || 'ماتسجّلش'); return }
+      setAmount(''); setTitle(''); setVendor(''); setBuying(false); await load(); onRefresh()
+    } catch { setErr('حصلت مشكلة — جرّب تاني') } finally { setBusy(false) }
+  }
+  return (
+    <div className="px-5 py-4 border-b border-gray-100">
+      <SectionTitle icon={<Wallet className="w-3.5 h-3.5" />} title="عهدتي وسلفي ومشترياتي" />
+      {!led ? <p className="text-xs text-[#6B7280] mt-2">جاري التحميل…</p> : !led.ok ? <p className="text-xs text-red-600 mt-2">{led.error}</p> : (
+        <div className="mt-2 space-y-3">
+          {led.custody.length === 0
+            ? <p className="text-xs text-[#6B7280]">مفيش عهدة باسمك دلوقتي.</p>
+            : led.custody.map(c => (
+              <div key={c.id} className="rounded-2xl bg-[#FAFAF7] border border-gray-100 px-4 py-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[13px] font-black text-[#1A2E26]">{c.title || (c.kind === 'cash' ? 'عهدة نقدية' : 'عهدة عينية')}</p>
+                  <p className="text-[11px] text-[#6B7280]">{c.status === 'requested' ? 'مستنية موافقة الإدارة' : c.kind === 'cash' ? `اتصرف ${fmtN(c.spent)} من ${fmtN(c.value)} ج` : 'عهدة عينية'}</p>
+                </div>
+                {c.kind === 'cash' && c.status !== 'requested' && (
+                  <div className="text-left"><p className="text-[10px] text-[#6B7280]">المتبقي</p><p className="font-black font-mono text-[#059669]">{fmtN(c.remaining)} ج</p></div>
+                )}
+              </div>
+            ))}
+          {led.advances.length > 0 && (
+            <div className="rounded-2xl bg-[#FAFAF7] border border-gray-100 px-4 py-3">
+              <p className="text-[11px] font-bold text-[#6B7280] mb-1">سلفي</p>
+              {led.advances.map(a => (
+                <div key={a.id} className="flex items-center justify-between text-[12.5px] py-1">
+                  <span className="font-bold text-[#1A2E26]">{fmtN(a.amount)} ج <span className="text-[#6B7280] font-normal">{a.status === 'requested' ? '· مستنية موافقة' : `· متبقي ${fmtN(a.remaining)}`}</span></span>
+                  <span className="text-[11px] text-[#6B7280]">{a.reason || ''}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {led.purchases.length > 0 && (
+            <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3">
+              <p className="text-[11px] font-bold text-[#6B7280] mb-1">مشترياتي الشهر ده</p>
+              {led.purchases.map(x => (
+                <div key={x.id} className="flex items-center justify-between text-[12.5px] py-1 border-b border-gray-50 last:border-0">
+                  <span className="text-[#1A2E26]">{x.title}{x.vendor ? ` · ${x.vendor}` : ''}</span>
+                  <span className="font-bold font-mono">{fmtN(x.amount)} ج</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {openCash.length > 0 && (buying ? (
+            <div className="rounded-2xl border border-[#059669]/25 bg-[#34D399]/5 p-3 space-y-2">
+              {openCash.length > 1 && (
+                <select value={custodyId || openCash[0].id} onChange={e => setCustodyId(e.target.value)} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-[13px] bg-white">
+                  {openCash.map(c => <option key={c.id} value={c.id}>{c.title || 'عهدة نقدية'} — متبقي {fmtN(c.remaining)} ج</option>)}
+                </select>
+              )}
+              <input value={title} onChange={e => setTitle(e.target.value)} placeholder="اشتريت إيه؟" className="w-full rounded-xl border border-gray-200 px-3 py-2 text-[16px] md:text-[13px] bg-white" />
+              <div className="flex gap-2">
+                <input value={amount} onChange={e => setAmount(e.target.value)} inputMode="decimal" placeholder="المبلغ بالجنيه" className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-[16px] md:text-[13px] bg-white" dir="ltr" />
+                <input value={vendor} onChange={e => setVendor(e.target.value)} placeholder="من فين؟ (اختياري)" className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-[16px] md:text-[13px] bg-white" />
+              </div>
+              {err && <p className="text-xs text-red-600">{err}</p>}
+              <div className="flex gap-2">
+                <button onClick={submit} disabled={busy || !amount || !title} className="flex-1 py-2.5 rounded-xl bg-[#34D399] text-[#04352A] font-black text-[13px] disabled:opacity-50">{busy ? '…' : 'سجّل المشتريات'}</button>
+                <button onClick={() => { setBuying(false); setErr(null) }} className="px-4 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">إلغاء</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setBuying(true)} className="w-full py-2.5 rounded-xl border border-[#059669]/30 text-[#059669] font-black text-[13px]">+ سجّل مشتريات من العهدة</button>
+          ))}
+          <RequestForm supplierId={supplierId} onDone={() => { void load() }} kinds={['advance', 'custody']} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ---------------------------------------------------------------------------
    RequestForm — تقديم أي طلب من الأبليكيشن: إجازة · إذن · سلفة · عهدة
    بينادي `submit_my_request` — نفس الباب لكل الأنواع.
    --------------------------------------------------------------------------- */
-function RequestForm({ supplierId, onDone }: { supplierId: string; onDone: () => void }) {
+function RequestForm({ supplierId, onDone, kinds }: { supplierId: string; onDone: () => void; kinds?: string[] }) {
+  // 🧾 (٩/٩/٢٠٢٦) kinds اختياري — الأوفيس بوي بيشوف سلفة وعهدة بس
+  const kindsList = kinds ? REQ_KINDS.filter(k => kinds.includes(k.key)) : REQ_KINDS
   const [open, setOpen] = useState(false)
-  const [kind, setKind] = useState('leave')
+  const [kind, setKind] = useState(kindsList[0]?.key || 'leave')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [amount, setAmount] = useState('')
@@ -600,7 +720,7 @@ function RequestForm({ supplierId, onDone }: { supplierId: string; onDone: () =>
   return (
     <div className="bg-[#FAFAF7] border border-gray-200 rounded-2xl p-3 mb-3 space-y-2.5">
       <div className="flex flex-wrap gap-1.5">
-        {REQ_KINDS.map(k => (
+        {kindsList.map(k => (
           <button
             key={k.key}
             type="button"
