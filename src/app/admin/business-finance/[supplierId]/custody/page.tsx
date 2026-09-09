@@ -144,7 +144,7 @@ function Card({ i, onSettle, onReturn }: { i: Item; onSettle?: () => void; onRet
           <div className="grid grid-cols-3 gap-2 mt-2">
             <Stat l="المسلَّم" v={i.value} />
             <Stat l="المشتريات" v={i.spent} />
-            <Stat l="المتبقي" v={i.remaining} strong />
+            {i.remaining < 0 ? <Stat l="مستحق للموظف" v={-i.remaining} strong /> : <Stat l="المتبقي" v={i.remaining} strong />}
           </div>
         ) : i.value > 0 && <p>القيمة: <b className="text-[#1A2E26]">{fmt(i.value)} ج</b></p>}
         {i.assigned_at && <p>اتسلّمت: {new Date(i.assigned_at).toLocaleDateString('ar-EG')}</p>}
@@ -231,6 +231,8 @@ function SettleModal({ supplierId, item, onClose, onDone }: { supplierId: string
   const isEdit = item.status === 'settled'
   const prev = item.events.find(e => e.event === 'settled')
   const [returned, setReturned] = useState(String(isEdit && prev?.amount != null ? prev.amount : item.remaining > 0 ? item.remaining : 0))
+  // المتبقي بالسالب (صرف من جيبه) بيتعرض «مستحق للموظف» في الكارت والمودال
+
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -246,11 +248,14 @@ function SettleModal({ supplierId, item, onClose, onDone }: { supplierId: string
   return (
     <Modal title={`${isEdit ? 'تعديل تسوية' : 'تسوية'} «${item.title || 'العهدة'}»`} onClose={onClose}>
       <div className="grid grid-cols-3 gap-2">
-        <Stat l="المسلَّم" v={item.value} /><Stat l="المشتريات" v={item.spent} /><Stat l="المفروض يرجّع" v={item.remaining} strong />
+        <Stat l="المسلَّم" v={item.value} /><Stat l="المشتريات" v={item.spent} />{item.remaining < 0 ? <Stat l="مستحق للموظف" v={-item.remaining} strong /> : <Stat l="المفروض يرجّع" v={item.remaining} strong />}
       </div>
       <Field label="الكاش اللي رجّعه فعلًا (ج)"><input type="number" inputMode="decimal" value={returned} onChange={e => setReturned(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" dir="ltr" /></Field>
-      <p className={`text-xs rounded-lg px-3 py-2 ${diff < 0 ? 'bg-red-50 text-red-700' : diff > 0 ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'}`}>
-        {diff < 0 ? `عجز ${fmt(-diff)} ج — هيتقيّد سلفة على ${item.employee_name || 'الموظف'} وتتخصم من مرتبه` : diff > 0 ? `زيادة ${fmt(diff)} ج — راجع المشتريات قبل ما تقفل` : 'الحساب مظبوط — العهدة هتتقفل'}
+      {/* 🧾 (٩/٩) محمد: «ممكن يكون لطالب العهدة فلوس — مش شرط تتسوّى على قد اللي اتصرف» */}
+      <p className={`text-xs rounded-lg px-3 py-2 ${item.remaining < 0 ? 'bg-amber-50 text-amber-800' : diff < 0 ? 'bg-red-50 text-red-700' : diff > 0 ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'}`}>
+        {item.remaining < 0
+          ? `${item.employee_name || 'الموظف'} صرف من جيبه ${fmt(-item.remaining)} ج زيادة عن العهدة — التسوية هتسجّل صرف كاش له بالمبلغ ده${r > 0 ? ` (ناقص ${fmt(r)} اللي رجّعه)` : ''}`
+          : diff < 0 ? `عجز ${fmt(-diff)} ج — هيتقيّد سلفة على ${item.employee_name || 'الموظف'} وتتخصم من مرتبه` : diff > 0 ? `زيادة ${fmt(diff)} ج — راجع المشتريات قبل ما تقفل` : 'الحساب مظبوط — العهدة هتتقفل'}
       </p>
       <Field label="ملاحظة (اختياري)"><input value={note} onChange={e => setNote(e.target.value)} className="w-full px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm" /></Field>
       {err && <p className="text-xs text-red-600">{err}</p>}

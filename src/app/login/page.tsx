@@ -153,7 +153,8 @@ export default function MadmonaLoginPage() {
           {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
           <div className="flex items-center justify-between mt-2">
             <Link href="/auth/forgot-password" className="text-[11px] font-bold text-[#059669]">نسيت الباسورد؟</Link>
-            <Link href="/auth/signup" className="text-[11px] font-bold text-[#059669]">معندكش حساب؟ اعمل حساب</Link>
+            {/* الحساب الجديد بيتعمل لوحده بجوجل أو بالواتساب (كود بيبعته المستخدم لـ1551) — مفيش رسايل باردة */}
+            <button type="button" onClick={() => setShowWa(true)} className="text-[11px] font-bold text-[#059669]">معندكش حساب؟ ادخل بجوجل أو الواتساب وهيتعمل لوحده</button>
           </div>
           <button onClick={doLogin} disabled={sending || !identifier.trim() || !secret.trim()} className="w-full mt-4 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('lg.logging_in')}</> : <><CheckCircle2 className="w-4 h-4" /> {t('lg.login')}</>}

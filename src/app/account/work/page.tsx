@@ -625,7 +625,10 @@ function CustodyCard({ supplierId, onRefresh }: { supplierId: string; onRefresh:
                   <p className="text-[11px] text-[#6B7280]">{c.status === 'requested' ? 'مستنية موافقة الإدارة' : c.kind === 'cash' ? `اتصرف ${fmtN(c.spent)} من ${fmtN(c.value)} ج` : 'عهدة عينية'}</p>
                 </div>
                 {c.kind === 'cash' && c.status !== 'requested' && (
-                  <div className="text-left"><p className="text-[10px] text-[#6B7280]">المتبقي</p><p className="font-black font-mono text-[#059669]">{fmtN(c.remaining)} ج</p></div>
+                  // 🧾 (٩/٩) المتبقي بالسالب = الموظف صرف من جيبه — بيتسوّى له في التسوية
+                  c.remaining < 0
+                    ? <div className="text-left"><p className="text-[10px] text-[#6B7280]">ليك عند الشركة</p><p className="font-black font-mono text-amber-700">{fmtN(-c.remaining)} ج</p></div>
+                    : <div className="text-left"><p className="text-[10px] text-[#6B7280]">المتبقي</p><p className="font-black font-mono text-[#059669]">{fmtN(c.remaining)} ج</p></div>
                 )}
               </div>
             ))}
