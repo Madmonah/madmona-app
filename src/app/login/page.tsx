@@ -18,6 +18,7 @@ import { useT } from '@/lib/i18n/LanguageProvider'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Phone, CheckCircle2, ShieldCheck, KeyRound, MessageCircle } from 'lucide-react'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
+import GoogleSignInButton from '@/components/GoogleSignInButton'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -99,6 +100,19 @@ export default function MadmonaLoginPage() {
         <div className="bg-white rounded-3xl p-6 shadow-2xl">
           <h2 className="text-lg font-black text-[#1A2E26] mb-1">{t('lg.title')}</h2>
           <p className="text-sm text-[#6B7280] mb-5">{t('lg.sub')}</p>
+
+          {/* 🔑 (٩/٩/٢٠٢٦) محمد: «اشتغل على جوجل بس وشوف حل تاني لقصة تأكيد
+              رقم التليفون». القياس اللي وراها: ٢٩ كود واتساب اتطلب في ٧ أيام
+              وواحد بس اتوثّق — الناس بتاخد الكود وماتخرجش من الموقع تبعته.
+              جوجل ضغطة واحدة من غير ما يسيب الصفحة، والرقم بيتطلب بعدين
+              **لما يلزم بس** (قرار ٢/٨ المطبّق في /auth/callback).
+              الواتساب فضل تحت كبديل — مااتشالش. */}
+          <GoogleSignInButton redirectTo={nextPath()} label={t('lg.google')} />
+          <div className="flex items-center gap-3 my-4">
+            <span className="h-px flex-1 bg-gray-100" />
+            <span className="text-[10px] font-bold text-[#9CA3AF]">{t('lg.or')}</span>
+            <span className="h-px flex-1 bg-gray-100" />
+          </div>
 
           <label className="text-[10px] font-bold tracking-wider uppercase text-[#6B7280] mb-1.5 block">{t('lg.identifier')}</label>
           <div className="relative mb-3">
