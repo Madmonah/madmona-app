@@ -14,7 +14,6 @@ import { useMadmonaStaff } from '@/lib/useMadmonaStaff'
 import { useTasksLive, pingTasksChanged } from '@/lib/useTasksLive'
 // 📋 (٢٨/٨) شغلي أنا — الإعلانات والبيزنس اللي الموظف ضافهم بنفسه
 import MyWorkCard from '@/components/MyWorkCard'
-import ExpoManualSend from '@/components/ExpoManualSend'
 
 /* ============================================================================
    /account/work — «شغلي» — كل الإداريات جوّه الأبليكيشن
@@ -442,14 +441,8 @@ function BizCard({ b, onRefresh, wizCount = 0 }: { b: Biz; onRefresh: () => void
       {/* ✋ (٤ سبتمبر ٢٠٢٦) رسايل المعرض — إرسال يدوي من الموبايل.
           محمد: «حط في تاب شغلي على الواتساب وأنا هبعته». الكومبوننت بيرجّع null لو مفيش رسايل
           (الـRPC بترجّع [] لغير فريق مضمونة). */}
-      {/* 🔒 (٩/٩/٢٠٢٦ — آخر الليل) محمد: «الأرقام بتاعت رسايل المعرض دي اللي فيها المشكلة».
-          is_platform_owner = أي موظف في مضمونة (الأوفيس بوي كمان) — الأرقام لمن عنده صلاحيات بس. */}
-      {b.is_platform_owner && (isOwner || can('all') || can('can_manage_listings') || can('can_manage_customers')) && (
-        <div className="px-5 py-4 border-b border-gray-100">
-          <SectionTitle icon={<MessageCircle className="w-3.5 h-3.5" />} title="رسايل المعرض" />
-          <ExpoManualSend />
-        </div>
-      )}
+      {/* 🏛️ (٩/٩/٢٠٢٦ — آخر الليل) محمد: «المعرض ليها تاب لوحدها اسمها المعارض + تاب شغلي لوحده».
+          رسايل المعرض اتنقلت لـ/account/expo (لمن عنده صلاحيات — expo_manual_allowed). */}
 
       {/* 💰 المصاريف — بصلاحية «يشوف الفلوس والفاينانس» */}
       {can('can_view_finance') && (

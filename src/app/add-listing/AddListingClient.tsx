@@ -303,6 +303,30 @@ interface DraftPayload {
 // Treat "(جاري التحرير)" as no real title so it doesn't show up in form fields
 const PLACEHOLDER_TITLE = '(جاري التحرير)';
 
+// 💾 (٩/٩/٢٠٢٦ — آخر الليل) محمد: «العميل خلّص الإعلان ماتضافش عندنا ولا جاله إشعار».
+//    الجذر: يوم ٤/٩ أزرار «كمّل» بين الأقسام اتشالت (Nav بيرجّع null من غير nextLabel) —
+//    وكانت هي **الوحيدة** اللي بتبعت العنوان/المدينة/المواصفات (StepBasics.handleNext)
+//    والسعر/المنيو/الكتالوج (StepPricing وفروعها). فمن ٤/٩ كل إعلان من الويزارد بيتبعت
+//    بالصور والتواصل بس، والعنوان «(جاري التحرير)» والسعر فاضي → مش بيتحوّل لإعلان.
+//    الحل: كل قسم بيبلّغ الأب بأي تغيير (useReportChange) → حفظ تلقائي بمهلة، والنشر
+//    بيتحقق من العنوان والمدينة والسعر والصور قبل ما يبعت submitted.
+function useReportChange(
+  onChange: ((p: Partial<DraftPayload>) => void) | undefined,
+  build: () => Partial<DraftPayload> | null,
+) {
+  const last = useRef('');
+  useEffect(() => {
+    if (!onChange) return;
+    let p: Partial<DraftPayload> | null = null;
+    try { p = build(); } catch { return; }
+    if (!p) return;
+    const s = JSON.stringify(p);
+    if (s === last.current) return;
+    last.current = s;
+    onChange(p);
+  });
+}
+
 export default function AddListingClient({
   dbExtraCategories = [],
   beautySchemas = {},
@@ -335,6 +359,12 @@ function AddListingPageInner({
   const [quickMode, setQuickMode] = useState(false)
   const [step, setStep] = useState<Step>(1);
   const [draft, setDraft] = useState<DraftPayload>({ source: 'whatsapp_link' });
+  // 💾 (٩/٩) آخر نسخة من الدرافت (persist بتقرا منها مش من closure قديم) + آخر تغييرات
+  //    الأقسام (بتتحفظ تلقائي بمهلة وبتتبعت كاملة مع النشر)
+  const draftRef = useRef<DraftPayload>(draft);
+  useEffect(() => { draftRef.current = draft; }, [draft]);
+  const sectionPatchRef = useRef<Partial<DraftPayload>>({});
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // 💼 (٢٧ أغسطس ٢٠٢٦) إسناد العمولة: لما موظف يدخّل إعلان نيابة عن مورد،
   //     بنسجّل مين هو عشان ياخد حصة «الإضافة» (١٠٪ من ربح مضمونة ÷ ٢).
   //     🔒 بيتاخد من **جلسة الموظف** مش من اختيار يدوي — عشان محدش ينسب
@@ -538,7 +568,7 @@ function AddListingPageInner({
   async function persist(patch: Partial<DraftPayload>): Promise<string | null> {
     setSaving(true);
     try {
-      const body: Record<string, unknown> = { ...draft, ...patch, current_step: step };
+      const body: Record<string, unknown> = { ...draftRef.current, ...patch, current_step: step };
       // 💼 (٢٧ أغسطس ٢٠٢٦) إسناد الإضافة للموظف — بس لو ده إدخال من الفريق
       //     (utm_source=crm). المورد اللي بيضيف بنفسه مفيش عمولة إضافة عليه.
       if (staffEmployeeId) body.created_by_employee_id = staffEmployeeId;
@@ -569,6 +599,17 @@ function AddListingPageInner({
     } finally {
       setSaving(false);
     }
+  }
+
+  // 💾 (٩/٩) أي قسم اتغيّر → نجمّع التغيير ونحفظه تلقائي بعد ٩٠٠ مللي من آخر كتابة
+  function onSectionChange(patch: Partial<DraftPayload>) {
+    sectionPatchRef.current = { ...sectionPatchRef.current, ...patch };
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = setTimeout(() => {
+      autosaveTimer.current = null;
+      if (!draftRef.current.category_slug) return;
+      void persist(sectionPatchRef.current);
+    }, 900);
   }
 
   function next() {
@@ -721,6 +762,7 @@ function AddListingPageInner({
                 setErrors={setErrors}
                 categories={dbExtraCategories}
                 onSubmit={async (patch) => { await persist(patch); }}
+                onChange={onSectionChange}
 
               onBack={() => {}}
               onChangeCategory={() => setResetCategoryView((n) => n + 1)}
@@ -740,6 +782,7 @@ function AddListingPageInner({
                 token={token}
                 beautySchemas={beautySchemas}
                 onSubmit={async (patch) => { await persist(patch); }}
+                onChange={onSectionChange}
 
               onBack={() => {}}
               onChangeCategory={() => setResetCategoryView((n) => n + 1)}
@@ -777,7 +820,28 @@ function AddListingPageInner({
                   //    الترجمة في نفس الاسكوب — اتسمّى `saved`.
                   const ok = validateContact(patch, setErrors, t);
                   if (!ok) return;
-                  const saved = await persist({ ...patch, status: 'submitted' });
+                  // 💾 (٩/٩) النشر بيبعت كل الأقسام كاملة ويتأكد من الأساسيات الأول —
+                  //    قبل كده كان بيبعت التواصل والصور بس والعنوان يفضل «(جاري التحرير)».
+                  if (autosaveTimer.current) { clearTimeout(autosaveTimer.current); autosaveTimer.current = null; }
+                  const merged = { ...draftRef.current, ...sectionPatchRef.current, ...patch } as DraftPayload;
+                  const mTitle = (merged.title || '').trim();
+                  const mTrack = getCategoryTrack(merged.category_slug, dbExtraCategories);
+                  const mAttrs = (merged.attributes || {}) as Record<string, unknown>;
+                  const hasMenu = Array.isArray(mAttrs.menu_items) && (mAttrs.menu_items as unknown[]).length > 0;
+                  const hasCatalog = Array.isArray(mAttrs.catalog_sections) && (mAttrs.catalog_sections as unknown[]).length > 0;
+                  const mTiers = (merged as { pricing_tiers?: unknown[] }).pricing_tiers;
+                  const hasPrice = (Number(merged.price) || 0) > 0 || (Array.isArray(mTiers) && mTiers.length > 0) || hasMenu || hasCatalog;
+                  const missing: string[] = [];
+                  if (!mTitle || mTitle.length < 5 || mTitle === PLACEHOLDER_TITLE) missing.push('العنوان');
+                  if (!merged.city) missing.push('المدينة');
+                  if (mTrack === 'restaurants' ? !hasMenu : !hasPrice) missing.push(mTrack === 'restaurants' ? 'صنف واحد على الأقل في المنيو' : 'السعر');
+                  if (!Array.isArray(merged.photos) || merged.photos.length === 0) missing.push('صورة واحدة على الأقل');
+                  if (missing.length > 0) {
+                    setErrors({ form: `كمّل قبل النشر: ${missing.join(' · ')}` });
+                    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                  }
+                  const saved = await persist({ ...sectionPatchRef.current, ...patch, status: 'submitted' });
                   if (saved) {
                     trackEvent({ event_type: 'wizard_submit' });
                     setStep(1);
@@ -1321,6 +1385,7 @@ function StepBasics({
   setErrors,
   categories,
   onSubmit,
+  onChange,
   onBack,
   onChangeCategory,
   saving,
@@ -1330,6 +1395,7 @@ function StepBasics({
   setErrors: (e: Record<string, string>) => void;
   categories: MainCategory[];
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onChange?: (patch: Partial<DraftPayload>) => void;
   onBack: () => void;
   onChangeCategory: () => void;
   saving: boolean;
@@ -1522,6 +1588,24 @@ function StepBasics({
     return () => { cancelled = true; };
   }, [draft.category_slug]);
 
+  // 💾 (٩/٩) نفس الباتش اللي handleNext كان بيبعته — من غير تحقق، عشان الحفظ التلقائي
+  function buildBasicsPatch(): Partial<DraftPayload> {
+    const existingAddons = (draft.attributes as { addons?: unknown } | undefined)?.addons;
+    const finalAttrs: Record<string, unknown> = { ...attrValues };
+    if (existingAddons !== undefined) finalAttrs.addons = existingAddons;
+    const cleanBranches = branches
+      .map((b) => ({
+        name: (b.name || '').trim(),
+        city: (b.city || '').trim(),
+        address: (b.address || '').trim(),
+        phone: (b.phone || '').trim(),
+      }))
+      .filter((b) => b.name || b.address || b.phone);
+    if (isBusiness && cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
+    return { title, description, country, city, district, address, latitude, longitude, attributes: finalAttrs, account_type: sellerType };
+  }
+  useReportChange(onChange, buildBasicsPatch);
+
   // Validation is fully local now — covers title, city, AND required attrs.
   function handleNext() {
     const errs: Record<string, string> = {};
@@ -1547,23 +1631,7 @@ function StepBasics({
       return;
     }
     setErrors({});
-
-    // Preserve beauty 'addons' (managed by StepPricing) when patching attributes.
-    const existingAddons = (draft.attributes as { addons?: unknown } | undefined)?.addons;
-    const finalAttrs: Record<string, unknown> = { ...attrValues };
-    if (existingAddons !== undefined) finalAttrs.addons = existingAddons;
-
-    const cleanBranches = branches
-      .map((b) => ({
-        name: (b.name || '').trim(),
-        city: (b.city || '').trim(),
-        address: (b.address || '').trim(),
-        phone: (b.phone || '').trim(),
-      }))
-      .filter((b) => b.name || b.address || b.phone);
-    if (isBusiness && cleanBranches.length > 0) finalAttrs.branches = cleanBranches;
-
-    onSubmit({ title, description, country, city, district, address, latitude, longitude, attributes: finalAttrs, account_type: sellerType });
+    onSubmit(buildBasicsPatch());
   }
 
   return (
@@ -2122,6 +2190,7 @@ function MenuBuilderStep({
   categories,
   token,
   onSubmit,
+  onChange,
   onBack,
   onChangeCategory,
   saving,
@@ -2130,6 +2199,7 @@ function MenuBuilderStep({
   categories: MainCategory[];
   token: string | null;
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onChange?: (patch: Partial<DraftPayload>) => void;
   onBack: () => void;
   onChangeCategory: () => void;
   saving: boolean;
@@ -2286,20 +2356,28 @@ function MenuBuilderStep({
     }
   }
 
-  function handleSubmit() {
+  // 💾 (٩/٩) الأصناف الصالحة → باتش (null لو مفيش) — للحفظ التلقائي والنشر
+  function buildMenuPatch(): Partial<DraftPayload> | null {
     const valid = items.filter((it) => it.name_ar.trim().length > 0 && it.price > 0);
-    if (valid.length === 0) {
-      setError(t('al.err_one_item'));
-      return;
-    }
-    setError('');
+    if (valid.length === 0) return null;
     const existing = (draft.attributes || {}) as Record<string, unknown>;
-    onSubmit({
+    return {
       attributes: { ...existing, menu_items: valid },
       // listing-level price = cheapest item (acts as "starting from" price in cards)
       price: Math.min(...valid.map((it) => it.price)),
       price_period: 'per_unit',
-    });
+    };
+  }
+  useReportChange(onChange, buildMenuPatch);
+
+  function handleSubmit() {
+    const patch = buildMenuPatch();
+    if (!patch) {
+      setError(t('al.err_one_item'));
+      return;
+    }
+    setError('');
+    onSubmit(patch);
   }
 
   return (
@@ -2582,6 +2660,7 @@ function ProductDetailsStep({
   draft,
   categories,
   onSubmit,
+  onChange,
   onBack,
   onChangeCategory,
   saving,
@@ -2589,6 +2668,7 @@ function ProductDetailsStep({
   draft: DraftPayload;
   categories: MainCategory[];
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onChange?: (patch: Partial<DraftPayload>) => void;
   onBack: () => void;
   onChangeCategory: () => void;
   saving: boolean;
@@ -2745,6 +2825,16 @@ function brandFamilyFor(slug: string): string[] | null {
       }));
     }
     setError('');
+    onSubmit(buildProductPatch(finalWholesale));
+  }
+
+  // 💾 (٩/٩) نفس الباتش من غير تحقق — للحفظ التلقائي (السعر الفاضي مابيتبعتش)
+  function buildProductPatch(wholesale?: WholesaleTier[]): Partial<DraftPayload> {
+    const finalWholesale: WholesaleTier[] = wholesale ?? (hasWholesale
+      ? wholesaleTiers
+          .filter((w) => w.unit.trim().length > 0 && w.qty > 0 && w.price_per_unit > 0)
+          .map((w) => ({ ...w, total: w.qty * w.price_per_unit }))
+      : []);
     const productDetails: ProductDetails = {
       stock_quantity: availabilityType === 'made_to_order' ? 0 : Number(stockQty),
       condition,
@@ -2768,16 +2858,17 @@ function brandFamilyFor(slug: string): string[] | null {
         availabilityType === 'made_to_order' ? customizable : undefined,
     };
     const existing = (draft.attributes || {}) as Record<string, unknown>;
-    onSubmit({
-      price: Number(price),
+    return {
+      price: price === '' || Number(price) <= 0 ? undefined : Number(price),
       price_period: 'per_unit',
       attributes: {
         ...existing,
         product_details: productDetails,
         wholesale_tiers: finalWholesale,
       },
-    });
+    };
   }
+  useReportChange(onChange, () => buildProductPatch());
 
   return (
     <section>
@@ -3160,12 +3251,13 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 function CatalogBuilderStep({
-  draft, categories, token, onSubmit, onBack, onChangeCategory, saving,
+  draft, categories, token, onSubmit, onChange, onBack, onChangeCategory, saving,
 }: {
   draft: DraftPayload;
   categories: MainCategory[];
   token: string | null;
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onChange?: (patch: Partial<DraftPayload>) => void;
   onBack: () => void;
   onChangeCategory: () => void;
   saving: boolean;
@@ -3377,17 +3469,25 @@ function CatalogBuilderStep({
   }
   function removePartner(name: string) { setInsurancePartners((p) => p.filter((x) => x !== name)); }
 
-  function handleSubmit() {
+  // 💾 (٩/٩) الأقسام الصالحة → باتش (null لو مفيش صنف) — للحفظ التلقائي والنشر
+  function buildCatalogPatch(): Partial<DraftPayload> | null {
     const clean = sections
       .map((s) => ({ name_ar: (s.name_ar || '').trim(), items: s.items.filter((it) => it.name_ar.trim().length > 0 && it.price > 0) }))
       .filter((s) => s.items.length > 0);
     const allItems = clean.flatMap((s) => s.items);
-    if (allItems.length === 0) { setError(t('al.err_one_product')); return; }
-    setError('');
+    if (allItems.length === 0) return null;
     const existing = (draft.attributes || {}) as Record<string, unknown>;
     const attrs: Record<string, unknown> = { ...existing, catalog_sections: clean };
     if (showInsurance) { attrs.accepts_insurance = acceptsInsurance; attrs.insurance_partners = acceptsInsurance ? insurancePartners : []; }
-    onSubmit({ attributes: attrs, price: Math.min(...allItems.map((it) => it.price)), price_period: 'per_unit' });
+    return { attributes: attrs, price: Math.min(...allItems.map((it) => it.price)), price_period: 'per_unit' };
+  }
+  useReportChange(onChange, buildCatalogPatch);
+
+  function handleSubmit() {
+    const patch = buildCatalogPatch();
+    if (!patch) { setError(t('al.err_one_product')); return; }
+    setError('');
+    onSubmit(patch);
   }
 
   const totalProducts = sections.reduce((n, s) => n + s.items.filter((it) => it.name_ar.trim() && it.price > 0).length, 0);
@@ -3572,6 +3672,7 @@ function StepPricing({
   categories,
   token,
   onSubmit,
+  onChange,
   onBack,
   onChangeCategory,
   saving,
@@ -3582,6 +3683,7 @@ function StepPricing({
   categories: MainCategory[];
   token: string | null;
   onSubmit: (patch: Partial<DraftPayload>) => void | Promise<void>;
+  onChange?: (patch: Partial<DraftPayload>) => void;
   onBack: () => void;
   onChangeCategory: () => void;
   saving: boolean;
@@ -3605,6 +3707,7 @@ function StepPricing({
         categories={categories}
         token={token}
         onSubmit={onSubmit}
+        onChange={onChange}
         onBack={onBack}
         onChangeCategory={onChangeCategory}
         saving={saving}
@@ -3622,6 +3725,7 @@ function StepPricing({
           categories={categories}
           token={token}
           onSubmit={onSubmit}
+          onChange={onChange}
           onBack={onBack}
           onChangeCategory={onChangeCategory}
           saving={saving}
@@ -3633,6 +3737,7 @@ function StepPricing({
         draft={draft}
         categories={categories}
         onSubmit={onSubmit}
+        onChange={onChange}
         onBack={onBack}
         onChangeCategory={onChangeCategory}
         saving={saving}
@@ -3818,9 +3923,10 @@ function StepPricing({
       }));
   }
 
-  function handleNext() {
+  // 💾 (٩/٩) نفس باتش handleNext — بيتبعت للأب مع كل تغيير (حفظ تلقائي) ومع النشر
+  function buildPricingPatch(): Partial<DraftPayload> {
     const patch: Partial<DraftPayload> = {
-      price: Number(price),
+      price: price === '' ? undefined : Number(price),
       price_period: period,
     };
     const baseAttrs = (draft.attributes || {}) as Record<string, unknown>;
@@ -3838,7 +3944,12 @@ function StepPricing({
     }
 
     patch.attributes = newAttrs;
-    onSubmit(patch);
+    return patch;
+  }
+  useReportChange(onChange, buildPricingPatch);
+
+  function handleNext() {
+    onSubmit({ ...buildPricingPatch(), price: Number(price) });
   }
 
   return (

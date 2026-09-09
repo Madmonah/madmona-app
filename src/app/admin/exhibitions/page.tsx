@@ -12,6 +12,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import ExpoManualSend from '@/components/ExpoManualSend'
 import {
   Loader2, Building2, Search, CheckCircle2, Circle, Phone, Globe, MapPin,
   Package, QrCode, ArrowRight, ExternalLink, Store, Tag, ChevronLeft, X,
@@ -102,6 +103,12 @@ export default function ExhibitionsPage() {
       </header>
 
       <main style={{ maxWidth: 1080, margin: '0 auto', padding: '14px 16px 60px' }}>
+        {/* ✋ (٩/٩/٢٠٢٦ — آخر الليل) محمد: «المعرض ليها تاب لوحدها اسمها المعارض + تاب شغلي لوحده».
+            رسايل العارضين (الإرسال اليدوي) اتنقلت من «شغلي» لهنا — الأرقام في تاب المعارض بس. */}
+        <section style={{ background: '#fff', border: `1px solid ${LINE}`, borderRadius: 14, padding: '12px 14px', marginBottom: 14 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 800, margin: '0 0 8px' }}>✋ رسايل المعرض — إرسال يدوي</h2>
+          <ExpoManualSend />
+        </section>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
           {filtered.map(c => (
             <button key={c.id} onClick={() => openCo(c.id)} style={{

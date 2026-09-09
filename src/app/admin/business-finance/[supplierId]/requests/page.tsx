@@ -23,6 +23,9 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
   const { supplierId } = params
   const [leave, setLeave] = useState<any[]>([])
   const [advances, setAdvances] = useState<any[]>([])
+  // 🧾 (٩/٩/٢٠٢٦) طلبات العهدة — محمد: «لما محمد عمل طلب عهدة مسمعتش عندي في الطلبات علشان التأكيد»
+  const [custody, setCustody] = useState<any[]>([])
+  const [custodyAmount, setCustodyAmount] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [reviewer, setReviewer] = useState<string | null>(null)
@@ -32,6 +35,7 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
     const { data } = await supabase.rpc('admin_list_pending_requests', { p_supplier_id: supplierId })
     setLeave(data?.leave || [])
     setAdvances(data?.advances || [])
+    setCustody(data?.custody || [])
     setLoading(false)
   }
   useEffect(() => {
@@ -53,7 +57,16 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
     setBusyId(null); load()
   }
 
-  const total = leave.length + advances.length
+  async function decideCustody(r: any, approve: boolean) {
+    setBusyId(r.id)
+    const amt = custodyAmount[r.id] !== undefined ? Number(custodyAmount[r.id]) : Number(r.amount || 0)
+    const res = await rpcSafe(supabase, 'admin_approve_custody_request', { p_request_id: r.id, p_approve: approve, p_amount: approve ? amt : null, p_recorded_by: reviewer })
+    const d = (res as { data?: { ok?: boolean; error?: string } } | null)?.data
+    if (d && d.ok === false) alert(d.error || 'ماتمّش')
+    setBusyId(null); load()
+  }
+
+  const total = leave.length + advances.length + custody.length
 
   if (loading) return <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center" dir="rtl"><Loader2 className="w-8 h-8 text-[#059669] animate-spin" /></div>
 
@@ -125,6 +138,36 @@ export default function RequestsPage({ params }: { params: { supplierId: string 
                     </div>
                   </div>
                   <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-2 py-1 mt-2 inline-block">القبول هيسجّل صرف كاش في حسابات الشركة</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 🧾 Custody requests — التأكيد بيحوّلها عهدة مفتوحة (held) تظهر في «عهدتي» عند الموظف */}
+        {custody.length > 0 && (
+          <section>
+            <h2 className="text-sm font-bold tracking-wider uppercase text-[#6B7280] mb-3 flex items-center gap-1.5"><Wallet className="w-4 h-4 text-[#059669]" /> عُهد ({custody.length})</h2>
+            <div className="space-y-2">
+              {custody.map((r) => (
+                <div key={r.id} className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="min-w-0">
+                      <p className="font-black text-[#1A2E26]">{r.employee}</p>
+                      <p className="text-[13px] text-[#1A2E26] mt-0.5">{r.title || 'عهدة'}</p>
+                      {r.reason && <p className="text-[12px] text-[#6B7280] mt-0.5">السبب: {r.reason}</p>}
+                      <label className="text-[11px] text-[#6B7280] mt-2 block">المبلغ اللي هيتسلّمه (ج)</label>
+                      <input type="number" inputMode="decimal" dir="ltr"
+                        value={custodyAmount[r.id] ?? String(r.amount ?? '')}
+                        onChange={(e) => setCustodyAmount((m) => ({ ...m, [r.id]: e.target.value }))}
+                        className="mt-1 w-40 px-3 py-2 rounded-xl bg-[#FAFAF7] text-sm font-mono" />
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => decideCustody(r, true)} disabled={busyId === r.id} className="px-3 py-2 rounded-xl bg-[#34D399] text-[#04352A] text-[13px] font-bold flex items-center gap-1.5 disabled:opacity-50">{busyId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} تأكيد وتسليم</button>
+                      <button onClick={() => decideCustody(r, false)} disabled={busyId === r.id} className="px-3 py-2 rounded-xl bg-red-50 text-red-600 text-[13px] font-bold flex items-center gap-1.5 disabled:opacity-50"><X className="w-4 h-4" /> رفض</button>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-amber-700 bg-amber-50 rounded-lg px-2 py-1 mt-2 inline-block">التأكيد بيفتح العهدة باسم الموظف — بيصرف منها من «عهدتي» وتتسوّى من تاب «العهدة»</p>
                 </div>
               ))}
             </div>

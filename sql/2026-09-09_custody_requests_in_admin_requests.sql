@@ -1,0 +1,18 @@
+-- 🧾 (٩/٩/٢٠٢٦ — آخر الليل) طلبات العهدة في «الطلبات» بتأكيد + إشعار المديرين + رسايل المعرض بالصلاحيات
+-- مطبّق لايف بميجريشنين: custody_requests_in_admin_requests · expo_manual_allowed_requires_permissions
+--
+-- محمد: «لما محمد عمل طلب عهدة مسمعتش عندي في الطلبات علشان التأكيد».
+--   admin_list_pending_requests(p_supplier_id) → {leave, advances, custody}  (custody_items status='requested')
+--   admin_approve_custody_request(p_request_id, p_approve, p_amount, p_recorded_by)
+--       تأكيد → status='held' · kind='cash' لو فيه مبلغ · حدث assigned · إشعار للموظف
+--       رفض   → الصف والأحداث بيتمسحوا (طلب مش أصل) · إشعار للموظف
+--   notify_managers_new_request(p_supplier_id, p_employee_name, p_kind, p_title)
+--       notification_queue (پوش) لكل موظف نشط في البيزنس عنده permissions.all أو can_manage_team
+--   submit_my_request: طلب عهدة بمبلغ → kind 'cash' + PERFORM notify_managers_new_request(...)
+--
+-- محمد: «الأرقام بتاعت رسايل المعرض دي اللي فيها المشكلة».
+--   expo_manual_allowed(p_token): جلسة → is_admin() أو crm_can_use() · توكن → أدمن أو موظف مضمونة permissions <> {}
+--
+-- النص الكامل في الميجريشنز (list_migrations). اختبار بجلسة محمد عبدالجابر: طلب عهدة ٢٥٠ →
+-- ظهر في القايمة → admin_approve_custody_request(…, 300) → held/cash/300 → اتمسح.
+select 1;
