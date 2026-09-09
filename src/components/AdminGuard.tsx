@@ -13,13 +13,22 @@
 // ✅ الحل: طبقة تحقق قبل أي شاشة أدمن. اللي مش موظف مضمونة بيتحوّل
 //    لنظام إدارة بيزنسه — مش رسالة رفض، **توجيه لمكانه الصح**.
 // ============================================================================
-import { useEffect, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { readMadmonaToken } from '@/lib/madmona-token'
 import { Loader2, ShieldAlert, ArrowLeft } from 'lucide-react'
 
 type State = 'checking' | 'staff' | 'owner' | 'supplier' | 'guest'
+
+// 🏢 (٩/٩/٢٠٢٦) محمد: «البيزنس B2B بيفتحله سايد بار على اليمين والمفروض
+//    خاصة بإدارة مضمونة ومش المفروض تظهرله».
+//    الحارس كان بيمرّر `staff` و`owner` بنفس الطريقة — والاتنين بياخدوا
+//    AdminShell بقايمة مضمونة الداخلية كاملة. دلوقتي الدور بيتنشر في
+//    كونتكست، وAdminShell بيقرا منه: صاحب البيزنس ياخد الصفحة من غير
+//    سايدبار مضمونة خالص.
+export type AdminRole = 'staff' | 'owner'
+export const AdminRoleContext = createContext<AdminRole | null>(null)
 
 // 🏢 (٣ سبتمبر ٢٠٢٦) محمد: «بيفتح صفحة اسمها إدارة بيزنسك مفيهاش أي
 //    صلاحيات ولا إضافة».
@@ -112,7 +121,13 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     return <div className="py-32 text-center"><Loader2 className="w-7 h-7 animate-spin mx-auto text-gray-400" /></div>
   }
 
-  if (state === 'staff' || state === 'owner') return <>{children}</>
+  if (state === 'staff' || state === 'owner') {
+    return (
+      <AdminRoleContext.Provider value={state === 'staff' ? 'staff' : 'owner'}>
+        {children}
+      </AdminRoleContext.Provider>
+    )
+  }
 
   // 🏪 مورد دخل على /admin بالغلط — نوديه لنظامه هو
   return (

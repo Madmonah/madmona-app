@@ -4,9 +4,10 @@
 // توب بار (لوجو + سيرش شامل + حالة النظام + التنبيهات) + سايدبار ثابت بمجموعات قابلة للطي.
 // بيتطبق من admin/layout.tsx على كل الراوتس تحت /admin — غير مدمّر: محتوى الصفحات زي ما هو.
 
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { AdminRoleContext } from '@/components/AdminGuard'
 
 const MADMONA_ERP = '/admin/business-finance/c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
 
@@ -140,6 +141,9 @@ const NAV: NavGroup[] = [
 ]
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
+  // 🏢 (٩/٩/٢٠٢٦) صاحب بيزنس B2B داخل على لوحته هو — ممنوع يشوف قايمة
+  //    مضمونة الداخلية. الصفحة بتتعرض لوحدها، وموديولات بيزنسه جوّاها.
+  const adminRole = useContext(AdminRoleContext)
   const pathname = usePathname()
   const router = useRouter()
   const [query, setQuery] = useState('')
@@ -170,6 +174,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     : []
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
+
+  if (adminRole === 'owner') {
+    return <div style={{ minHeight: '100vh', background: '#FAFAF7' }}>{children}</div>
+  }
 
   return (
     <div dir="rtl" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', color: '#22322C', background: '#F7F6F1', fontFamily: "'Cairo', sans-serif" }}>

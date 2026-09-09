@@ -57,7 +57,7 @@ const MADMONA_ID = 'c8b7b9d7-6178-4d0c-abdf-66f34b628e9d'
    (Phase 2: move this to a `supplier_modules` table = per-client toggles.)
    ============================================================ */
 // ⬇️ مصدر واحد لقائمة الموديولات — من src/lib/erpModules.ts (نفس اللي يستخدمه تبويب الإعدادات)
-import { MODULE_DEFS, VERTICAL_ALIAS, canOpenModule, type VKey } from '@/lib/erpModules'
+import { MODULE_DEFS, VERTICAL_ALIAS, canOpenModule, verticalOf, type VKey } from '@/lib/erpModules'
 // الأيقونات تفضل هنا (بيانات الموديولات نفسها في src/lib/erpModules.ts)
 const ICON_MAP: Record<string, any> = {
   confirmations: CheckCircle2, links: Link2, dashboard: BarChart3, team: Users,
@@ -263,8 +263,11 @@ export default function BusinessFinancePage({
 
   // Effective module tiles = MODULE_REGISTRY filtered by core/industry, then overridden by supplier_modules (toggle/reorder/rename/promote). Empty overrides = defaults.
   const visibleModules = useMemo(() => {
-    const industry = (VERTICAL_ALIAS[(supplier?.industry || '').toLowerCase()] || '') as VKey
-    const baseVisible = (m: { v: VKey[] }) => m.v.includes('core') || m.v.includes(industry)
+    // 🧭 (٩/٩/٢٠٢٦) محمد: «لوحة التحكم في النشاط التجاري محتاج إنها تفتح
+    //    الموديولات الكاملة لأنها بتلخبط العميل». نفس قاعدة erpModules:
+    //    نشاط مش متعرّف (فاضي أو عربي مش في الخريطة) = كل الموديولات.
+    const industry = verticalOf(supplier?.industry)
+    const baseVisible = (m: { v: VKey[] }) => !industry || m.v.includes('core') || m.v.includes(industry)
     return MODULE_REGISTRY
       .map((m, idx) => {
         const o = modOverrides[m.href]

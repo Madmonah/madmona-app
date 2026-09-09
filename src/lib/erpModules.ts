@@ -30,6 +30,28 @@ export const VERTICAL_ALIAS: Record<string, VKey> = {
   marine: 'marine', marine_rentals: 'marine', boats: 'marine', yachts: 'marine',
   home_services: 'home_services', services: 'home_services', maintenance: 'home_services',
   gym: 'gym', fitness: 'gym',
+
+  // 🌍 (٩/٩/٢٠٢٦) محمد: «لوحة التحكم في النشاط التجاري محتاج إنها تفتح
+  //    الموديولات الكاملة لأنها بتلخبط العميل — بيضيف المنتج ومش بيتصنف
+  //    ده تبع إيه».
+  //    🐞 الجذر: `suppliers.industry` مخزّن **بالعربي حر** في أغلب الصفوف
+  //    (قياس ٩/٩: «مطوّر عقاري» ١٢٢ · «مواد بناء وتشطيبات» ٥٣ · «مطاعم» ٣ …
+  //    و١٠٤ صف فاضي) — والخريطة دي كانت بمفاتيح إنجليزي بس. فالنتيجة
+  //    `vk = ''` لحوالي ٩٠٪ من الموردين، ومايشوفوش غير الموديولات الأساسية.
+  'مطوّر عقاري': 'real_estate', 'مطور عقاري': 'real_estate',
+  'تطوير عقاري': 'real_estate', 'عقارات': 'real_estate', 'وساطة عقارية': 'real_estate',
+  'مواد بناء وتشطيبات': 'contracting', 'مقاولات': 'contracting', 'تشطيبات': 'contracting',
+  'مطاعم': 'restaurant', 'مطعم': 'restaurant',
+  'كافيهات ومشروبات': 'restaurant', 'كافيه': 'restaurant',
+  'صالون': 'beauty_salon', 'صالونات': 'beauty_salon', 'تجميل': 'beauty_salon',
+  'عيادة': 'polyclinic', 'عيادات': 'polyclinic',
+  'معرض سيارات': 'vehicle_agency', 'سيارات': 'vehicle_agency',
+  'غسيل وتلميع سيارات': 'vehicle_agency',
+  'مصنع': 'factory', 'مصانع': 'factory', 'صناعة': 'factory',
+  'سياحة': 'tourism', 'فنادق': 'tourism',
+  'الإيجارات': 'retail', 'متجر': 'retail', 'محل': 'retail',
+  'خدمات منزلية': 'home_services', 'صيانة': 'home_services',
+  'جيم': 'gym',
 }
 
 // 🔐 (٢٠ أغسطس ٢٠٢٦) `perm` = مفتاح الصلاحية المطلوبة عشان الموديول ده يفتح.
@@ -158,6 +180,18 @@ export function canOpenModule(
 
 // الموديولات اللي تخص بيزنس حسب نشاطه (core + الـvertical بتاعه)
 export function modulesForIndustry(industry: string | null | undefined): ModuleDef[] {
-  const vk = (VERTICAL_ALIAS[(industry || '').toLowerCase()] || '') as VKey
-  return MODULE_DEFS.filter(m => m.v.includes('core') || (vk && m.v.includes(vk)))
+  const vk = verticalOf(industry)
+  // 🧭 (٩/٩/٢٠٢٦) نشاط مش متعرّف (فاضي أو مكتوب بشكل مش في الخريطة) =
+  //    **نفتح كل الموديولات** بدل الأساسية بس. صاحب البيزنس بيلخبط لما
+  //    يضيف منتج ومايلاقيش الشاشة اللي بتصنّفه. المعروف نشاطه بياخد
+  //    لوحته المفصّلة زي ما هي.
+  if (!vk) return MODULE_DEFS
+  return MODULE_DEFS.filter(m => m.v.includes('core') || m.v.includes(vk))
+}
+
+/** الفيرتيكال المعتمد لأي كتابة للنشاط (إنجليزي أو عربي) — مصدر واحد. */
+export function verticalOf(industry: string | null | undefined): VKey | '' {
+  const raw = String(industry ?? '').trim()
+  if (!raw) return ''
+  return (VERTICAL_ALIAS[raw] || VERTICAL_ALIAS[raw.toLowerCase()] || '') as VKey | ''
 }
