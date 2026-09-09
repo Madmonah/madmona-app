@@ -16,6 +16,8 @@
 // =====================================================================
 
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { normalizePhone, phoneToEmail } from '@/lib/auth-helpers'
 import {
   PLATFORM_ADMIN_COOKIE,
   PLATFORM_ADMIN_SESSION_DAYS,
@@ -133,8 +135,36 @@ export async function POST(req: Request) {
     })
   }
 
+  // ── ٣) أي حساب تاني (عميل · مورد · زائر عمل حساب) — إيميل أو رقم + باسورد عبر Supabase Auth ──
+  //    (٩/٩/٢٠٢٦) محمد: «أكّدلي إن أي زائر أو أي حد عنده حساب يقدر يسجّل دخول بالإيميل أو برقم
+  //    التليفون». الحسابات اللي اتعملت بالرقم إيميلها الداخلي <الرقم>@madmonacairo.com
+  //    (phoneToEmail) — فالرقم بيتحوّل لإيميله وبيدخل بنفس الباسورد.
+  try {
+    let email: string | null = identifier.includes('@') ? identifier.toLowerCase() : null
+    if (!email) {
+      const { data: acc } = await (db.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<{ data: { found?: boolean; email?: string } | null }>)('auth_user_for_account_phone', { p_phone: identifier })
+      if (acc?.found && acc.email) email = acc.email
+      else { const np = normalizePhone(identifier); if (np) email = phoneToEmail(np) }
+    }
+    if (email) {
+      const anon = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } })
+      const { data: signed, error: signErr } = await anon.auth.signInWithPassword({ email, password })
+      if (!signErr && signed?.session) {
+        return NextResponse.json({
+          ok: true, source: 'customer', token: null,
+          name: (signed.user?.user_metadata?.full_name as string | undefined) || null,
+          access_token: signed.session.access_token, refresh_token: signed.session.refresh_token,
+        })
+      }
+    }
+  } catch (e) {
+    console.error('[login] supabase password sign-in failed:', e)
+  }
+
   return NextResponse.json({
     ok: false,
-    error: emp?.error || 'البيانات غلط — جرّب بباسورد لوحة الأدمن أو باسورد الموظفين',
+    error: emp?.error || 'الإيميل/الرقم أو الباسورد غلط — لو معندكش باسورد ادخل بجوجل أو بالواتساب، أو اعمل «نسيت الباسورد»',
   }, { status: 401 })
 }

@@ -14,6 +14,7 @@ import { safeStorage } from '@/lib/safe-storage'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Phone, CheckCircle2, ShieldCheck, KeyRound, MessageCircle } from 'lucide-react'
@@ -82,6 +83,14 @@ export default function MadmonaLoginPage() {
         return
       }
       if (data.token) safeStorage.set('madmona_token', data.token)
+      // 👤 (٩/٩/٢٠٢٦) عميل/مورد بإيميل أو رقم + باسورد → جلسة Supabase مباشرة + توكن الأقسام
+      if (data.access_token && data.refresh_token) {
+        try {
+          const { error: sErr } = await supabaseBrowser.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token })
+          if (sErr) console.error('[login] setSession failed:', sErr.message)
+          await import('@/lib/madmonaSession').then((m) => m.syncModuleSession()).catch(() => {})
+        } catch (e) { console.error('[login] setSession threw:', e) }
+      }
       // 🚪🚪 (٩/٩/٢٠٢٦) الباب التاني: جلسة Supabase من نفس الدخلة (زي الواتساب)
       //    — من غيرها «شغلي» وأي شاشة RLS بتقول «سجّل دخولك» للموظف اللي داخل فعلًا.
       if (data.token_hash) {
@@ -142,6 +151,10 @@ export default function MadmonaLoginPage() {
           </div>
 
           {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+          <div className="flex items-center justify-between mt-2">
+            <Link href="/auth/forgot-password" className="text-[11px] font-bold text-[#059669]">نسيت الباسورد؟</Link>
+            <Link href="/auth/signup" className="text-[11px] font-bold text-[#059669]">معندكش حساب؟ اعمل حساب</Link>
+          </div>
           <button onClick={doLogin} disabled={sending || !identifier.trim() || !secret.trim()} className="w-full mt-4 py-3 rounded-xl bg-[#34D399] text-[#04352A] font-black text-sm disabled:opacity-50 flex items-center justify-center gap-2">
             {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('lg.logging_in')}</> : <><CheckCircle2 className="w-4 h-4" /> {t('lg.login')}</>}
           </button>

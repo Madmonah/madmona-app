@@ -344,10 +344,9 @@ export async function POST(req: NextRequest) {
     const waNumber = await pickLoginWa(sb)
     // البدائل: باقي الأرقام الرسمية المتوصلة — العميل يجرّب أي واحد
     // لو الأول مش راضي يفتح أو رقمه مش شغّال عنده.
-    const live = await liveWaNumbers(sb)
-    const alternatives = live
-      .filter((n) => n !== waNumber)
-      .map((n) => ({ number: n, url: `https://wa.me/${n}?text=${text}` }))
+    // 🔒 (٩/٩/٢٠٢٦) محمد: «خلي رقم تأكيد الدخول 1551 بس» — مفيش بدائل خالص.
+    //    (liveWaNumbers فضلت للتشخيص في /api/whatsapp/sessions مش هنا)
+    const alternatives: { number: string; url: string }[] = []
     return NextResponse.json({
       alternatives,
       code,
@@ -414,7 +413,12 @@ export async function POST(req: NextRequest) {
       //    جت منه رسالة الكود (يوصل حتى للرقم المخفي). best-effort بالكامل — لو
       //    فشل الدخول بيكمّل عادي والمتصفح بيوديه لوجهته.
       // مابنبعتش الترحيب تاني لو دي إعادة صك — العميل واخده خلاص
-      if (!reMint) {
+      // 🔇 (٩/٩/٢٠٢٦) محمد: «1551 لتسجيل الدخول بس علشان مش هنبعت منه رسايل تاني» —
+      //    الترحيب كان بيطلع من نفس الرقم اللي استلم الكود (1551 دلوقتي) → متوقف.
+      //    التفعيل تاني = whatsapp_config.auth_welcome_enabled = '1' (ومن رقم تاني مش 1551).
+      const { data: welcomeCfg } = await sb.from('whatsapp_config').select('value').eq('key', 'auth_welcome_enabled').maybeSingle()
+      const welcomeOn = (welcomeCfg as { value?: string } | null)?.value === '1'
+      if (!reMint && welcomeOn) {
         await sendLoginWelcome(sb, {
           code,
           verifiedPhone: row.verified_phone,
