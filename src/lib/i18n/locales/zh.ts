@@ -935,7 +935,7 @@ export const zh: Partial<Dict> = {
   'al.leave_confirm': '确定要离开吗？已填写的内容已保存，稍后可继续。',
   'al.home': '← 首页',
   'al.hero': '60 秒发布您的商品',
-  'al.hero_sub': '5 步中的第 1 步 — 现在无需账户',
+  'al.hero_sub': '只需一步 — 现在无需账户',
   'al.step_of': '第 {n} 步 / 共 5 步',
   'al.self': '✍️ 自己填写',
   'al.marid': '🧞 让马里德代填',

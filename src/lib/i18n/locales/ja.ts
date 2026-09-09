@@ -969,7 +969,7 @@ export const ja: Partial<Dict> = {
   'al.leave_confirm': '中断してよろしいですか？入力内容は保存され、後で続けられます。',
   'al.home': '← ホーム',
   'al.hero': '60秒で出品',
-  'al.hero_sub': '5ステップ中1 — 今はアカウント不要',
+  'al.hero_sub': '1ステップだけ — 今はアカウント不要',
   'al.step_of': 'ステップ {n} / 5',
   'al.self': '✍️ 自分で入力',
   'al.marid': '🧞 マリドに任せる',
