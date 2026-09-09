@@ -18,7 +18,7 @@ import { useT } from '@/lib/i18n/LanguageProvider'
 import { createClient } from '@supabase/supabase-js'
 import { Loader2, Phone, CheckCircle2, ShieldCheck, KeyRound, MessageCircle } from 'lucide-react'
 import WhatsAppLogin from '@/components/WhatsAppLogin'
-import GoogleSignInButton from '@/components/GoogleSignInButton'
+import { GoogleSignInButton } from '@/components/GoogleSignInButton'
 import { resolveLanding, LANDING_AUTO } from '@/lib/landing'
 
 const supabase = createClient(
