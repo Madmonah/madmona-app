@@ -2397,3 +2397,26 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
 - 🔑 **«حساب غير موجود» لصاحب البيزنس (١٠/٩):** الـmiddleware كان بيرمي أي زائر على `/admin/*` لـ`/admin-entry` (باب الفريق
   بإيميل+باسورد) فصاحب البيزنس بيكتب رقمه ويشوف «الحساب ده مش موجود». بقى يرمي على `/login?next=` (باب موحّد: أدمن/موظف/
   صاحب بيزنس بجوجل أو واتساب) + تلميح في `/admin-entry`. دخول صاحب البيزنس = `/login` بنفس الرقم (كود واتساب) أو جوجل.
+
+## 🔎 الجذر الحقيقي لضعف الفهرسة: canonical الهوم كان موروث لكل الصفحات (١٠ سبتمبر ٢٠٢٦ — بليل)
+محمد: «عايز حل للانتشار والترافيك… شوفلي ثغرة». اتكشف وأنا بطلب فهرسة `/system` من Search Console:
+«Duplicate without user-selected canonical».
+- 🐞 **الجذر:** `alternates: { canonical: SITE_URL }` في `src/app/layout.tsx` — الـmetadata في Next بتتورّث،
+  فأي صفحة ماعندهاش canonical خاص (الأقسام · الإعلانات · المدونة · /system · /title …) كانت بتطلع
+  `<link rel="canonical" href="https://www.madmonacairo.com"/>` = «أنا نسخة من الهوم، ماتفهرسنيش».
+  ده يفسّر ٩٢٦ صفحة Discovered-not-indexed و٢٨ «canonical بديل» في تقرير ٨/٩.
+- ✅ الـcanonical اتشال من الجذر واتحط في `src/app/page.tsx` للهوم بس. ١٣ صفحة عندها canonical خاص
+  (pro · start · for/* · blog · marketplace/[slug] · browse …) زي ما هي.
+  **قاعدة:** أي `alternates`/`robots` في layout جذر = بيتورّث لكل الشجرة — ماتحطش canonical إلا في الصفحة نفسها.
+- «| مضمونة | مضمونة»: الـ`title.template` في الجذر بيضيف اللاحقة لوحده — ٦ صفحات كانت بتكتبها بإيدها
+  (system · privacy · terms · business-lounge · elite · real-estate) واتصلحت. **العنوان في أي صفحة من غير «| مضمونة».**
+- Search Console (١٠/٩): طلب فهرسة اتعمل لـ`/for/contracting` · `/for/real-estate` · `/system` · `/for/clinics` ·
+  `/blog/whatsapp-bot-for-business-egypt` — السادس رجّع «Something went wrong» = **الحصة اليومية ~٥ طلبات**.
+  الباقي (`/for/{restaurants,salons,shops}` · باقي المدونة · `/start`) بكرة. `/pro` اتطلب ٩/٩.
+- 📣 ريل المقاولات `contracting-custody` (صوت بهجت V2 · مشاهد لابتوب بزووم) اتنشر ١٠/٩ على الخمسة:
+  IG `reel/DdHglGiB7Gv` · TikTok `video/7683979833960893704` · FB `reel/1335959695277873` (+ كومنت أول باللينك) ·
+  Shorts `Tgxn7_n9CQs` (+ كومنت) · Threads `post/DdHhCHyjIg3`. ريل العقارات `realestate-agent-left` جاهز — بيتنزّل بعده بساعة ونص.
+  ⚠️ ثريدز بيقص عند ٥٠٠ حرف — كابشن ثريدز يتقصّر (اتشالت ٣ هاشتاجات). و`selectAll+delete` بالـJS مابيمسحش
+  المحرر — الصح: كليك جوّاه + `ctrl+a` + `Backspace` من الإضافة وبعدين `insertText`.
+- 📵 **تليجرام ويب مش مسجّل دخول** في كروم محمد (شاشة QR) — التاب سايبه مفتوح على الـQR؛ محمد يمسحه
+  من تطبيق تليجرام (Settings → Devices → Link Desktop Device) وبعدها أقدر أنشر في الجروبات/أعمل قناة.
