@@ -151,8 +151,11 @@ export async function middleware(req: NextRequest) {
       return NextResponse.next()
     }
 
+    // 🔑 (١٠/٩/٢٠٢٦) محمد: «صاحب البيزنس لما بيدخل من الأبليكيشن بيقوله (حساب غير موجود)» — كان بيتحوّل على
+    //    /admin-entry (باب فريق مضمونة بإيميل+باسورد) فبيدخل رقمه وبياخد «الحساب ده مش موجود». الباب الموحّد /login
+    //    بيقبل الكل: أدمن اللوحة (بيفتح الكوكي كمان) · موظف · صاحب بيزنس بجوجل/واتساب — وبيرجّعه لنفس الصفحة.
     const url = req.nextUrl.clone()
-    url.pathname = ADMIN_ENTRY_PATH
+    url.pathname = '/login'
     url.search = ''
     url.searchParams.set('next', path)
     return NextResponse.redirect(url)

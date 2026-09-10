@@ -38,7 +38,8 @@ export default function AdminEntryPage() {
         const next = new URLSearchParams(window.location.search).get('next') || '/admin/dashboard'
         window.location.href = next.startsWith('/admin') ? next : '/admin/dashboard'
       } else {
-        setErr(j?.error || `فشل الدخول (${r.status})`)
+        // 🔑 (١٠/٩/٢٠٢٦) ده باب فريق مضمونة بس — صاحب البيزنس/الموظف بياخد «الحساب ده مش موجود» هنا. نوجّهه للباب الموحّد.
+        setErr((j?.error || `فشل الدخول (${r.status})`) + (r.status === 401 ? ' — لو إنت صاحب بيزنس أو موظف، ادخل من madmonacairo.com/login بالرقم أو جوجل أو الواتساب.' : ''))
         setLoading(false)
       }
     } catch (e) {
