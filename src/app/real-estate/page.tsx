@@ -7,7 +7,7 @@ import { Metadata } from 'next'
 import RealEstateClient from './RealEstateClient'
 
 export const metadata: Metadata = {
-  title: 'أجّر أو بيع عقارك وانت مضمون — شقق وفيلات وشاليهات ومكاتب | مضمونة',
+  title: 'أجّر أو بيع عقارك وانت مضمون — شقق وفيلات وشاليهات ومكاتب',
   description:
     'ضيف عقارك على مضمونة ببلاش: حماية كاملة، دفع مستحقات سريع، ودعم مستمر 24/7. السعر اللي بتحدده هو اللي بيوصلك.',
   keywords: [

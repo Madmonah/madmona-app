@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import PrivacyContent from '@/components/PrivacyContent'
 
 export const metadata: Metadata = {
-  title: 'سياسة الخصوصية | مضمونة',
+  title: 'سياسة الخصوصية',
   description: 'سياسة الخصوصية لمنصة Madmona Marketplace — كيف نتعامل مع بياناتك الشخصية.',
 }
 

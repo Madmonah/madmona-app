@@ -83,7 +83,7 @@ export const metadata: Metadata = {
   publisher: 'Madmona',
   manifest: '/manifest.json',
   metadataBase: new URL(SITE_URL),
-  alternates: { canonical: SITE_URL },
+  // 🔎 (١٠/٩/٢٠٢٦) كان هنا canonical: SITE_URL — بيتورّث لكل صفحة ماعندهاش canonical خاص، فكل الموقع كان بيقول لجوجل «أنا نسخة من الهوم» (Search Console: Duplicate without user-selected canonical). الهوم بس ليها canonical في page.tsx.
   openGraph: {
     title: 'مضمونة | معاملاتك مضمونة',
     description:

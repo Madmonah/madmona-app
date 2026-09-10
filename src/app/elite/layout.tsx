@@ -4,7 +4,7 @@ import type { Metadata, Viewport } from 'next'
    Elite-branded shortcut (logo icon + name) for quick booking. */
 
 export const metadata: Metadata = {
-  title: 'Elite Beauty Salon & Spa | مضمونة',
+  title: 'Elite Beauty Salon & Spa',
   description: 'احجزي في Elite — حجز فوري، أمان كامل، على منصّة مضمونة',
   manifest: '/elite.webmanifest',
   appleWebApp: {

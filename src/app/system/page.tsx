@@ -12,7 +12,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'سيستم مضمونة بيعمل إيه لبيزنسك؟ | مضمونة',
+  title: 'سيستم مضمونة بيعمل إيه لبيزنسك؟',
   description: 'حسابات · عملاء · موظفين وحضور ومرتبات · بوت واتساب · صفحة لبيزنسك — كله في مكان واحد ومن موبايلك. برنامج الإدارة بـ١٠٠٠ ج بدل كتير لعدد محدود.',
 }
 

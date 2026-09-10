@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import TermsContent from '@/components/TermsContent'
 
 export const metadata: Metadata = {
-  title: 'الشروط والأحكام | مضمونة',
+  title: 'الشروط والأحكام',
   description: 'الشروط والأحكام لاستخدام منصة Madmona Marketplace.',
 }
 

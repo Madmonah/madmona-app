@@ -98,6 +98,9 @@ async function getRootCategories(): Promise<DBCategory[]> {
   }
 }
 
+// 🔎 (١٠/٩/٢٠٢٦) canonical الهوم هنا بس — اتشال من الـlayout الجذر عشان ماكانش يتورّث لكل الصفحات (كل الموقع كان بيقول لجوجل «أنا الهوم»).
+export const metadata = { alternates: { canonical: '/' } }
+
 export const revalidate = 30
 
 // (29 Jul 2026) عدّاد الإعلانات المنشورة لكل قسم رئيسي — لشارة «قريبًا» تحت 5
