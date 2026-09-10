@@ -1,0 +1,10 @@
+-- 🔗👥 (١٠/٩/٢٠٢٦) مطبّق لايف: employee_cap_default_two_seats · self_apply_policy_allow_force_approved · employee_cap_excludes_owner
+-- محمد: «عايز أبعت اللينك لشركة وتضيف هي نفسها — بيطلب تسجيل حساب» + «اقفل عدد الموظفين على ١ موظف غير صاحب البيزنس».
+-- ١) البروتوكول: madmonacairo.com/start → /supplier/register (يدخل بجوجل/واتساب من /login?next= — البابين عبر ensureSupabaseSession)
+--    → يكتب اسم شركته → insert marketplace_suppliers (profile_id=هو · max_employees=2) → التريجرات تعمل suppliers + الاعتماد
+--    → /admin/business-finance/<id>/setup?welcome=1. فورم الأدمن /admin/business-partners/new للزائر → /start (middleware).
+-- ٢) 🐞 اتكشف بالتجربة كمستخدم حقيقي: سياسة marketplace_suppliers_self_apply كانت بتشترط kyc_status='pending' والتريجر
+--    trg_force_approve_marketplace_supplier بيحوّلها approved قبل الـWITH CHECK → RLS بترفض كل تسجيل ذاتي. السياسة بقت تقبل الاتنين.
+-- ٣) الحد: max_employees/employee_seats الافتراضي ٢ · trg_enforce_employee_cap بيعدّ غير المالك بس (role='owner' أو
+--    auth_user_id = profile_id مستثنى) ≤ max_employees−1. اتجرّب: الموظف الأول ✓ · التاني ✗ · صف المالك ✓. البيانات اتمسحت.
+select 1;

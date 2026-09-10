@@ -131,7 +131,7 @@ export default function SupplierRegisterPage() {
 
     const { data: created, error: insertError } = await supabaseBrowser
       .from('marketplace_suppliers')
-      .insert(insert)
+      .insert(insert as never)
       .select('id')
       .single()
 
