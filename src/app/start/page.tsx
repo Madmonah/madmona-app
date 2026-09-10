@@ -71,7 +71,7 @@ export default function StartPage() {
         business_name: f.business_name.trim(), industry: f.industry, contact_name: f.contact_name.trim() || null,
         contact_phone: f.contact_phone.trim() || null, contact_email: f.contact_email.trim() || null,
         city: f.city, district: f.district.trim() || null, address: f.address.trim() || null,
-        branches: [{ name: f.business_name.trim(), code: 'MAIN', address: f.address.trim() || null, district: f.district.trim() || null, phone: f.contact_phone.trim() || null, manager_name: f.contact_name.trim() || null }],
+        // الفرع الرئيسي بيتعمل لوحده (تريجر التوفير) — وصاحب البيزنس بيكمّل عنوانه ومواعيده في «كمّل شركتك»
       }
       const r = await fetch('/api/start/create-business', {
         method: 'POST', headers: { 'content-type': 'application/json', ...(bearer ? { authorization: `Bearer ${bearer}` } : {}) },
