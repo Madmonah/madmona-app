@@ -210,7 +210,7 @@ export default function StartPage() {
                 </div>
               </div>
             )}
-            <p className="text-[11px] text-gray-400 text-center">من غير باسورد ومن غير دفع دلوقتي. عندك حساب؟ <Link href={`/login?next=${encodeURIComponent('/start')}`} className="text-[#059669] font-bold">ادخل</Link></p>
+            <p className="text-[11px] text-gray-400 text-center">من غير باسورد ومن غير دفع دلوقتي. <b>عندك حساب أو شركة بالفعل؟</b> <Link href="/login" className="text-[#059669] font-bold">سجّل دخولك من هنا</Link> بنفس الرقم أو جوجل وهتلاقي لوحتك.</p>
           </form>
         )}
 
@@ -234,6 +234,8 @@ export default function StartPage() {
             <CheckCircle2 className="w-10 h-10 text-[#059669] mx-auto mb-2" />
             <p className="font-black text-lg">اتعملت ✓</p>
             <p className="text-sm text-gray-500 mt-1">هنودّيك على «كمّل شركتك» — الفرع والموظف والمنتجات خطوة خطوة.</p>
+            {/* 🔑 (١٠/٩) محمد: «صاحب البيزنس لما بيخلص مش بيعرف يسجل دخول تاني» — نقوله المرة الجاية بيدخل منين */}
+            <p className="text-xs text-[#04352A] bg-[#E6F4EE] rounded-xl px-3 py-2 mt-3 font-bold">المرة الجاية: افتح <span dir="ltr">madmonacairo.com/login</span> وادخل بنفس الرقم (كود واتساب) أو نفس حساب جوجل — هتلاقي لوحتك على طول.</p>
             {supplierId && <Link href={`/admin/business-finance/${supplierId}/setup?welcome=1`} className="inline-block mt-4 bg-[#04352A] text-white font-black rounded-2xl px-6 py-3 no-underline">افتح لوحتي ←</Link>}
           </div>
         )}

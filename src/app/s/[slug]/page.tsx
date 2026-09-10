@@ -10,7 +10,7 @@ import {
   Loader2, MapPin, Calendar, ChevronLeft, Scissors, Clock, Sparkles, User,
   ChevronDown, MessageCircle, ShieldCheck, Image as ImageIcon, Crown, Wind,
   Brush, Hand, Flower2, Building2, Stethoscope, Utensils, Briefcase,
-  Wrench, Car, ShoppingBag, Home, Factory, Plane, Package,
+  Wrench, Car, ShoppingBag, Home, Factory, Plane, Package, Share2,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -616,6 +616,8 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
               <MessageCircle className="w-4 h-4" /> {v.waCta}
             </a>
           </div>
+          {/* 🔗 (١٠/٩/٢٠٢٦) زرار مشاركة للعميل — كل صفحة بيزنس بتنتشر بإيد عملائها (واتساب) */}
+          <a href={`https://wa.me/?text=${encodeURIComponent(`${data.business_name} على مضمونة — الأسعار والمواعيد والحجز من موبايلك: https://www.madmonacairo.com/s/${slug}?utm_source=whatsapp&utm_medium=share`)}`} target="_blank" rel="noopener" className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-white/85"><Share2 className="w-3.5 h-3.5" /> شارك الصفحة مع صاحبك على واتساب</a>
         </div>
       </header>
 
