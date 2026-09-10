@@ -293,7 +293,7 @@ export default function ListingDetailPage() {
         // إخفاء الصور المعلّمة graphic (زي صور الدم/الحجامة) من الجاليري بالكامل
         setPhotos(
           ((results[0].data || []) as Photo[]).filter(
-            (p) => { const q = (p as { quality_flag?: string | null }).quality_flag; return !q || q === 'clean' }
+            (p) => { const q = (p as { quality_flag?: string | null }).quality_flag; return !q || !['broken', 'graphic'].includes(q) } // 🖼️ (١٠/٩) محمد: «الصور مش بتظهر» — كان بيعرض clean بس، و٣٥٤ صورة 'recheck' → ٣٣١ إعلان من غير جاليري. نفس قاعدة الجريد.
           )
         )
         const attrsData = (results[1].data || []) as AttributeWithValue[]
