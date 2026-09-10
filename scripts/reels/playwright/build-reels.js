@@ -76,6 +76,14 @@ ${sc.items.map(it => `      <div class="row ${sc.tone || 'good'}"><span class="t
 ${sc.items.map(p => `    <div class="panel"><span class="k">${esc(p.k)}</span><b class="v">${esc(p.v)}</b></div>`).join('\n')}
   </div>`
 
+    case 'phone':
+      // 📱 (١٠/٩) لقطة حقيقية من اللوحة جوّه موبايل — بتسكرول ببطء + دخول بميل. shot من bg/
+      return `<div class="${cls} phone-sc">
+    <p class="big ph-big">${esc(sc.text)}${sc.em ? `<em>${esc(sc.em)}</em>` : ''}</p>
+    <div class="phone${sc.frame === 'laptop' ? ' laptop' : ''}"><span class="notch"></span><div class="screen"><img class="shot" src="${bgUri(sc.shot)}" alt=""></div></div>
+${sc.cap ? `    <p class="ph-cap">${esc(sc.cap)}</p>` : ''}
+  </div>`
+
     case 'end':
       // كرت النهاية = CTA واضح (محمد ٨/٩: «الريل يخلص بـCTA»).
       // اللينك في بادج أبيض كبير + سطر «اللينك في أول كومنت»
@@ -112,6 +120,11 @@ function timing(scenes) {
     if (sc.type === 'rows') stagger('.row', sc.items.length, 0.35, 0.25)
     if (sc.type === 'panels') stagger('.panel', sc.items.length, 0.9, 0.35)
     if (sc.type === 'parties' && sc.mid) out.push(`body.go .s${i} .mid{animation-delay:${(t + 0.5).toFixed(2)}s}`)
+    if (sc.type === 'phone') {
+      out.push(`body.go .s${i} .phone{animation-delay:${(t + 0.25).toFixed(2)}s}`)
+      out.push(`body.go .s${i} .shot{animation-delay:${(t + 1.0).toFixed(2)}s;animation-duration:${Math.max(sc.len - 1.2, 1).toFixed(2)}s}`)
+      out.push(`body.go .s${i} .ph-cap{animation-delay:${(t + 0.9).toFixed(2)}s}`)
+    }
     if (sc.type === 'end') out.push(`body.go .s${i} .end-mark{animation-delay:${(t + 0.25).toFixed(2)}s}`)
     // 🎯 (٥/٩) reveal: الإجابة تتأخر عن السؤال. من غير الوقفة دي البوست
     //    بيبقى ليستة — والمشاهد مالوش سبب يستنى. الوقفة هي اللعبة.
@@ -193,6 +206,30 @@ body.go .bub,body.go .ask{animation:pop .45s both cubic-bezier(.2,.85,.3,1.05)}
 .big{font-size:11cqw;font-weight:900;line-height:1.25;letter-spacing:-.03em}
 .big em{font-style:normal;color:var(--green);display:block}
 .note{font-size:4.6cqw;color:var(--ink-soft);font-weight:600;max-width:78%}
+
+/* phone (١٠/٩) */
+.phone-sc{justify-content:center;align-items:center;text-align:center;gap:3cqw}
+.ph-big{font-size:8.6cqw}
+.phone{width:64cqw;aspect-ratio:9/18.6;border-radius:7cqw;background:#0b0f0e;padding:1.7cqw;position:relative;
+       box-shadow:0 4cqw 9cqw rgba(0,0,0,.35),inset 0 0 0 .5cqw #2a2f2d;opacity:0}
+.notch{position:absolute;top:1.7cqw;left:50%;transform:translateX(-50%);width:22cqw;height:3.2cqw;background:#0b0f0e;border-radius:0 0 3cqw 3cqw;z-index:2}
+.screen{width:100%;height:100%;border-radius:5.4cqw;overflow:hidden;background:#fff;position:relative}
+.shot{width:100%;height:auto;display:block;transform:translateY(0)}
+.ph-cap{font-size:4.4cqw;font-weight:800;color:var(--green);opacity:0}
+body.go .phone{animation:phonein .8s both cubic-bezier(.2,.9,.25,1.05)}
+body.go .shot{animation:shotscroll linear both}
+body.go .ph-cap{animation:pop .45s both cubic-bezier(.2,.85,.3,1.05)}
+@keyframes phonein{from{opacity:0;transform:translateY(9cqw) rotateX(18deg) scale(.94)}to{opacity:1;transform:none}}
+@keyframes shotscroll{from{transform:translateY(0)}to{transform:translateY(-28%)}}
+.has-bg .ph-big em{color:var(--mint)}
+
+/* laptop (١٠/٩) — لقطات اللوحة عرضية فبتتعرض في لابتوب مع زووم وبان */
+.laptop{width:92cqw;aspect-ratio:16/10.4;border-radius:2.6cqw;padding:1.1cqw;box-shadow:0 3cqw 8cqw rgba(0,0,0,.32),inset 0 0 0 .4cqw #2a2f2d}
+.laptop .notch{display:none}
+.laptop .screen{border-radius:1.6cqw}
+.laptop .shot{width:100%;height:100%;object-fit:cover;object-position:right top;transform-origin:right top}
+body.go .laptop .shot{animation-name:shotpan}
+@keyframes shotpan{from{transform:scale(1)}to{transform:scale(1.32) translate(3%,-4%)}}
 
 /* parties */
 .party-sc{justify-content:center;gap:5cqw}
