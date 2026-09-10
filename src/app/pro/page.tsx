@@ -22,6 +22,20 @@ import { CheckCircle2, MessageCircle, Wallet, Users, Boxes, Bot, Globe, Clipboar
 const INTAKE_WA = '201002229982'
 const PRICE_NOW = 1000
 
+// 🔗 (١٠/٩/٢٠٢٦) محمد: «خلي ده اللينك اللي يتحط في صفحة برو» — التسجيل الذاتي /start (→ /supplier/register):
+//    صاحب البيزنس بيدخل بجوجل/واتساب ويضيف شركته بنفسه ويتحوّل على «كمّل شركتك». الحد: مالك + موظف واحد.
+const START_PATH = '/start'
+
+// لقطات حقيقية من اللوحة (نفس صور الريلز في scripts/reels/playwright/bg) — «شوف اللوحة بنفسك»
+const SHOTS: { src: string; label: string }[] = [
+  { src: '/pro/erp-crm.jpg', label: 'متابعة العملاء (CRM)' },
+  { src: '/pro/erp-attendance.jpg', label: 'الحضور بالبصمة من الموبايل' },
+  { src: '/pro/erp-monitor.jpg', label: 'المونيتور — مين شغّال دلوقتي' },
+  { src: '/pro/erp-whatsapp.jpg', label: 'بوت الواتساب' },
+  { src: '/pro/erp-atrisk.jpg', label: 'عملاء في خطر' },
+  { src: '/pro/erp-setup.jpg', label: 'كمّل شركتك خطوة خطوة' },
+]
+
 // (١) بتاخد إيه بالـ١٠٠٠ ج — كل بند = موديول موجود فعلًا في لوحة الإدارة (erpModules)
 const MODULES: { icon: React.ReactNode; title: string; does: string; wins: string[] }[] = [
   { icon: <Wallet className="w-5 h-5" />, title: 'الحسابات والمصاريف', does: 'كل بيعة ومصروف بيتقيّد لوحده — من غير دفتر ولا إكسيل.',
@@ -87,6 +101,12 @@ export default function ProOfferPage() {
   const waText = encodeURIComponent(`عايز أشترك في برنامج إدارة مضمونة (ERP + CRM) بعرض الـ${PRICE_NOW} ج${form.business_type ? ` — نشاطي: ${form.business_type}` : ''}`)
   const waHref = `https://wa.me/${INTAKE_WA}?text=${waText}`
   const cur = BY_TYPE.find((t) => t.key === type) || BY_TYPE[0]
+  const startHref = useMemo(() => {
+    const q = new URLSearchParams()
+    Object.entries(utm).forEach(([k, v]) => { if (v) q.set(k, v as string) })
+    if (!q.get('utm_campaign')) q.set('utm_campaign', 'erp1000')
+    return `${START_PATH}?${q.toString()}`
+  }, [utm])
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -122,12 +142,12 @@ export default function ProOfferPage() {
             كل اللي بيتسجّل عندك ملكك ١٠٠٪.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
-            <a href="#subscribe" className="text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-4 no-underline text-base shadow-lg shadow-[#34D399]/20">احجز حسابك بـ{price} ج ←</a>
+            <a href={startHref} className="text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-4 no-underline text-base shadow-lg shadow-[#34D399]/20">ضيف شركتك دلوقتي — بـ{price} ج ←</a>
             <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-center bg-white/10 border border-white/15 text-white font-bold rounded-2xl px-6 py-4 no-underline inline-flex items-center justify-center gap-2">
               <MessageCircle className="w-4 h-4" /> اسأل على واتساب
             </a>
           </div>
-          <p className="mt-4 text-xs text-white/60">من غير دفع دلوقتي — بنكلّمك، نفعّل حسابك، ونمشي معاك خطوة خطوة.</p>
+          <p className="mt-4 text-xs text-white/60">دقيقة واحدة: تدخل بجوجل أو الواتساب، تكتب اسم شركتك، وتبدأ. من غير دفع دلوقتي.</p>
         </div>
       </section>
 
@@ -151,6 +171,24 @@ export default function ProOfferPage() {
               </ul>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* لقطات حقيقية من اللوحة */}
+      <section className="bg-[#04352A] text-white">
+        <div className="mx-auto max-w-3xl px-5 py-12">
+          <p className="text-[#6FCF97] font-black text-sm mb-1">مش كلام — شاشات حقيقية</p>
+          <h2 className="text-2xl font-black mb-5">شوف اللوحة بنفسك</h2>
+          <div className="flex gap-3 overflow-x-auto pb-3 -mx-5 px-5 snap-x">
+            {SHOTS.map((sh) => (
+              <figure key={sh.src} className="snap-start shrink-0 w-[78%] sm:w-[46%] rounded-2xl overflow-hidden border border-white/10 bg-white/5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={sh.src} alt={sh.label} loading="lazy" className="w-full aspect-[16/10] object-cover object-top" />
+                <figcaption className="px-3 py-2 text-xs font-bold text-white/85">{sh.label}</figcaption>
+              </figure>
+            ))}
+          </div>
+          <a href={startHref} className="mt-4 block text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-3.5 no-underline">ضيف شركتك وجرّبها بنفسك ←</a>
         </div>
       </section>
 
@@ -260,6 +298,8 @@ export default function ProOfferPage() {
             </div>
             <CheckCircle2 className="w-9 h-9 text-[#059669]" />
           </div>
+          <a href={startHref} className="block text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-4 no-underline text-base mb-3">ضيف شركتك بنفسك دلوقتي ←</a>
+          <p className="text-[11px] text-gray-400 text-center mb-4">تدخل بجوجل أو الواتساب · تكتب اسم شركتك · وتكمّل خطوة خطوة. أو سيب رقمك تحت ونكلّمك إحنا:</p>
           {state === 'done' ? (
             <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center">
               <p className="font-black text-emerald-900 text-lg">وصلنا ✓ — هنكلّمك على رقمك النهارده</p>
@@ -281,7 +321,7 @@ export default function ProOfferPage() {
               <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="أي حاجة تحب تقولها (اختياري)" rows={2} className="w-full rounded-xl border border-gray-200 px-3 py-3 text-[16px]" />
               {err && <p className="text-xs text-red-600">{err}</p>}
               <button type="submit" disabled={state === 'sending'} className="w-full bg-[#04352A] text-white font-black rounded-2xl py-4 text-base disabled:opacity-50">
-                {state === 'sending' ? '…' : `احجز برنامج الإدارة بـ${price} ج`}
+                {state === 'sending' ? '…' : 'كلّموني وفعّلولي حسابي'}
               </button>
               <p className="text-[11px] text-gray-400 text-center">من غير دفع دلوقتي — هنكلّمك ونفعّل حسابك ونمشي معاك خطوة خطوة.</p>
             </form>
@@ -298,7 +338,7 @@ export default function ProOfferPage() {
             <p className="text-[11px] text-gray-500 truncate">برنامج الإدارة · لعدد محدود</p>
             <p className="font-black text-lg leading-tight">{price} ج <span className="text-xs text-gray-500 font-bold">بدل كتير</span></p>
           </div>
-          <a href="#subscribe" className="bg-[#04352A] text-white font-black rounded-2xl px-5 py-3 text-sm no-underline shrink-0">احجز حسابك</a>
+          <a href={startHref} className="bg-[#04352A] text-white font-black rounded-2xl px-5 py-3 text-sm no-underline shrink-0">ضيف شركتك</a>
         </div>
       )}
     </main>

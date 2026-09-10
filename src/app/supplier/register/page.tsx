@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { ensureSupabaseSession } from '@/lib/session-upgrade'
 import {
   ArrowRight,
   Building2,
@@ -71,7 +72,8 @@ export default function SupplierRegisterPage() {
   // ----- Check auth + existing supplier on mount -----
   useEffect(() => {
     const init = async () => {
-      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      // 🚪🚪 (١٠/٩/٢٠٢٦) البابين: توكن الواتساب بيترقّى لجلسة Supabase هنا (getSession كانت بتعلّق في الـPWA)
+      const session = await ensureSupabaseSession()
       if (!session?.user) {
         setStage('unauthenticated')
         return
@@ -111,6 +113,8 @@ export default function SupplierRegisterPage() {
       profile_id: userId,
       business_name: businessName.trim(),
       kyc_status: 'pending',
+      // 👥 (١٠/٩/٢٠٢٦) محمد: «اقفل عدد الموظفين على ١ موظف غير صاحب البيزنس» — مالك + موظف
+      max_employees: 2,
     }
     // Note: account_type is captured in UI for conditional field display.
     // To persist it, add column to DB:
@@ -180,20 +184,16 @@ export default function SupplierRegisterPage() {
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-1">سجّل دخول الأول</h1>
           <p className="text-sm text-gray-500 mb-6">
-            عشان تسجل في أجر معانا على Madmona، لازم تسجل دخول بحسابك أولاً.
+            عشان تضيف شركتك على مضمونة، ادخل الأول بجوجل أو بالواتساب — دقيقة واحدة ومفيش باسورد. لو معندكش حساب هيتعمل لوحده.
           </p>
+          {/* 🔗 (١٠/٩/٢٠٢٦) /login فيها جوجل + واتساب وبترجّعك هنا بعد الدخول (?next=) — /auth/signup القديمة اتشالت من المسار */}
           <Link
-            href={`/auth/login?redirect=${encodeURIComponent('/supplier/register')}`}
-            className="inline-block w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-semibold hover:bg-[#34D399]/90"
+            href={`/login?next=${encodeURIComponent('/supplier/register')}`}
+            className="inline-block w-full bg-[#34D399] text-[#04352A] py-3 rounded-xl font-black hover:bg-[#34D399]/90"
           >
-            تسجيل دخول
+            ادخل بجوجل أو الواتساب وكمّل
           </Link>
-          <Link
-            href={`/auth/signup?redirect=${encodeURIComponent('/supplier/register')}`}
-            className="inline-block mt-2 text-sm text-gray-600 hover:text-[#059669]"
-          >
-            مفيش حساب؟ اعمل حساب جديد
-          </Link>
+          <p className="mt-3 text-[11px] text-gray-400">بعد الدخول هتكتب اسم شركتك وهنمشي معاك خطوة خطوة.</p>
         </div>
       </div>
     )

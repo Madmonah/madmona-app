@@ -118,6 +118,11 @@ export async function middleware(req: NextRequest) {
     if (path === '/admin/listings' || path.startsWith('/admin/drafts')) {
       return NextResponse.next()
     }
+    // 🔗 (١٠/٩/٢٠٢٦) محمد: «لو عايز أبعت اللينك ده لشركة تضيف نفسها مش بينفع — بيطلب تسجيل حساب».
+    //    الزائر اللي بيفتح فورم الشركاء بتاع الأدمن بيتحوّل على التسجيل الذاتي /start (→ /supplier/register).
+    if (path.startsWith('/admin/business-partners/new')) {
+      return NextResponse.redirect(new URL('/start', req.url))
+    }
 
     // استثناءات /admin/business-finance/<uuid>[/...]:
     //   (أ) البيزنس تحت التفاوض (تجربة مفتوحة) — بلا حساب خالص
