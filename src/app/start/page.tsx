@@ -94,7 +94,9 @@ export default function StartPage() {
       try { const raw = safeStorage.get(DRAFT_KEY); if (raw) draft = JSON.parse(raw) } catch { /* لا درافت */ }
       if (draft) setForm(draft)
       const resume = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('resume') === '1'
-      if (s?.user && draft && resume && draft.business_name.trim().length >= 2) { void createBusiness(draft, s.access_token); return }
+      // جلسة + درافت = كمّل الإنشاء لوحدك (رجوع من جوجل، أو الصفحة اتعملت reload بعد التوثيق —
+      // self_create_business idempotent: لو الشركة اتعملت خلاص بيرجّعها بدل ما يكرّر)
+      if (s?.user && draft && (resume || draft.business_name.trim().length >= 2)) { void createBusiness(draft, s.access_token); return }
       setStage('form')
     })()
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
