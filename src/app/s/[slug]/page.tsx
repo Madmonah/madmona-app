@@ -800,7 +800,8 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           <ChevronLeft className="w-5 h-5 text-[#6B7280]" />
         </Link>
 
-        <p className="text-center text-[10px] text-[#6B7280] pt-2">powered by <b style={{ color: t.accent }}>مضمونة</b> · madmonacairo.com</p>
+        {/* 🔎 (١٠/٩/٢٠٢٦) لينك حقيقي بدل نص — كل صفحة بيزنس بتبقى طريق لصاحب بيزنس جديد (+ رابط داخلي لجوجل) */}
+        <p className="text-center text-[10px] text-[#6B7280] pt-2">powered by <b style={{ color: t.accent }}>مضمونة</b> · <a href="/start?utm_source=storefront&utm_medium=footer&utm_campaign=erp1000" className="underline">ضيف شركتك على مضمونة</a></p>
       </main>
     </div>
   )

@@ -18,7 +18,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   Search, Bell, Menu, X, ArrowLeft, User, LogIn, LogOut, Briefcase, Plus,
-  LayoutDashboard, Car, Package,
+  LayoutDashboard, Car, Package, Building2,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { signOutEverywhere } from '@/lib/sign-out'
@@ -442,6 +442,8 @@ export default function MobileHome({ categories, liveCounts = {}, sectionCounts 
             <nav className="flex-1 overflow-y-auto p-4 space-y-1">
               <DrawerLink href="/account" icon={<User className="w-5 h-5 text-gray-700" />} title={t('mhome.account')} desc={t('mhome.orders_favorites_wallet')} onClose={() => setMenuOpen(false)} />
               <DrawerLink href={`/add-listing${addTrack}`} icon={<Plus className="w-5 h-5 text-[#d4a017]" strokeWidth={3} />} iconBg="bg-[#d4a017]/10" title={t('mhome.add_a_listing')} desc={t('mhome.start_selling_or_renting')} onClose={() => setMenuOpen(false)} />
+              {/* 🔎 (١٠/٩/٢٠٢٦) محمد: «محتاج أزوّد الترافيك» — الهوم ماكانش فيها ولا رابط لبرنامج الإدارة (/pro) */}
+              <DrawerLink href="/pro?utm_source=home&utm_medium=drawer&utm_campaign=erp1000" icon={<Building2 className="w-5 h-5 text-[#04352A]" />} iconBg="bg-[#34D399]/10" title="برنامج الإدارة لبيزنسك" desc="حسابات · CRM · موظفين · بوت واتساب — بـ١٠٠٠ ج بدل كتير" onClose={() => setMenuOpen(false)} />
               <DrawerLink href="/careers" icon={<Briefcase className="w-5 h-5 text-[#04352A]" />} iconBg="bg-[#34D399]/10" title={t('mhome.careers')} desc={t('mhome.join_the_madmona_team')} onClose={() => setMenuOpen(false)} />
               {/* 🔔 (٢٨/٨) الإشعارات */}
               {/* 🚗 (٢٨/٨) السيارات — ٤٢ إعلان منشور وماكانش ليها رابط في الموبايل */}

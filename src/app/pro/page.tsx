@@ -249,6 +249,8 @@ export default function ProOfferPage() {
         <a href="/system" className="mt-4 block rounded-2xl border border-[#1F6F5F] px-4 py-3 text-center text-sm font-extrabold text-[#1F6F5F] no-underline">
           الشرح الكامل للسيستم شاشة شاشة ←
         </a>
+        {/* 🔎 (١٠/٩) روابط داخلية لصفحات الهبوط لكل نشاط — SEO */}
+        <p className="mt-3 text-xs text-gray-500 text-center">صفحة لكل نشاط: <a href="/for/clinics" className="text-[#059669] font-bold">العيادات</a> · <a href="/for/restaurants" className="text-[#059669] font-bold">المطاعم</a> · <a href="/for/salons" className="text-[#059669] font-bold">الصالونات</a> · <a href="/for/shops" className="text-[#059669] font-bold">المحلات والمصانع</a> · <a href="/for/contracting" className="text-[#059669] font-bold">المقاولات</a> · <a href="/for/real-estate" className="text-[#059669] font-bold">العقارات</a></p>
       </section>
 
       {/* (٤) ٣ خطوات */}

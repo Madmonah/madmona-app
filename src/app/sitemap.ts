@@ -38,6 +38,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.9,
     },
+    // 🔎 (١٠/٩/٢٠٢٦) صفحات البيع والهبوط — كانت مش في السايت ماب خالص
+    { url: `${SITE_URL}/pro`, lastModified, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${SITE_URL}/system`, lastModified, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${SITE_URL}/start`, lastModified, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${SITE_URL}/title`, lastModified, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${SITE_URL}/for/clinics`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/restaurants`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/salons`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/shops`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/contracting`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/real-estate`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
     {
       url: `${SITE_URL}/about`,
       lastModified,
