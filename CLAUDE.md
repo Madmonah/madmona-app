@@ -2371,3 +2371,13 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   🐞 **درس:** أول تركيب للـSW بيعمل reload بعد ~٦ ث وكان بيقطع الفلو — `/start` مستثناة من أي reload تلقائي
   (`isUserBusy`)، والكود المعلّق (`madmona_start_wa`) والدرافت (`madmona_start_draft`) بيتحفظوا فالصفحة بتكمّل بعد أي reload.
   🐞 `profiles.role` enum — المقارنة بـ`''` بتقع. 🧪 E2E `_start_e2e.cjs` (محاكاة ويبهوك): وصل لـ`/setup?welcome=1` ✓.
+
+## 🔎 الترافيك — الجذر جوجل مش الريلز (١٠ سبتمبر ٢٠٢٦)
+محمد: «أنا محتاج أزوّد الترافيك». الأرقام: ١٩٤ زائر/أسبوع أغلبهم الفريق · الريلز ١٬٧٠٠+ مشاهدة → ١٦ زائر ·
+جوجل ٥/يوم وهو أكبر مصدر حقيقي، ومفهرس ٦٣ صفحة بس من ١٬٠٣٤. و`/pro` كانت **من غير عنوان ولا وصف خالص**.
+- **اتعمل:** `/for/{clinics,restaurants,salons,shops,contracting,real-estate}` (SSR ثابتة بعناوين البحث + FAQ/Software/Breadcrumb
+  schema + روابط بين بعضها) · `layout.tsx` بـmetadata لـ`/pro` و`/start` · السايت ماب بقى فيها `/pro /system /start /title /for/*`
+  · فوتر كل صفحة بيزنس `/s/<slug>` (٣١٤ صفحة) بقى لينك «ضيف شركتك على مضمونة» → `/start` (utm_source=storefront) ·
+  «برنامج الإدارة» في درج الهوم · IndexNow اتبعت (200). ⚠️ القالب في layout.tsx بيضيف «| مضمونة» — ماتحطهاش في العنوان.
+- **القاعدة:** أي صفحة بيع/هبوط جديدة = metadata (title/description/canonical) + سطر في `sitemap.ts` + لينك داخلي من `/pro`
+  + IndexNow + Request indexing من Search Console (حصة يومية ~١٠). صفحة client component من غير `layout.tsx` = من غير عنوان لجوجل.
