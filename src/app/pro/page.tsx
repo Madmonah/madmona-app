@@ -249,6 +249,18 @@ export default function ProOfferPage() {
         <a href="/system" className="mt-4 block rounded-2xl border border-[#1F6F5F] px-4 py-3 text-center text-sm font-extrabold text-[#1F6F5F] no-underline">
           الشرح الكامل للسيستم شاشة شاشة ←
         </a>
+        {/* 🔎 (١٠/٩) مقالات المدونة — روابط داخلية + محتوى بيتفهرس */}
+        <div className="mt-4 rounded-2xl bg-white border border-[#E8E4D8] p-4">
+          <p className="text-xs font-black text-[#059669] mb-2">اقرا قبل ما تقرر</p>
+          <ul className="space-y-1.5 text-sm">
+            <li><a href="/blog/clinic-management-software-checklist" className="text-[#1A2E26] font-bold">برنامج إدارة عيادة: ٧ حاجات لازم تتأكد منها قبل ما تختار</a></li>
+            <li><a href="/blog/restaurant-qr-menu-whatsapp-orders" className="text-[#1A2E26] font-bold">منيو QR لمطعمك: إزاي تستقبل أوردرات من غير ما يضيع طلب</a></li>
+            <li><a href="/blog/salon-staff-commission-calculation" className="text-[#1A2E26] font-bold">عمولة الموظفة في الصالون بتتحسب إزاي؟</a></li>
+            <li><a href="/blog/whatsapp-bot-for-business-egypt" className="text-[#1A2E26] font-bold">بوت واتساب لبيزنسك: يرد من كتالوجك وإنت نايم</a></li>
+            <li><a href="/blog/mobile-attendance-without-fingerprint-device" className="text-[#1A2E26] font-bold">الحضور من الموبايل من غير جهاز بصمة</a></li>
+            <li><a href="/blog/small-business-erp-egypt-what-you-need" className="text-[#1A2E26] font-bold">سيستم إدارة للبيزنس الصغير: إيه اللي محتاجه فعلًا</a></li>
+          </ul>
+        </div>
         {/* 🔎 (١٠/٩) روابط داخلية لصفحات الهبوط لكل نشاط — SEO */}
         <p className="mt-3 text-xs text-gray-500 text-center">صفحة لكل نشاط: <a href="/for/clinics" className="text-[#059669] font-bold">العيادات</a> · <a href="/for/restaurants" className="text-[#059669] font-bold">المطاعم</a> · <a href="/for/salons" className="text-[#059669] font-bold">الصالونات</a> · <a href="/for/shops" className="text-[#059669] font-bold">المحلات والمصانع</a> · <a href="/for/contracting" className="text-[#059669] font-bold">المقاولات</a> · <a href="/for/real-estate" className="text-[#059669] font-bold">العقارات</a></p>
       </section>

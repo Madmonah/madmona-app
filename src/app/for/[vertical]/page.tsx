@@ -245,7 +245,7 @@ export default function VerticalPage({ params }: { params: { vertical: string } 
           <p className="text-white/75 text-sm mt-1">تدخل بجوجل أو الواتساب · تكتب اسم {v.who === 'عيادة أو مركز طبي' ? 'العيادة' : 'الشركة'} · وتكمّل خطوة خطوة</p>
           <Link href={start} className="inline-block mt-4 bg-[#34D399] text-[#04352A] font-black rounded-2xl px-8 py-4 no-underline">ابدأ دلوقتي ←</Link>
         </div>
-        <p className="text-xs text-gray-500 mt-6 text-center">أنشطة تانية: {VERTICALS.filter((x) => x.slug !== v.slug).map((x, i) => <span key={x.slug}>{i > 0 ? ' · ' : ''}<Link href={`/for/${x.slug}`} className="text-[#059669] font-bold">{x.name}</Link></span>)} · <Link href="/system" className="text-[#059669] font-bold">شرح السيستم كامل</Link></p>
+        <p className="text-xs text-gray-500 mt-6 text-center">أنشطة تانية: {VERTICALS.filter((x) => x.slug !== v.slug).map((x, i) => <span key={x.slug}>{i > 0 ? ' · ' : ''}<Link href={`/for/${x.slug}`} className="text-[#059669] font-bold">{x.name}</Link></span>)} · <Link href="/system" className="text-[#059669] font-bold">شرح السيستم كامل</Link> · <Link href="/blog" className="text-[#059669] font-bold">المدونة</Link></p>
       </section>
     </main>
   )
