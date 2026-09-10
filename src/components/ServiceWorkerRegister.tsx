@@ -68,6 +68,9 @@ export default function ServiceWorkerRegister() {
       return false
     }
     const isUserBusy = () => {
+      // 🔗 (١٠/٩/٢٠٢٦) /start (التسجيل الذاتي): الـreload بتاع أول تركيب للـSW كان بيقطع فلو توثيق الواتساب
+      //    (الكود متبعوت والصفحة بتعمل poll) — الصفحة دي مابتتعملش reload تلقائي أبدًا.
+      if (window.location.pathname === '/start') return true
       const el = document.activeElement as HTMLElement | null
       if (el) {
         const tag = el.tagName
