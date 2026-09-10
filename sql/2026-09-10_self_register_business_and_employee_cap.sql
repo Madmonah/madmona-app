@@ -8,3 +8,8 @@
 -- ٣) الحد: max_employees/employee_seats الافتراضي ٢ · trg_enforce_employee_cap بيعدّ غير المالك بس (role='owner' أو
 --    auth_user_id = profile_id مستثنى) ≤ max_employees−1. اتجرّب: الموظف الأول ✓ · التاني ✗ · صف المالك ✓. البيانات اتمسحت.
 select 1;
+-- ٤) (بعد الضهر) محمد: «التاب مش شغال وبيطلب تسجيل دخول مش بيعمل حساب جديد — عايز الناس تدخل تعمل منه حساب جديد
+--    ويتعمل منه حساب البيزنس بنفس تفاصيله». /start بقت الفورم نفسه (بيانات الشركة) + توثيق واتساب/جوجل جوّه الصفحة:
+--    self_create_business(p_user, p_payload) [service_role] = admin_create_b2b_partner_unguarded + الملكية + مالك وموظف واحد
+--    + auth_user_for_madmona_token(p_token) للباب التاني. الـAPI: /api/start/create-business.
+--    🧪 E2E لايف (Playwright + محاكاة ويبهوك الواتساب): فورم → كود → توثيق → الحساب والشركة اتعملوا → /setup?welcome=1.
