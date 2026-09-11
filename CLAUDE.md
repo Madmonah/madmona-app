@@ -2449,3 +2449,8 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
 - 📝 مقالين جداد في `blog_posts` (١١/٩): `contractor-site-custody-invoices` · `real-estate-crm-agent-leaves-clients-stay` (+ IndexNow 200).
 - ⏰ **الدورة الساعيّة** (محمد: «عايزك تشوف حاجة تزود بيها الترافيك كل ساعة»): `ScheduleWakeup` كل ٣٦٠٠ ث بالبرومبت اللي فيه قايمة
   الشغل (جروبات ≤٥/يوم · تليجرام · Search Console ≤٥/يوم · مقال/ريل لو الإضافة مش متوصلة · تقرير أرقام كل ٣ دورات).
+- 📨 **قناة تليجرام موجودة ومربوطة (١١/٩ — محمد: «فيه جروب في تليجرام عندنا ومتوصل بنبعت عليه أصلًا»):** `@madmona_cairo`
+  (٢٠٢ عضو) · البوت في `whatsapp_config.telegram_bot_token` · كرون `/api/cron/social-daily` (٨ · ١٣ · ١٧) بيبعت صور إعلانات/مشاريع
+  بالتناوب (`telegram_channel_posts` ٥٨٥ بوست). **الريلز بتتبعت كفيديو بالبوت** — `scripts/reels/playwright/_tg_send.cjs <slug> <token>`
+  (FormData من Node؛ `curl -F caption=<file` بيفشل على ويندوز). دي قناتنا فمفيش قاعدة «رسايل باردة» هنا. الريلين اتبعتوا: `t.me/madmona_cairo/998` · `/999`.
+  ⚠️ قيد `campaign_posts.platform` كان لازم يقبل `telegram` — اتوسّع.
