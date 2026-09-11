@@ -71,6 +71,7 @@ const NAV: NavGroup[] = [
     { href: '/admin/marketplace-bookings', label: 'الحجوزات' },
     { href: '/admin/marketplace-orders', label: 'الطلبات' },
     { href: '/admin/payouts', label: 'المدفوعات' },
+    { href: '/admin/subscriptions', label: 'دفع برنامج الإدارة' }, // 💳 (١١/٩) إثباتات إنستاباي/فودافون كاش — مراجعة وتفعيل
     { href: '/admin/projects', label: 'المشاريع' },
     { href: '/admin/projects-media', label: 'ميديا المشاريع' },
     { href: '/admin/listing-performance', label: 'أداء الإعلانات' }, // listings + bookings + pricing

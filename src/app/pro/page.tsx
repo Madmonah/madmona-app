@@ -152,6 +152,8 @@ export default function ProOfferPage() {
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
             <a href={startHref} className="text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-4 no-underline text-base shadow-lg shadow-[#34D399]/20">ضيف شركتك دلوقتي — بـ{price} ج ←</a>
+            {/* 💳 (١١/٩/٢٠٢٦) محمد: «نعمل آلية دفع زي لهجتي بالظبط» — تحويل إنستاباي/فودافون كاش + إثبات → مراجعة → تفعيل */}
+            <a href="/pro/pay" className="text-center text-white/90 underline underline-offset-4 text-sm no-underline">عندك حساب؟ ادفع بإنستاباي أو فودافون كاش وفعّل برنامج الإدارة ←</a>
             <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-center bg-white/10 border border-white/15 text-white font-bold rounded-2xl px-6 py-4 no-underline inline-flex items-center justify-center gap-2">
               <MessageCircle className="w-4 h-4" /> اسأل على واتساب
             </a>
