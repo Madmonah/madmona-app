@@ -2483,3 +2483,16 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
 - 🐞 (١١/٩ مساءً) **قفل تابات كروم السوشيال بـ`/json/close` بعد النشر بيقفل كروم نفسه لو مافضلش غير تابات الإضافات** →
   `ECONNREFUSED 9223` في الريل اللي بعده. سيب تاب `tiktokstudio/content` مفتوح (ماتقفلش غير `/upload` و`instagram.com`)، ولو وقع
   `launch-chrome-social.ps1` + ١٨ ث + `_tt_probe2.cjs` + ٢٠ ث قبل `post-tiktok.js`. `_fit_reels.cjs` اتلف (سطر ٤ مقطوع) — البديل `_fit2.cjs <slug>`.
+
+## 🎞️ فورمات «قصة بالرسم» (نوار) — `build-noir.js` (١١/٩/٢٠٢٦ — مساءً)
+محمد: «شوفت الفيديو ده؟ عايزين نعمل فيديوهات شبهه» — فيديو «قوي ذهنك» (كارتون أبيض/أسود بشخصيات خطية، عمود نور، لمسة حمرا، راوي درامي «هكذا تبدو حياتك…»).
+- **البنية:** `noir.config.js` (مشاهد: `len` · `sub` جملة الراوي · `title/em` · `mood` dark/turn/brand · `draw(p, fig)`) → `build-noir.js` بيولّد
+  `reels/noir-<slug>.html` (SVG 1080×1920 + CSS). الشخصية `fig({x,y,h,pose,red,flip})` وضعياتها stand · phone · point · headdown · walk.
+  الأدوات `p.lamp · ground · house · car · desk · papers · bubble · qmark · ring · calendar · bigphone · flash`. الأرض عند y=1240 (الترجمة تحتها).
+- **الصوت:** الراوي بهجت V2 (dialect 7 · احترافي)، الجمل تتطابق مع `sub` كل مشهد. `_fit_noir.cjs <slug>` بيظبط المدد على الصوت.
+  التسجيل `record-url.js … --audio vo-<slug>-lahajati.mp3`. المعاينة `_preview_scene.cjs <slug> <ث> noir-`.
+- 🐞 **درس SVG:** CSS `transform` animation على `<g>` ليه `transform` attribute بيلغي الموضع (الشخصية بتقفز لأصل اللوحة) —
+  مجموعة خارجية للموضع (`fig-pos`) وداخلية للحركة. النص العربي في SVG بـ`text-anchor:middle` + Cairo.
+- الحلقة ١ `noir-contractor-day` (٥٧ ث) على ٧ منصات + تليجرام. الجاية بنفس القالب: «هكذا تبدو حياتك كصاحب عيادة/صالون/معرض…».
+- 🐞 كروم السوشيال بقى بيعمل `connectOverCDP timeout` كتير بعد أول سكريبت — الترتيب اللي ثبت: قتل chrome-social-profile → `launch-chrome-social.ps1`
+  → ٢٥ ث → `_tt_probe2.cjs` → ٢٥ ث → تيك توك → إنستجرام. سيب تاب `tiktokstudio/content` مفتوح دايمًا.
