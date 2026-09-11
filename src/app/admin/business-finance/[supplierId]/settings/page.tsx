@@ -518,11 +518,14 @@ function EmployeesTab({
 
   async function addEmployee(e: Partial<Employee>) {
     const role = roles.find((r) => r.role === e.role)
-    await sbTok.rpc('business_employee_save', { p_supplier_id: supplierId, p_employee: {
+    // 💼 (١١/٩/٢٠٢٦) الخطأ كان بيتبلع بصمت — تريجر حد الموظفين (المجاني = المالك + موظف) بيرمي رسالة فيها لينك الاشتراك، لازم تبان
+    const { data, error } = await sbTok.rpc('business_employee_save', { p_supplier_id: supplierId, p_employee: {
       branch_id: e.branch_id || null, full_name: e.full_name?.trim() || 'موظف جديد',
       role: e.role || 'staff', role_ar: role?.role_ar || e.role, phone: e.phone?.trim() || null,
       personal_commission_rate: e.personal_commission_rate || 0,
     } })
+    const errMsg = error?.message || (data && typeof data === 'object' && (data as any).ok === false ? (data as any).error : '')
+    if (errMsg) { alert(errMsg); return }
     setAdding(false)
     onChanged()
   }

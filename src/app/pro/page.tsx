@@ -77,6 +77,8 @@ const FAQ: { q: string; a: string }[] = [
   { q: 'محتاج كمبيوتر أو حد يركّبلي حاجة؟', a: 'لا. كل حاجة من الموبايل: إنت وموظفينك. وبنمشي معاك خطوة خطوة في «كمّل شركتك» لحد ما البيزنس يبقى شغّال على السيستم.' },
   { q: 'الموظفين بيدخلوا إزاي؟', a: 'كل موظف بيدخل بـرقمه وباسورده من موبايله: بيسجّل حضوره، يشوف مهامه، يوثّق شغله بصورة، ويطلب سلفة أو عهدة من نفس الشاشة.' },
   { q: 'إيه اللي بيتم بالـ' + PRICE_NOW.toLocaleString('ar-EG') + ' ج بالظبط؟', a: 'برنامج الإدارة كامل: الحسابات والمصاريف · متابعة العملاء · الموظفين والحضور والمرتبات · المنتجات والمخزون · بوت الواتساب · صفحتك وحجوزاتك. «بدل كتير» — والعرض لعدد محدود من الحسابات.' },
+  // 💼 (١١/٩/٢٠٢٦) محمد نصًا: «الحساب المجاني فيه كل الشاشات بس لصاحب البيزنس وموظف واحد فقط — أكتر من موظف محتاج اشتراك شهري ١٠٠٠ ج»
+  { q: 'فيه نسخة مجانية؟', a: 'أيوة. الحساب المجاني فيه كل الشاشات، لصاحب البيزنس + موظف واحد. لو فريقك أكبر من كده، الاشتراك ' + PRICE_NOW.toLocaleString('ar-EG') + ' ج شهريًا بيفتح موظفين بلا حد — وبتدفع بإنستاباي أو فودافون كاش أو تحويل بنكي من صفحة الدفع.' },
   { q: 'وإيه الفرق بينه وبين السوق؟', a: 'السوق مجاني وبيشتغل بعمولة على الصفقة اللي بتتم فعلًا — والسعر اللي بتطلبه هو اللي بتاخده، إحنا في النص بنضمن الطرفين. برنامج الإدارة هو الاشتراك الوحيد، وبيشتغل مع عملائك من أي مكان.' },
 ]
 
@@ -143,7 +145,8 @@ export default function ProOfferPage() {
           <h1 className="text-[2rem] md:text-5xl font-black leading-[1.2]">
             بيزنسك كله على سيستم واحد
             <br />
-            <span className="text-[#6FCF97]">بـ{price} ج بدل كتير</span>
+            {/* 💼 (١١/٩/٢٠٢٦) محمد: «الحساب المجاني فيه كل الشاشات لصاحب البيزنس وموظف واحد — أكتر من موظف اشتراك شهري ١٠٠٠ ج» */}
+            <span className="text-[#6FCF97]">مجاني لصاحب البيزنس + موظف — وفريق أكبر بـ{price} ج شهريًا بدل كتير</span>
           </h1>
           <p className="mt-5 text-white/85 text-base md:text-lg leading-relaxed max-w-xl">
             من موبايلك: <b className="text-white">الحسابات</b> · <b className="text-white">متابعة العملاء</b> · <b className="text-white">الموظفين والحضور</b> ·
@@ -151,7 +154,7 @@ export default function ProOfferPage() {
             كل اللي بيتسجّل عندك ملكك ١٠٠٪.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
-            <a href={startHref} className="text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-4 no-underline text-base shadow-lg shadow-[#34D399]/20">ضيف شركتك دلوقتي — بـ{price} ج ←</a>
+            <a href={startHref} className="text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-4 no-underline text-base shadow-lg shadow-[#34D399]/20">ضيف شركتك دلوقتي مجانًا ←</a>
             {/* 💳 (١١/٩/٢٠٢٦) محمد: «نعمل آلية دفع زي لهجتي بالظبط» — تحويل إنستاباي/فودافون كاش + إثبات → مراجعة → تفعيل */}
             <a href="/pro/pay" className="text-center text-white/90 underline underline-offset-4 text-sm no-underline">عندك حساب؟ ادفع بإنستاباي أو فودافون كاش وفعّل برنامج الإدارة ←</a>
             <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-center bg-white/10 border border-white/15 text-white font-bold rounded-2xl px-6 py-4 no-underline inline-flex items-center justify-center gap-2">
@@ -317,8 +320,9 @@ export default function ProOfferPage() {
         <div className="rounded-3xl bg-white border-2 border-[#04352A] p-5 md:p-7 shadow-xl">
           <div className="flex items-end justify-between gap-3 mb-5">
             <div>
-              <p className="text-xs font-black text-[#059669]">برنامج الإدارة · {seatsLine}</p>
-              <p className="text-4xl font-black mt-1">{price} ج <span className="text-sm text-gray-500 font-bold">بدل كتير{offer.period ? ` · ${offer.period}` : ''}</span></p>
+              <p className="text-xs font-black text-[#059669]">مجاني لصاحب البيزنس + موظف واحد · {seatsLine}</p>
+              <p className="text-4xl font-black mt-1">{price} ج <span className="text-sm text-gray-500 font-bold">{offer.period || 'شهريًا'} لفريق أكبر من موظف · بدل كتير</span></p>
+              <p className="text-xs text-gray-500 mt-1">كل الشاشات في الحساب المجاني. الاشتراك بيفتح موظفين بلا حد — <a href="/pro/pay" className="text-[#059669] font-bold">ادفع بإنستاباي أو فودافون كاش</a>.</p>
               {offer.note && <p className="text-xs text-gray-500 mt-1">{offer.note}</p>}
             </div>
             <CheckCircle2 className="w-9 h-9 text-[#059669]" />

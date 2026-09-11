@@ -23,3 +23,10 @@ create index if not exists subscription_payments_status_idx on public.subscripti
 alter table public.subscription_payments enable row level security;
 revoke all on public.subscription_payments from anon, authenticated;
 insert into public.site_settings (key, value, updated_at) values ('erp_price_egp', '1000', now()) on conflict (key) do nothing;
+
+-- 💼 (١١/٩/٢٠٢٦ — بليل) محمد نصًا: «الحساب المجاني فيه كل الشاشات بس لصاحب البيزنس وموظف واحد فقط — أكتر من موظف محتاج اشتراك شهري ١٠٠٠ ج».
+-- ميجريشن subscription_monthly_and_employee_seats (مطبّقة لايف):
+alter table public.suppliers add column if not exists subscription_paid_until timestamptz;
+-- subscription_active(uuid) · enforce_employee_cap() (المجاني = employee_seats الافتراضي ٢ = المالك + موظف؛ paid_until > now() = بلا حد)
+-- apply_subscription_payment(uuid, months) (تفعيل/تجديد بيتراكم) · expire_subscriptions() (pg_cron «subscription-expire» 03:15 يوميًا + cron_allowlist)
+-- erp_offer_period = 'شهريًا'. التعريفات الكاملة في تاريخ الميجريشنز على Supabase.

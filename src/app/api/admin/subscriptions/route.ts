@@ -55,11 +55,14 @@ export async function POST(req: NextRequest) {
   const { error } = await admin.from('subscription_payments').update(patch).eq('id', id)
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
 
+  // 💼 (١١/٩) محمد: «أكتر من موظف محتاج اشتراك شهري ١٠٠٠ ج» — القبول = شهر اشتراك (بيتراكم لو لسه ساري) → مفيش حد للموظفين
   let activated = false
+  let paidUntil: string | null = null
   if (action === 'approve' && sid) {
-    const { error: e2 } = await admin.from('suppliers').update({ subscription_tier: 'business', has_erp_crm: true }).eq('id', sid)
+    const { data: until, error: e2 } = await admin.rpc('apply_subscription_payment', { p_supplier: sid, p_months: 1 })
     activated = !e2
+    paidUntil = (until as string | null) || null
     if (e2) console.error('[admin/subscriptions] activate', e2.message)
   }
-  return NextResponse.json({ ok: true, status: patch.status, activated, needs_supplier: action === 'approve' && !sid })
+  return NextResponse.json({ ok: true, status: patch.status, activated, paid_until: paidUntil, needs_supplier: action === 'approve' && !sid })
 }

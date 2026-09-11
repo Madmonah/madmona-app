@@ -104,8 +104,8 @@ export default function PayPage() {
         <section className={`${card} p-4 flex items-center justify-between`}>
           <div>
             <div className="text-xs text-gray-500">الخطة</div>
-            <div className="font-black text-[#04352A]">برنامج إدارة مضمونة</div>
-            <div className="text-xs text-gray-500 mt-0.5">لعدد محدود من الحسابات</div>
+            <div className="font-black text-[#04352A]">برنامج إدارة مضمونة — اشتراك شهري</div>
+            <div className="text-xs text-gray-500 mt-0.5">الحساب المجاني: صاحب البيزنس + موظف واحد · الاشتراك يفتح موظفين بلا حد</div>
           </div>
           <div className="text-left">
             <div className="text-xs text-gray-500">المبلغ</div>

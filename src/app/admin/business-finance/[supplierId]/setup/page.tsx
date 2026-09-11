@@ -78,9 +78,10 @@ export default function BusinessSetupWizardPage({ params }: { params: { supplier
     if (!emp.full_name.trim()) { setMsg('اكتب اسم الموظف'); return }
     if (!emp.branch_id) { setMsg('اختار الفرع'); return }
     setBusy(true); setMsg(null)
-    const { data } = await financeRpc('business_employee_save', { p_supplier_id: supplierId, p_employee: emp })
+    const { data, error } = await financeRpc('business_employee_save', { p_supplier_id: supplierId, p_employee: emp })
     setBusy(false)
-    if (!data?.ok) { setMsg(data?.error || 'مااتحفظش'); return }
+    // 💼 (١١/٩/٢٠٢٦) رسالة تريجر حد الموظفين (المجاني = المالك + موظف واحد، فيها لينك الاشتراك) لازم تبان بدل «مااتحفظش»
+    if (!data?.ok) { setMsg(data?.error || (error as any)?.message || 'مااتحفظش'); return }
     setEmp((e) => ({ ...e, full_name: '', phone: '', role_ar: '' }))
     setMsg('✅ الموظف اتضاف'); await load()
   }
