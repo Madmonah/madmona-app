@@ -129,16 +129,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'مش قادرين نسجّل الطلب دلوقتي — كلّمنا واتساب' }, { status: 500 })
   }
 
-  // 🔔 پوش داخلي للفريق (نوتيفيكيشن مش واتساب) — العنوان فيه الاسم عشان ديدوب الساعة مايبلعوش
+  // 🔔 (١٢/٩/٢٠٢٦) محمد: «ابعتلي نوتيفيكيشن فيه لينك للتأكيد على التحويل وأنا هبص وأعتمد مبدئيًا» —
+  // پوش داخلي (مش واتساب) لمحمد (attendance_notify_profile_ids = المالك) + فريق الإعلانات، بلينك مباشر على الطلب نفسه.
+  // العنوان فيه اسم البيزنس/المُحوِّل عشان ديدوب الساعة في notification_queue مايبلعوش.
   try {
     const { data: staff } = await admin.rpc('listings_staff_profile_ids', {})
-    const ids = Array.isArray(staff) ? (staff as string[]) : []
+    const { data: ownerRow } = await admin.from('whatsapp_config').select('value').eq('key', 'attendance_notify_profile_ids').maybeSingle()
+    const ownerIds = String(ownerRow?.value || '').split(',').map((s: string) => s.trim()).filter((s: string) => /^[0-9a-f-]{36}$/i.test(s))
+    const ids = Array.from(new Set([...(Array.isArray(staff) ? (staff as string[]) : []), ...ownerIds]))
     if (ids.length) {
       await admin.from('notification_queue').insert(ids.map((rid) => ({
         recipient_id: rid, type: 'subscription_payment',
-        title: `💳 إثبات دفع جديد: ${business_name || sender_name}`,
-        body: `${m.label} · ${cfg.price} ج · ${phone}${reference ? ' · مرجع ' + reference : ''} — راجعه وفعّل`,
-        url: '/admin/subscriptions',
+        title: `💳 تحويل ${cfg.price} ج مستني تأكيدك — ${business_name || sender_name}`,
+        body: `${m.label} · من ${sender_name} · ${phone}${reference ? ' · مرجع ' + reference : ''}. اضغط، شوف صورة التحويل، وأكّد أو ارفض.`,
+        url: `/admin/subscriptions?id=${row.id}`,
         data: { payment_id: row.id, method, phone },
       })))
     }

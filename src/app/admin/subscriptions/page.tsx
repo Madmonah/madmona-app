@@ -18,6 +18,8 @@ export default function SubscriptionsAdmin() {
   const [busy, setBusy] = useState<string | null>(null)
   const [err, setErr] = useState('')
   const [sup, setSup] = useState<Record<string, string>>({})
+  // 🔗 (١٢/٩) اللينك اللي في النوتيفيكيشن بييجي بـ?id= → الطلب ده يتظلّل ويتعمله scroll
+  const [focusId, setFocusId] = useState('')
 
   const load = useCallback(async () => {
     setErr('')
@@ -27,6 +29,16 @@ export default function SubscriptionsAdmin() {
     setRows(j.rows || [])
   }, [status])
   useEffect(() => { load() }, [load])
+  useEffect(() => {
+    try {
+      const id = new URLSearchParams(window.location.search).get('id') || ''
+      if (id) { setFocusId(id); setStatus('all') }
+    } catch { /* */ }
+  }, [])
+  useEffect(() => {
+    if (!focusId || !rows.length) return
+    document.getElementById('pay-' + focusId)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [focusId, rows])
 
   async function act(id: string, action: 'approve' | 'reject') {
     const note = action === 'reject' ? (window.prompt('سبب الرفض (بيظهر للفريق بس):') || '') : ''
@@ -57,7 +69,7 @@ export default function SubscriptionsAdmin() {
       {rows.length === 0 && !err && <div className="text-gray-500 text-sm bg-white rounded-2xl border p-6 text-center">مفيش طلبات {status === 'pending' ? 'مستنية' : ''} دلوقتي.</div>}
       <div className="grid gap-3">
         {rows.map((r) => (
-          <div key={r.id} className="bg-white rounded-2xl border p-4 grid md:grid-cols-[180px_1fr] gap-4">
+          <div key={r.id} id={'pay-' + r.id} className={`bg-white rounded-2xl border p-4 grid md:grid-cols-[180px_1fr] gap-4 ${focusId === r.id ? 'ring-2 ring-[#34D399] border-[#059669]' : ''}`}>
             <a href={r.proof_url || '#'} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden bg-gray-100 border aspect-[3/4]">
               {r.proof_url && !/\.pdf($|\?)/.test(r.proof_url) ? <img src={r.proof_url} alt="إثبات الدفع" className="w-full h-full object-cover" /> : <div className="h-full grid place-items-center text-sm text-gray-500">افتح الإثبات</div>}
             </a>
