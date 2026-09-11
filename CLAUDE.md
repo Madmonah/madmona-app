@@ -2454,3 +2454,15 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   بالتناوب (`telegram_channel_posts` ٥٨٥ بوست). **الريلز بتتبعت كفيديو بالبوت** — `scripts/reels/playwright/_tg_send.cjs <slug> <token>`
   (FormData من Node؛ `curl -F caption=<file` بيفشل على ويندوز). دي قناتنا فمفيش قاعدة «رسايل باردة» هنا. الريلين اتبعتوا: `t.me/madmona_cairo/998` · `/999`.
   ⚠️ قيد `campaign_posts.platform` كان لازم يقبل `telegram` — اتوسّع.
+
+## 📡 قنوات كانت موجودة ومهملة — اتفتحت ١١/٩/٢٠٢٦ (محمد: «شوف كل الطرق الممكنة واشتغل، عايز نتيجة»)
+- **Google Business Profile «Madmonacairo»** موثّق (٤ مراجعات ٥★ · ٢٦٢ تفاعل/شهر) — من كروم محمد: بحث «Madmonacairo» → «Add update»
+  → الدايالوج جوّه iframe (الإضافة مابتشوف input الصورة — بوست نصي بالكليك على الإحداثيات). بوست أسبوعي على الأقل.
+- **X @MadmonaCairoo** داخل (٠ متابع · ٢٣ ميديا): فيديو من `input[type=file]` + كابشن ≤٢٨٠ + `[data-testid=tweetButtonInline]`.
+- **Pinterest بيزنس madmonaCairo** داخل (**٤.٣k مشاهدة شهرية**): `/pin-creation-tool/` — صورة عمودية (فريم من الريل:
+  `ffmpeg -ss N -frames:v 1 -vf scale=1000:-2,crop=1000:1500`) + عنوان + وصف + لينك → Publish (ضغطتين أحيانًا؛ الدرافت بيتصفّر = اتنشر).
+- **LinkedIn** لسه مقفول (باسورد) — محمد بس. **الستوري** على بروفايل فيسبوك: `/stories/create/` → input الملف → Share to story (فيديو بدون لينك ستيكر).
+- الوصفة العامة للإضافة مع inputs الملفات المتعددة: علّمها بـJS `aria-label='MADMONA_X_k'` وبعدين `find` بالاسم → `file_upload`.
+- 🔴 **فريق المبيعات كله `status='terminated'`** في `business_employees` من ٣١/٨ و٢/٩ (سامية · نورا · عبير · شهد · مديحة · إيمان) —
+  النشطين: محمد · أحمد سامي · الأوفيس بوي. ده تفسير «صفر مكالمات CRM». قرار محمد.
+- سجل الأفكار ونتايجها: `docs/marketing/reach-log.md` — يتحدّث كل دورة.
