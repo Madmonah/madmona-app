@@ -40,16 +40,24 @@ const [, , platform, target] = process.argv
   } else if (platform === 'instagram') {
     const url = target.startsWith('http') ? target : `https://www.instagram.com/reel/${target}/`
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
-    await page.waitForTimeout(6000)
-    const more = page.locator('svg[aria-label="More options"], svg[aria-label="المزيد"]').first()
-    if (!(await more.count())) throw new Error('More options not found')
-    await more.locator('xpath=ancestor::*[@role="button"][1]').click()
-    await page.waitForTimeout(1500)
-    await page.locator('button:has-text("Delete"), button:has-text("حذف")').first().click()
-    await page.waitForTimeout(1500)
-    await page.locator('button:has-text("Delete"), button:has-text("حذف")').first().click()
+    // 🐞 (١٢/٩) الـsvg بيظهر متأخر ومتقلّب — استنى لحد ٣٠ ث، والكليك على أقرب [role=button] له
+    let r = 'no-svg'
+    for (let i = 0; i < 15 && r !== 'clicked'; i++) {
+      await page.waitForTimeout(2000)
+      r = await page.evaluate(() => { const s = [...document.querySelectorAll('svg[aria-label]')].find(s => /^(more options|more|المزيد)$/i.test((s.getAttribute('aria-label') || '').trim())); if (!s) return 'no-svg'; (s.closest('[role=button]') || s.parentElement).click(); return 'clicked' })
+    }
+    if (r !== 'clicked') { const labels = await page.evaluate(() => [...new Set([...document.querySelectorAll('svg[aria-label]')].map(s => s.getAttribute('aria-label')))].slice(0, 20)); throw new Error('More options not found; svgs=' + JSON.stringify(labels)) }
+    await page.waitForTimeout(2000)
+    const menu = await page.evaluate(() => [...document.querySelectorAll('[role=dialog] button, [role=dialog] [role=button]')].map(b => b.innerText.trim()).filter(Boolean).slice(0, 10))
+    console.log('menu:', JSON.stringify(menu))
+    // على حساب الأعمال: «Manage post» أول → جوّاه Delete
+    const clickText = (re) => page.evaluate((src) => { const rx = new RegExp(src, 'i'); const el = [...document.querySelectorAll('[role=dialog] button, [role=dialog] [role=button], [role=dialog] [role=menuitem]')].find(b => rx.test(b.innerText.trim())); if (!el) return false; el.click(); return true }, re.source)
+    if (await clickText(/^(Manage post|إدارة المنشور)$/)) { await page.waitForTimeout(1500); console.log('sub:', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('[role=dialog] button, [role=dialog] [role=button]')].map(b => b.innerText.trim()).filter(Boolean).slice(0, 10)))) }
+    if (!(await clickText(/^(Delete|حذف)$/))) throw new Error('Delete item not in menu')
+    await page.waitForTimeout(2000)
+    await clickText(/^(Delete|حذف)$/)
     await page.waitForTimeout(4000)
-    console.log('instagram delete clicked; now at', page.url())
+    console.log('instagram deleted; now at', page.url())
   }
   await page.close().catch(() => {})
   await browser.close().catch(() => {})
