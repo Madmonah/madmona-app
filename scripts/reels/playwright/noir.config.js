@@ -1,0 +1,37 @@
+// 🎞️ ريلز «قصة بالرسم» (نوار) — راجع build-noir.js. كل مشهد: len · sub (جملة الراوي) · title/em · mood · draw(p, fig)
+// المدد تتظبط على الصوت بـ node _fit_noir.cjs <slug>
+module.exports = [
+  {
+    // 🎞️ (١١/٩/٢٠٢٦) محمد: «شوفت الفيديو ده؟ عايزين نعمل فيديوهات شبهه» — الحلقة ١: يوم في حياة مقاول من غير سيستم. راوي بهجت V2.
+    slug: 'noir-contractor-day',
+    title: 'هكذا تبدو حياتك كمقاول… من غير سيستم',
+    scenes: [
+      { len: 4.11, mood: 'dark', title: 'هكذا تبدو حياتك كمقاول…', em: 'من غير سيستم',
+        draw: (p, f) => p.ground(1240) + p.lamp(760, 1240, 720) + f({ x: 560, y: 1240, pose: 'stand', red: true }) },
+      { len: 5.75, mood: 'dark', sub: 'الصبح: تلات مواقع، تلات مشرفين، وعهدة في جيب كل واحد',
+        draw: (p, f) => p.ground(1240) + p.house(90, 1240, 220) + p.house(430, 1240, 220) + p.house(770, 1240, 220)
+          + f({ x: 200, y: 1240, h: 260, pose: 'stand' }) + f({ x: 540, y: 1240, h: 260, pose: 'stand' }) + f({ x: 880, y: 1240, h: 260, pose: 'stand' })
+          + p.bubble(200, 860, '💵', 160) + p.bubble(540, 860, '💵', 160) + p.bubble(880, 860, '💵', 160) },
+      { len: 4.93, mood: 'dark', sub: 'الضهر: المهندس بيسأل «الخامة وصلت؟»… ومحدش عارف',
+        draw: (p, f) => p.ground(1240) + p.car(80, 1240, 360) + f({ x: 640, y: 1240, h: 380, pose: 'phone' }) + p.qmark(300, 900) + p.qmark(880, 760) + p.qmark(560, 620) },
+      { len: 4.93, mood: 'dark', sub: 'المغرب: العميل بيتصل «المستخلص فين؟»… وإنت بتقلّب في الواتساب',
+        draw: (p, f) => p.ground(1240) + p.lamp(180, 1240, 700) + f({ x: 380, y: 1240, pose: 'phone', flip: true }) + f({ x: 760, y: 1240, pose: 'phone', red: true }) + p.ring(330, 920) },
+      { len: 5.75, mood: 'dark', sub: 'بالليل: الفواتير على الترابيزة، والحسابات في دماغك',
+        draw: (p, f) => p.ground(1240) + p.desk(330, 1110, 420) + p.papers(540, 1070, 8) + f({ x: 540, y: 1240, pose: 'headdown', red: true }) },
+      { len: 4.11, mood: 'dark', title: 'المشروع ده…', em: 'كسبان ولا خسران؟',
+        draw: (p, f) => p.ground(1240) + f({ x: 540, y: 1240, pose: 'headdown', red: true }) + p.qmark(540, 760) },
+      { len: 3.29, mood: 'dark', sub: 'وهكذا… كل شهر',
+        draw: (p) => p.ground(1240) + p.calendar(540, 760) },
+      { len: 3.29, mood: 'turn', title: 'لحد ما تقرر', em: 'تغيّر القصة',
+        draw: (p, f) => p.ground(1240) + p.lamp(760, 1240, 720) + f({ x: 540, y: 1240, pose: 'point', red: true }) },
+      { len: 5.75, mood: 'brand', sub: 'على مضمونة: المشرف يصوّر الفاتورة من موبايله… والعهدة تتسوّى لوحدها',
+        draw: (p, f) => p.ground(1240) + f({ x: 380, y: 1240, pose: 'phone' }) + p.flash(470, 920) + p.bigphone(760, 700, ['فاتورة ١٬٢٠٠', 'العهدة: ٣٬٨٠٠', 'متسوّية ✓']) },
+      { len: 5.75, mood: 'brand', sub: 'المستخلصات وجدول الكميات في مكان واحد… وربحية كل مشروع قدامك قبل ما يخلص',
+        draw: (p, f) => p.ground(1240) + p.desk(330, 1110, 420) + f({ x: 540, y: 1240, pose: 'stand' }) + p.bigphone(540, 620, ['مستخلص ٣ ✓', 'جدول الكميات', 'ربحية المشروع']) },
+      { len: 4.11, mood: 'brand', title: 'برنامج إدارة المقاولات', em: 'بـ١٠٠٠ ج بدل كتير', sub: 'لعدد محدود من الحسابات',
+        draw: (p, f) => p.ground(1240) + f({ x: 540, y: 1240, pose: 'point' }) },
+      { len: 3.29, mood: 'brand', title: 'غيّر القصة', em: 'madmonacairo.com/for/contracting',
+        draw: (p, f) => p.ground(1240) + p.lamp(760, 1240, 720) + f({ x: 540, y: 1240, pose: 'walk', cls: 'walker' }) },
+    ],
+  },
+]
