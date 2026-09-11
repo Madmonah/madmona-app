@@ -2480,3 +2480,6 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
 - ⚠️ التسجيل: لو `_rec_*.txt` فيه «frame N failed: capture timeout» = CDP متدهور — اقتل chrome-cdp-profile وعملية record-url وأعد
   التشغيل بـ`launch-chrome-debug.ps1` (٤٠ ث بتاخد ~٣ دقايق سليمة).
 - الحلقات الجاية بالترتيب: العيادة (المريض اتصل ٣ مرات) · الصالون (الحجز اتنسى) · المقاولات (العهدة) · العقارات (المندوب) · المطعم آخر واحد.
+- 🐞 (١١/٩ مساءً) **قفل تابات كروم السوشيال بـ`/json/close` بعد النشر بيقفل كروم نفسه لو مافضلش غير تابات الإضافات** →
+  `ECONNREFUSED 9223` في الريل اللي بعده. سيب تاب `tiktokstudio/content` مفتوح (ماتقفلش غير `/upload` و`instagram.com`)، ولو وقع
+  `launch-chrome-social.ps1` + ١٨ ث + `_tt_probe2.cjs` + ٢٠ ث قبل `post-tiktok.js`. `_fit_reels.cjs` اتلف (سطر ٤ مقطوع) — البديل `_fit2.cjs <slug>`.
