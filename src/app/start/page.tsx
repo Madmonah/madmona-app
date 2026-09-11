@@ -20,15 +20,22 @@ import { safeStorage } from '@/lib/safe-storage'
 import { syncModuleSession } from '@/lib/madmonaSession'
 import { GoogleSignInButton } from '@/components/GoogleSignInButton'
 
+// 🧩 (١١/٩/٢٠٢٦) محمد: «ابني كل الموديلز اللي إحنا نقدر نديرها» — كل قيمة هنا مفتاح في
+//    VERTICAL_ALIAS (src/lib/erpModules.ts) عشان اللوحة تفتح باسطمبة النشاط الصح من أول دخول.
 const INDUSTRIES = [
   { value: 'clinic', label: 'عيادة / مركز طبي' },
   { value: 'restaurant', label: 'مطعم / كافيه' },
   { value: 'beauty_salon', label: 'صالون تجميل / بيوتي' },
   { value: 'spa', label: 'سبا' },
-  { value: 'gym', label: 'جيم' },
+  { value: 'gym', label: 'جيم / فيتنس' },
   { value: 'retail_shop', label: 'محل / متجر' },
+  { value: 'factory', label: 'مصنع / مورد' },
   { value: 'vehicle_agency', label: 'معرض سيارات' },
-  { value: 'contracting', label: 'مقاولات' },
+  { value: 'contracting', label: 'مقاولات / تشطيبات' },
+  { value: 'real_estate', label: 'عقارات / تسويق عقاري / مطوّر' },
+  { value: 'tourism', label: 'فندق / سياحة' },
+  { value: 'marine', label: 'قوارب / يخوت' },
+  { value: 'home_services', label: 'خدمات منزلية / صيانة' },
   { value: 'other', label: 'نشاط تاني' },
 ]
 const CITIES = ['القاهرة', 'الجيزة', 'الإسكندرية', 'الساحل الشمالي', 'الغردقة', 'شرم الشيخ', 'مدينة تانية']

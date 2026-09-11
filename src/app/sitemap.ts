@@ -49,6 +49,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/for/shops`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${SITE_URL}/for/contracting`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
     { url: `${SITE_URL}/for/real-estate`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/showrooms`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/factories`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/tourism`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/marine`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/home-services`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${SITE_URL}/for/gyms`, lastModified, changeFrequency: 'weekly', priority: 0.85 },
     {
       url: `${SITE_URL}/about`,
       lastModified,
