@@ -15,7 +15,10 @@ txt = txt.replace(/utm_source=facebook/g, 'utm_source=youtube')
   const page = await ctx.newPage()
   await page.goto(`https://www.youtube.com/watch?v=${vid}`, { waitUntil: 'domcontentloaded', timeout: 60000 })
   await page.waitForTimeout(6000)
-  await page.mouse.wheel(0, 900); await page.waitForTimeout(2500)
+  await page.mouse.wheel(0, 900); await page.waitForTimeout(3500)
+  // لو كومنتنا موجود خلاص (utm_medium=comment) — ماتكرّرش
+  const already = await page.evaluate(() => document.body.innerText.includes('utm_medium=comment'))
+  if (already) { console.log(JSON.stringify({ vid, posted: 'already' })); await page.close().catch(() => {}); await b.close().catch(() => {}); return }
   const ph = page.locator('#simplebox-placeholder, ytd-comment-simplebox-renderer #placeholder-area').first()
   await ph.waitFor({ state: 'visible', timeout: 30000 })
   await ph.click(); await page.waitForTimeout(1200)
