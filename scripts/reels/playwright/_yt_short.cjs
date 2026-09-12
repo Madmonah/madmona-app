@@ -17,7 +17,8 @@ if (!fs.existsSync(mp4)) throw new Error('mp4 missing: ' + mp4)
   const ctx = b.contexts()[0]
   const page = await ctx.newPage()
   await page.goto('https://studio.youtube.com/channel/UCQJFRUo9XMkSAthYw_I-c8g/videos/upload?d=ud', { waitUntil: 'domcontentloaded', timeout: 60000 })
-  await page.waitForSelector('ytcp-uploads-dialog input[type=file]', { timeout: 60000 })
+  // الـinput مخفي (aria-hidden) — استنى وجوده في الـDOM بس، مش ظهوره
+  await page.waitForSelector('ytcp-uploads-dialog input[type=file]', { state: 'attached', timeout: 60000 })
   await page.setInputFiles('ytcp-uploads-dialog input[type=file]', mp4)
   const tb = page.locator('#title-textarea #textbox, ytcp-social-suggestions-textbox#title-textarea #textbox').first()
   await tb.waitFor({ state: 'visible', timeout: 60000 })
