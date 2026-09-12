@@ -144,8 +144,9 @@ export default function ProOfferPage() {
             <b className="text-white"> المخزون</b> · <b className="text-white">بوت واتساب</b> · <b className="text-white">صفحتك وحجوزاتك</b>.
             كل اللي بيتسجّل عندك ملكك ١٠٠٪.
           </p>
-          <a href={startHref} className="mt-7 block w-full sm:w-auto sm:inline-block text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-8 py-4 no-underline text-lg shadow-lg shadow-[#34D399]/20">ابدأ مجانًا دلوقتي ←</a>
-          <p className="mt-3 text-xs text-white/70">دقيقة واحدة · تدخل بجوجل أو الواتساب · من غير دفع. <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-white font-bold underline underline-offset-2">عندك سؤال؟ واتساب</a> · <a href="/pro/pay" className="text-white font-bold underline underline-offset-2">عندك حساب؟ فعّل الاشتراك</a></p>
+          <a href={startHref} className="mt-7 block w-full sm:w-auto sm:inline-block text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-8 py-5 no-underline text-xl shadow-lg shadow-[#34D399]/20">افتح لوحة بيزنسك مجانًا ← <span className="block text-sm font-bold opacity-80 mt-0.5">اسم شركتك ورقمك وبس — اللوحة بتفتح في دقيقة</span></a>
+          {/* 📊 (١٢/٩/٢٠٢٦) ٢٤ ساعة: زوار /pro موجودين و/start = صفر → الزرار بقى بيقول إيه اللي هيحصل بالظبط بعد الضغطة */}
+          <p className="mt-3 text-xs text-white/70">من غير كارت ولا دفع · تدخل بجوجل أو الواتساب · تقدر تمسح حسابك أي وقت. <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-white font-bold underline underline-offset-2">عندك سؤال؟ واتساب</a> · <a href="/pro/pay" className="text-white font-bold underline underline-offset-2">عندك حساب؟ فعّل الاشتراك</a></p>
         </div>
       </section>
 
@@ -295,7 +296,7 @@ export default function ProOfferPage() {
             <p className="text-[11px] text-gray-500 truncate">مجاني لصاحب البيزنس + موظف</p>
             <p className="font-black text-lg leading-tight">فريق أكبر؟ {price} ج <span className="text-xs text-gray-500 font-bold">شهريًا</span></p>
           </div>
-          <a href={startHref} className="bg-[#04352A] text-white font-black rounded-2xl px-5 py-3 text-sm no-underline shrink-0">ابدأ مجانًا</a>
+          <a href={startHref} className="bg-[#04352A] text-white font-black rounded-2xl px-5 py-3 text-sm no-underline shrink-0">افتح لوحتك مجانًا</a>
         </div>
       )}
     </main>
