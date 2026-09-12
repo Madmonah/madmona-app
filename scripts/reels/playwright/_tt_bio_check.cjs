@@ -3,7 +3,7 @@ const { chromium } = require('playwright')
 ;(async () => {
   const b = await chromium.connectOverCDP('http://127.0.0.1:9223', { timeout: 20000 })
   const page = await b.contexts()[0].newPage()
-  await page.goto('https://www.tiktok.com/@madmona.cairo', { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(()=>{})
+  await page.goto('https://www.tiktok.com/@madmonacairo', { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(()=>{})
   await page.waitForTimeout(6000)
   const r = await page.evaluate(() => ({ url: location.href, title: document.title.slice(0,60), bio: (document.querySelector('[data-e2e="user-bio"]')||{}).innerText, link: (document.querySelector('[data-e2e="user-link"]')||{}).innerText, editBtn: !!document.querySelector('[data-e2e="edit-profile-entrance"]'), handle: (document.querySelector('[data-e2e="user-title"]')||{}).innerText }))
   console.log(JSON.stringify(r))
