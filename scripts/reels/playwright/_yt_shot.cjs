@@ -1,0 +1,11 @@
+const { chromium } = require('playwright')
+;(async () => {
+  const b = await chromium.connectOverCDP('http://127.0.0.1:9223', { timeout: 20000 })
+  const page = await b.contexts()[0].newPage()
+  await page.setViewportSize({ width: 1400, height: 1000 })
+  await page.goto(process.argv[2], { waitUntil: 'domcontentloaded', timeout: 60000 })
+  await page.waitForTimeout(9000)
+  await page.screenshot({ path: 'output/_yt_shot.jpg', quality: 60, type: 'jpeg' })
+  console.log(await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 700)))
+  await page.close(); await b.close()
+})().catch(e => { console.error('ERR', e.message.slice(0, 160)); process.exit(1) })

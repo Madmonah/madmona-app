@@ -43,7 +43,10 @@ if (!fs.existsSync(mp4)) throw new Error('mp4 missing: ' + mp4)
   }
   await page.locator('#done-button').click()
   await page.waitForTimeout(6000)
-  const published = await page.evaluate(() => /Video published|Short published/i.test(document.body.innerText))
+  let published = await page.evaluate(() => /Video published|Short published/i.test(document.body.innerText))
+  // 🐞 (١٢/٩) لو الفحص ماخلصش في الوقت، Done بيسيب الفيديو درافت Private — «still checking» → اضغط Publish صراحةً، وإلا كمّل بـ_yt_finish_draft.cjs <id>
+  if (!published) { const t = await page.evaluate(() => document.body.innerText); if (/still checking/i.test(t)) { const pub = page.locator('ytcp-button, button').filter({ hasText: /^Publish$/ }).first(); if (await pub.count()) { await pub.click(); await page.waitForTimeout(6000); published = await page.evaluate(() => /Video published|Short published/i.test(document.body.innerText)) } } }
+  if (!published) console.error('⚠️ مش متأكد إنه اتنشر — شغّل: node _yt_finish_draft.cjs <videoId>')
   console.log(JSON.stringify({ slug, link, published, title }))
   await page.locator('ytcp-video-share-dialog #close-button, tp-yt-iron-icon[icon="close"]').first().click().catch(() => {})
   await page.close().catch(() => {}); await b.close().catch(() => {})

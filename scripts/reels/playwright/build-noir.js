@@ -90,6 +90,9 @@ body{background:#000;display:grid;place-items:center;direction:rtl;overflow:hidd
 .sc{position:absolute;inset:0;opacity:0}
 body.go .sc{animation-name:fade;animation-fill-mode:both;animation-timing-function:cubic-bezier(.3,.8,.3,1)}
 @keyframes fade{0%{opacity:0}6%{opacity:1}94%{opacity:1}100%{opacity:0}}
+/* 🖼️ (١٢/٩/٢٠٢٦) محمد: «كل الفيديوهات بتتعرض كشاشة بيضاء قبل ما تدوس» — الفريم الأول كان أسود (fade من 0). المشهد الأول يبدأ ظاهر عشان الثمبنيل يبقى فيه محتوى. */
+body.go .sc.s0{animation-name:fadeFirst}
+@keyframes fadeFirst{0%{opacity:1}94%{opacity:1}100%{opacity:0}}
 .sc svg{position:absolute;inset:0;width:100%;height:100%}
 /* الخطوط */
 .fig line,.fig circle.head,.lamp .pole,.house path,.house rect,.car path,.car circle,.desk line,.calendar rect,.bigphone rect,.ground,.bubble rect,.bubble path,.ring circle{fill:none;stroke:var(--ink);stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
