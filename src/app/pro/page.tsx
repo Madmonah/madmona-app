@@ -18,7 +18,7 @@
 // ============================================================================
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, Wallet, Users, Boxes, Bot, Globe, ClipboardList, ChevronDown } from 'lucide-react'
+import { CheckCircle2, Wallet, Users, Boxes, Bot, Globe, ClipboardList, ChevronDown, Truck } from 'lucide-react'
 
 const INTAKE_WA = '201002229982'
 const PRICE_NOW = 1000
@@ -51,6 +51,9 @@ const MODULES: { icon: React.ReactNode; title: string; does: string; wins: strin
     wins: ['امسح QR وخلاص — من رقمك إنت', 'بيرد بأسعارك وخدماتك الحقيقية', 'بيحوّل الطلب الجاد لموظفك'] },
   { icon: <Globe className="w-5 h-5" />, title: 'صفحتك وحجوزاتك', does: 'صفحة لبيزنسك برابط تبعته لأي حد — بيحجز أو بيطلب منها مباشرة.',
     wins: ['كتالوج أو منيو بصورك', 'حجز يوم وساعة أو أوردر توصيل', 'من غير ما يشترط يكون عميل من مضمونة'] },
+  // 🚚 (١٢/٩/٢٠٢٦) محمد سأل «هل بند المواصلات وأوامر تشغيل السيارات والشحن معمول حسابه؟» — اتبنى موديول transport.
+  { icon: <Truck className="w-5 h-5" />, title: 'النقل والشحن', does: 'سيارات شركتك، وأمر تشغيل لكل مشوار، وشحنات عملائك.',
+    wins: ['بنزين وبدل السائق بيتقيّدوا مصروف لوحدهم', 'الكيلومترات والرخصة والتأمين لكل عربية', 'الشحنة بعربيتك أو شركة شحن برقم البوليصة'] },
 ]
 
 // (٢) شكله على نشاطك — كل سطر = موديول موجود لنفس النشاط في erpModules (مفيش وعد بحاجة مش مبنية)
