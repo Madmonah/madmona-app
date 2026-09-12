@@ -13,11 +13,12 @@
 // (٤) ٣ خطوات · (٥) أسئلة · (٦) الفورم.
 // ⛔ مفيش سعر قديم (لا ٢٠٠٠ ولا ٣٠٠٠) · مفيش رقم عمولة · مفيش إحصائية مخترعة.
 //    العدد والمدة من site_settings عبر /api/campaign/offer — لو مش متحطين مابننطقش برقم.
-// الليد: فورم → /api/campaign/lead (campaign=erp1000 + UTM) → CRM + پوش، أو واتساب.
+// 🧹 (١٢/٩/٢٠٢٦) محمد: «بسّط صفحة برو» — ٤٥ زائر في أسبوع → ٠ ليد. الفورم اتشال، زرار واحد «ابدأ مجانًا» → /start،
+//    وقسم «السوق vs الإدارة» اتشال (الرسالة في FAQ). الترتيب: هيرو · ٦ حاجات · شاشات · على نشاطك · ٣ خطوات · أسئلة · CTA.
 // ============================================================================
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { CheckCircle2, MessageCircle, Wallet, Users, Boxes, Bot, Globe, ClipboardList, ShieldCheck, ChevronDown } from 'lucide-react'
+import { CheckCircle2, Wallet, Users, Boxes, Bot, Globe, ClipboardList, ChevronDown } from 'lucide-react'
 
 const INTAKE_WA = '201002229982'
 const PRICE_NOW = 1000
@@ -82,14 +83,10 @@ const FAQ: { q: string; a: string }[] = [
   { q: 'وإيه الفرق بينه وبين السوق؟', a: 'السوق مجاني وبيشتغل بعمولة على الصفقة اللي بتتم فعلًا — والسعر اللي بتطلبه هو اللي بتاخده، إحنا في النص بنضمن الطرفين. برنامج الإدارة هو الاشتراك الوحيد، وبيشتغل مع عملائك من أي مكان.' },
 ]
 
-const TYPES = ['مطعم / كافيه', 'صالون / سبا', 'عيادة', 'محل / متجر', 'مصنع / مورد', 'مقاولات', 'عقارات', 'خدمات', 'تاني']
 
 type Offer = { seats: number | null; remaining: number | null; period: string | null; note: string | null }
 
 export default function ProOfferPage() {
-  const [form, setForm] = useState({ name: '', phone: '', business_type: '', city: '', message: '' })
-  const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
-  const [err, setErr] = useState<string | null>(null)
   const [offer, setOffer] = useState<Offer>({ seats: null, remaining: null, period: null, note: null })
   const [type, setType] = useState(BY_TYPE[0].key)
   const utm = useMemo(() => {
@@ -109,7 +106,7 @@ export default function ProOfferPage() {
         : `العرض لـ${offer.seats.toLocaleString('ar-EG')} حساب بس`)
     : 'العرض لعدد محدود من الحسابات'
 
-  const waText = encodeURIComponent(`عايز أشترك في برنامج إدارة مضمونة (ERP + CRM) بعرض الـ${PRICE_NOW} ج${form.business_type ? ` — نشاطي: ${form.business_type}` : ''}`)
+  const waText = encodeURIComponent(`عايز أعرف أكتر عن برنامج إدارة مضمونة (${PRICE_NOW} ج شهريًا لفريق أكبر من موظف)`)
   const waHref = `https://wa.me/${INTAKE_WA}?text=${waText}`
   const cur = BY_TYPE.find((t) => t.key === type) || BY_TYPE[0]
   const startHref = useMemo(() => {
@@ -119,15 +116,6 @@ export default function ProOfferPage() {
     return `${START_PATH}?${q.toString()}`
   }, [utm])
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    setState('sending'); setErr(null)
-    const r = await fetch('/api/campaign/lead', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ campaign: 'erp1000', ...form, ...utm }),
-    }).then((x) => x.json()).catch(() => ({ ok: false, error: 'الشبكة' }))
-    if (r.ok) setState('done'); else { setState('error'); setErr(r.error || 'حصل خطأ') }
-  }
 
   return (
     <main dir="rtl" className="min-h-screen bg-[#FAFAF7] text-[#1A2E26] pb-24 md:pb-0">
@@ -153,15 +141,8 @@ export default function ProOfferPage() {
             <b className="text-white"> المخزون</b> · <b className="text-white">بوت واتساب</b> · <b className="text-white">صفحتك وحجوزاتك</b>.
             كل اللي بيتسجّل عندك ملكك ١٠٠٪.
           </p>
-          <div className="mt-7 flex flex-col sm:flex-row gap-3">
-            <a href={startHref} className="text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-4 no-underline text-base shadow-lg shadow-[#34D399]/20">ضيف شركتك دلوقتي مجانًا ←</a>
-            {/* 💳 (١١/٩/٢٠٢٦) محمد: «نعمل آلية دفع زي لهجتي بالظبط» — تحويل إنستاباي/فودافون كاش + إثبات → مراجعة → تفعيل */}
-            <a href="/pro/pay" className="text-center text-white/90 underline underline-offset-4 text-sm no-underline">عندك حساب؟ ادفع بإنستاباي أو فودافون كاش وفعّل برنامج الإدارة ←</a>
-            <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-center bg-white/10 border border-white/15 text-white font-bold rounded-2xl px-6 py-4 no-underline inline-flex items-center justify-center gap-2">
-              <MessageCircle className="w-4 h-4" /> اسأل على واتساب
-            </a>
-          </div>
-          <p className="mt-4 text-xs text-white/60">دقيقة واحدة: تدخل بجوجل أو الواتساب، تكتب اسم شركتك، وتبدأ. من غير دفع دلوقتي.</p>
+          <a href={startHref} className="mt-7 block w-full sm:w-auto sm:inline-block text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-8 py-4 no-underline text-lg shadow-lg shadow-[#34D399]/20">ابدأ مجانًا دلوقتي ←</a>
+          <p className="mt-3 text-xs text-white/70">دقيقة واحدة · تدخل بجوجل أو الواتساب · من غير دفع. <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-white font-bold underline underline-offset-2">عندك سؤال؟ واتساب</a> · <a href="/pro/pay" className="text-white font-bold underline underline-offset-2">عندك حساب؟ فعّل الاشتراك</a></p>
         </div>
       </section>
 
@@ -230,36 +211,8 @@ export default function ProOfferPage() {
         </div>
       </section>
 
-      {/* (٣) السوق vs برنامج الإدارة */}
-      <section className="mx-auto max-w-3xl px-5 py-12">
-        <p className="text-[#059669] font-black text-sm mb-1">عشان ماتتلخبطش</p>
-        <h2 className="text-2xl font-black mb-5">مضمونة حاجتين — والاشتراك على واحدة بس</h2>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div className="rounded-3xl bg-white border border-[#E8E4D8] p-5">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-black text-lg">السوق</h3>
-              <span className="text-[11px] font-black text-[#059669] bg-[#E6F4EE] rounded-full px-3 py-1">مجاني · بعمولة على الصفقة</span>
-            </div>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-[#059669] shrink-0 mt-0.5" /> إحنا الوسيط في النص — بنضمن للطرفين</li>
-              <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-[#059669] shrink-0 mt-0.5" /> السعر اللي بتطلبه هو اللي بتاخده</li>
-              <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-[#059669] shrink-0 mt-0.5" /> بيع · إيجار · حجز عيادات وصالونات · أوردرات · دليفري · محترفين</li>
-              <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-[#059669] shrink-0 mt-0.5" /> مفيش رسوم تسجيل ولا مقابل للعرض</li>
-            </ul>
-          </div>
-          <div className="rounded-3xl bg-[#04352A] text-white p-5 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-black text-lg">برنامج الإدارة</h3>
-              <span className="text-[11px] font-black text-[#04352A] bg-[#6FCF97] rounded-full px-3 py-1">{price} ج بدل كتير</span>
-            </div>
-            <ul className="space-y-2 text-sm text-white/90">
-              <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6FCF97] shrink-0 mt-0.5" /> الاشتراك الوحيد عندنا</li>
-              <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6FCF97] shrink-0 mt-0.5" /> بيشتغل مع عملائك إنت — حتى لو ماعرضتش في السوق</li>
-              <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6FCF97] shrink-0 mt-0.5" /> حسابات · CRM · موظفين · مخزون · بوت واتساب · صفحتك</li>
-              <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-[#6FCF97] shrink-0 mt-0.5" /> {seatsLine}</li>
-            </ul>
-          </div>
-        </div>
+      {/* (٣) روابط: الشرح الكامل + المدونة + صفحات الأنشطة — SEO داخلي، من غير كروت مقارنة (١٢/٩) */}
+      <section className="mx-auto max-w-3xl px-5 py-8">
         <a href="/system" className="mt-4 block rounded-2xl border border-[#1F6F5F] px-4 py-3 text-center text-sm font-extrabold text-[#1F6F5F] no-underline">
           الشرح الكامل للسيستم شاشة شاشة ←
         </a>
@@ -315,59 +268,31 @@ export default function ProOfferPage() {
         </div>
       </section>
 
-      {/* (٦) الاشتراك */}
+      {/* (٦) CTA واحد — من غير فورم (١٢/٩: ٤٥ زائر → ٠ ليد بالفورم) */}
       <section id="subscribe" className="mx-auto max-w-3xl px-5 pb-16">
-        <div className="rounded-3xl bg-white border-2 border-[#04352A] p-5 md:p-7 shadow-xl">
-          <div className="flex items-end justify-between gap-3 mb-5">
-            <div>
-              <p className="text-xs font-black text-[#059669]">مجاني لصاحب البيزنس + موظف واحد · {seatsLine}</p>
-              <p className="text-4xl font-black mt-1">{price} ج <span className="text-sm text-gray-500 font-bold">{offer.period || 'شهريًا'} لفريق أكبر من موظف · بدل كتير</span></p>
-              <p className="text-xs text-gray-500 mt-1">كل الشاشات في الحساب المجاني. الاشتراك بيفتح موظفين بلا حد — <a href="/pro/pay" className="text-[#059669] font-bold">ادفع بإنستاباي أو فودافون كاش</a>.</p>
-              {offer.note && <p className="text-xs text-gray-500 mt-1">{offer.note}</p>}
-            </div>
-            <CheckCircle2 className="w-9 h-9 text-[#059669]" />
-          </div>
-          <a href={startHref} className="block text-center bg-[#34D399] text-[#04352A] font-black rounded-2xl px-6 py-4 no-underline text-base mb-3">ضيف شركتك بنفسك دلوقتي ←</a>
-          <p className="text-[11px] text-gray-400 text-center mb-4">تدخل بجوجل أو الواتساب · تكتب اسم شركتك · وتكمّل خطوة خطوة. أو سيب رقمك تحت ونكلّمك إحنا:</p>
-          {state === 'done' ? (
-            <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center">
-              <p className="font-black text-emerald-900 text-lg">وصلنا ✓ — هنكلّمك على رقمك النهارده</p>
-              <a href={waHref} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 text-sm font-bold text-[#059669]">أو ابدأ دلوقتي على واتساب ←</a>
-            </div>
-          ) : (
-            <form onSubmit={submit} className="space-y-3">
-              <div className="grid sm:grid-cols-2 gap-3">
-                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="اسمك" className="w-full rounded-xl border border-gray-200 px-3 py-3 text-[16px]" />
-                <input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="رقم موبايلك (واتساب)" dir="ltr" inputMode="tel" className="w-full rounded-xl border border-gray-200 px-3 py-3 text-[16px]" />
-              </div>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <select value={form.business_type} onChange={(e) => setForm({ ...form, business_type: e.target.value })} className="w-full rounded-xl border border-gray-200 px-3 py-3 text-[16px] bg-white">
-                  <option value="">نوع البيزنس</option>
-                  {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                </select>
-                <input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="المدينة" className="w-full rounded-xl border border-gray-200 px-3 py-3 text-[16px]" />
-              </div>
-              <textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="أي حاجة تحب تقولها (اختياري)" rows={2} className="w-full rounded-xl border border-gray-200 px-3 py-3 text-[16px]" />
-              {err && <p className="text-xs text-red-600">{err}</p>}
-              <button type="submit" disabled={state === 'sending'} className="w-full bg-[#04352A] text-white font-black rounded-2xl py-4 text-base disabled:opacity-50">
-                {state === 'sending' ? '…' : 'كلّموني وفعّلولي حسابي'}
-              </button>
-              <p className="text-[11px] text-gray-400 text-center">من غير دفع دلوقتي — هنكلّمك ونفعّل حسابك ونمشي معاك خطوة خطوة.</p>
-            </form>
-          )}
+        <div className="rounded-3xl bg-[#04352A] text-white p-6 md:p-8 shadow-xl text-center">
+          <p className="text-xs font-black text-[#6FCF97]">{seatsLine}</p>
+          <h2 className="text-2xl md:text-3xl font-black mt-2 leading-snug">ابدأ مجانًا — لصاحب البيزنس + موظف واحد</h2>
+          <p className="text-white/80 text-sm mt-2">فريقك أكبر؟ {price} ج {offer.period || 'شهريًا'} بدل كتير — كل الشاشات، موظفين بلا حد.</p>
+          <a href={startHref} className="mt-5 inline-block bg-[#34D399] text-[#04352A] font-black rounded-2xl px-8 py-4 no-underline text-lg">ابدأ مجانًا دلوقتي ←</a>
+          <p className="mt-4 text-xs text-white/60">
+            <a href="/pro/pay" className="text-white/90 font-bold underline underline-offset-2">عندك حساب؟ فعّل الاشتراك بإنستاباي أو فودافون كاش</a>
+            <span className="mx-2">·</span>
+            <a href={waHref} target="_blank" rel="noopener noreferrer" className="text-white/90 font-bold underline underline-offset-2">اسأل على واتساب</a>
+          </p>
         </div>
       </section>
 
       <footer className="text-center text-[11px] text-gray-400 pb-8">مضمونة · معاملاتك مضمونة · madmonacairo.com</footer>
 
       {/* شريط ثابت على الموبايل */}
-      {state !== 'done' && (
+      {(
         <div className="fixed bottom-0 inset-x-0 md:hidden bg-white/95 backdrop-blur border-t border-[#E8E4D8] px-4 py-3 flex items-center gap-3 z-20">
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] text-gray-500 truncate">برنامج الإدارة · لعدد محدود</p>
-            <p className="font-black text-lg leading-tight">{price} ج <span className="text-xs text-gray-500 font-bold">بدل كتير</span></p>
+            <p className="text-[11px] text-gray-500 truncate">مجاني لصاحب البيزنس + موظف</p>
+            <p className="font-black text-lg leading-tight">فريق أكبر؟ {price} ج <span className="text-xs text-gray-500 font-bold">شهريًا</span></p>
           </div>
-          <a href={startHref} className="bg-[#04352A] text-white font-black rounded-2xl px-5 py-3 text-sm no-underline shrink-0">ضيف شركتك</a>
+          <a href={startHref} className="bg-[#04352A] text-white font-black rounded-2xl px-5 py-3 text-sm no-underline shrink-0">ابدأ مجانًا</a>
         </div>
       )}
     </main>
