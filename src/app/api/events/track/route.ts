@@ -45,6 +45,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'session_id required' }, { status: 400 })
   }
 
+  // 🤖 (١٢/٩/٢٠٢٦) محمد: «شوف الناس دي ضاعت ليه» — طلع إن ٤٩ من ٨٥ «زائر يوتيوب» لصفحة /pro اتسجّلوا في نفس الساعة
+  //    اللي اتنشرت فيها كومنتات اللينك (١٣:٠٠) وكلهم صفحة واحدة وصفر ثواني = زاحف يوتيوب بيفتح اللينك ببراوزر بيشغّل JS.
+  //    الحل: نسجّل الـUser-Agent ونعلّم البوت في metadata.is_bot عشان التقارير تستبعده. مفيش UA اتسجّل قبل النهارده.
+  const ua = request.headers.get('user-agent') || ''
+  const isBot = /bot|crawl|spider|slurp|headless|preview|fetch|scan|monitor|curl|python|wget|Google-Safety|YouTube|facebookexternalhit|Twitterbot|WhatsApp|TelegramBot|Discordbot|LinkedInBot|Pinterest|Applebot|Bytespider|GPTBot|ClaudeBot|Lighthouse|PageSpeed|HeadlessChrome/i.test(ua) || ua.length < 20
+  const meta = { ...(body.metadata ?? {}), ua: ua.slice(0, 300), is_bot: isBot, ip_country: request.headers.get('x-vercel-ip-country') || null }
+
   try {
     await supabaseAdmin.from('site_events').insert({
       session_id: body.session_id,
@@ -60,7 +67,7 @@ export async function POST(request: NextRequest) {
       utm_source: body.utm_source ?? null,
       utm_medium: body.utm_medium ?? null,
       utm_campaign: body.utm_campaign ?? null,
-      metadata: body.metadata ?? {},
+      metadata: meta,
     } as never)
 
     return NextResponse.json({ ok: true })
