@@ -141,6 +141,14 @@ export async function POST(req: Request) {
   //    (phoneToEmail) — فالرقم بيتحوّل لإيميله وبيدخل بنفس الباسورد.
   try {
     let email: string | null = identifier.includes('@') ? identifier.toLowerCase() : null
+    if (email) {
+      // 🔑 (١٤/٩/٢٠٢٦) محمد: «عايزينه بإيميل وباسورد» — حساب /start إيميله الداخلي <الرقم>@madmonacairo.com، والإيميل اللي
+      //    المستخدم بيعرفه في profiles.email / suppliers.contact_email / user_metadata.login_email. الدالة بتحوّله لإيميل auth.
+      const { data: byEmail } = await (db.rpc as unknown as (
+        fn: string, args: Record<string, unknown>,
+      ) => Promise<{ data: { found?: boolean; email?: string } | null }>)('auth_user_for_login_email', { p_email: email })
+      if (byEmail?.found && byEmail.email) email = byEmail.email
+    }
     if (!email) {
       const { data: acc } = await (db.rpc as unknown as (
         fn: string, args: Record<string, unknown>,

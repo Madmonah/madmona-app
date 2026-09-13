@@ -18,6 +18,7 @@ import PushNotificationCard from '@/components/PushNotificationCard'
 import AccountSwitcher from '@/components/AccountSwitcher'
 import MyAssetsCard from '@/components/MyAssetsCard'
 import MyWorkspaceCard from '@/components/MyWorkspaceCard'
+import SetPasswordCard from '@/components/SetPasswordCard'
 import { useT } from '@/lib/i18n/LanguageProvider'
 
 type Stage = 'loading' | 'unauthenticated' | 'ready'
@@ -393,6 +394,10 @@ export default function AccountPage() {
         <div className="animate-slide-up">
           <MyWorkspaceCard />
         </div>
+
+        {/* 🔑 (١٤/٩/٢٠٢٦) محمد: «تسجيل دخول الاكونت بتاع ستارت بيزنس مش شغال — عايزينه بإيميل وباسورد أو برقم
+            تليفون وباسورد». الحسابات القديمة من /start (واتساب/جوجل) ماعندهاش باسورد — الكارت ده بيحدّده مرة واحدة. */}
+        <SetPasswordCard hasSession={!!profile} />
 
         {/* 🔑 حاجاتي — كل أصل مربوط برقم المستخدم (مشاريع · إعلانات · أنشطة).
             فوق خالص لأن ده سبب دخول المُعلن الأساسي. بيختفي لوحده لو مفيش أصول. */}

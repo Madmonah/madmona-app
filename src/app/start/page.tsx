@@ -43,14 +43,14 @@ const DRAFT_KEY = 'madmona_start_draft'
 const WA_KEY = 'madmona_start_wa'   // الكود المعلّق — لو الصفحة اتعملت reload وسط التوثيق نكمّل الـpoll
 const INP = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] focus:outline-none focus:ring-2 focus:ring-[#059669]/30'
 
-type Form = { business_name: string; industry: string; contact_name: string; contact_phone: string; contact_email: string; city: string; district: string; address: string }
+type Form = { business_name: string; industry: string; contact_name: string; contact_phone: string; contact_email: string; password: string; city: string; district: string; address: string }
 type Stage = 'loading' | 'form' | 'verify' | 'creating' | 'done'
 
 export default function StartPage() {
   const router = useRouter()
   const [stage, setStage] = useState<Stage>('loading')
   const [hasSession, setHasSession] = useState(false)
-  const [form, setForm] = useState<Form>({ business_name: '', industry: 'clinic', contact_name: '', contact_phone: '', contact_email: '', city: 'القاهرة', district: '', address: '' })
+  const [form, setForm] = useState<Form>({ business_name: '', industry: 'clinic', contact_name: '', contact_phone: '', contact_email: '', password: '', city: 'القاهرة', district: '', address: '' })
   const [err, setErr] = useState<string | null>(null)
   const [wa, setWa] = useState<{ code: string; number: string; url: string } | null>(null)
   const [supplierId, setSupplierId] = useState<string | null>(null)
@@ -82,7 +82,7 @@ export default function StartPage() {
       }
       const r = await fetch('/api/start/create-business', {
         method: 'POST', headers: { 'content-type': 'application/json', ...(bearer ? { authorization: `Bearer ${bearer}` } : {}) },
-        body: JSON.stringify({ payload, token }),
+        body: JSON.stringify({ payload, token, password: f.password }),
       }).then((x) => x.json()).catch(() => ({ ok: false, error: 'الشبكة' }))
       if (!r.ok) { setErr(r.error || 'ماتعملش — جرّب تاني'); setStage('form'); creatingRef.current = false; return }
       safeStorage.remove(DRAFT_KEY); safeStorage.remove(WA_KEY)
@@ -117,7 +117,7 @@ export default function StartPage() {
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const valid = form.business_name.trim().length >= 2 && form.contact_phone.replace(/\D/g, '').length >= 10
+  const valid = form.business_name.trim().length >= 2 && form.contact_phone.replace(/\D/g, '').length >= 10 && form.password.length >= 6
 
   // ── الخطوة ٢: توثيق الواتساب (زي /login بالظبط) ──
   async function startWhatsApp() {
@@ -195,6 +195,12 @@ export default function StartPage() {
               <label className="block"><span className="text-xs font-bold text-gray-600">رقم الواتساب *</span>
                 <input value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} className={INP} dir="ltr" inputMode="tel" placeholder="01xxxxxxxxx" required /></label>
             </div>
+            {/* 🔑 (١٤/٩/٢٠٢٦) محمد: «تسجيل دخول الاكونت بتاع ستارت بيزنس مش شغال — عايزينه بإيميل وباسورد أو برقم تليفون وباسورد».
+                الحساب كان بيتعمل من غير باسورد خالص (واتساب/جوجل بس) فالدخول بالباسورد كان مستحيل. الباسورد بيتحط على مستخدم Supabase
+                في /api/start/create-business (service role) — وبعدها /login بيقبل الرقم أو الإيميل + الباسورد ده. */}
+            <label className="block"><span className="text-xs font-bold text-gray-600">باسورد للدخول بعدين *</span>
+              <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٦ حروف أو أرقام على الأقل" minLength={6} />
+              <span className="text-[11px] text-gray-400">هتدخل بيه بعدين برقم الواتساب أو الإيميل.</span></label>
             <label className="block"><span className="text-xs font-bold text-gray-600">الإيميل (اختياري)</span>
               <input value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} className={INP} dir="ltr" inputMode="email" /></label>
             <div className="grid grid-cols-2 gap-3">
@@ -217,7 +223,7 @@ export default function StartPage() {
                 </div>
               </div>
             )}
-            <p className="text-[11px] text-gray-400 text-center">من غير باسورد ومن غير دفع دلوقتي. <b>عندك حساب أو شركة بالفعل؟</b> <Link href="/login" className="text-[#059669] font-bold">سجّل دخولك من هنا</Link> بنفس الرقم أو جوجل وهتلاقي لوحتك.</p>
+            <p className="text-[11px] text-gray-400 text-center">من غير دفع دلوقتي. <b>عندك حساب أو شركة بالفعل؟</b> <Link href="/login" className="text-[#059669] font-bold">سجّل دخولك من هنا</Link> بنفس الرقم أو جوجل وهتلاقي لوحتك.</p>
           </form>
         )}
 

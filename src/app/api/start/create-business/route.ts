@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   if (!(await rateLimitOk(db, `start-create:${clientIp(req)}`, 20, 3600))) {
     return NextResponse.json({ ok: false, error: 'حاول تاني بعد شوية' }, { status: 429 })
   }
-  let body: { payload?: Record<string, unknown>; token?: string } = {}
+  let body: { payload?: Record<string, unknown>; token?: string; password?: string } = {}
   try { body = await req.json() } catch { return NextResponse.json({ ok: false, error: 'bad json' }, { status: 400 }) }
 
   // ── مين المستخدم؟ ──
@@ -34,6 +34,21 @@ export async function POST(req: Request) {
     if (acc?.found && acc.user_id) userId = acc.user_id
   }
   if (!userId) return NextResponse.json({ ok: false, error: 'سجّل دخولك الأول' }, { status: 401 })
+
+  // 🔑 (١٤/٩/٢٠٢٦) محمد: «تسجيل دخول الاكونت بتاع ستارت بيزنس مش شغال — عايزينه بإيميل وباسورد أو برقم تليفون وباسورد».
+  //    المستخدم اللي بيتعمل من الواتساب (createUser بدون باسورد) أو جوجل ماكانش ليه باسورد أصلًا، فـ/login كان بيرفضه.
+  //    الباسورد بيتحط هنا بـservice_role (مش بيتخزّن عندنا — Supabase Auth بيعمل الهاش)، والإيميل اللي كتبه بيتحط في
+  //    user_metadata.login_email عشان auth_user_for_login_email تحوّله لإيميل auth الداخلي وقت الدخول.
+  const password = typeof body.password === 'string' ? body.password : ''
+  const loginEmail = typeof body.payload?.contact_email === 'string' ? (body.payload.contact_email as string).trim().toLowerCase() : ''
+  if (password || loginEmail) {
+    if (password && password.length < 6) return NextResponse.json({ ok: false, error: 'الباسورد ٦ حروف على الأقل' }, { status: 400 })
+    const attrs: { password?: string; user_metadata?: Record<string, unknown> } = {}
+    if (password) attrs.password = password
+    if (loginEmail && loginEmail.includes('@')) attrs.user_metadata = { login_email: loginEmail }
+    const { error: pwErr } = await db.auth.admin.updateUserById(userId, attrs)
+    if (pwErr) console.error('[start] set password failed:', pwErr.message)
+  }
 
   // ── الـpayload: نفس حقول فورم الأدمن، من غير أي حقول عمولة/عقد من العميل ──
   const src = body.payload || {}
