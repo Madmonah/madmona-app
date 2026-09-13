@@ -87,6 +87,20 @@ export async function middleware(req: NextRequest) {
     return NextResponse.rewrite(url)
   }
 
+  // (2) 🔗 (١٤/٩/٢٠٢٦) محمد: «هل فيه لينك تحويل واضح؟» ثم «أنا مش هحط حاجة». لينك بايو إنستجرام بيودّي على الهوم
+  //    (utm_source=ig) وتعديله من الويب مقفول («only available on mobile»). فأي زيارة للهوم جاية من بايو سوشيال
+  //    بتتحوّل لـ/start بنفس المصدر — اللينك القديم بيبقى لينك تحويل من غير ما حد يلمس التطبيق.
+  if (path === '/') {
+    const src = (req.nextUrl.searchParams.get('utm_source') || '').toLowerCase()
+    const SOCIAL_BIO: Record<string, string> = { ig: 'instagram', instagram: 'instagram', tiktok: 'tiktok', tt: 'tiktok', threads: 'threads' }
+    if (SOCIAL_BIO[src]) {
+      const url = req.nextUrl.clone()
+      url.pathname = '/start'
+      url.search = `?utm_source=${SOCIAL_BIO[src]}&utm_medium=bio&utm_campaign=erp1000`
+      return NextResponse.redirect(url, 302)
+    }
+  }
+
   // (3) حارس /api/admin/* — رد 401 JSON (مش redirect: دي API مش صفحة)
   if (path.startsWith('/api/admin')) {
     if (await hasAdminApiCredential(req)) return NextResponse.next()
