@@ -1,0 +1,13 @@
+// 📱 لقطة موبايل حقيقية من /start (الفورم) عشان ريل «بتفتح لوحتك في دقيقة» — من كروم التسجيل (CDP 9222)
+const { chromium } = require('playwright')
+;(async () => {
+  const b = await chromium.connectOverCDP('http://127.0.0.1:9222', { timeout: 20000 })
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })
+  const p = await ctx.newPage()
+  await p.goto('https://www.madmonacairo.com/start', { waitUntil: 'networkidle', timeout: 60000 })
+  await p.waitForTimeout(2500)
+  await p.screenshot({ path: 'bg/start-mobile.jpg', type: 'jpeg', quality: 88, fullPage: true })
+  const h = await p.evaluate(() => document.documentElement.scrollHeight)
+  console.log('shot ok, page height', h)
+  await ctx.close(); await b.close()
+})().catch(e => { console.error('ERR', e.message.slice(0, 160)); process.exit(1) })
