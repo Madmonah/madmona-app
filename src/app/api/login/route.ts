@@ -140,24 +140,29 @@ export async function POST(req: Request) {
   //    التليفون». الحسابات اللي اتعملت بالرقم إيميلها الداخلي <الرقم>@madmonacairo.com
   //    (phoneToEmail) — فالرقم بيتحوّل لإيميله وبيدخل بنفس الباسورد.
   try {
-    let email: string | null = identifier.includes('@') ? identifier.toLowerCase() : null
-    if (email) {
-      // 🔑 (١٤/٩/٢٠٢٦) محمد: «عايزينه بإيميل وباسورد» — حساب /start إيميله الداخلي <الرقم>@madmonacairo.com، والإيميل اللي
-      //    المستخدم بيعرفه في profiles.email / suppliers.contact_email / user_metadata.login_email. الدالة بتحوّله لإيميل auth.
+    // 🔑🔑 (١٤/٩/٢٠٢٦ — تاني مرة) محمد: «الاكونت بعد ما بنعمله ونيجي نسجل دخول من تاب ستارت مش بنعرف ندخل».
+    //    الجذر (من الداتا — إيمان): نفس الرقم ليه **حسابين** Supabase — واحد بالواتساب (<الرقم>@madmonacairo.com) وواحد بجوجل —
+    //    والباسورد بتاع /start اتحط على حساب جوجل، بينما الدخول بالرقم كان بيتحوّل لحساب الواتساب بس → «الباسورد غلط».
+    //    ✅ الرقم بيطلّع **كل** الحسابات المرتبطة بيه (auth.users.phone · الإيميل الداخلي · profiles.phone ·
+    //    صاحب بيزنس رقمه في suppliers.contact_phone) والباسورد بيتجرّب عليهم بالترتيب — اللي الباسورد بتاعه هو اللي بيدخل.
+    const candidates: string[] = []
+    if (identifier.includes('@')) {
+      const email = identifier.toLowerCase()
+      // (١٤/٩) الإيميل اللي المستخدم بيعرفه في profiles.email / suppliers.contact_email / user_metadata.login_email → إيميل auth.
       const { data: byEmail } = await (db.rpc as unknown as (
         fn: string, args: Record<string, unknown>,
       ) => Promise<{ data: { found?: boolean; email?: string } | null }>)('auth_user_for_login_email', { p_email: email })
-      if (byEmail?.found && byEmail.email) email = byEmail.email
-    }
-    if (!email) {
-      const { data: acc } = await (db.rpc as unknown as (
+      if (byEmail?.found && byEmail.email) candidates.push(byEmail.email)
+      candidates.push(email)
+    } else {
+      const { data: list } = await (db.rpc as unknown as (
         fn: string, args: Record<string, unknown>,
-      ) => Promise<{ data: { found?: boolean; email?: string } | null }>)('auth_user_for_account_phone', { p_phone: identifier })
-      if (acc?.found && acc.email) email = acc.email
-      else { const np = normalizePhone(identifier); if (np) email = phoneToEmail(np) }
+      ) => Promise<{ data: Array<{ email?: string; has_password?: boolean }> | null }>)('auth_users_for_account_phone', { p_phone: identifier })
+      for (const c of Array.isArray(list) ? list : []) if (c?.email) candidates.push(c.email)
+      const np = normalizePhone(identifier); if (np) candidates.push(phoneToEmail(np))
     }
-    if (email) {
-      const anon = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } })
+    const anon = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } })
+    for (const email of Array.from(new Set(candidates)).slice(0, 6)) {
       const { data: signed, error: signErr } = await anon.auth.signInWithPassword({ email, password })
       if (!signErr && signed?.session) {
         return NextResponse.json({
