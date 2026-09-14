@@ -1,0 +1,21 @@
+// ▶️ رد على كومنت في Studio inbox. argv: <نص للمطابقة> <نص الرد>
+const { chromium } = require('playwright')
+;(async () => {
+  const [match, reply] = process.argv.slice(2)
+  const b = await chromium.connectOverCDP('http://127.0.0.1:9223', { timeout: 20000 })
+  const page = await b.contexts()[0].newPage()
+  await page.goto('https://studio.youtube.com/channel/UCQJFRUo9XMkSAthYw_I-c8g/comments/inbox?filter=%5B%5D', { waitUntil: 'domcontentloaded', timeout: 60000 })
+  await page.waitForTimeout(9000)
+  const thread = page.locator('ytcp-comment-thread').filter({ hasText: match }).first()
+  if (!(await thread.count())) { console.log(JSON.stringify({ found: false })); await page.close(); await b.close(); return }
+  const already = /1 repl|replies/i.test(await thread.innerText()) && !/0 replies/i.test(await thread.innerText())
+  await thread.locator('ytcp-comment-button, #reply-button, [aria-label="Reply"], ytcp-button').filter({ hasText: /^Reply$/ }).first().click({ timeout: 10000 })
+  await page.waitForTimeout(1500)
+  const box = thread.locator('#contenteditable-root, [contenteditable=true], textarea').first()
+  await box.click(); await page.keyboard.type(reply, { delay: 8 }); await page.waitForTimeout(800)
+  const submit = thread.locator('ytcp-button, button').filter({ hasText: /^(Reply|Comment)$/ }).last()
+  await submit.click({ timeout: 10000 }); await page.waitForTimeout(4000)
+  const after = await thread.innerText().catch(() => '')
+  console.log(JSON.stringify({ found: true, alreadyHadReplies: already, replied: after.includes(reply.slice(0, 20)) || /1 repl/i.test(after) }))
+  await page.close(); await b.close()
+})().catch(e => { console.error('ERR', e.message.slice(0, 200)); process.exit(1) })
