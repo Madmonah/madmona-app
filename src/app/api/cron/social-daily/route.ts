@@ -97,6 +97,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }
 
+  // 🎯 (١٤/٩/٢٠٢٦) محمد: «مش عايز لينكات تعرض الماركتبليس — عايز أزوّد أصحاب البيزنس على ستارت وبرو».
+  //    بوستات الإعلانات/المشاريع اليومية على القناة كانت بتوجّه للسوق ٣ مرات يوميًا — متوقفة بسويتش site_settings.social_daily_enabled ('1' يرجّعها).
+  //    قناة تليجرام بقت لقصص البيزنس (_tg_send.cjs) وCTA /start بس.
+  const { data: sw } = await supabaseUntyped.from('site_settings').select('value').eq('key', 'social_daily_enabled').maybeSingle()
+  if ((sw as { value?: string } | null)?.value !== '1') return NextResponse.json({ ok: true, skipped: 'social_daily_enabled != 1' })
   const token = await botToken()
   if (!token) return NextResponse.json({ ok: false, error: 'مفيش توكن تليجرام' })
 

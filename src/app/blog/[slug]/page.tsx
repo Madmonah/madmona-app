@@ -97,9 +97,11 @@ export default async function BlogPost({ params }: P) {
       <article className="max-w-3xl mx-auto px-4 py-8">
         <div className="bg-white rounded-2xl p-5 md:p-8 shadow-sm ring-1 ring-black/5" dangerouslySetInnerHTML={{ __html: mdToHtml(post.content_md) }} />
         <div className="mt-6 bg-gradient-to-l from-[#34D399] to-[#2FA084] rounded-2xl p-5 text-white text-center">
-          <p className="font-black">جاهز تبيع أو تأجر بأمان؟ ✅</p>
-          <p className="text-white/85 text-sm mt-1">كل معاملة على مضمونة بحماية كاملة ودفع مستحقات سريع.</p>
-          <Link href="/marketplace" className="inline-block mt-3 bg-white text-[#059669] font-black text-sm rounded-full px-5 py-2 no-underline">اتفرج على الإعلانات</Link>
+          {/* 🎯 (١٤/٩/٢٠٢٦) محمد: «مش عايز لينكات تعرض الماركتبليس — عايز أزوّد أصحاب البيزنس على ستارت وبرو» */}
+          <p className="font-black">عندك بيزنس؟ افتح لوحة إدارته مجانًا ✅</p>
+          <p className="text-white/85 text-sm mt-1">حسابات · عملاء · مهام الفريق بإثبات · صفحة لعملائك. مجاني لصاحب البيزنس + موظف، وفريق أكبر بـ١٠٠٠ ج شهريًا بدل كتير.</p>
+          <Link href={`/start?utm_source=blog&utm_medium=cta&utm_campaign=erp1000&utm_content=${post.slug}`} className="inline-block mt-3 bg-white text-[#059669] font-black text-sm rounded-full px-5 py-2 no-underline">ابدأ مجانًا دلوقتي</Link>
+          <p className="text-white/80 text-xs mt-2">أو ابعت كلمة start واتساب على 01002229982 · <Link href="/pro" className="text-white underline">إيه اللي في برنامج الإدارة؟</Link></p>
         </div>
       </article>
     </main>

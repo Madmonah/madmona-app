@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { downloadOpenWaMedia, fetchInboundMediaByPhone } from '@/lib/openwa'
 import { supabaseUntyped } from '@/lib/supabase'
+import { sendText } from '@/lib/whatsapp'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -228,6 +229,48 @@ export async function POST(req: NextRequest) {
         })
       } catch { /* التشخيص مايوقفش الرسالة */ }
     }
+  }
+
+  // 🎯 (١٤/٩/٢٠٢٦) محمد: «لازم يكون فيه تحويل» + «عايز أزوّد أصحاب البيزنس على ستارت وبرو».
+  //    كل الفيديوهات والكابشنات بتقول «ابعت كلمة start واتساب على 01002229982 وهنفتحلك اللوحة» — والمارد على 982
+  //    مسكّت (wa_number_configs.enabled=false) فالكلمة كانت بتروح في الفراغ من غير أي رد. ده رد ثابت فوري على رسالة
+  //    واردة (مش رسالة باردة) بلينك /start + ليد في campaign_leads (campaign='wa-start') عشان يتقاس ويتابعه الفريق.
+  if (type === 'text' && /^\s*(start|ستارت|أبدأ|ابدأ|ابدا)\s*[.!]?\s*$/i.test(body)) {
+    const link = 'https://www.madmonacairo.com/start?utm_source=whatsapp&utm_medium=start&utm_campaign=erp1000'
+    const reply = [
+      'أهلًا بيك في مضمونة 👋',
+      'دي لوحة إدارة بيزنسك: حسابات بتتقيّد لوحدها · عملاء كل واحد ليه ملف · مهام الفريق بإثبات · صفحة لعملائك.',
+      'مجاني لصاحب البيزنس + موظف، وفريق أكبر بـ١٠٠٠ ج شهريًا بدل كتير.',
+      '',
+      'افتح لوحتك من هنا وسجّل بنفس رقمك ده 👇',
+      link,
+      '',
+      'ولو حابب حد من الفريق يكلّمك، اكتب «كلّموني».',
+    ].join('\n')
+    let sent = false
+    let sendErr: string | null = null
+    try {
+      const r = await sendText({ to: fromDigits, jid: fromRaw.includes('@') ? fromRaw : undefined, session: sessionId, body: reply, agentName: 'start-cta', aiGenerated: false })
+      sent = r.ok === true
+      if (!r.ok) sendErr = String((r as { error?: string }).error || 'send failed')
+    } catch (e) { sendErr = String(e) }
+    try {
+      await supabaseUntyped.from('campaign_leads').insert({
+        campaign: 'wa-start', phone: fromDigits || null, name: name || null, message: body.trim(),
+        utm_source: 'whatsapp', utm_medium: 'start', utm_content: sessionId, status: 'new',
+        notes: sent ? 'رد ستارت اتبعت أوتوماتيك' : `رد ستارت فشل: ${sendErr}`,
+      })
+    } catch (e) { console.error('[openwa-relay] start lead insert failed', e) }
+    // پوش فوري لمحمد — ليد حقيقي من الفيديوهات (التنبيهات الداخلية نوتيفيكيشن مش واتساب)
+    try {
+      await supabaseUntyped.from('notification_queue').insert({
+        recipient_id: '147cd904-3228-401c-8b5f-79f43d6d081f', type: 'wa_start_lead',
+        title: `🎯 حد كتب start: ${fromDigits} · ${new Date().toISOString().slice(11, 16)}`,
+        body: sent ? 'اتبعتله لينك /start أوتوماتيك. لو كتب «كلّموني» هيوصلك في الوارد.' : `الرد الأوتوماتيك فشل (${sendErr}) — كلّمه إنت.`,
+        url: '/admin/crm', data: { phone: fromDigits, session: sessionId },
+      })
+    } catch { /* best-effort */ }
+    return NextResponse.json({ ok: true, start_cta: sent, error: sendErr, forwarded: false })
   }
 
   // ── صيغة baileys ─────────────────────────────────────────────────────
