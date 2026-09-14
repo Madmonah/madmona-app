@@ -22,6 +22,7 @@ import WhatsAppLogin from '@/components/WhatsAppLogin'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { GoogleSignInButton } from '@/components/GoogleSignInButton'
 import { resolveLanding, LANDING_AUTO } from '@/lib/landing'
+import { getSessionSafe } from '@/lib/session-safe'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -59,6 +60,10 @@ export default function MadmonaLoginPage() {
         // نمسح التوكن فقط لو الـresolve أكّد إنه باطل — فشل الاتصال المؤقت مايمسحش توكن صالح.
         if (!error && data && data.authenticated === false) safeStorage.remove('madmona_token')
       }
+      // 🔁 (١٤/٩/٢٠٢٦) داخل بجلسة Supabase (جوجل/باسورد) من غير توكن واتساب؟ كان بيشوف فورم الدخول تاني
+      //    وهو داخل — وده نص حلقة «مش بنعرف ندخل». الجلسة موجودة → نودّيه لوجهته.
+      const sess = await getSessionSafe(3000)
+      if (sess?.user) { router.push(await resolveLanding(nextPath())); return }
       setChecking(false)
     })()
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
@@ -101,7 +106,9 @@ export default function MadmonaLoginPage() {
       }
       // أدمن → لوحة الأدمن مباشرة (الكوكي اتفتحت)، موظف → /me
       // أدمن اللوحة (معاه الكوكي) → الإعلانات مباشرة؛ غيره → القرار الموحّد (موظف → شغلي · مالك → لوحته)
-      router.push(data.source === 'admin' && nextPath() === LANDING_AUTO ? '/admin/listings' : await resolveLanding(nextPath(), '/home'))
+      // أدمن اللوحة (الكوكي اتفتح) بيحترم أي next تحت /admin مباشرة؛ غيره بيعدّي على resolveLanding اللي بيرفض صفحات الأدمن.
+      const np = nextPath()
+      router.push(data.source === 'admin' ? (np === LANDING_AUTO ? '/admin/listings' : np) : await resolveLanding(np, '/home'))
     } catch {
       setError(t('lg.err_conn'))
       setSending(false)

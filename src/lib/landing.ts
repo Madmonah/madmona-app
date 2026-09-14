@@ -57,5 +57,11 @@ export async function landingAfterLogin(fallback = '/home'): Promise<string> {
 export async function resolveLanding(requested: string | null | undefined, fallback = '/home'): Promise<string> {
   const r = (requested || '').trim()
   if (!r || r === LANDING_AUTO || !r.startsWith('/') || r.startsWith('//')) return landingAfterLogin(fallback)
+  // 🔁 (١٤/٩/٢٠٢٦) محمد: «الاكونت بعد ما بنعمله ونيجي نسجل دخول مش بنعرف ندخل». من site_events: جلسة موبايل
+  //    لفّت ٩ مرات في ٢٥ دقيقة على /login?next=/admin/business-partners — الدخول بينجح، وnext بيرجّعه لصفحة
+  //    أدمن محروسة بكوكي اللوحة (مش عنده) → الميدلوير يرميه على /login تاني. أي next تحت /admin/* غير لوحة
+  //    البيزنس (/admin/business-finance/<uuid>) وشاشات الإعلانات للموظفين = مالوش معنى لغير الأدمن → نقرّر إحنا.
+  const adminOk = /^\/admin\/business-finance\/[0-9a-fA-F-]{36}(\/|$|\?)/.test(r) || r.startsWith('/admin/listings') || r.startsWith('/admin/drafts')
+  if (/^\/admin(\/|$|\?)/.test(r) && !adminOk) return landingAfterLogin(fallback)
   return r
 }
