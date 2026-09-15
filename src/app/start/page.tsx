@@ -208,7 +208,7 @@ export default function StartPage() {
         {stage === 'loading' && <div className="rounded-3xl bg-white border border-gray-100 p-8 grid place-items-center"><Loader2 className="w-6 h-6 text-gray-400 animate-spin" /></div>}
 
         {stage === 'form' && (
-          <form onSubmit={onSubmit} className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5 space-y-3">
+          <form onSubmit={onSubmit} noValidate className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5 space-y-3">
             <p className="text-xs text-gray-500">مجاني لصاحب البيزنس + موظف واحد. الباقي بتكمّله جوّه اللوحة خطوة خطوة.</p>
             {/* 📈 (١٥/٩/٢٠٢٦) محمد: «عايز growth» — الفورم كان ٩ خانات على شاشة موبايل لزائر جاي من شورت.
                 المطلوب للإنشاء فعلًا: اسم الشركة · النشاط · رقم الواتساب · باسورد (قاعدة ١٤/٩). الباقي (المسؤول · الإيميل ·
