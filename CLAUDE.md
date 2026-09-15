@@ -2692,3 +2692,15 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   اضغط «Share now» → توست «Shared to your profile». الجروب اتنشر فيه ٣ (أبو طارق · نينتندو · أوبرا) — الـdialog الصح هو اللي فيه
   `[contenteditable=true]` (فيه dialog إشعارات قبله؛ `querySelector('[role=dialog]')` لوحده بيمسك الغلط).
 
+## 🏷️ «تسجيل الدخول يكون مضمونة» — كلمة Supabase في شاشة جوجل: الجذر والطريقين (١٥ سبتمبر ٢٠٢٦ — العصر)
+محمد: «لما باجي أعمل دخول بالإيميل محتاج إنه يكون كاتب مضمونة بدل supabase» · «وموضوع تسجيل الدخول يكون مضمونة».
+- **الجذر:** زرار جوجل بيعدّي على `mjhflxpxunwycbiquoig.supabase.co/auth/v1/callback`، فشاشة جوجل بتكتب «to continue to …supabase.co».
+  ده **مش في الكود** — توثيق Supabase (Sign in with Google) بيقول الحل واحد من اتنين: (أ) **Branding** في Google Cloud (اسم + لوجو بدل
+  معرّف المشروع، والتوثيق بياخد أيام عمل) أو (ب) **Custom Domain** لمشروع Supabase (`auth.madmonacairo.com`) — إضافة مدفوعة من لوحة Supabase + DNS.
+- **الحل الأنضف اللي اتصمّم:** دخول جوجل مباشر من `madmonacairo.com` (Google Identity Services → id_token → `supabase.auth.signInWithIdToken`)،
+  محتاج بس إضافة `https://www.madmonacairo.com` في **Authorized JavaScript origins** للعميل `739336454511-320e…` + App name «مضمونة».
+- ⛔ **اتجرّب ١٥/٩ واتقفل عند خط أحمر:** Google Cloud Console بحساب كروم محمد (m arabco) = «Google Cloud access blocked… turn on 2-step
+  verification» · بحساب madmona@madmonacairo.com في كروم السوشيال = «Verify it's you… Enter your password». تفعيل 2SV وإدخال باسورد ممنوعين عليّا.
+  الخطوة الوحيدة المطلوبة: محمد يفعّل التحقق بخطوتين على الحساب اللي فيه مشروع جوجل (أو يفتح Console مرة بالباسورد) — وبعدها أنا أعدّل الإعدادات وأبني GIS وأجرّبه بلوب كامل.
+- `gsi/status?client_id=…` بـOrigin `madmonacairo.com` بيرجّع 403 = الـorigin مش مسجّل (الفحص بعد أي تعديل).
+
