@@ -14,7 +14,7 @@ export default function SetPasswordCard({ hasSession }: { hasSession: boolean })
   if (!hasSession) return null
   async function save() {
     if (state === 'busy') return
-    if (pw.length < 8 || !/\d/.test(pw) || !/[a-zA-Z؀-ۿ]/.test(pw)) { setState('error'); setMsg('الباسورد ٨ على الأقل وفيه حروف وأرقام'); return }
+    if (pw.length < 6 || !/\d/.test(pw) || !/[a-zA-Z؀-ۿ]/.test(pw)) { setState('error'); setMsg('الباسورد ٦ على الأقل وفيه حروف وأرقام'); return }
     if (pw !== pw2) { setState('error'); setMsg('الباسوردين مش زي بعض'); return }
     setState('busy'); setMsg('')
     const { error } = await supabaseBrowser.auth.updateUser({ password: pw })

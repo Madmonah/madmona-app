@@ -130,7 +130,7 @@ export default function StartPage() {
   // 🔑🔑 (١٥/٩/٢٠٢٦) محمد: «تاب ستارت وبرو لسه فيهم مشكلة في تسجيل الدخول — حل جذري ومجرّب». اللوب الحقيقي كشف إن Supabase
   //    بيرفض الباسوردات المعروفة/المسرّبة («Password is known to be weak») والرفض كان بيتبلع → الحساب يتعمل من غير باسورد
   //    والمستخدم يخرج ويرجع يلاقي «غلط». هنا: ٨ حروف على الأقل فيها حرف ورقم (بيقلّل الرفض)، والرفض لو حصل بيتقال بالعربي تحت.
-  const pwOk = form.password.length >= 8 && /[a-zA-Z\u0600-\u06FF]/.test(form.password) && /\d/.test(form.password)
+  const pwOk = form.password.length >= 6 && /[a-zA-Z\u0600-\u06FF]/.test(form.password) && /\d/.test(form.password)
   const valid = form.business_name.trim().length >= 2 && form.contact_phone.replace(/\D/g, '').length >= 10 && pwOk
 
   // ── الخطوة ٢: توثيق الواتساب (زي /login بالظبط) ──
@@ -179,7 +179,7 @@ export default function StartPage() {
       const missing: string[] = []
       if (form.business_name.trim().length < 2) missing.push('اسم الشركة')
       if (form.contact_phone.replace(/\D/g, '').length < 10) missing.push('رقم الواتساب (١١ رقم)')
-      if (!pwOk) missing.push(form.password.length < 8 ? 'الباسورد ٨ حروف على الأقل' : 'الباسورد لازم فيه حروف وأرقام مع بعض')
+      if (!pwOk) missing.push(form.password.length < 6 ? 'الباسورد ٦ حروف على الأقل' : 'الباسورد لازم فيه حروف وأرقام مع بعض')
       trackEvent({ event_type: 'start_error', metadata: { step: 'validation', error: missing.join(' · ') } })
       setErr('ناقص: ' + missing.join(' · ')); return
     }
@@ -222,8 +222,8 @@ export default function StartPage() {
             {/* 🔑 (١٤/٩/٢٠٢٦) محمد: «تسجيل دخول الاكونت بتاع ستارت بيزنس مش شغال — عايزينه بإيميل وباسورد أو برقم تليفون وباسورد».
                 الباسورد بيتحط على مستخدم Supabase في /api/start/create-business (service role) — وبعدها /login بيقبل الرقم أو الإيميل + الباسورد ده. */}
             <label className="block"><span className="text-xs font-bold text-gray-600">باسورد للدخول بعدين *</span>
-              <input type="password" value={form.password} onChange={(e) => touch({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٨ حروف وأرقام على الأقل" minLength={8} />
-              <span className={`text-[11px] ${form.password && !pwOk ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>{form.password && !pwOk ? (form.password.length < 8 ? `لسه ${8 - form.password.length} حروف — ` : 'لازم حروف وأرقام مع بعض — ') : ''}٨ على الأقل، فيه حروف وأرقام، ومش معروف (مش ١٢٣٤٥٦٧٨ ولا رقم موبايلك). هتدخل بيه بعدين برقم الواتساب.</span></label>
+              <input type="password" value={form.password} onChange={(e) => touch({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٦ حروف وأرقام على الأقل" minLength={6} />
+              <span className={`text-[11px] ${form.password && !pwOk ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>{form.password && !pwOk ? (form.password.length < 6 ? `لسه ${6 - form.password.length} حروف — ` : 'لازم حروف وأرقام مع بعض — ') : ''}٦ على الأقل، فيه حروف وأرقام، ومش معروف (مش ١٢٣٤٥٦٧٨ ولا رقم موبايلك). هتدخل بيه بعدين برقم الواتساب.</span></label>
             <details className="rounded-xl border border-dashed border-gray-200 px-3 py-2">
               <summary className="text-xs font-bold text-gray-500 cursor-pointer select-none">تفاصيل أكتر (اختياري) — اسمك · الإيميل · العنوان</summary>
               <div className="space-y-3 pt-3">
