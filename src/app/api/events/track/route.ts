@@ -30,7 +30,9 @@ const VALID_EVENT_TYPES = new Set([
   'wizard_step_view', 'wizard_submit',
   // 📈 (١٥/٩/٢٠٢٦) محمد: «عايز growth» — ١٧٤ جلسة من يوتيوب وصلت /start في أسبوع ومفيش أي حدث غير page_view،
   //    يعني كنا عميان عن القمع. الأحداث دي بتقول فين الناس بتقف: بدأ يكتب → طلب كود/جوجل → اتعمل → غلط.
-  'start_form_started', 'start_wa_requested', 'start_google_click', 'start_created', 'start_error'
+  'start_form_started', 'start_wa_requested', 'start_google_click', 'start_created', 'start_error',
+  // 🧩 (١٥/٩/٢٠٢٦) اختبار /quiz — «حاجة تفيرال تلم كومنتس». لازم تتضاف كمان في site_events_event_type_check (اتضافت).
+  'quiz_start', 'quiz_complete', 'quiz_share', 'quiz_cta'
 ])
 
 export async function POST(request: NextRequest) {
