@@ -88,7 +88,12 @@ export default function StartPage() {
         method: 'POST', headers: { 'content-type': 'application/json', ...(bearer ? { authorization: `Bearer ${bearer}` } : {}) },
         body: JSON.stringify({ payload, token, password: f.password }),
       }).then((x) => x.json()).catch(() => ({ ok: false, error: 'الشبكة' }))
-      if (!r.ok) { trackEvent({ event_type: 'start_error', metadata: { step: 'create', error: String(r.error || '').slice(0, 120) } }); setErr(r.error || 'ماتعملش — جرّب تاني'); setStage('form'); creatingRef.current = false; return }
+      if (!r.ok) {
+        trackEvent({ event_type: 'start_error', metadata: { step: 'create', error: String(r.error || '').slice(0, 120) } })
+        const weak = /weak|easy to guess|pwned|leaked|Password/i.test(String(r.password_error || r.error || ''))
+        setErr(weak ? 'الباسورد ده معروف وسهل التخمين — اختار باسورد تاني (٨ حروف وأرقام مش متوقعة) واضغط «أنشئ شركتي» — رقمك اتوثّق خلاص.' : (r.error || 'ماتعملش — جرّب تاني'))
+        setStage('form'); creatingRef.current = false; return
+      }
       trackEvent({ event_type: 'start_created', metadata: { existing: r.existing === true, industry: f.industry } })
       safeStorage.remove(DRAFT_KEY); safeStorage.remove(WA_KEY)
       setSupplierId(r.supplier_id); setStage('done')
@@ -122,7 +127,11 @@ export default function StartPage() {
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const valid = form.business_name.trim().length >= 2 && form.contact_phone.replace(/\D/g, '').length >= 10 && form.password.length >= 6
+  // 🔑🔑 (١٥/٩/٢٠٢٦) محمد: «تاب ستارت وبرو لسه فيهم مشكلة في تسجيل الدخول — حل جذري ومجرّب». اللوب الحقيقي كشف إن Supabase
+  //    بيرفض الباسوردات المعروفة/المسرّبة («Password is known to be weak») والرفض كان بيتبلع → الحساب يتعمل من غير باسورد
+  //    والمستخدم يخرج ويرجع يلاقي «غلط». هنا: ٨ حروف على الأقل فيها حرف ورقم (بيقلّل الرفض)، والرفض لو حصل بيتقال بالعربي تحت.
+  const pwOk = form.password.length >= 8 && /[a-zA-Z\u0600-\u06FF]/.test(form.password) && /\d/.test(form.password)
+  const valid = form.business_name.trim().length >= 2 && form.contact_phone.replace(/\D/g, '').length >= 10 && pwOk
 
   // ── الخطوة ٢: توثيق الواتساب (زي /login بالظبط) ──
   async function startWhatsApp() {
@@ -151,6 +160,7 @@ export default function StartPage() {
       if (!fin?.token_hash) { setErr('التوثيق ماكملش — جرّب تاني'); safeStorage.remove(WA_KEY); setStage('form'); return }
       safeStorage.remove(WA_KEY)
       if (fin.madmona_token) safeStorage.set('madmona_token', fin.madmona_token)
+      setHasSession(true) // الرقم اتوثّق — أي إعادة (باسورد مرفوض مثلًا) تروح للإنشاء مباشرة من غير كود تاني
       let access: string | null = null
       try {
         const { data } = await supabaseBrowser.auth.verifyOtp({ type: 'email', token_hash: fin.token_hash })
@@ -163,7 +173,7 @@ export default function StartPage() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!valid) { setErr('اكتب اسم الشركة ورقم الواتساب'); return }
+    if (!valid) { setErr(pwOk ? 'اكتب اسم الشركة ورقم الواتساب' : 'الباسورد لازم ٨ على الأقل وفيه حروف وأرقام'); return }
     if (hasSession) { void createBusiness(form); return }
     void startWhatsApp()
   }
@@ -203,8 +213,8 @@ export default function StartPage() {
             {/* 🔑 (١٤/٩/٢٠٢٦) محمد: «تسجيل دخول الاكونت بتاع ستارت بيزنس مش شغال — عايزينه بإيميل وباسورد أو برقم تليفون وباسورد».
                 الباسورد بيتحط على مستخدم Supabase في /api/start/create-business (service role) — وبعدها /login بيقبل الرقم أو الإيميل + الباسورد ده. */}
             <label className="block"><span className="text-xs font-bold text-gray-600">باسورد للدخول بعدين *</span>
-              <input type="password" value={form.password} onChange={(e) => touch({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٦ حروف أو أرقام على الأقل" minLength={6} />
-              <span className="text-[11px] text-gray-400">هتدخل بيه بعدين برقم الواتساب.</span></label>
+              <input type="password" value={form.password} onChange={(e) => touch({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٨ حروف وأرقام على الأقل" minLength={8} />
+              <span className="text-[11px] text-gray-400">٨ على الأقل، فيه حروف وأرقام، ومش معروف (مش ١٢٣٤٥٦٧٨ ولا رقم موبايلك). هتدخل بيه بعدين برقم الواتساب.</span></label>
             <details className="rounded-xl border border-dashed border-gray-200 px-3 py-2">
               <summary className="text-xs font-bold text-gray-500 cursor-pointer select-none">تفاصيل أكتر (اختياري) — اسمك · الإيميل · العنوان</summary>
               <div className="space-y-3 pt-3">

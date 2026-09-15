@@ -14,11 +14,12 @@ export default function SetPasswordCard({ hasSession }: { hasSession: boolean })
   if (!hasSession) return null
   async function save() {
     if (state === 'busy') return
-    if (pw.length < 6) { setState('error'); setMsg('الباسورد ٦ حروف أو أرقام على الأقل'); return }
+    if (pw.length < 8 || !/\d/.test(pw) || !/[a-zA-Z؀-ۿ]/.test(pw)) { setState('error'); setMsg('الباسورد ٨ على الأقل وفيه حروف وأرقام'); return }
     if (pw !== pw2) { setState('error'); setMsg('الباسوردين مش زي بعض'); return }
     setState('busy'); setMsg('')
     const { error } = await supabaseBrowser.auth.updateUser({ password: pw })
-    if (error) { setState('error'); setMsg(error.message || 'ماتحفظش — جرّب تاني'); return }
+    // 🔑 (١٥/٩/٢٠٢٦) Supabase بيرفض الباسوردات المعروفة («known to be weak») — الرسالة بالعربي بدل الإنجليزي
+    if (error) { setState('error'); setMsg(/weak|easy to guess|pwned|leaked/i.test(error.message || '') ? 'الباسورد ده معروف وسهل التخمين — اختار باسورد تاني (٨ حروف وأرقام مش متوقعة)' : (error.message || 'ماتحفظش — جرّب تاني')); return }
     setState('done'); setPw(''); setPw2('')
   }
   return (
