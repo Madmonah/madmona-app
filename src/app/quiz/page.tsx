@@ -83,7 +83,9 @@ const QS: { q: string; a: { t: string; v: T }[] }[] = [
 const BASE = 'https://www.madmonacairo.com'
 
 export default function QuizPage() {
-  const [step, setStep] = useState(-1) // -1 = البداية
+  // 🐞 (١٥/٩/٢٠٢٦) أول ٣ ساعات: ٧ زيارات (أغلبها من جروب فيسبوك) وصفر quiz_start — بوابة «ابدأ الاختبار» كانت بتوقف الناس.
+  //    الصفحة بتفتح على السؤال الأول مباشرة، وquiz_start بيتسجّل مع أول إجابة.
+  const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<T[]>([])
   const [friend, setFriend] = useState<T | null>(null)
 
@@ -99,8 +101,9 @@ export default function QuizPage() {
     return (['brain', 'firefighter', 'hustler', 'organizer'] as T[]).reduce((best, k) => (c[k] > c[best] ? k : best), 'brain')
   }, [answers])
 
-  function start() { setStep(0); setAnswers([]); trackEvent({ event_type: 'quiz_start', metadata: { from_friend: friend } }) }
+  function start() { setStep(0); setAnswers([]) }
   function pick(v: T) {
+    if (answers.length === 0) trackEvent({ event_type: 'quiz_start', metadata: { from_friend: friend } })
     const next = [...answers, v]
     setAnswers(next)
     if (next.length >= QS.length) {
@@ -145,6 +148,9 @@ export default function QuizPage() {
 
         {step >= 0 && step < QS.length && (
           <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-6 space-y-4">
+            {friend && step === 0 && (
+              <div className="rounded-2xl bg-[#E6F4EE] px-4 py-3 text-sm">صاحبك طلع <b>«{TYPES[friend].name}» {TYPES[friend].emoji}</b> — جاوب واعرف إنت نوعك إيه</div>
+            )}
             <div className="flex items-center justify-between text-xs text-gray-400">
               <span>سؤال {step + 1} من {QS.length}</span>
               <span className="h-1.5 flex-1 mx-3 rounded-full bg-gray-100 overflow-hidden"><span className="block h-full bg-[#059669]" style={{ width: `${((step) / QS.length) * 100}%` }} /></span>
