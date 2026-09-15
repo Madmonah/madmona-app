@@ -2704,3 +2704,20 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   الخطوة الوحيدة المطلوبة: محمد يفعّل التحقق بخطوتين على الحساب اللي فيه مشروع جوجل (أو يفتح Console مرة بالباسورد) — وبعدها أنا أعدّل الإعدادات وأبني GIS وأجرّبه بلوب كامل.
 - `gsi/status?client_id=…` بـOrigin `madmonacairo.com` بيرجّع 403 = الـorigin مش مسجّل (الفحص بعد أي تعديل).
 
+## 🚨 فاتورة Supabase متأخرة — «Pending Shutdown» (اتكشف ١٥ سبتمبر ٢٠٢٦ — بليل)
+- إيميلات `billing-support@supabase.com` على **madmona.admin@gmail.com**: فاتورة **VOIZTQ-00007 بـ$33.71** مستحقة من ٦/٩، الكارت المنتهي
+  بـ4889 (وقبله 7240) اترفض من البنك و«we are not able to retry the payment» · العنوان «Action Required: Payment Failure And Pending Shutdown»
+  (آخر واحد ١٥/٩ ٠٠:٤٠ UTC). الخطر: مشروع `mjhflxpxunwycbiquoig` = الداتابيز والدخول والموقع كله.
+- ⛔ الدفع خط أحمر عليّا — محمد بس: `supabase.com/dashboard/org/atmzktjwnfsrmdtpihxi/invoices` (كارت تاني) أو لينك الدفع اللي في الإيميل.
+- الفحص في أي جلسة: Gmail `from:billing-support@supabase.com newer_than:7d`.
+
+## 🧩 /quiz «إنت صاحب بيزنس نوعه إيه؟» — محتوى بيلم كومنتس (١٥ سبتمبر ٢٠٢٦ — بليل)
+محمد: «الأرقام وحشة جدًا — حاول تشوف حاجة إضافية للجرو والانتشار، وياريت حاجة تفيرال أو أسئلة أو حاجة تلم كومنتس».
+- صفحة ثابتة (صفر API): ٦ أسئلة → ٤ أنواع (🧠 الشايل كل حاجة في دماغه · 🧯 المطافي · 🚀 المغامر · 📋 المنظّم) → مشاركة واتساب/فيسبوك بلينك
+  `?r=<النوع>` (اللي يفتحه بيشوف «صاحبك طلع…» + «ابدأ») → CTA لـ`/start?utm_source=quiz`. أحداث: `quiz_start · quiz_complete · quiz_share · quiz_cta`
+  (في الراوت **و** قيد `site_events_event_type_check`). E2E `_quiz_e2e.cjs` ✓.
+- **البوستات بتاعته = سؤال بأرقام** («اكتب رقمك في كومنت 1–4») + لينك الاختبار — ده اللي بيجيب كومنتات، مش لينك لوحده.
+  القياس: `select event_type, metadata->>'type', count(*) from site_events where event_type like 'quiz_%' group by 1,2`.
+- ⚠️ **دخول جوجل لسه مش «مضمونة»** — اتأكد بالدليل ١٥/٩ بليل: شاشة جوجل «Choose an account to continue to mjhflxpxunwycbiquoig.supabase.co».
+  الحل مستني تفعيل 2SV على حساب مشروع جوجل (شوف قسم «تسجيل الدخول يكون مضمونة» فوق).
+
