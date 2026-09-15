@@ -41,13 +41,21 @@ export async function POST(req: Request) {
   //    user_metadata.login_email عشان auth_user_for_login_email تحوّله لإيميل auth الداخلي وقت الدخول.
   const password = typeof body.password === 'string' ? body.password : ''
   const loginEmail = typeof body.payload?.contact_email === 'string' ? (body.payload.contact_email as string).trim().toLowerCase() : ''
+  // 🔑🔑 (١٥/٩/٢٠٢٦) محمد: «تاب ستارت وبرو لسه فيهم مشكلة في تسجيل الدخول — عايز حل جذري ومجرّب: خروج ثم دخول تاني».
+  //    اللوب الحقيقي (_login_loop2_e2e.cjs) كشف إن الباسورد اللي المستخدم كتبه في /start **ماكانش بيتحط** — الخطأ كان بيتسجّل
+  //    في console بس والرد ok:true، فالمستخدم يخرج ويرجع يدخل بالرقم + باسورده ويشوف «غلط». الباسورد بقى **شرط نجاح**:
+  //    لو ماتحطش الطلب بيفشل برسالة واضحة (مفيش شركة من غير باب دخول)، والرد بيقول password_set.
+  let passwordSet = false
   if (password || loginEmail) {
     if (password && password.length < 6) return NextResponse.json({ ok: false, error: 'الباسورد ٦ حروف على الأقل' }, { status: 400 })
-    const attrs: { password?: string; user_metadata?: Record<string, unknown> } = {}
+    const attrs: { password?: string; user_metadata?: Record<string, unknown>; email_confirm?: boolean } = {}
     if (password) attrs.password = password
     if (loginEmail && loginEmail.includes('@')) attrs.user_metadata = { login_email: loginEmail }
     const { error: pwErr } = await db.auth.admin.updateUserById(userId, attrs)
-    if (pwErr) console.error('[start] set password failed:', pwErr.message)
+    if (pwErr) {
+      console.error('[start] set password failed:', pwErr.status, pwErr.message)
+      if (password) return NextResponse.json({ ok: false, error: `مقدرناش نحفظ الباسورد (${pwErr.message}) — جرّب باسورد تاني`, password_error: pwErr.message }, { status: 400 })
+    } else if (password) passwordSet = true
   }
 
   // ── الـpayload: نفس حقول فورم الأدمن، من غير أي حقول عمولة/عقد من العميل ──
@@ -70,5 +78,5 @@ export async function POST(req: Request) {
   )
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
   if (!data?.ok) return NextResponse.json({ ok: false, error: (data?.error as string) || 'ماتعملش' }, { status: 400 })
-  return NextResponse.json({ ok: true, supplier_id: data.supplier_id, existing: data.existing === true, slug: data.slug || null })
+  return NextResponse.json({ ok: true, supplier_id: data.supplier_id, existing: data.existing === true, slug: data.slug || null, password_set: passwordSet })
 }
