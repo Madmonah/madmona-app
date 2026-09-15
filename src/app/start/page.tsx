@@ -173,7 +173,16 @@ export default function StartPage() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!valid) { setErr(pwOk ? 'اكتب اسم الشركة ورقم الواتساب' : 'الباسورد لازم ٨ على الأقل وفيه حروف وأرقام'); return }
+    // 🐞 (١٥/٩/٢٠٢٦ ١١:٤٠) محمد: «مش بيوثق الرقم بالواتساب» — القمع ورّى ٣ start_form_started من موبايله من غير start_wa_requested:
+    //    الزرار كان disabled بصمت لأن الباسورد أقل من ٨ أو من غير حرف/رقم. الزرار بقى شغّال دايمًا وبيقول الناقص بالاسم.
+    if (!valid) {
+      const missing: string[] = []
+      if (form.business_name.trim().length < 2) missing.push('اسم الشركة')
+      if (form.contact_phone.replace(/\D/g, '').length < 10) missing.push('رقم الواتساب (١١ رقم)')
+      if (!pwOk) missing.push(form.password.length < 8 ? 'الباسورد ٨ حروف على الأقل' : 'الباسورد لازم فيه حروف وأرقام مع بعض')
+      trackEvent({ event_type: 'start_error', metadata: { step: 'validation', error: missing.join(' · ') } })
+      setErr('ناقص: ' + missing.join(' · ')); return
+    }
     if (hasSession) { void createBusiness(form); return }
     void startWhatsApp()
   }
@@ -214,7 +223,7 @@ export default function StartPage() {
                 الباسورد بيتحط على مستخدم Supabase في /api/start/create-business (service role) — وبعدها /login بيقبل الرقم أو الإيميل + الباسورد ده. */}
             <label className="block"><span className="text-xs font-bold text-gray-600">باسورد للدخول بعدين *</span>
               <input type="password" value={form.password} onChange={(e) => touch({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٨ حروف وأرقام على الأقل" minLength={8} />
-              <span className="text-[11px] text-gray-400">٨ على الأقل، فيه حروف وأرقام، ومش معروف (مش ١٢٣٤٥٦٧٨ ولا رقم موبايلك). هتدخل بيه بعدين برقم الواتساب.</span></label>
+              <span className={`text-[11px] ${form.password && !pwOk ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>{form.password && !pwOk ? (form.password.length < 8 ? `لسه ${8 - form.password.length} حروف — ` : 'لازم حروف وأرقام مع بعض — ') : ''}٨ على الأقل، فيه حروف وأرقام، ومش معروف (مش ١٢٣٤٥٦٧٨ ولا رقم موبايلك). هتدخل بيه بعدين برقم الواتساب.</span></label>
             <details className="rounded-xl border border-dashed border-gray-200 px-3 py-2">
               <summary className="text-xs font-bold text-gray-500 cursor-pointer select-none">تفاصيل أكتر (اختياري) — اسمك · الإيميل · العنوان</summary>
               <div className="space-y-3 pt-3">
@@ -235,7 +244,7 @@ export default function StartPage() {
               </div>
             </details>
             {err && <p className="text-xs text-red-600">{err}</p>}
-            <button type="submit" disabled={!valid} className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base disabled:opacity-50 flex items-center justify-center gap-2">
+            <button type="submit" className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base flex items-center justify-center gap-2">
               {hasSession ? 'أنشئ شركتي' : <><MessageCircle className="w-4 h-4" /> وثّق رقمي بالواتساب وأنشئ شركتي</>}
             </button>
             {!hasSession && (
