@@ -20,6 +20,7 @@ import { safeStorage } from '@/lib/safe-storage'
 import { syncModuleSession } from '@/lib/madmonaSession'
 import { GoogleSignInButton } from '@/components/GoogleSignInButton'
 import { trackEvent } from '@/components/AnalyticsTracker'
+import { resolveLanding, LANDING_AUTO } from '@/lib/landing'
 
 // 🧩 (١١/٩/٢٠٢٦) محمد: «ابني كل الموديلز اللي إحنا نقدر نديرها» — كل قيمة هنا مفتاح في
 //    VERTICAL_ALIAS (src/lib/erpModules.ts) عشان اللوحة تفتح باسطمبة النشاط الصح من أول دخول.
@@ -50,6 +51,14 @@ type Stage = 'loading' | 'form' | 'verify' | 'creating' | 'done'
 export default function StartPage() {
   const router = useRouter()
   const [stage, setStage] = useState<Stage>('loading')
+  // 🔑 (١٥/٩/٢٠٢٦) محمد: «عايز تاب لتسجيل الدخول في الشاشة دي» — صاحب البيزنس اللي عنده حساب كان بيدوّر على «دخول»
+  //    تحت في سطر صغير ويروح /login (شاشة تانية بشكل تاني). دلوقتي تابين فوق: «حساب جديد» · «عندي حساب».
+  //    الدخول نفسه = نفس /api/login (رقم أو إيميل + باسورد) + نفس خطوات الجلسة بتاعة /login — مفيش مسار دخول موازي.
+  const [tab, setTab] = useState<'new' | 'login'>('new')
+  const [lgId, setLgId] = useState('')
+  const [lgPw, setLgPw] = useState('')
+  const [lgErr, setLgErr] = useState<string | null>(null)
+  const [lgBusy, setLgBusy] = useState(false)
   const [hasSession, setHasSession] = useState(false)
   const [form, setForm] = useState<Form>({ business_name: '', industry: 'clinic', contact_name: '', contact_phone: '', contact_email: '', password: '', city: 'القاهرة', district: '', address: '' })
   const [err, setErr] = useState<string | null>(null)
@@ -131,6 +140,36 @@ export default function StartPage() {
   //    بيرفض الباسوردات المعروفة/المسرّبة («Password is known to be weak») والرفض كان بيتبلع → الحساب يتعمل من غير باسورد
   //    والمستخدم يخرج ويرجع يلاقي «غلط». هنا: ٨ حروف على الأقل فيها حرف ورقم (بيقلّل الرفض)، والرفض لو حصل بيتقال بالعربي تحت.
   const pwOk = form.password.length >= 6 && /[a-zA-Z\u0600-\u06FF]/.test(form.password) && /\d/.test(form.password)
+  useEffect(() => {
+    try { if (new URLSearchParams(window.location.search).get('tab') === 'login') setTab('login') } catch { /* */ }
+  }, [])
+
+  async function doLogin(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (lgBusy) return
+    if (!lgId.trim() || !lgPw) { setLgErr('اكتب رقمك أو إيميلك والباسورد'); return }
+    setLgErr(null); setLgBusy(true)
+    try {
+      const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identifier: lgId.trim(), password: lgPw }) })
+      const data = await r.json().catch(() => null)
+      if (!r.ok || !data?.ok) {
+        trackEvent({ event_type: 'start_error', metadata: { step: 'login', error: String(data?.error || r.status).slice(0, 120) } })
+        setLgErr(data?.error || 'الرقم/الإيميل أو الباسورد غلط'); setLgBusy(false); return
+      }
+      if (data.token) safeStorage.set('madmona_token', data.token)
+      if (data.access_token && data.refresh_token) {
+        try { await supabaseBrowser.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token }) } catch { /* */ }
+      }
+      if (data.token_hash) {
+        try { await supabaseBrowser.auth.verifyOtp({ type: 'email', token_hash: data.token_hash }) } catch { /* */ }
+      }
+      void syncModuleSession()
+      router.replace(data.source === 'admin' ? '/admin/listings' : await resolveLanding(LANDING_AUTO, '/account'))
+    } catch {
+      setLgErr('مشكلة في الاتصال — جرّب تاني'); setLgBusy(false)
+    }
+  }
+
   const valid = form.business_name.trim().length >= 2 && form.contact_phone.replace(/\D/g, '').length >= 10 && pwOk
 
   // ── الخطوة ٢: توثيق الواتساب (زي /login بالظبط) ──
@@ -197,8 +236,8 @@ export default function StartPage() {
           <div className="flex items-center gap-3">
             <span className="w-11 h-11 rounded-2xl bg-[#34D399] text-[#04352A] grid place-items-center"><Building2 className="w-5 h-5" /></span>
             <div>
-              <h1 className="text-2xl font-black leading-tight">ضيف شركتك على مضمونة</h1>
-              <p className="text-white/75 text-sm">٤ خانات ودقيقة واحدة — حسابك ولوحة شركتك يتعملوا مع بعض</p>
+              <h1 className="text-2xl font-black leading-tight">{tab === 'login' ? 'ادخل على لوحة شركتك' : 'ضيف شركتك على مضمونة'}</h1>
+              <p className="text-white/75 text-sm">{tab === 'login' ? 'برقمك أو إيميلك والباسورد — أو بجوجل' : '٤ خانات ودقيقة واحدة — حسابك ولوحة شركتك يتعملوا مع بعض'}</p>
             </div>
           </div>
         </div>
@@ -208,6 +247,32 @@ export default function StartPage() {
         {stage === 'loading' && <div className="rounded-3xl bg-white border border-gray-100 p-8 grid place-items-center"><Loader2 className="w-6 h-6 text-gray-400 animate-spin" /></div>}
 
         {stage === 'form' && (
+          <>
+          <div role="tablist" className="grid grid-cols-2 gap-1 rounded-2xl bg-white border border-gray-100 shadow-sm p-1 mb-3">
+            <button type="button" role="tab" aria-selected={tab === 'new'} onClick={() => { setTab('new'); setLgErr(null) }}
+              className={`py-3 rounded-xl text-sm font-black ${tab === 'new' ? 'bg-[#04352A] text-white' : 'text-gray-500'}`}>حساب جديد</button>
+            <button type="button" role="tab" aria-selected={tab === 'login'} onClick={() => { setTab('login'); setErr(null) }}
+              className={`py-3 rounded-xl text-sm font-black ${tab === 'login' ? 'bg-[#04352A] text-white' : 'text-gray-500'}`}>عندي حساب — دخول</button>
+          </div>
+          {tab === 'login' ? (
+            <form onSubmit={doLogin} noValidate className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5 space-y-3">
+              {hasSession && (
+                <button type="button" onClick={async () => router.replace(await resolveLanding(LANDING_AUTO, '/account'))}
+                  className="w-full py-3 rounded-2xl bg-[#E6F4EE] text-[#04352A] font-black">إنت داخل بالفعل — افتح لوحتي ←</button>
+              )}
+              <label className="block"><span className="text-xs font-bold text-gray-600">رقم الواتساب أو الإيميل</span>
+                <input value={lgId} onChange={(e) => setLgId(e.target.value)} className={INP} dir="ltr" autoComplete="username" placeholder="01xxxxxxxxx" /></label>
+              <label className="block"><span className="text-xs font-bold text-gray-600">الباسورد</span>
+                <input type="password" value={lgPw} onChange={(e) => setLgPw(e.target.value)} className={INP} dir="ltr" autoComplete="current-password" placeholder="••••••" /></label>
+              {lgErr && <p className="text-xs text-red-600">{lgErr}</p>}
+              <button type="submit" disabled={lgBusy} className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base flex items-center justify-center gap-2">
+                {lgBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : null} ادخل على لوحتي
+              </button>
+              <p className="text-center text-[11px] text-gray-400">أو</p>
+              <GoogleSignInButton redirectTo={LANDING_AUTO} label="ادخل بحساب جوجل" />
+              <p className="text-[11px] text-gray-400 text-center">مش فاكر الباسورد؟ <Link href="/login" className="text-[#059669] font-bold">ادخل بكود واتساب</Link> وبعدها غيّره من «حسابي».</p>
+            </form>
+          ) : (
           <form onSubmit={onSubmit} noValidate className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5 space-y-3">
             <p className="text-xs text-gray-500">مجاني لصاحب البيزنس + موظف واحد. الباقي بتكمّله جوّه اللوحة خطوة خطوة.</p>
             {/* 📈 (١٥/٩/٢٠٢٦) محمد: «عايز growth» — الفورم كان ٩ خانات على شاشة موبايل لزائر جاي من شورت.
@@ -257,6 +322,8 @@ export default function StartPage() {
             )}
             <p className="text-[11px] text-gray-400 text-center">من غير دفع دلوقتي. <b>عندك حساب أو شركة بالفعل؟</b> <Link href="/login" className="text-[#059669] font-bold">سجّل دخولك من هنا</Link> بنفس الرقم أو الإيميل + الباسورد (أو جوجل/الواتساب) وهتلاقي لوحتك.</p>
           </form>
+          )}
+          </>
         )}
 
         {stage === 'verify' && wa && (
