@@ -9,7 +9,7 @@ const BASE = 'https://www.madmonacairo.com';
   const trackResp = []; p.on('response', async r => { if (r.url().includes('/api/events/track')) { try { trackResp.push((await r.text()).slice(0, 40)) } catch {} } });
   await p.goto(`${BASE}/quiz?utm_source=e2e`, { waitUntil: 'networkidle', timeout: 60000 });
   const title = await p.title();
-  await p.click('button:has-text("ابدأ الاختبار")');
+  // (١٥/٩) مفيش بوابة «ابدأ» — الصفحة بتفتح على السؤال الأول
   for (let i = 0; i < 6; i++) { await p.waitForSelector('text=سؤال ' + (i + 1) + ' من 6', { timeout: 15000 }); const btns = await p.$$('main button.text-right'); await btns[i % 2 === 0 ? 0 : 1].click(); await p.waitForTimeout(300); }
   await p.waitForSelector('text=نوعك:', { timeout: 15000 });
   const resultName = (await p.textContent('h2')).trim();
