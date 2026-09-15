@@ -19,6 +19,7 @@ import { ensureSupabaseSession } from '@/lib/session-upgrade'
 import { safeStorage } from '@/lib/safe-storage'
 import { syncModuleSession } from '@/lib/madmonaSession'
 import { GoogleSignInButton } from '@/components/GoogleSignInButton'
+import { trackEvent } from '@/components/AnalyticsTracker'
 
 // 🧩 (١١/٩/٢٠٢٦) محمد: «ابني كل الموديلز اللي إحنا نقدر نديرها» — كل قيمة هنا مفتاح في
 //    VERTICAL_ALIAS (src/lib/erpModules.ts) عشان اللوحة تفتح باسطمبة النشاط الصح من أول دخول.
@@ -56,6 +57,9 @@ export default function StartPage() {
   const [supplierId, setSupplierId] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const creatingRef = useRef(false)
+  // 📈 (١٥/٩/٢٠٢٦) قمع /start: أول كتابة في أي خانة = start_form_started (مرة واحدة في الجلسة)
+  const startedRef = useRef(false)
+  function touch(next: Form) { if (!startedRef.current) { startedRef.current = true; trackEvent({ event_type: 'start_form_started' }) } setForm(next) }
 
   const utm = useMemo(() => {
     if (typeof window === 'undefined') return ''
@@ -84,7 +88,8 @@ export default function StartPage() {
         method: 'POST', headers: { 'content-type': 'application/json', ...(bearer ? { authorization: `Bearer ${bearer}` } : {}) },
         body: JSON.stringify({ payload, token, password: f.password }),
       }).then((x) => x.json()).catch(() => ({ ok: false, error: 'الشبكة' }))
-      if (!r.ok) { setErr(r.error || 'ماتعملش — جرّب تاني'); setStage('form'); creatingRef.current = false; return }
+      if (!r.ok) { trackEvent({ event_type: 'start_error', metadata: { step: 'create', error: String(r.error || '').slice(0, 120) } }); setErr(r.error || 'ماتعملش — جرّب تاني'); setStage('form'); creatingRef.current = false; return }
+      trackEvent({ event_type: 'start_created', metadata: { existing: r.existing === true, industry: f.industry } })
       safeStorage.remove(DRAFT_KEY); safeStorage.remove(WA_KEY)
       setSupplierId(r.supplier_id); setStage('done')
       setTimeout(() => router.replace(`/admin/business-finance/${r.supplier_id}/setup?welcome=1`), 1800)
@@ -125,7 +130,8 @@ export default function StartPage() {
     safeStorage.set(DRAFT_KEY, JSON.stringify(form))
     const r = await fetch('/api/auth/wa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'start', phone: form.contact_phone }) })
       .then((x) => x.json()).catch(() => null)
-    if (!r?.code) { setErr('مقدرناش نبدأ التوثيق — جرّب تاني'); return }
+    if (!r?.code) { trackEvent({ event_type: 'start_error', metadata: { step: 'wa_start' } }); setErr('مقدرناش نبدأ التوثيق — جرّب تاني'); return }
+    trackEvent({ event_type: 'start_wa_requested', metadata: { wa_number: r.wa_number } })
     const pending = { code: r.code, number: r.wa_number, url: r.wa_url, at: Date.now() }
     safeStorage.set(WA_KEY, JSON.stringify(pending))
     setWa(pending)
@@ -173,7 +179,7 @@ export default function StartPage() {
             <span className="w-11 h-11 rounded-2xl bg-[#34D399] text-[#04352A] grid place-items-center"><Building2 className="w-5 h-5" /></span>
             <div>
               <h1 className="text-2xl font-black leading-tight">ضيف شركتك على مضمونة</h1>
-              <p className="text-white/75 text-sm">دقيقتين — وحسابك وحساب شركتك يتعملوا مع بعض</p>
+              <p className="text-white/75 text-sm">٤ خانات ودقيقة واحدة — حسابك ولوحة شركتك يتعملوا مع بعض</p>
             </div>
           </div>
         </div>
@@ -184,33 +190,40 @@ export default function StartPage() {
 
         {stage === 'form' && (
           <form onSubmit={onSubmit} className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5 space-y-3">
-            <p className="text-xs text-gray-500">بيانات الشركة — نفس اللي هتظهر في لوحتك وصفحتك. الحساب بيفتح لصاحب البيزنس + موظف واحد.</p>
+            <p className="text-xs text-gray-500">مجاني لصاحب البيزنس + موظف واحد. الباقي بتكمّله جوّه اللوحة خطوة خطوة.</p>
+            {/* 📈 (١٥/٩/٢٠٢٦) محمد: «عايز growth» — الفورم كان ٩ خانات على شاشة موبايل لزائر جاي من شورت.
+                المطلوب للإنشاء فعلًا: اسم الشركة · النشاط · رقم الواتساب · باسورد (قاعدة ١٤/٩). الباقي (المسؤول · الإيميل ·
+                المدينة · الحي · العنوان) بيتكمّل في «كمّل شركتك» — هنا اختياري ومطوي. */}
             <label className="block"><span className="text-xs font-bold text-gray-600">اسم الشركة *</span>
-              <input value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} className={INP} placeholder="مثلًا: عيادة د. أحمد — مصر الجديدة" required maxLength={200} /></label>
+              <input value={form.business_name} onChange={(e) => touch({ ...form, business_name: e.target.value })} className={INP} placeholder="مثلًا: عيادة د. أحمد — مصر الجديدة" required maxLength={200} /></label>
             <label className="block"><span className="text-xs font-bold text-gray-600">النشاط *</span>
-              <select value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} className={INP}>{INDUSTRIES.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}</select></label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block"><span className="text-xs font-bold text-gray-600">اسم المسؤول</span>
-                <input value={form.contact_name} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} className={INP} placeholder="اسمك" /></label>
-              <label className="block"><span className="text-xs font-bold text-gray-600">رقم الواتساب *</span>
-                <input value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })} className={INP} dir="ltr" inputMode="tel" placeholder="01xxxxxxxxx" required /></label>
-            </div>
+              <select value={form.industry} onChange={(e) => touch({ ...form, industry: e.target.value })} className={INP}>{INDUSTRIES.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}</select></label>
+            <label className="block"><span className="text-xs font-bold text-gray-600">رقم الواتساب *</span>
+              <input value={form.contact_phone} onChange={(e) => touch({ ...form, contact_phone: e.target.value })} className={INP} dir="ltr" inputMode="tel" placeholder="01xxxxxxxxx" required /></label>
             {/* 🔑 (١٤/٩/٢٠٢٦) محمد: «تسجيل دخول الاكونت بتاع ستارت بيزنس مش شغال — عايزينه بإيميل وباسورد أو برقم تليفون وباسورد».
-                الحساب كان بيتعمل من غير باسورد خالص (واتساب/جوجل بس) فالدخول بالباسورد كان مستحيل. الباسورد بيتحط على مستخدم Supabase
-                في /api/start/create-business (service role) — وبعدها /login بيقبل الرقم أو الإيميل + الباسورد ده. */}
+                الباسورد بيتحط على مستخدم Supabase في /api/start/create-business (service role) — وبعدها /login بيقبل الرقم أو الإيميل + الباسورد ده. */}
             <label className="block"><span className="text-xs font-bold text-gray-600">باسورد للدخول بعدين *</span>
-              <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٦ حروف أو أرقام على الأقل" minLength={6} />
-              <span className="text-[11px] text-gray-400">هتدخل بيه بعدين برقم الواتساب أو الإيميل.</span></label>
-            <label className="block"><span className="text-xs font-bold text-gray-600">الإيميل (اختياري)</span>
-              <input value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} className={INP} dir="ltr" inputMode="email" /></label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block"><span className="text-xs font-bold text-gray-600">المدينة</span>
-                <select value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className={INP}>{CITIES.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
-              <label className="block"><span className="text-xs font-bold text-gray-600">الحي</span>
-                <input value={form.district} onChange={(e) => setForm({ ...form, district: e.target.value })} className={INP} placeholder="مصر الجديدة" /></label>
-            </div>
-            <label className="block"><span className="text-xs font-bold text-gray-600">العنوان (اختياري)</span>
-              <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={INP} placeholder="الشارع · رقم العمارة" /></label>
+              <input type="password" value={form.password} onChange={(e) => touch({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٦ حروف أو أرقام على الأقل" minLength={6} />
+              <span className="text-[11px] text-gray-400">هتدخل بيه بعدين برقم الواتساب.</span></label>
+            <details className="rounded-xl border border-dashed border-gray-200 px-3 py-2">
+              <summary className="text-xs font-bold text-gray-500 cursor-pointer select-none">تفاصيل أكتر (اختياري) — اسمك · الإيميل · العنوان</summary>
+              <div className="space-y-3 pt-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block"><span className="text-xs font-bold text-gray-600">اسم المسؤول</span>
+                    <input value={form.contact_name} onChange={(e) => touch({ ...form, contact_name: e.target.value })} className={INP} placeholder="اسمك" /></label>
+                  <label className="block"><span className="text-xs font-bold text-gray-600">الإيميل</span>
+                    <input value={form.contact_email} onChange={(e) => touch({ ...form, contact_email: e.target.value })} className={INP} dir="ltr" inputMode="email" /></label>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block"><span className="text-xs font-bold text-gray-600">المدينة</span>
+                    <select value={form.city} onChange={(e) => touch({ ...form, city: e.target.value })} className={INP}>{CITIES.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
+                  <label className="block"><span className="text-xs font-bold text-gray-600">الحي</span>
+                    <input value={form.district} onChange={(e) => touch({ ...form, district: e.target.value })} className={INP} placeholder="مصر الجديدة" /></label>
+                </div>
+                <label className="block"><span className="text-xs font-bold text-gray-600">العنوان</span>
+                  <input value={form.address} onChange={(e) => touch({ ...form, address: e.target.value })} className={INP} placeholder="الشارع · رقم العمارة" /></label>
+              </div>
+            </details>
             {err && <p className="text-xs text-red-600">{err}</p>}
             <button type="submit" disabled={!valid} className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base disabled:opacity-50 flex items-center justify-center gap-2">
               {hasSession ? 'أنشئ شركتي' : <><MessageCircle className="w-4 h-4" /> وثّق رقمي بالواتساب وأنشئ شركتي</>}
@@ -218,7 +231,7 @@ export default function StartPage() {
             {!hasSession && (
               <div className="pt-1">
                 <p className="text-center text-[11px] text-gray-400 mb-2">أو</p>
-                <div onClick={() => safeStorage.set(DRAFT_KEY, JSON.stringify(form))}>
+                <div onClick={() => { safeStorage.set(DRAFT_KEY, JSON.stringify(form)); trackEvent({ event_type: 'start_google_click' }) }}>
                   <GoogleSignInButton redirectTo={googleNext} label="كمّل بحساب جوجل" />
                 </div>
               </div>

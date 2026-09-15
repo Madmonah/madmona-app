@@ -27,7 +27,10 @@ interface TrackEventBody {
 const VALID_EVENT_TYPES = new Set([
   'page_view', 'listing_view', 'search', 'cart_add', 'checkout_start',
   'checkout_complete', 'phone_click', 'whatsapp_click', 'signup_start', 'signup_complete',
-  'wizard_step_view', 'wizard_submit'
+  'wizard_step_view', 'wizard_submit',
+  // 📈 (١٥/٩/٢٠٢٦) محمد: «عايز growth» — ١٧٤ جلسة من يوتيوب وصلت /start في أسبوع ومفيش أي حدث غير page_view،
+  //    يعني كنا عميان عن القمع. الأحداث دي بتقول فين الناس بتقف: بدأ يكتب → طلب كود/جوجل → اتعمل → غلط.
+  'start_form_started', 'start_wa_requested', 'start_google_click', 'start_created', 'start_error'
 ])
 
 export async function POST(request: NextRequest) {
