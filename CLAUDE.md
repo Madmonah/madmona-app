@@ -2638,3 +2638,17 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   ('1' يرجّعه). أي لينك في كابشن/كومنت/إيميل/بوست = `/start` أو `/pro` بس.
 - ⚠️ **حدود الأدوات اللي اتأكدت النهارده:** فيسبوك تحت الشاشة المقفولة مابينشر حتى نص (Post مابيستجيبش في تاب مخفي) · Gmail MCP بيبعت
   ٤–٥ إيميلات ثم الـclassifier بيوقف الإرسال المتكرر · Resend معلّق نهائيًا. الإيميل الجماعي محتاج مزوّد بمفتاح.
+
+## 📈 «عايز growth» — القمع كان أعمى، وأول قياس كشف بج (١٥ سبتمبر ٢٠٢٦ — الصبح)
+محمد: «عايز growth». الحقيقة من `site_events` (٧ أيام): **١٩١ جلسة بشر** (≥٢ صفحة أو حدث)، **١٧٤ جلسة من يوتيوب وصلت /start**
+(comment ٩٠ · shorts ٨٤) — و**صفر أحداث غير page_view على /start**. يعني ماكناش نعرف هل بيكتبوا ولا بيمشوا. والفورم كان **٩ خانات** على موبايل.
+- **قمع /start بأحداث** (`trackEvent` من `AnalyticsTracker`): `start_form_started` (أول كتابة) · `start_wa_requested` · `start_google_click` ·
+  `start_created` · `start_error` (metadata.step + error). القراءة: `select event_type, count(distinct session_id) from site_events where page_url like '%/start%' … group by 1`.
+- **الفورم بقى ٤ خانات** (اسم · نشاط · واتساب · باسورد — قاعدة ١٤/٩) والباقي (المسؤول · الإيميل · المدينة · الحي · العنوان) مطوي في `<details>` اختياري — بيتكمّل في «كمّل شركتك».
+- 🐞 **فخ ١:** `site_events.event_type` عليه **قيد CHECK** — أي نوع جديد في `/api/events/track` من غير إضافته للقيد = الإدخال بيترفض **بصمت**
+  (supabase-js مابيرميش والراوت كان بيرجّع `ok:true`). الراوت بقى يقرا `{ error }` ويرجّع `ok:false`. نوع جديد = الراوت **+** القيد.
+- 🐞 **فخ ٢ (كشفه القمع في أول ٥ دقايق):** `admin_create_b2b_partner_unguarded` بتعمل إيميل placeholder من **اسم الشركة** و`suppliers.contact_email`
+  UNIQUE → تاني «عيادة د. أحمد» من غير إيميل = «duplicate key» وصاحب البيزنس بيشوف «ماتعملش». `self_create_business` بقت تبعت placeholder فريد بمعرّف المستخدم.
+- 🧪 لايف بمتصفح حقيقي (`_start_e2e2.cjs`، حسابين اختبار بنفس الاسم من غير إيميل، اتمسحوا): الاتنين اتعملوا + الأحداث الأربعة اتسجّلت لكل جلسة.
+  `sql/2026-09-15_start_funnel_events_and_unique_placeholder_email.sql`.
+
