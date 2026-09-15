@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   const meta = { ...(body.metadata ?? {}), ua: ua.slice(0, 300), is_bot: isBot, ip_country: request.headers.get('x-vercel-ip-country') || null }
 
   try {
-    await supabaseAdmin.from('site_events').insert({
+    const { error: insErr } = await supabaseAdmin.from('site_events').insert({
       session_id: body.session_id,
       visitor_id: body.visitor_id ?? null,
       profile_id: body.profile_id ?? null,
@@ -72,6 +72,9 @@ export async function POST(request: NextRequest) {
       utm_campaign: body.utm_campaign ?? null,
       metadata: meta,
     } as never)
+    // 🐞 (١٥/٩/٢٠٢٦) supabase-js مابيرميش على خطأ الإدخال — كان بيرجّع ok:true والصف مرفوض من قيد event_type
+    //    (site_events_event_type_check). أي event_type جديد = هنا + في القيد. الخطأ بيتسجّل ويرجع ok:false.
+    if (insErr) { console.error('Track event insert error:', insErr.message); return NextResponse.json({ ok: false, error: insErr.message }, { status: 200 }) }
 
     return NextResponse.json({ ok: true })
   } catch (err) {
