@@ -1,0 +1,6 @@
+file 'E:/madmona-app/scripts/reels/realestate/vo/g1.mp3'
+file 'E:/madmona-app/scripts/reels/realestate/vo/g2.mp3'
+file 'E:/madmona-app/scripts/reels/realestate/vo/g3.mp3'
+file 'E:/madmona-app/scripts/reels/realestate/vo/g4.mp3'
+file 'E:/madmona-app/scripts/reels/realestate/vo/g4b.mp3'
+file 'E:/madmona-app/scripts/reels/realestate/vo/g5.mp3'
