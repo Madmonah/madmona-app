@@ -39,6 +39,7 @@ export default function ProjectForm({
     delivery_label: '',
     land_area_m2: null,
     launch_start_date: null,
+    construction_pct: null,
     commission_pct: null,
     note: '',
     cover_url: null,
@@ -214,6 +215,18 @@ export default function ProjectForm({
               set('land_area_m2', e.target.value ? Math.round(Number(e.target.value) * 4200.83) : null)
             }
             placeholder="مثلاً: 28"
+          />
+        </div>
+        <div>
+          <label className={labelCls}>نسبة الإنشاءات %</label>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            className={inputCls}
+            value={f.construction_pct ?? ''}
+            onChange={(e) => set('construction_pct', e.target.value ? Number(e.target.value) : null)}
+            placeholder="مثلاً: 85"
           />
         </div>
         <div>

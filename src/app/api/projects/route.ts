@@ -126,6 +126,7 @@ export async function POST(req: NextRequest) {
     // يتضاف هنا وإلا بيتبلع بصمت (نفس فخ الويزارد ٩/٩). الفدان عمود محسوب في الداتابيز.
     land_area_m2: num(b.land_area_m2),
     launch_start_date: str(b.launch_start_date, 10) || null,
+    construction_pct: num(b.construction_pct),
     commission_pct: num(b.commission_pct),
     contact_phone: str(b.contact_phone, 24) || '+201002229982',
     source_lead_phone: str(b.source_lead_phone, 24),

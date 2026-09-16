@@ -63,6 +63,7 @@ export type Project = {
   land_area_m2: number | null
   land_area_feddan: number | null
   launch_start_date: string | null
+  construction_pct: number | null
   commission_pct: number | null
   contact_phone: string | null
   cover_url: string | null
@@ -84,7 +85,7 @@ export type Project = {
 export const PUBLIC_PROJECT_COLUMNS =
   'id, slug, area, area_label, city, district, segment, developer, title, unit_label, ' +
   'price_from, price_to, price_unit, note, property_type, payment_plan, delivery_label, ' +
-  'land_area_m2, land_area_feddan, launch_start_date, market_status, ' +
+  'land_area_m2, land_area_feddan, launch_start_date, market_status, construction_pct, ' +
   'cover_url, brochure_url, video_url, media, sort_order, updated_at'
 
 /** كود المشروع اللي بيتبعت في رسالة الواتساب — التريجر بيدوّر عليه ويربط الاستفسار */
