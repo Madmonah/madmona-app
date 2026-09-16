@@ -122,6 +122,10 @@ export async function POST(req: NextRequest) {
     note: str(b.note, 600),
     payment_plan: str(b.payment_plan, 600),
     delivery_label: str(b.delivery_label, 120),
+    // 🔎 (١٦/٩/٢٠٢٦) المساحة واللاونش — الراوت بيختار الحقول بالاسم، فأي حقل جديد لازم
+    // يتضاف هنا وإلا بيتبلع بصمت (نفس فخ الويزارد ٩/٩). الفدان عمود محسوب في الداتابيز.
+    land_area_m2: num(b.land_area_m2),
+    launch_start_date: str(b.launch_start_date, 10) || null,
     commission_pct: num(b.commission_pct),
     contact_phone: str(b.contact_phone, 24) || '+201002229982',
     source_lead_phone: str(b.source_lead_phone, 24),

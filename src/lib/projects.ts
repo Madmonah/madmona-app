@@ -58,6 +58,11 @@ export type Project = {
   property_type: PropertyType | null
   payment_plan: string | null
   delivery_label: string | null
+  // 🔎 (١٦/٩/٢٠٢٦) مساحة الأرض واللاونش — بيتملوا من المطوّر في الفورم أو بتحقق ناوي.
+  // land_area_feddan عمود محسوب في الداتابيز (land_area_m2 ÷ ٤٢٠٠.٨٣) — للقراءة بس.
+  land_area_m2: number | null
+  land_area_feddan: number | null
+  launch_start_date: string | null
   commission_pct: number | null
   contact_phone: string | null
   cover_url: string | null
@@ -79,6 +84,7 @@ export type Project = {
 export const PUBLIC_PROJECT_COLUMNS =
   'id, slug, area, area_label, city, district, segment, developer, title, unit_label, ' +
   'price_from, price_to, price_unit, note, property_type, payment_plan, delivery_label, ' +
+  'land_area_m2, land_area_feddan, launch_start_date, market_status, ' +
   'cover_url, brochure_url, video_url, media, sort_order, updated_at'
 
 /** كود المشروع اللي بيتبعت في رسالة الواتساب — التريجر بيدوّر عليه ويربط الاستفسار */

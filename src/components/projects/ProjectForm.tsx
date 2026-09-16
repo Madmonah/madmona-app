@@ -37,6 +37,8 @@ export default function ProjectForm({
     price_unit: 'egp_total',
     payment_plan: '',
     delivery_label: '',
+    land_area_m2: null,
+    launch_start_date: null,
     commission_pct: null,
     note: '',
     cover_url: null,
@@ -194,6 +196,34 @@ export default function ProjectForm({
               <option key={u} value={u}>{UNIT_LABEL[u]}</option>
             ))}
           </select>
+        </div>
+      </div>
+
+      {/* 🔎 (١٦/٩/٢٠٢٦) المساحة واللاونش — محمد طلب مقارنات بالفدان واللاونشات، والداتا دي
+          مش موجودة عند أي مصدر خارجي بشكل موثوق (ناوي غلط في ٣٦ مطابقة من ٦٩)، فمصدرها الصح
+          هو المطوّر نفسه. الفدان بيتحوّل م² عند الحفظ (١ فدان = ٤٢٠٠.٨٣ م²). */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className={labelCls}>مساحة المشروع (فدان)</label>
+          <input
+            type="number"
+            step="0.1"
+            className={inputCls}
+            value={f.land_area_m2 ? +(f.land_area_m2 / 4200.83).toFixed(2) : ''}
+            onChange={(e) =>
+              set('land_area_m2', e.target.value ? Math.round(Number(e.target.value) * 4200.83) : null)
+            }
+            placeholder="مثلاً: 28"
+          />
+        </div>
+        <div>
+          <label className={labelCls}>تاريخ اللاونش (لو المشروع لسه جديد)</label>
+          <input
+            type="date"
+            className={inputCls}
+            value={f.launch_start_date || ''}
+            onChange={(e) => set('launch_start_date', e.target.value || null)}
+          />
         </div>
       </div>
 
