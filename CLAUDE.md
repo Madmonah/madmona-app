@@ -2699,7 +2699,7 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   معرّف المشروع، والتوثيق بياخد أيام عمل) أو (ب) **Custom Domain** لمشروع Supabase (`auth.madmonacairo.com`) — إضافة مدفوعة من لوحة Supabase + DNS.
 - **الحل الأنضف اللي اتصمّم:** دخول جوجل مباشر من `madmonacairo.com` (Google Identity Services → id_token → `supabase.auth.signInWithIdToken`)،
   محتاج بس إضافة `https://www.madmonacairo.com` في **Authorized JavaScript origins** للعميل `739336454511-320e…` + App name «مضمونة».
-- ⛔ **اتجرّب ١٥/٩ واتقفل عند خط أحمر:** Google Cloud Console بحساب كروم محمد (m arabco) = «Google Cloud access blocked… turn on 2-step
+- ✅ **اتحل ١٧/٩ — شوف قسم «البراند اتنشر» في آخر الملف.** (كان ١٥/٩ مقفول عند خط أحمر:) Google Cloud Console بحساب كروم محمد (m arabco) = «Google Cloud access blocked… turn on 2-step
   verification» · بحساب madmona@madmonacairo.com في كروم السوشيال = «Verify it's you… Enter your password». تفعيل 2SV وإدخال باسورد ممنوعين عليّا.
   الخطوة الوحيدة المطلوبة: محمد يفعّل التحقق بخطوتين على الحساب اللي فيه مشروع جوجل (أو يفتح Console مرة بالباسورد) — وبعدها أنا أعدّل الإعدادات وأبني GIS وأجرّبه بلوب كامل.
 - `gsi/status?client_id=…` بـOrigin `madmonacairo.com` بيرجّع 403 = الـorigin مش مسجّل (الفحص بعد أي تعديل).
@@ -2741,3 +2741,18 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
 - **السكريبت:** `scripts/nawy-enrich.cjs` (بياخد المشاريع من الداتابيز · مابيكتبش · تقرير `nawy-enrich.json`).
 - ⛔ **«الأكثر مبيعًا» و«أكتر شركة سلّمت» مالهمش مصدر** لا عندنا ولا عند ناوي — ممنوع يتقالوا في أي محتوى. المتاح: عدد المشاريع بالمنطقة · أكتر مطوّر عنده مشاريع · مين معلن خطة سداد · أكبر مشروع بالمساحة · مشاريع اتباعت بالكامل.
 - 🌐 **(١٦/٩ — بعد أمر محمد «هات المعلومات من مصادر تانية»):** **Cooing Estate = ناوي** (التحويل بينتهي على `nawy.com`) — مش مصدر تاني. وبروبرتي فايندر صفحات مشاريعه مابتفتحش بروابط مخمّنة (404/301). **المصدر التالت اللي اشتغل فعلًا = بحث ويب في المواقع العقارية المصرية وأخبار المطوّرين** (جريدة المال · zayedprojects · pre-edge · aqarland). النتيجة: ناوي غلط في مساحات مشاريع كبيرة — Swan Lake ٤٦٠ (ناوي ١٦٢) · IVOIRE East ١٠٤ (ناوي ٨٨) · IVOIRE West ٧٧ (ناوي ٦٦) — ورقمنا أو الويب هو المعتمد. ولغز حُلّ: **PRE = Pioneers for Real Estate Development** (فاسم المطوّر عندنا كان صح في The Brooks).
+
+## ✅ «to continue to …supabase.co» — اتحل: البراند كان محتاج **تحقق ونشر** مش اسم (١٧ سبتمبر ٢٠٢٦)
+محمد: «مش عايز الموضوع يظهر كده في اللوجين» · «فين البراند يا عم؟؟».
+- 🐞 **الافتراض القديم كان غلط:** الملف كان بيقول «App name لازم يبقى مضمونة». الحقيقة: **App name كان «مضمونة» من الأول**.
+  جوجل كانت مخبّياه لأن البراند **مش متحقق منه** — Verification Center: «Your branding is not being shown to users».
+- 🔑 **الحساب الصح = `madmona@madmonacairo.com`** (بروفايل كروم **Default**) مش الحساب الشخصي `moh91arabco` — الشخصي بيتقفل
+  على `enable-mfa` مهما حصل. المشروع اسمه **My Maps Project** (`chrome-inkwell-494307-g4`) وفيه عميل «Madmona Web» (`739336454511-320e…`).
+- ✅ **اللي اتعمل:** Branding → ملء الحقول الناقصة (Home `https://www.madmonacairo.com` · Privacy `/privacy` · Terms `/terms` — اتأكد إنهم ٢٠٠ قبلها)
+  → Save → ⓘ (Verification status) → **Verify branding** (نجح فورًا — آلي لأن مفيش لوجو) → **Publish branding** →
+  «Your branding has been verified and is being shown to users» ✅.
+- ⚠️ **لو اترفع لوجو** للبراند، التحقق بيبقى مراجعة بشرية بتاخد أيام — ماترفعش لوجو إلا لو مستعد للانتظار.
+- ⚠️ الدومين `mjhflxpxunwycbiquoig.supabase.co` فضل في Authorized domains (لازم لـredirect بتاع Supabase) ومااتسببش في رفض التحقق.
+- 🐞 **فخ في الكتابة بالتحكم في الديسكتوب:** قايمة البحث المنسدلة في جوجل كلاود بتغطي حقول الفورم اللي تحت الشريط العلوي — الكتابة
+  بالإحداثيات راحت في شريط البحث. الصح: اكتب في حقل ظاهر في نص الشاشة، وانقل بين الحقول بـ`Shift+Tab` (الصفحة بتعمل scroll لوحدها).
+
