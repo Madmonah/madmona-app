@@ -82,6 +82,23 @@ export type Project = {
 }
 
 /** الأعمدة اللي البورصة العامة بتقراها (من غير حاجات داخلية) */
+// 🚀 (١٨/٩/٢٠٢٦ — محمد: «البورصة بتفتح ببطء والمشاريع بتلود في وقت كبير»)
+//    أعمدة كروت البورصة: نفس الأعمدة **من غير `media`** (مصفوفة صور المشروع
+//    ~٥٧ ك.ب لكل الصفوف) — الكروت مابتستخدمهاش خالص، وصفحة المشروع لوحدها
+//    هي اللي بتعرض المعرض. الفرق بيتضاعف في الـHTML لأن الداتا بتتبعت مرتين
+//    (رسم السيرفر + RSC payload).
+export const PROJECT_CARD_COLUMNS =
+  'id, slug, area, area_label, city, district, segment, developer, title, unit_label, ' +
+  'price_from, price_to, price_unit, note, property_type, payment_plan, delivery_label, ' +
+  'land_area_m2, land_area_feddan, launch_start_date, market_status, construction_pct, ' +
+  'cover_url, brochure_url, video_url, sort_order, updated_at'
+
+/** صورة الكارت عبر مُحسّن Next: ٣٠٣ ك.ب → ~٥٠ ك.ب عند عرض ٦٤٠. */
+export function projectThumb(url: string, w = 480, q = 70): string {
+  if (!url || url.startsWith('/_next/image')) return url
+  return `/_next/image?url=${encodeURIComponent(url)}&w=${w}&q=${q}`
+}
+
 export const PUBLIC_PROJECT_COLUMNS =
   'id, slug, area, area_label, city, district, segment, developer, title, unit_label, ' +
   'price_from, price_to, price_unit, note, property_type, payment_plan, delivery_label, ' +

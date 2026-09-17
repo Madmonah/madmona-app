@@ -14,7 +14,7 @@ import { createClient } from '@supabase/supabase-js'
 import TopNav from '@/components/TopNav'
 import BottomNav from '@/components/BottomNav'
 import MarketExplorer, { type Item, type Opportunity } from './MarketExplorer'
-import { PUBLIC_PROJECT_COLUMNS } from '@/lib/projects'
+import { PROJECT_CARD_COLUMNS } from '@/lib/projects'
 // 🌍 (٦/٩/٢٠٢٦) محمد: «الصفحات اللي محتاجة تتعرض بدولة زي الماركت بليس والبورصة»
 import { getVisitorCountry } from '@/lib/visitor-country'
 
@@ -52,7 +52,7 @@ async function getItems(country: string): Promise<Item[]> {
   try {
     const { data } = await sb()
       .from('property_market_items')
-      .select(PUBLIC_PROJECT_COLUMNS)
+      .select(PROJECT_CARD_COLUMNS)
       .eq('is_active', true)
       .eq('status', 'published')
       .eq('embargoed', false) // ⛔ المشاريع المحظور نشرها (زي أبراج العلمين) مبتظهرش

@@ -15,6 +15,7 @@
 //    (localStorage) — مفيش أسهم متلفقة من غير داتا حقيقية.
 // 🆕 شريطة «🔥 فرص» بتحوّل الصفحة لعرض الفرص بس.
 // =====================================================================
+import { projectThumb } from '@/lib/projects'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useT } from '@/lib/i18n/LanguageProvider'
 import Link from 'next/link'
@@ -681,9 +682,14 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={it.cover_url!}
+              src={projectThumb(it.cover_url!, 480)}
+              srcSet={`${projectThumb(it.cover_url!, 480)} 480w, ${projectThumb(it.cover_url!, 750)} 750w`}
+              sizes="(max-width: 640px) 50vw, 300px"
               alt={it.title}
               loading="lazy"
+              decoding="async"
+              width={480}
+              height={340}
               className="absolute inset-0 w-full h-full object-cover"
             />
             <span className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,.72),rgba(0,0,0,.08)_55%)]" />
