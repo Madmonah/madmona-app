@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8">
+<!-- 🖼️ بوستر إعلان YM (١٠٨٠×١٣٥٠) — ٤ صور شغل حقيقية + اللوجو + سطر الهوية. الرقم بيتحط من window.PHONE. -->
+<style>
+@font-face{font-family:T;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Black.ttf)}
+@font-face{font-family:TB;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Bold.ttf)}
+@font-face{font-family:TM;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Medium.ttf)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1080px;height:1350px;background:#0B0B0B;direction:rtl;overflow:hidden;position:relative}
+.grid{position:absolute;top:0;left:0;right:0;height:740px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px}
+.grid div{overflow:hidden;position:relative}
+.grid img{width:100%;height:100%;object-fit:cover;filter:brightness(1.1) contrast(1.05)}
+.fade{position:absolute;left:0;right:0;top:520px;height:240px;background:linear-gradient(180deg,transparent,#0B0B0B)}
+.logo{position:absolute;top:560px;left:50%;transform:translateX(-50%);width:270px;height:270px;object-fit:contain;border-radius:28px;box-shadow:0 24px 70px rgba(0,0,0,.7);border:3px solid #C9A227}
+.t1{position:absolute;top:880px;right:0;left:0;text-align:center;font-family:T;font-size:84px;background:linear-gradient(135deg,#F0D79A,#C9A227);-webkit-background-clip:text;color:transparent}
+.t2{position:absolute;top:990px;right:0;left:0;text-align:center;font-family:TM;font-size:46px;color:#CFC6B4;letter-spacing:12px}
+.chips{position:absolute;top:1075px;right:0;left:0;display:flex;gap:10px;justify-content:center;flex-wrap:nowrap}
+.chips span{font-family:TB;font-size:28px;color:#E6C478;border:2px solid #6b5a22;padding:9px 18px;border-radius:999px;white-space:nowrap}
+.cta{position:absolute;bottom:70px;right:0;left:0;text-align:center}
+.cta span{display:inline-block;font-family:TB;font-size:44px;color:#0B0B0B;background:linear-gradient(135deg,#E6C478,#C9A227);padding:18px 46px;border-radius:999px}
+</style>
+<div class="grid">
+  <div><img src="file:///E:/madmona-app/scripts/reels/clients/ym/src/04-hall2.jpg"></div>
+  <div><img src="file:///E:/madmona-app/scripts/reels/clients/ym/src/07-entrance-door.jpg"></div>
+  <div><img src="file:///E:/madmona-app/scripts/reels/clients/ym/src/03-bath.jpg"></div>
+  <div><img src="file:///E:/madmona-app/scripts/reels/clients/ym/src/06-corridor-window.jpg"></div>
+</div>
+<div class="fade"></div>
+<img class="logo" src="file:///E:/madmona-app/scripts/reels/clients/ym/src/logo.jpg">
+<div class="t1">تشطيبات متكاملة</div>
+<div class="t2">جـودة تـدوم</div>
+<div class="chips"><span>أسقف وإضاءة</span><span>أبواب وأرضيات</span><span>سباكة وكهرباء</span><span>حمامات كاملة</span></div>
+<div class="cta"><span id="cta">ابعت صورة شقتك على واتساب</span></div>
+<script>window.render = t => { if (window.PHONE) document.getElementById('cta').textContent = '📱 ' + window.PHONE }; window.render(0)</script>

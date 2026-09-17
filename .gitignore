@@ -135,3 +135,8 @@ scripts/reels/pro/shots/
 scripts/reels/pro/out/
 scripts/reels/pro/_*.png
 scripts/reels/pro/assets/_tmp.html
+scripts/reels/clients/ym/src/
+scripts/reels/clients/ym/*.mp4
+scripts/reels/clients/ym/*.mp3
+scripts/reels/clients/ym/*.jpg
+scripts/reels/clients/ym/_*.png
