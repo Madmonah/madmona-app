@@ -66,6 +66,7 @@ export default function StartPage() {
   const [supplierId, setSupplierId] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const creatingRef = useRef(false)
+  const waCleanupRef = useRef<null | (() => void)>(null)
   // 📈 (١٥/٩/٢٠٢٦) قمع /start: أول كتابة في أي خانة = start_form_started (مرة واحدة في الجلسة)
   const startedRef = useRef(false)
   function touch(next: Form) { if (!startedRef.current) { startedRef.current = true; trackEvent({ event_type: 'start_form_started' }) } setForm(next) }
@@ -106,7 +107,7 @@ export default function StartPage() {
       trackEvent({ event_type: 'start_created', metadata: { existing: r.existing === true, industry: f.industry } })
       safeStorage.remove(DRAFT_KEY); safeStorage.remove(WA_KEY)
       setSupplierId(r.supplier_id); setStage('done')
-      setTimeout(() => router.replace(`/admin/business-finance/${r.supplier_id}/setup?welcome=1`), 1800)
+      setTimeout(() => router.replace(`/admin/business-finance/${r.supplier_id}?welcome=1`), 1500)
     } catch (e) {
       setErr((e as Error).message || 'حصل خطأ'); setStage('form'); creatingRef.current = false
     }
@@ -116,7 +117,10 @@ export default function StartPage() {
   useEffect(() => {
     (async () => {
       const s = await ensureSupabaseSession()
-      setHasSession(!!s?.user)
+      // 🔑 (١٨/٩/٢٠٢٦) محمد: «بعد ما بيتم تسجيل الدخول آخر خطوة بيقول وثّق رقمك» —
+      //    الهوية عندنا بابين (قاعدة ٩/٩): جلسة Supabase **أو** توكن الواتساب.
+      //    كنا بنفحص الجلسة بس، فاللي داخل بالتوكن كان بيتطلب منه توثيق تاني.
+      setHasSession(!!s?.user || !!safeStorage.get('madmona_token'))
       let draft: Form | null = null
       try { const raw = safeStorage.get(DRAFT_KEY); if (raw) draft = JSON.parse(raw) } catch { /* لا درافت */ }
       if (draft) setForm(draft)
@@ -133,7 +137,7 @@ export default function StartPage() {
       } catch { /* لا كود معلّق */ }
       setStage('form')
     })()
-    return () => { if (pollRef.current) clearInterval(pollRef.current) }
+    return () => { if (pollRef.current) clearInterval(pollRef.current); waCleanupRef.current?.() }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 🔑🔑 (١٥/٩/٢٠٢٦) محمد: «تاب ستارت وبرو لسه فيهم مشكلة في تسجيل الدخول — حل جذري ومجرّب». اللوب الحقيقي كشف إن Supabase
@@ -187,26 +191,48 @@ export default function StartPage() {
     startPolling(pending.code, form)
   }
 
+  // 🐞 (١٨/٩/٢٠٢٦) «بيبعت الرسالة ومفيش توثيق والصفحة بتقف»: الباك-إند سليم (اتجرّب بمحاكاة
+  //    الويبهوك — الكود رجع verified)، بس على الموبايل المستخدم بيسيب الصفحة ويروح واتساب،
+  //    والمتصفح **بيجمّد الـsetInterval** في التاب المخفي — فبيرجع يلاقي الشاشة واقفة.
+  //    العلاج: فحص فوري أول ما الصفحة ترجع ظاهرة، وزرار يدوي، ومهلة بتقول للمستخدم يعمل إيه.
+  const checkingRef = useRef(false)
+  async function checkOnce(code: string, f: Form): Promise<boolean> {
+    if (checkingRef.current) return false
+    checkingRef.current = true
+    try {
+      const st = await fetch(`/api/auth/wa?code=${encodeURIComponent(code)}`).then((x) => x.json()).catch(() => null)
+      if (st?.expired) { stopPolling(); safeStorage.remove(WA_KEY); setErr('الكود انتهى — اضغط تاني'); setStage('form'); return false }
+      if (!st?.verified) return false
+      stopPolling()
+      await finishVerified(code, f)
+      return true
+    } finally { checkingRef.current = false }
+  }
+  function stopPolling() { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null } }
+  async function finishVerified(code: string, f: Form) {
+    const fin = await fetch('/api/auth/wa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'finish', code, full_name: f.contact_name.trim() || undefined }) })
+      .then((x) => x.json()).catch(() => null)
+    if (!fin?.token_hash) { setErr('التوثيق ماكملش — جرّب تاني'); safeStorage.remove(WA_KEY); setStage('form'); return }
+    safeStorage.remove(WA_KEY)
+    if (fin.madmona_token) safeStorage.set('madmona_token', fin.madmona_token)
+    setHasSession(true)
+    let access: string | null = null
+    try {
+      const { data } = await supabaseBrowser.auth.verifyOtp({ type: 'email', token_hash: fin.token_hash })
+      access = data?.session?.access_token || null
+      void syncModuleSession()
+    } catch { /* هنكمّل بالتوكن */ }
+    void createBusiness({ ...f, contact_phone: fin.phone || f.contact_phone }, access)
+  }
+
   function startPolling(code: string, f: Form) {
     if (pollRef.current) clearInterval(pollRef.current)
+    const onBack = () => { if (document.visibilityState === 'visible') void checkOnce(code, f) }
+    document.addEventListener('visibilitychange', onBack)
+    window.addEventListener('focus', onBack)
+    waCleanupRef.current = () => { document.removeEventListener('visibilitychange', onBack); window.removeEventListener('focus', onBack) }
     pollRef.current = setInterval(async () => {
-      const st = await fetch(`/api/auth/wa?code=${encodeURIComponent(code)}`).then((x) => x.json()).catch(() => null)
-      if (st?.expired) { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null } safeStorage.remove(WA_KEY); setErr('الكود انتهى — اضغط تاني'); setStage('form'); return }
-      if (!st?.verified) return
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
-      const fin = await fetch('/api/auth/wa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'finish', code, full_name: f.contact_name.trim() || undefined }) })
-        .then((x) => x.json()).catch(() => null)
-      if (!fin?.token_hash) { setErr('التوثيق ماكملش — جرّب تاني'); safeStorage.remove(WA_KEY); setStage('form'); return }
-      safeStorage.remove(WA_KEY)
-      if (fin.madmona_token) safeStorage.set('madmona_token', fin.madmona_token)
-      setHasSession(true) // الرقم اتوثّق — أي إعادة (باسورد مرفوض مثلًا) تروح للإنشاء مباشرة من غير كود تاني
-      let access: string | null = null
-      try {
-        const { data } = await supabaseBrowser.auth.verifyOtp({ type: 'email', token_hash: fin.token_hash })
-        access = data?.session?.access_token || null
-        void syncModuleSession()
-      } catch { /* هنكمّل بالتوكن */ }
-      void createBusiness({ ...f, contact_phone: fin.phone || f.contact_phone }, access)
+      await checkOnce(code, f)
     }, 2500)
   }
 
@@ -232,7 +258,7 @@ export default function StartPage() {
     <main dir="rtl" className="min-h-screen bg-[#FAFAF7] text-[#1A2E26]">
       <div className="bg-[#04352A] text-white">
         <div className="mx-auto max-w-xl px-5 pt-6 pb-10">
-          <Link href="/pro" className="inline-flex items-center gap-1 text-white/70 text-xs mb-5 no-underline"><ChevronLeft className="w-3.5 h-3.5" /> برنامج الإدارة</Link>
+          <Link href="/" className="inline-flex items-center gap-1 text-white/70 text-xs mb-5 no-underline"><ChevronLeft className="w-3.5 h-3.5" /> مضمونة</Link>
           <div className="flex items-center gap-3">
             <span className="w-11 h-11 rounded-2xl bg-[#34D399] text-[#04352A] grid place-items-center"><Building2 className="w-5 h-5" /></span>
             <div>
@@ -332,8 +358,10 @@ export default function StartPage() {
             <p className="text-sm text-gray-500">افتح واتساب وابعت الكود لرقم مضمونة — هنعرفك من رقمك ونكمّل لوحدنا.</p>
             <div className="rounded-2xl bg-[#FAFAF7] border border-dashed border-[#34D399] py-4 text-3xl font-black tracking-widest" dir="ltr">{wa.code}</div>
             <a href={wa.url} target="_blank" rel="noopener noreferrer" className="block w-full py-4 rounded-2xl bg-[#25D366] text-white font-black no-underline flex items-center justify-center gap-2"><MessageCircle className="w-5 h-5" /> افتح واتساب وابعت الكود</a>
-            <p className="text-xs text-gray-400 flex items-center justify-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" /> مستنيين رسالتك… الصفحة هتكمّل لوحدها</p>
-            <button onClick={() => { if (pollRef.current) clearInterval(pollRef.current); safeStorage.remove(WA_KEY); setStage('form') }} className="text-xs text-gray-500 underline">ارجع للبيانات</button>
+            <p className="text-xs text-gray-400 flex items-center justify-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" /> مستنيين رسالتك… الصفحة هتكمّل لوحدها أول ما ترجع</p>
+            {/* 🐞 (١٨/٩/٢٠٢٦) على الموبايل التاب بيتجمّد وإنت في واتساب — الزرار ده بيفحص فورًا من غير انتظار */}
+            <button type="button" onClick={() => { setErr(null); void checkOnce(wa.code, form) }} className="w-full py-3 rounded-2xl bg-[#04352A] text-white font-black">بعتّ الكود — كمّل</button>
+            <button onClick={() => { stopPolling(); safeStorage.remove(WA_KEY); setStage('form') }} className="text-xs text-gray-500 underline">ارجع للبيانات</button>
           </div>
         )}
 
@@ -345,10 +373,10 @@ export default function StartPage() {
           <div className="rounded-3xl bg-white border-2 border-[#04352A] shadow-sm p-8 text-center">
             <CheckCircle2 className="w-10 h-10 text-[#059669] mx-auto mb-2" />
             <p className="font-black text-lg">اتعملت ✓</p>
-            <p className="text-sm text-gray-500 mt-1">هنودّيك على «كمّل شركتك» — الفرع والموظف والمنتجات خطوة خطوة.</p>
+            <p className="text-sm text-gray-500 mt-1">هنودّيك على لوحة شركتك على طول — وتقدر تكمّل بياناتك من «كمّل شركتك» جوّه اللوحة.</p>
             {/* 🔑 (١٠/٩) محمد: «صاحب البيزنس لما بيخلص مش بيعرف يسجل دخول تاني» — نقوله المرة الجاية بيدخل منين */}
             <p className="text-xs text-[#04352A] bg-[#E6F4EE] rounded-xl px-3 py-2 mt-3 font-bold">المرة الجاية: افتح <span dir="ltr">madmonacairo.com/login</span> وادخل بنفس الرقم أو الإيميل + الباسورد اللي كتبته هنا (أو كود واتساب / حساب جوجل) — هتلاقي لوحتك على طول.</p>
-            {supplierId && <Link href={`/admin/business-finance/${supplierId}/setup?welcome=1`} className="inline-block mt-4 bg-[#04352A] text-white font-black rounded-2xl px-6 py-3 no-underline">افتح لوحتي ←</Link>}
+            {supplierId && <Link href={`/admin/business-finance/${supplierId}?welcome=1`} className="inline-block mt-4 bg-[#04352A] text-white font-black rounded-2xl px-6 py-3 no-underline">افتح لوحتي ←</Link>}
           </div>
         )}
       </div>
