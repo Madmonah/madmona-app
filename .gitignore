@@ -131,3 +131,7 @@ scripts/reels/playwright/erp/shots/
 scripts/reels/playwright/erp/seg/
 scripts/reels/playwright/erp/frames/
 scripts/reels/playwright/erp/video_only.mp4
+scripts/reels/pro/shots/
+scripts/reels/pro/out/
+scripts/reels/pro/_*.png
+scripts/reels/pro/assets/_tmp.html
