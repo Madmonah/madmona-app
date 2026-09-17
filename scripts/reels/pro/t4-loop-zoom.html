@@ -1,0 +1,54 @@
+<!doctype html><meta charset="utf-8">
+<!-- ♾️ قالب ٤ «أتنشن لوب» (١٧/٩/٢٠٢٦) — محمد: «عايزين حاجة أتنشن لوب إفكت».
+     زووم لا نهائي: كل كارت جوّاه شباك فيه الكارت اللي بعده، وآخر كارت شباكه فيه أول كارت →
+     آخر فريم = أول فريم بالظبط، والجملة الأخيرة بتكمل في الأولى («وإنت لسه… بتسجّل شغلك في دماغك؟»). -->
+<style>
+@font-face{font-family:T;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Black.ttf)}
+@font-face{font-family:TB;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Bold.ttf)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#000;direction:ltr}
+.card{position:absolute;left:0;top:0;width:1080px;height:1920px;transform-origin:540px 960px;overflow:hidden;direction:rtl}
+.top,.bot{position:absolute;right:70px;left:70px;text-align:center;font-family:T;line-height:1.05}
+.top{top:190px;font-size:128px}
+.bot{top:1420px;font-size:92px}
+.win{position:absolute;left:405px;top:720px;width:270px;height:480px;border-radius:26px;box-shadow:0 0 0 6px var(--ring),0 30px 80px rgba(0,0,0,.45)}
+.tick{position:absolute;right:70px;top:90px;font-family:TB;font-size:36px;opacity:.75}
+</style>
+<div id="stage" style="position:fixed;left:0;top:0;width:1080px;height:1920px;overflow:hidden;direction:ltr;contain:strict"></div>
+<script>
+// Z = نسبة الشاشة للشباك (1080/270) — لازم تفضل نفس الرقم في كل الكروت
+const Z = 4
+const CARDS = [
+  { bg: '#111',    fg: '#fff',    ac: '#FFD23F', top: 'بتسجّل شغلك', bot: 'في دماغك؟' },
+  { bg: '#FFD23F', fg: '#111',    ac: '#C8372D', top: 'يبقى أكيد',   bot: 'هتنسى عميل' },
+  { bg: '#C8372D', fg: '#fff',    ac: '#FFD23F', top: 'والعميل ده',  bot: 'راح لمنافسك' },
+  { bg: '#04352A', fg: '#fff',    ac: '#2ED39B', top: 'ومنافسك',     bot: 'مسجّل كل حاجة على مضمونة' },
+  { bg: '#F4EFE6', fg: '#04352A', ac: '#C8372D', top: 'وإنت لسه…',  bot: 'madmonacairo.com/start' },
+]
+const N = CARDS.length
+// بداية كل كارت (ثواني) — بتتظبط على وقفات الصوت من بره (window.B) · آخر رقم = طول اللوب
+window.B = window.B || [0, 2.1, 4.55, 7.55, 11.25, 12.42]  // متزامن مع vo-t4-loop-trim (بهجت V2)
+const stage = document.getElementById('stage')
+const phase = t => { // تحويل الوقت لمكان مستمر على سلسلة الكروت (p من 0 لـ N)
+  const B = window.B; t = ((t % B[N]) + B[N]) % B[N]
+  let i = 0; while (i < N - 1 && t >= B[i + 1]) i++
+  return i + (t - B[i]) / (B[i + 1] - B[i])
+}
+const cardHTML = (c, k) => `<div class="tick" style="color:${c.fg}">${k + 1} / ${N}</div>
+  <div class="top" style="color:${c.fg}">${c.top}</div>
+  <div class="bot" style="color:${c.ac};${c.bot.includes('.com') ? 'direction:ltr;font-size:64px' : ''}">${c.bot}</div>
+  <div class="win" style="--ring:${c.ac};background:${CARDS[(k + 1) % N].bg}"></div>`
+window.render = t => {
+  const p = phase(t), base = Math.floor(p), f = p - base
+  let html = ''
+  // الكارت الحالي + اللي بعده + اللي بعده (عشان الشباك دايمًا يبان فيه محتوى)
+  for (let d = 0; d < 4; d++) {
+    const k = (base + d) % N, c = CARDS[k]
+    const s = Math.pow(Z, f - d + 0) * 1 // الكارت الحالي من 1 لـ Z، واللي بعده من 1/Z لـ 1
+    if (s * 270 < 6) continue
+    html += `<div class="card" style="background:${c.bg};transform:scale(${Math.pow(Z, f - d)});z-index:${d}">${cardHTML(c, k)}</div>`
+  }
+  stage.innerHTML = html
+}
+window.render(0)
+</script>
