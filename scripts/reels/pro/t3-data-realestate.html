@@ -1,0 +1,110 @@
+<!doctype html><meta charset="utf-8">
+<!-- 📊 قالب ٣ «أرقام متحركة» (١٧/٩/٢٠٢٦) — كل رقم هنا من حسبة فيديوهات العقارات الموثّقة (متوسط إعلاناتنا + العائد المنشور للقاهرة). -->
+<style>
+@font-face{font-family:T;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Black.ttf)}
+@font-face{font-family:TB;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Bold.ttf)}
+@font-face{font-family:TM;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Medium.ttf)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1080px;height:1920px;overflow:hidden;background:#F4EFE6;direction:rtl;font-family:TB;color:#141414;position:relative}
+.grid{position:absolute;inset:0;background-image:linear-gradient(#1414140d 2px,transparent 2px),linear-gradient(90deg,#1414140d 2px,transparent 2px);background-size:90px 90px}
+.sc{position:absolute;inset:0;opacity:0}
+.kicker{position:absolute;right:90px;top:330px;font-family:TB;font-size:44px;color:#04352A;background:#D9F2E6;padding:10px 26px;border-radius:14px}
+.big{position:absolute;right:90px;left:90px;font-family:T;font-size:196px;line-height:1;color:#141414}
+.lbl{position:absolute;right:90px;left:90px;font-family:T;font-size:76px;line-height:1.15}
+.src{position:absolute;right:90px;left:90px;bottom:120px;font-family:TM;font-size:34px;color:#555}
+.line{position:absolute;right:90px;height:16px;background:#E7B94B;border-radius:8px}
+.bar{position:absolute;bottom:560px;width:300px;border-radius:26px 26px 0 0}
+.barv{position:absolute;width:300px;text-align:center;font-family:T;font-size:62px}
+.barl{position:absolute;bottom:470px;width:300px;text-align:center;font-family:TB;font-size:40px;color:#333}
+.gap{position:absolute;right:0;left:0;text-align:center;font-family:T;font-size:84px;color:#C8372D}
+.brand{position:absolute;top:70px;left:90px;font-family:T;font-size:40px;color:#04352A}
+.cta{position:absolute;inset:0;background:#04352A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:50px;text-align:center}
+</style>
+<div class="grid"></div>
+<div class="brand">مضمونة</div>
+
+<div class="sc" id="A">
+  <div class="kicker">حسبة شقة بالتقسيط</div>
+  <div class="lbl" style="top:560px;font-size:88px">اشتريت شقة<br>بمتوسط سعر</div>
+  <div class="big" id="priceN" style="top:900px">٠</div>
+  <div class="lbl" style="top:1160px;font-size:72px;color:#04352A">جنيه</div>
+  <div class="line" id="uline" style="top:1125px;width:0"></div>
+  <div class="src">متوسط أسعار إعلانات الشقق على مضمونة</div>
+</div>
+
+<div class="sc" id="B">
+  <div class="kicker">مقدم ٥٪ وتقسيط ٨ سنين</div>
+  <div style="position:absolute;right:90px;left:90px;top:560px;height:130px;border-radius:26px;background:#E4DDD0;overflow:hidden">
+    <div id="dp" style="position:absolute;right:0;top:0;bottom:0;width:0;background:#04352A"></div>
+    <div id="rest" style="position:absolute;left:0;top:0;bottom:0;width:0;background:#E7B94B"></div>
+  </div>
+  <div style="position:absolute;right:90px;top:715px;font-family:TB;font-size:44px;color:#04352A">المقدم</div>
+  <div style="position:absolute;left:90px;top:715px;font-family:TB;font-size:44px;color:#8A6A1F">الباقي على ٩٦ شهر</div>
+  <div class="lbl" style="top:1000px;font-size:88px">قسطك الشهري</div>
+  <div class="big" id="instN" style="top:1180px;color:#04352A">٠</div>
+  <div class="lbl" style="top:1420px;font-size:72px">جنيه في الشهر</div>
+</div>
+
+<div class="sc" id="C">
+  <div class="kicker" id="Ck">لو أجّرتها بالعائد المنشور للقاهرة ٨٫٣٪</div>
+  <div class="bar" id="b1" style="right:170px;height:0;background:#141414"></div>
+  <div class="barv" id="b1v" style="right:170px">٠</div>
+  <div class="barl" style="right:170px">القسط</div>
+  <div class="bar" id="b2" style="left:170px;height:0;background:#2EAF7D"></div>
+  <div class="barv" id="b2v" style="left:170px">٠</div>
+  <div class="barl" style="left:170px">الإيجار</div>
+  <div class="gap" id="gapT" style="top:1540px;opacity:0">ناقص <span id="gapN">٠</span> من جيبك</div>
+  <div class="src" id="Csrc">كل شهر — طول فترة التقسيط</div>
+</div>
+
+<div class="sc" id="E">
+  <div class="cta">
+    <div style="font-family:T;font-size:104px;color:#fff;line-height:1.1" id="e1">احسبها<br>قبل ما توقّع</div>
+    <div style="font-family:TB;font-size:48px;color:#2ED39B">الأسعار وخطط السداد في مكان واحد</div>
+    <div style="font-family:T;font-size:58px;color:#04352A;background:#E7B94B;padding:22px 54px;border-radius:999px;direction:ltr">madmonacairo.com/start</div>
+  </div>
+</div>
+
+<script>
+const ar = n => Math.round(n).toLocaleString('ar-EG')
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
+const eo = x => 1 - Math.pow(1 - cl(x), 3)          // easeOutCubic
+const eb = x => { x = cl(x); const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2) } // easeOutBack
+const $ = id => document.getElementById(id)
+// توقيت المشاهد بيتظبط على الصوت من الخارج (window.T) — القيم دي افتراضية
+// متزامن مع صوت بهجت (vo-t3-data): السعر ٠–٤٫٧ · المقدم ٥ · القسط ٨٫١ · الإيجار ١١٫٢ · الفرق ١٧ · إعلاناتنا ٢٠٫٦ · الفرق ٢٢٫٥ · احسبها ٢٥
+window.T = window.T || { A: 0, B: 4.9, inst: 3.2, C: 11.0, gapC: 6.0, D: 20.4, gapD: 2.1, E: 24.8, END: 27.4 }
+const show = (id, t0, t1, t) => { const e = $(id); const i = cl((t - t0) / 0.35), o = cl((t1 - t) / 0.35); e.style.opacity = Math.min(i, o); e.style.transform = `translateY(${(1 - eo(i)) * 60}px)` }
+window.render = t => {
+  const T = window.T
+  show('A', T.A, T.B, t); show('B', T.B, T.C, t); show('C', T.C, T.E, t); show('E', T.E, 999, t)
+  $('A').style.opacity = t < T.B ? Math.min(1, cl((T.B - t) / 0.35)) : 0 // أول فريم فيه محتوى
+  // A — عدّاد السعر
+  const a = eo((t - T.A - 0.2) / 2.2)
+  $('priceN').textContent = ar(7876630 * (0.12 + 0.88 * a))
+  $('uline').style.width = (900 * eo((t - T.A - 2.2) / 0.6)) + 'px'
+  // B — شريط المقدم + عدّاد القسط
+  const bt = t - T.B
+  $('dp').style.width = (5 * eo(bt / 0.7)) + '%'
+  $('rest').style.width = (95 * eo((bt - 0.5) / 1.0)) + '%'
+  $('instN').textContent = bt < T.inst ? '؟' : ar(77946 * eo((bt - T.inst) / 1.8))
+  $('instN').style.transform = `scale(${0.9 + 0.1 * eb((bt - T.inst) / 0.6)})`
+  // C/D — الأعمدة: القسط ضد الإيجار (٨٫٣٪ ثم ٤٫٥٪ من أرقام إعلاناتنا)
+  const inD = t >= T.D
+  const ct = t - (inD ? T.D : T.C)
+  const rent = inD ? 29537 : 54480, gap = inD ? 48409 : 23466
+  const H = 780, h1 = H, h2 = H * rent / 77946
+  const g1 = eo((t - T.C) / 0.9), g2 = eo(ct / 0.9)
+  $('b1').style.height = h1 * g1 + 'px'; $('b1v').style.bottom = (570 + h1 * g1) + 'px'; $('b1v').textContent = ar(77946 * g1)
+  const from = inD ? 780 * 54480 / 77946 : 0
+  const hh = from + (h2 - from) * g2
+  $('b2').style.height = hh + 'px'; $('b2v').style.bottom = (570 + hh) + 'px'; $('b2v').textContent = ar(hh / H * 77946)
+  $('Ck').textContent = inD ? 'وبأرقام إعلاناتنا إحنا — عائد ٤٫٥٪' : 'لو أجّرتها بالعائد المنشور للقاهرة ٨٫٣٪'
+  const gd = inD ? T.gapD : T.gapC, gp = cl((ct - gd) / 0.4)
+  $('gapT').style.opacity = gp; $('gapT').style.transform = `scale(${0.85 + 0.15 * eb((ct - gd) / 0.5)})`
+  $('gapN').textContent = ar(gap * eo((ct - gd) / 1.2))
+  // E
+  $('e1').style.transform = `scale(${0.9 + 0.1 * eb((t - T.E) / 0.6)})`
+}
+window.render(0)
+</script>

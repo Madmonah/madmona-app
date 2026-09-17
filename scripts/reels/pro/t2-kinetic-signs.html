@@ -1,0 +1,60 @@
+<!doctype html><meta charset="utf-8">
+<!-- 🔤 قالب ٢ «تايبوجرافي حركي» (١٧/٩/٢٠٢٦) — كلمات ضخمة وقطعات سريعة وألوان بتتقلب على الإيقاع. محتوى رأي من غير أرقام أو إحصائيات. -->
+<style>
+@font-face{font-family:T;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Black.ttf)}
+@font-face{font-family:TB;src:url(file:///E:/madmona-app/scripts/reels/fonts/Tajawal-Bold.ttf)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1080px;height:1920px;overflow:hidden;direction:rtl;font-family:T;position:relative;background:#111}
+html{overflow:hidden;width:1080px;height:1920px}#stage{position:absolute;inset:0;overflow:hidden}
+.num{position:absolute;left:60px;bottom:40px;font-size:1000px;line-height:.9;font-family:T;-webkit-text-stroke:8px currentColor;color:transparent;opacity:.3}
+.w{position:absolute;right:80px;width:920px;text-align:right;font-size:158px;line-height:1.02;white-space:nowrap;will-change:transform}
+.tag{position:absolute;right:80px;top:150px;font-family:TB;font-size:44px;padding:10px 28px;border-radius:999px}
+.bar{position:absolute;left:0;right:0;bottom:0;height:18px}
+.foot{position:absolute;right:80px;bottom:90px;font-family:TB;font-size:40px;opacity:.8}
+</style>
+<div id="stage"></div>
+<script>
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
+const eo = x => 1 - Math.pow(1 - cl(x), 3)
+const eb = x => { x = cl(x); const c = 2.2; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2) }
+const PAL = [['#111', '#fff', '#FFD23F'], ['#FFD23F', '#111', '#111'], ['#F4EFE6', '#04352A', '#C8372D'], ['#04352A', '#fff', '#2ED39B'], ['#C8372D', '#fff', '#FFD23F']]
+// كل شريحة: ألوان + رقم خلفية + سطور (كل سطر كلمة/كلمتين بتدخل لوحدها)
+window.S = window.S || [
+  { d: 5.0, p: 0, tag: 'لو عندك بيزنس', lines: ['٥ علامات', 'إن شغلك', 'محتاج نظام'] },
+  { d: 3.6, p: 1, n: '١', lines: ['بتدوّر على', 'رقم عميل', 'في الواتساب'] },
+  { d: 3.2, p: 2, n: '٢', lines: ['مش عارف', 'كسبت كام', 'الشهر ده'] },
+  { d: 3.5, p: 3, n: '٣', lines: ['الموظف غاب', 'والشغل', 'وقف'] },
+  { d: 2.8, p: 4, n: '٤', lines: ['المخزون', 'بيخلص', 'فجأة'] },
+  { d: 3.2, p: 0, n: '٥', lines: ['كل حاجة', 'في دماغك', 'إنت'] },
+  { d: 3.3, p: 1, tag: 'عندك كام من ٥؟', lines: ['اكتب رقمك', 'في كومنت'] },
+  { d: 4.6, p: 3, tag: 'مجاني لصاحب البيزنس + موظف', lines: ['رتّبها على', 'مضمونة'], link: 'madmonacairo.com/start' },
+]
+const stage = document.getElementById('stage')
+window.render = t => {
+  let acc = 0, i = 0
+  while (i < S.length - 1 && t >= acc + S[i].d) { acc += S[i].d; i++ }
+  const s = S[i], lt = t - acc, [bg, fg, ac] = PAL[s.p]
+  // هزّة خفيفة مع دخول كل سطر
+  let html = `<div style="position:absolute;inset:0;background:${bg}"></div>`
+  if (s.n) html += `<div class="num" style="color:${ac};transform:translateX(${(1 - eo(lt / 0.6)) * -200}px) scale(${1.15 - 0.15 * eo(lt / 0.8)})">${s.n}</div>`
+  if (s.tag) html += `<div class="tag" style="background:${ac};color:${bg};transform:scale(${eb((lt + (i === 0 ? 0.5 : 0)) / 0.4)})">${s.tag}</div>`
+  const n = s.lines.length, gap = i === 0 ? 1.2 : 0.42, top0 = 820 - (n * 190) / 2
+  s.lines.forEach((ln, k) => {
+    const st = i === 0 && k === 0 ? -0.6 : 0.08 + k * gap       // أول فريم في الريل فيه كلمة
+    const x = lt - st
+    const vis = x > 0
+    const sc = 1.55 - 0.55 * eb(x / 0.32), bl = Math.max(0, 14 * (1 - x / 0.2))
+    const col = k === n - 1 ? ac : fg
+    html += `<div class="w" style="top:${top0 + k * 190}px;color:${col};opacity:${vis ? 1 : 0};filter:blur(${bl}px);transform-origin:right center;transform:scale(${Math.min(sc, 1.25)}) translateX(${(1 - eo(x / 0.3)) * -40}px)">${ln}</div>`
+  })
+  if (s.link) html += `<div class="w" style="top:1300px;font-size:62px;direction:ltr;text-align:center;color:${bg};"><span style="background:${ac};padding:16px 44px;border-radius:999px;opacity:${cl((lt - 0.9) / 0.3)}">${s.link}</span></div>`
+  // شريط تقدّم في الأسفل
+  const total = S.reduce((a, b) => a + b.d, 0)
+  html += `<div class="bar" style="background:${ac};width:${(t / total) * 100}%;right:0;left:auto"></div>`
+  html += `<div class="foot" style="color:${fg}">مضمونة</div>`
+  // قطع ناعم: فلاش أبيض ٢ فريم أول كل شريحة
+  if (i > 0 && lt < 0.07) html += `<div style="position:absolute;inset:0;background:${ac};opacity:${1 - lt / 0.07}"></div>`
+  stage.innerHTML = html
+}
+window.render(0)
+</script>

@@ -9,8 +9,8 @@ const ff = args => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args],
 const ENC = ['-c:v', 'libx264', '-crf', '18', '-preset', 'medium', '-pix_fmt', 'yuv420p', '-r', '30']
 
 // ١) الخطاف: تلات سطور بتنط بميل مختلف على خلفية فاتحة
-function hook(file, dur = 3.4) {
-  const lines = [['h1a.png', 0, -0.05, 700], ['h1b.png', 0.85, 0.035, 960], ['h1c.png', 1.55, -0.03, 1220]]
+function hook(file, dur = 4.6) {
+  const lines = [['h1a.png', 0, -0.05, 700], ['h1b.png', 1.35, 0.035, 960], ['h1c.png', 2.65, -0.03, 1220]]
   const inputs = ['-loop', '1', '-t', dur, '-i', A('bg-light.png')]
   let fc = '[0]format=rgba[b0];'
   lines.forEach(([png, st, ang], i) => {
@@ -55,11 +55,11 @@ function cta(file, dur = 3.6) {
 }
 
 const parts = [
-  [path.join(OUT, 's1.mp4'), 3.4, () => hook(path.join(OUT, 's1.mp4'))],
-  [path.join(OUT, 's2.mp4'), 5.0, () => phone(path.join(OUT, 's2.mp4'), { seq: 'start-type', fps: 24, dur: 5.0, head: 't2', chip: 'chip2' })],
-  [path.join(OUT, 's3.mp4'), 4.6, () => phone(path.join(OUT, 's3.mp4'), { seq: 'clinics', fps: 30, dur: 4.6, head: 't3', chip: 'chip3' })],
-  [path.join(OUT, 's4.mp4'), 4.4, () => phone(path.join(OUT, 's4.mp4'), { seq: 'store', fps: 30, dur: 4.4, head: 't4', chip: 'chip4' })],
-  [path.join(OUT, 's5.mp4'), 3.6, () => cta(path.join(OUT, 's5.mp4'))],
+  [path.join(OUT, 's1.mp4'), 4.6, () => hook(path.join(OUT, 's1.mp4'))],
+  [path.join(OUT, 's2.mp4'), 3.9, () => phone(path.join(OUT, 's2.mp4'), { seq: 'start-type', fps: 26, dur: 3.9, head: 't2', chip: 'chip2' })],
+  [path.join(OUT, 's3.mp4'), 4.7, () => phone(path.join(OUT, 's3.mp4'), { seq: 'clinics', fps: 26, dur: 4.7, head: 't3', chip: 'chip3' })],
+  [path.join(OUT, 's4.mp4'), 5.7, () => phone(path.join(OUT, 's4.mp4'), { seq: 'store', fps: 20, dur: 5.7, head: 't4', chip: 'chip4' })],
+  [path.join(OUT, 's5.mp4'), 3.0, () => cta(path.join(OUT, 's5.mp4'), 3.0)],
 ]
 for (const [, , fn] of parts) fn()
 
@@ -73,7 +73,10 @@ for (let i = 1; i < parts.length; i++) {
 const total = parts.reduce((s, p) => s + p[1], 0) - X * (parts.length - 1)
 const music = path.join(D, '..', 'music', 'exmusichqlibre518664.mp3')
 const final = path.join(OUT, 'demo-clinic-pro.mp4')
-ff([...parts.flatMap(p => ['-i', p[0]]), '-i', music,
-  '-filter_complex', fc + `[${parts.length}:a]atrim=0:${total.toFixed(2)},afade=t=in:d=0.4,afade=t=out:st=${(total - 1.2).toFixed(2)}:d=1.2,volume=0.85[a]`,
+// صوت بهجت (لهجتي V2 · dialect 7) فوق موسيقى منخفضة — محمد ١٧/٩: «ضيف صوت بهجت»
+const vo = path.join(D, '..', 'playwright', 'output', 'vo-demo-clinic-pro-lahajati.mp3')
+ff([...parts.flatMap(p => ['-i', p[0]]), '-i', music, '-i', vo,
+  '-filter_complex', fc + `[${parts.length}:a]atrim=0:${total.toFixed(2)},afade=t=in:d=0.4,afade=t=out:st=${(total - 1.2).toFixed(2)}:d=1.2,volume=0.16[m];` +
+    `[${parts.length + 1}:a]adelay=150|150,volume=1.35[v];[m][v]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]`,
   '-map', last, '-map', '[a]', ...ENC, '-c:a', 'aac', '-b:a', '160k', '-t', total.toFixed(2), final])
 console.log(JSON.stringify({ final, seconds: +total.toFixed(2) }))
