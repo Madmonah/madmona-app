@@ -682,8 +682,8 @@ function ProjectCard({ it, onPlay }: { it: Item; onPlay: () => void }) {
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={projectThumb(it.cover_url!, 480)}
-              srcSet={`${projectThumb(it.cover_url!, 480)} 480w, ${projectThumb(it.cover_url!, 750)} 750w`}
+              src={projectThumb(it.cover_url!, 640)}
+              srcSet={`${projectThumb(it.cover_url!, 384)} 384w, ${projectThumb(it.cover_url!, 640)} 640w, ${projectThumb(it.cover_url!, 750)} 750w`}
               sizes="(max-width: 640px) 50vw, 300px"
               alt={it.title}
               loading="lazy"

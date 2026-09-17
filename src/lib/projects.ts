@@ -93,10 +93,15 @@ export const PROJECT_CARD_COLUMNS =
   'land_area_m2, land_area_feddan, launch_start_date, market_status, construction_pct, ' +
   'cover_url, brochure_url, video_url, sort_order, updated_at'
 
-/** صورة الكارت عبر مُحسّن Next: ٣٠٣ ك.ب → ~٥٠ ك.ب عند عرض ٦٤٠. */
-export function projectThumb(url: string, w = 480, q = 70): string {
+/** صورة الكارت عبر مُحسّن Next: ٣٠٣ ك.ب → ~٦٦ ك.ب عند عرض ٧٥٠.
+ *  ⚠️ (١٨/٩/٢٠٢٦) العرض لازم يكون **من `deviceSizes`/`imageSizes`** في next.config —
+ *  أي عرض تاني (٤٨٠ مثلًا) بيرجّع `400 INVALID_IMAGE_OPTIMIZE_REQUEST` والصورة ماتظهرش.
+ *  فالدالة بتقرّب لأقرب عرض مسموح بدل ما تسيب الغلط يعدّي. */
+const NEXT_IMAGE_WIDTHS = [16, 32, 48, 64, 96, 128, 256, 384, 640, 750, 828, 1080, 1200, 1920, 2048]
+export function projectThumb(url: string, w = 640, q = 70): string {
   if (!url || url.startsWith('/_next/image')) return url
-  return `/_next/image?url=${encodeURIComponent(url)}&w=${w}&q=${q}`
+  const width = NEXT_IMAGE_WIDTHS.find(x => x >= w) ?? 2048
+  return `/_next/image?url=${encodeURIComponent(url)}&w=${width}&q=${q}`
 }
 
 export const PUBLIC_PROJECT_COLUMNS =
