@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import { ChevronLeft, Loader2, RefreshCw, FileText, Filter, User, Edit3, Trash2, Plus } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة تفضل بيضا (406).
+const sbTok = withToken(supabase)
 
 const TABLES = [
   { value: null, label: 'الكل' },
@@ -37,7 +40,7 @@ export default function AuditLogPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
     setSupplier(s)
     const { data: list } = await supabase.rpc('admin_get_audit_log', { p_table_name: tableFilter })
     setLogs(list || [])

@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import { ChevronLeft, Loader2, RefreshCw, Plus, X, Ship, ChevronDown, ArrowLeft, FileText, Pencil } from 'lucide-react'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة تفضل بيضا (406).
+const sbTok = withToken(supabase)
 
 const num = (n: any) => Number(n || 0).toLocaleString()
 
@@ -34,7 +37,7 @@ export default function ImportPage({ params }: { params: { supplierId: string } 
 
   async function load() {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
     setSupplier(s)
     const { data: list } = await supabase.rpc('admin_list_import_consignments', { p_supplier_id: supplierId })
     setRows(Array.isArray(list) ? list : [])

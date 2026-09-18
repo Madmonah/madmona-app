@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, type ReactNode } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, X, Check, Plus,
   ShoppingCart, Truck, Scissors, Zap, DollarSign,
@@ -22,6 +23,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة بيضا (406).
+const sbTok = withToken(supabase)
 
 // الإكرامية (tip) ميزة خاصة بالصالونات بس — تظهر للـ industries دي فقط
 const SALON_INDUSTRIES = ['beauty_salon', 'salon', 'beauty', 'spa', 'barber', 'nails']
@@ -76,7 +79,7 @@ export default function OperationsHub({
   async function loadAll() {
     setLoading(true)
     const [sup, br, emp, sv, it, bl, vd, tx, sm] = await Promise.all([
-      supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single(),
+      sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId }),
       supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).eq('status', 'active').order('code'),
       supabase.from('business_employees').select('id, full_name, role_ar, branch_id').eq('supplier_id', supplierId).eq('status', 'active'),
       supabase.from('services_catalog').select('*').eq('supplier_id', supplierId).eq('status', 'active').order('category'),

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import QRCode from 'qrcode'
 import {
   ChevronLeft, Printer, Loader2, Building2, Users, ShoppingBag, Clock,
@@ -23,6 +24,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة بيضا (406).
+const sbTok = withToken(supabase)
 
 type Branch = {
   id: string
@@ -43,8 +46,7 @@ export default function QRPostersPage({
 
   useEffect(() => {
     async function load() {
-      const { data: sup } = await supabase.from('suppliers')
-        .select('business_name').eq('id', supplierId).single()
+      const { data: sup } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
       setSupplierName((sup as any)?.business_name || '')
 
       const { data: br } = await supabase.from('supplier_branches')

@@ -24,7 +24,9 @@ const steps = []
 const ok = (name, pass, note = '') => { steps.push({ step: name, pass: !!pass, note: String(note).slice(0, 90) }); console.log((pass ? '✅' : '❌') + ' ' + name + (note ? ' — ' + note : '')) }
 
 ;(async () => {
-  const b = await chromium.connectOverCDP('http://127.0.0.1:9223', { timeout: 30000 })
+  // 🖥️ (١٨/٩/٢٠٢٦) متصفح خاص بالاختبار بدل كروم السوشيال (بيقع كل شوية) — **headed** لأن نقطة
+  //    تفتيش فيرسل بترفض الهيدلس (403) والمستخدم الحقيقي بياخد 200.
+  const b = await chromium.launch({ channel: 'chrome', headless: false, args: ['--window-position=2000,0'] })
   const ctx = await b.newContext({ viewport: VIEW, locale: 'ar-EG', isMobile: mode === 'mobile', hasTouch: mode === 'mobile' })
   const p = await ctx.newPage()
   let supplierId = null
@@ -42,7 +44,8 @@ const ok = (name, pass, note = '') => { steps.push({ step: name, pass: !!pass, n
     await p.click('button[type="submit"]')
     await p.waitForSelector('text=ابعت الكود ده', { timeout: 45000 })
     const code = (await p.textContent('div[dir="ltr"]')).trim()
-    const wh = { event: 'message.received', sessionId: '201114621551', data: { from: '2' + PHONE.replace(/^0/, '') + '@c.us', to: '201114621551@c.us', body: code, fromMe: false, id: 'qa-' + Date.now(), timestamp: Math.floor(Date.now() / 1000), type: 'chat' } }
+    // ⚠️ كود الدولة كامل (20) — واتساب بيبعت 20xxxxxxxxxx؛ من غيره الإيميل الداخلي بيطلع غلط والدخول بيفشل (اتكشف ١٨/٩)
+    const wh = { event: 'message.received', sessionId: '201114621551', data: { from: '20' + PHONE.replace(/^0/, '') + '@c.us', to: '201114621551@c.us', body: code, fromMe: false, id: 'qa-' + Date.now(), timestamp: Math.floor(Date.now() / 1000), type: 'chat' } }
     const wr = await fetch(`${SITE}/api/whatsapp/openwa?token=${SECRET}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(wh) }).then(x => x.json()).catch(e => ({ err: e.message }))
     ok('الكود وصل واتوثّق', wr?.brain?.login === 'verified', JSON.stringify(wr).slice(0, 50))
     // ── ٢) الوجهة = التطبيق ──
@@ -103,12 +106,13 @@ const ok = (name, pass, note = '') => { steps.push({ step: name, pass: !!pass, n
       const sub = await p.$('button[type="submit"]')
       if (sub) { await sub.click(); await p.waitForTimeout(9000) }
     }
-    ok('الدخول تاني بالرقم + الباسورد', !/\/login/.test(p.url()), p.url().slice(0, 60))
+    const loggedIn = await p.evaluate(() => Object.keys(localStorage).some(k => /sb-.*-auth-token|madmona_token/.test(k)))
+    ok('الدخول تاني بالرقم + الباسورد', loggedIn && !/\/login/.test(p.url()), p.url().slice(0, 60))
   } catch (e) {
     ok('الرحلة كملت من غير أخطاء', false, e.message)
   }
   const pass = steps.filter(s => s.pass).length
   console.log(JSON.stringify({ mode, phone: PHONE, supplierId, pass, total: steps.length, failed: steps.filter(s => !s.pass).map(s => s.step) }))
   fs.writeFileSync(`E:/madmona-app/scripts/qa/last-${mode}.json`, JSON.stringify({ at: new Date().toISOString(), mode, phone: PHONE, pw: PW, supplierId, steps }, null, 2))
-  await ctx.close()
+  await ctx.close(); await b.close().catch(() => {})
 })().catch(e => { console.log('ERR', e.message); process.exit(1) })

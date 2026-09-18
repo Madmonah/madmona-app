@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import { ChevronLeft, Loader2, RefreshCw, Scissors, Package, Plus, X, Trash2, Save, Wrench, Tag } from 'lucide-react'
 // 🔴 rpcSafe: نفس السلوك، بس الخطأ مبيعدّيش في صمت (13 Jul 2026)
 import { rpcSafe } from '@/lib/rpc'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة تفضل بيضا (406).
+const sbTok = withToken(supabase)
 
 export default function ServicesPage({ params }: { params: { supplierId: string } }) {
   const { supplierId } = params
@@ -18,7 +21,7 @@ export default function ServicesPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name, industry').eq('id', supplierId).single()
+    const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
     setSupplier(s)
     const { data: svc } = await supabase.from('services_catalog').select('id, name_ar, price_egp, duration_minutes, performer_commission_pct').eq('supplier_id', supplierId).order('name_ar')
     setServices(svc || [])

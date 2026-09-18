@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import { ChevronLeft, Loader2, RefreshCw, Receipt, TrendingUp, TrendingDown, Calculator, Printer } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة تفضل بيضا (406).
+const sbTok = withToken(supabase)
 
 const MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
 
@@ -20,7 +23,7 @@ export default function VATReportPage({ params }: { params: { supplierId: string
 
   async function load() {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
     setSupplier(s)
     const { data: result } = await supabase.rpc('admin_get_vat_report', {
       p_supplier_id: supplierId,

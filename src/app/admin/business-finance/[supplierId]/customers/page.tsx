@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import {
   Users, Search, ChevronLeft, Loader2, Cake, Crown, Sparkles,
   RefreshCw, TrendingUp, Calendar,
@@ -12,6 +13,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة بيضا (406).
+const sbTok = withToken(supabase)
 
 type Customer = {
   id: string
@@ -54,7 +57,7 @@ export default function CustomersPage({ params }: { params: { supplierId: string
 
   async function load() {
     setLoading(true)
-    const { data: sup } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: sup } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
     setSupplier(sup as any)
 
     const { data } = await supabase.rpc('admin_list_customers', {

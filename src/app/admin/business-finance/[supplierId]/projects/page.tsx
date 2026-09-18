@@ -3,12 +3,15 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import {
   FolderKanban, ChevronLeft, Loader2, Plus, X, RefreshCw,
   Building2, MapPin, Pencil, Trash2, Wallet, Layers,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة تفضل بيضا (406).
+const sbTok = withToken(supabase)
 
 const STATUSES = [
   { value: 'active',    label: 'شغّال',        color: 'bg-[#34D399]/10 text-[#059669]' },
@@ -38,7 +41,7 @@ export default function ProjectsPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
+    const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
     setSupplier(s)
     const { data: list } = await supabase
       .from('bz_projects')

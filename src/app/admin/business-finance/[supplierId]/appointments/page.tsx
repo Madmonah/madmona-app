@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import {
   Calendar, ChevronLeft, ChevronRight, Loader2, Plus, RefreshCw,
   Clock, User as UserIcon, Phone, X, Building2,
@@ -12,6 +13,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة بيضا (406).
+const sbTok = withToken(supabase)
 
 type Appointment = {
   id: string
@@ -58,7 +61,7 @@ export default function AppointmentsPage({ params }: { params: { supplierId: str
   async function load() {
     setLoading(true)
     const [{ data: sup }, { data: br }, { data: sv }, { data: emp }] = await Promise.all([
-      supabase.from('suppliers').select('business_name').eq('id', supplierId).single(),
+      sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId }),
       supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code'),
       supabase.from('services_catalog').select('id, name_ar, price_egp, duration_minutes, category').eq('supplier_id', supplierId).eq('status', 'active'),
       supabase.from('business_employees').select('id, full_name, role_ar').eq('supplier_id', supplierId),

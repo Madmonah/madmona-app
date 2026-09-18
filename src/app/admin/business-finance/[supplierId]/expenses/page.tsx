@@ -3,11 +3,17 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import {
   DollarSign, ChevronLeft, Loader2, Plus, X, RefreshCw, Receipt, Filter, Trash2,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🐞 (١٨/٩/٢٠٢٦ — الاختبار اليومي كشفها) شاشة المصاريف كانت **فاضية تمامًا** لصاحب البيزنس:
+//    كانت بتقرا `suppliers` مباشرة بعميل anon، والجدول ده مقفول لصاحب البيزنس من ٢٨/٨ →
+//    الطلب بيرجع 406 و`load()` بتقف قبل `setLoading(false)` فالشاشة بتفضل بيضا.
+//    نفس قاعدة ٥/٩: رأس المورد من `business_supplier_head` بتوكن، وباقي النداءات بـsbTok.
+const sbTok = withToken(supabase)
 
 const CATEGORIES = [
   { value: 'rent', label: 'إيجار' },
@@ -45,11 +51,11 @@ export default function ExpensesPage({ params }: { params: { supplierId: string 
 
   async function load() {
     setLoading(true)
-    const { data: s } = await supabase.from('suppliers').select('business_name').eq('id', supplierId).single()
-    setSupplier(s)
+    const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
+    setSupplier(s && (s as { ok?: boolean }).ok ? s : null)
     const { data: br } = await supabase.from('supplier_branches').select('id, name, code').eq('supplier_id', supplierId).order('code')
     setBranches(br || [])
-    const { data: list } = await supabase.rpc('admin_list_expenses', {
+    const { data: list } = await sbTok.rpc('admin_list_expenses', {
       p_supplier_id: supplierId,
       p_branch_id: branchFilter,
     })
@@ -191,7 +197,7 @@ function AddExpenseModal({ supplierId, branches, onClose, onSaved }: any) {
     if (!form.amount || Number(form.amount) <= 0) return setErr('اكتب المبلغ')
     if (!form.branch_id) return setErr('اختار الفرع')
     setSaving(true)
-    const { error } = await supabase.rpc('admin_record_expense', {
+    const { error } = await sbTok.rpc('admin_record_expense', {
       p_supplier_id: supplierId,
       p_branch_id: form.branch_id,
       p_category: form.category,

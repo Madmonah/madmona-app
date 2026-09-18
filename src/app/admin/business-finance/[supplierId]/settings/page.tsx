@@ -92,7 +92,7 @@ export default function SettingsPage({
     setLoading(true)
     const [supRes, brRes, empRes] = await Promise.all([
       // (٥/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس — لو الصف مارجعش نستخدم رأس المورد من RPC بتوكن
-      supabase.from('suppliers').select('*').eq('id', supplierId).single().then(async (r: any) => r.data ? r : { data: await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId }).then((h: any) => (h.data && h.data.ok ? h.data : null)) }),
+      sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId }).then(async (r: any) => r.data ? r : { data: await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId }).then((h: any) => (h.data && h.data.ok ? h.data : null)) }),
       supabase.from('supplier_branches').select('*').eq('supplier_id', supplierId).order('code'),
       supabase.from('business_employees').select('*').eq('supplier_id', supplierId).order('role'),
     ])

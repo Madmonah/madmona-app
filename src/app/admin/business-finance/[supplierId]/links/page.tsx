@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
+import { withToken } from '@/lib/rpc'
 import {
   ChevronLeft, Loader2, Copy, Check, ExternalLink, Briefcase,
   UserPlus, CalendarCheck, Crown, ShieldCheck, Store, Sparkles,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// 🐞 (١٨/٩/٢٠٢٦) suppliers مقفول لصاحب البيزنس (٢٨/٨) — رأس المورد من RPC بتوكن، وإلا الشاشة تفضل بيضا (406).
+const sbTok = withToken(supabase)
 
 type LinkItem = { label: string; path: string; share?: boolean }
 type Group = { title: string; icon: React.ReactNode; items: LinkItem[]; desc?: string
@@ -29,7 +32,7 @@ export default function LinksHubPage({ params }: { params: { supplierId: string 
   useEffect(() => {
     if (typeof window !== 'undefined') setOrigin(window.location.origin)
     ;(async () => {
-      const { data: s } = await supabase.from('suppliers').select('business_name, join_slug').eq('id', supplierId).single()
+      const { data: s } = await sbTok.rpc('business_supplier_head', { p_supplier_id: supplierId })
       setSupplier(s)
       const { data: br } = await supabase.from('supplier_branches').select('code, name').eq('supplier_id', supplierId).order('code')
       setBranches(br || [])
