@@ -480,7 +480,7 @@ const [input, setInput] = useState('')
           ) : (
             <>
               <a href={go('/auth/login')} style={{ ...btnPrimary, width: '100%', display: 'block', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}>سجّل دخول</a>
-              <a href={go('/auth/signup')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box', marginTop: 10, padding: '13px 16px', borderRadius: 24, border: '2px solid rgba(250, 129, 37,.25)', color: '#059669', fontWeight: 800, fontSize: 15, background: '#fff' }}>أول مرة؟ اعمل حساب في دقيقة</a>
+              <a href={go('/login')} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', width: '100%', boxSizing: 'border-box', marginTop: 10, padding: '13px 16px', borderRadius: 24, border: '2px solid rgba(250, 129, 37,.25)', color: '#059669', fontWeight: 800, fontSize: 15, background: '#fff' }}>أول مرة؟ اعمل حساب في دقيقة</a>
               <p style={{ margin: '14px 0 0', color: '#889', fontSize: 11.5, textAlign: 'center', lineHeight: 1.7 }}>تدخل مرة واحدة — المارد يعرفك ويكمّل معاك من آخر كلام على أي جهاز.</p>
             </>
           )}

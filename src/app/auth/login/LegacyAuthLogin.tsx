@@ -288,7 +288,7 @@ function LoginContent() {
             {/* 🆕 (8 Aug 2026) إنشاء حساب حقيقي برقم + باسورد بقى موجود */}
             <p className="mt-6 pt-5 border-t border-gray-100 text-center text-sm text-gray-500 leading-relaxed">
               أول مرة في مضمونة؟{' '}
-              <Link href="/auth/signup" className="text-[#059669] font-bold hover:underline">
+              <Link href="/login" className="text-[#059669] font-bold hover:underline">
                 اعمل حساب جديد
               </Link>
             </p>

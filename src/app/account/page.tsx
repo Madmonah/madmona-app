@@ -225,7 +225,7 @@ export default function AccountPage() {
             {t('auth.login.title')}
           </Link>
           <Link
-            href="/auth/signup?redirect=/account"
+            href="/login?next=/account"
             className="block text-sm text-[#059669] font-bold hover:underline"
           >
             {t('auth.no_account')}

@@ -466,7 +466,7 @@ export default function BookingPage() {
               {t('auth.login.title')}
             </Link>
             <Link
-              href={`/auth/signup?redirect=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
+              href={`/login?next=${encodeURIComponent(`/marketplace/${slug}/book`)}`}
               className="block w-full text-sm text-gray-600 hover:text-[#059669]"
             >
               {t('auth.no_account')}

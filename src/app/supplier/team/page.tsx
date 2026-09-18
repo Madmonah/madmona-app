@@ -473,7 +473,7 @@ function InviteModal({
                   رقم تليفون الموظف
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
-                  لازم يكون عنده حساب على Madmona الأول. لو ما عندوش، اطلب منه يسجل عبر <Link href="/auth/signup" className="text-[#059669] underline">/auth/signup</Link>.
+                  لازم يكون عنده حساب على Madmona الأول. لو ما عندوش، اطلب منه يسجل عبر <Link href="/login" className="text-[#059669] underline">/login</Link>.
                 </p>
                 <div className="flex gap-2">
                   <input

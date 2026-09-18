@@ -266,7 +266,7 @@ function ForgotContent() {
                       {error.includes('مفيش حساب') && (
                         <>
                           {' '}
-                          <Link href="/auth/signup" className="font-bold underline">{t('fp.new_account')}</Link>
+                          <Link href="/login" className="font-bold underline">{t('fp.new_account')}</Link>
                         </>
                       )}
                     </span>

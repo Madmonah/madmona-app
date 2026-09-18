@@ -20,7 +20,7 @@ const SITE = 'https://www.madmonacairo.com'
 // ── روابط ثابتة يعرفها المارد ────────────────────────────────────────────
 export const MADMONA_LINKS = {
   تصفح_السوق: `${SITE}/browse`,
-  تسجيل_عميل_جديد: `${SITE}/auth/signup`,
+  تسجيل_عميل_جديد: `${SITE}/login`,
   دخول_عميل: `${SITE}/auth/login`,
   حسابي: `${SITE}/account`,
   حجوزاتي: `${SITE}/account/bookings`,
