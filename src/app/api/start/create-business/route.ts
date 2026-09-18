@@ -10,7 +10,9 @@ import { rateLimitOk, clientIp } from '@/lib/rate-limit'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const ALLOWED = ['business_name', 'contact_name', 'contact_phone', 'contact_email', 'city', 'district', 'address', 'industry', 'branches'] as const
+// 🎨 (١٨/٩/٢٠٢٦) محمد: «صفحة التسجيل تبقى زي شاشة ضيف بيزنس جديد بالظبط — اللوجو والفروع والهوية والألوان».
+//    نفس حقول فورم الأدمن **ما عدا العمولة وحالة العقد** (قاعدة ٤/٩: العميل ملوش دعوة بالعمولة).
+const ALLOWED = ['business_name', 'contact_name', 'contact_phone', 'contact_email', 'city', 'district', 'address', 'industry', 'branches', 'slug', 'accent', 'logo_url'] as const
 
 export async function POST(req: Request) {
   const db = platformAdminDb()
@@ -78,5 +80,9 @@ export async function POST(req: Request) {
   )
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
   if (!data?.ok) return NextResponse.json({ ok: false, error: (data?.error as string) || 'ماتعملش' }, { status: 400 })
+  // اللوجو: عمود `suppliers.logo_url` — بيتحط بعد الإنشاء (admin_create_b2b_partner_unguarded مابتاخدوش)
+  if (typeof payload.logo_url === 'string' && payload.logo_url && data.supplier_id) {
+    await db.from('suppliers').update({ logo_url: payload.logo_url }).eq('id', data.supplier_id as string)
+  }
   return NextResponse.json({ ok: true, supplier_id: data.supplier_id, existing: data.existing === true, slug: data.slug || null, password_set: passwordSet })
 }

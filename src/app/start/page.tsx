@@ -13,7 +13,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Building2, Loader2, MessageCircle, CheckCircle2, ChevronLeft } from 'lucide-react'
+import { Building2, Loader2, MessageCircle, CheckCircle2, ChevronLeft, Upload, Image as ImageIcon } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { ensureSupabaseSession } from '@/lib/session-upgrade'
 import { safeStorage } from '@/lib/safe-storage'
@@ -45,7 +45,9 @@ const DRAFT_KEY = 'madmona_start_draft'
 const WA_KEY = 'madmona_start_wa'   // الكود المعلّق — لو الصفحة اتعملت reload وسط التوثيق نكمّل الـpoll
 const INP = 'w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-[16px] focus:outline-none focus:ring-2 focus:ring-[#059669]/30'
 
-type Form = { business_name: string; industry: string; contact_name: string; contact_phone: string; contact_email: string; password: string; city: string; district: string; address: string }
+// 🎨 (١٨/٩/٢٠٢٦) محمد: «صفحة تسجيل ستارت تبقى زي الموجودة في ضيف بيزنس جديد — اللوجو والفروع والهوية والألوان وكل حاجة».
+type Branch = { name: string; address: string; district: string; phone: string; manager_name: string }
+type Form = { business_name: string; industry: string; contact_name: string; contact_phone: string; contact_email: string; password: string; city: string; district: string; address: string; slug: string; accent: string; logo_url: string; branches: Branch[] }
 type Stage = 'loading' | 'form' | 'verify' | 'creating' | 'done'
 
 export default function StartPage() {
@@ -60,7 +62,8 @@ export default function StartPage() {
   const [lgErr, setLgErr] = useState<string | null>(null)
   const [lgBusy, setLgBusy] = useState(false)
   const [hasSession, setHasSession] = useState(false)
-  const [form, setForm] = useState<Form>({ business_name: '', industry: 'clinic', contact_name: '', contact_phone: '', contact_email: '', password: '', city: 'القاهرة', district: '', address: '' })
+  const [form, setForm] = useState<Form>({ business_name: '', industry: 'clinic', contact_name: '', contact_phone: '', contact_email: '', password: '', city: 'القاهرة', district: '', address: '', slug: '', accent: '#059669', logo_url: '', branches: [{ name: 'الفرع الرئيسي', address: '', district: '', phone: '', manager_name: '' }] })
+  const [logoBusy, setLogoBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [wa, setWa] = useState<{ code: string; number: string; url: string } | null>(null)
   const [supplierId, setSupplierId] = useState<string | null>(null)
@@ -92,6 +95,11 @@ export default function StartPage() {
         business_name: f.business_name.trim(), industry: f.industry, contact_name: f.contact_name.trim() || null,
         contact_phone: f.contact_phone.trim() || null, contact_email: f.contact_email.trim() || null,
         city: f.city, district: f.district.trim() || null, address: f.address.trim() || null,
+        slug: f.slug.trim().toLowerCase() || null, accent: f.accent || null, logo_url: f.logo_url || null,
+        branches: f.branches.filter((b) => b.name.trim()).map((b, i) => ({
+          name: b.name.trim(), code: `BR${i}`, address: b.address.trim() || null,
+          district: b.district.trim() || null, phone: b.phone.trim() || null, manager_name: b.manager_name.trim() || null,
+        })),
         // الفرع الرئيسي بيتعمل لوحده (تريجر التوفير) — وصاحب البيزنس بيكمّل عنوانه ومواعيده في «كمّل شركتك»
       }
       const r = await fetch('/api/start/create-business', {
@@ -107,7 +115,7 @@ export default function StartPage() {
       trackEvent({ event_type: 'start_created', metadata: { existing: r.existing === true, industry: f.industry } })
       safeStorage.remove(DRAFT_KEY); safeStorage.remove(WA_KEY)
       setSupplierId(r.supplier_id); setStage('done')
-      setTimeout(() => router.replace(`/admin/business-finance/${r.supplier_id}?welcome=1`), 1500)
+      setTimeout(() => router.replace('/account?welcome=1'), 1500)
     } catch (e) {
       setErr((e as Error).message || 'حصل خطأ'); setStage('form'); creatingRef.current = false
     }
@@ -252,6 +260,19 @@ export default function StartPage() {
     void startWhatsApp()
   }
 
+  async function uploadLogo(file: File) {
+    setLogoBusy(true); setErr(null)
+    try {
+      const fd = new FormData(); fd.append('file', file)
+      const tok = safeStorage.get('madmona_token'); if (tok) fd.append('token', tok)
+      const s2 = await ensureSupabaseSession()
+      const r = await fetch('/api/start/logo', { method: 'POST', headers: s2?.access_token ? { authorization: `Bearer ${s2.access_token}` } : {}, body: fd }).then((x) => x.json()).catch(() => null)
+      if (r?.ok && r.url) setForm((f) => ({ ...f, logo_url: r.url }))
+      else setErr(r?.error === 'سجّل دخولك الأول' ? 'اللوجو هيترفع بعد ما توثّق رقمك — كمّل التسجيل الأول' : (r?.error || 'اللوجو مارفعش'))
+    } finally { setLogoBusy(false) }
+  }
+  const setBranch = (i: number, k: keyof Branch, v: string) => touch({ ...form, branches: form.branches.map((b, idx) => idx === i ? { ...b, [k]: v } : b) })
+
   const googleNext = `/start?resume=1${utm ? '&' + utm : ''}`
 
   return (
@@ -315,6 +336,61 @@ export default function StartPage() {
             <label className="block"><span className="text-xs font-bold text-gray-600">باسورد للدخول بعدين *</span>
               <input type="password" value={form.password} onChange={(e) => touch({ ...form, password: e.target.value })} className={INP} dir="ltr" autoComplete="new-password" placeholder="٦ حروف وأرقام على الأقل" minLength={6} />
               <span className={`text-[11px] ${form.password && !pwOk ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>{form.password && !pwOk ? (form.password.length < 6 ? `لسه ${6 - form.password.length} حروف — ` : 'لازم حروف وأرقام مع بعض — ') : ''}٦ على الأقل، فيه حروف وأرقام، ومش معروف (مش ١٢٣٤٥٦٧٨ ولا رقم موبايلك). هتدخل بيه بعدين برقم الواتساب.</span></label>
+            {/* 🎨 هوية الشركة — نفس حقول شاشة الأدمن: لوجو · لون البراند · لينك الصفحة */}
+            <div className="rounded-2xl border border-gray-100 bg-[#FAFAF7] p-3 space-y-3">
+              <p className="text-xs font-black text-[#04352A]">هوية شركتك</p>
+              <div className="flex items-center gap-3">
+                <div className="w-16 h-16 rounded-2xl border-2 border-dashed border-gray-300 bg-white grid place-items-center overflow-hidden shrink-0">
+                  {form.logo_url
+                    ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={form.logo_url} alt="لوجو" className="w-full h-full object-contain" />
+                    : <ImageIcon className="w-5 h-5 text-gray-300" />}
+                </div>
+                <div className="flex-1">
+                  <label className="inline-flex items-center gap-2 text-xs font-bold text-[#059669] cursor-pointer">
+                    {logoBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                    {form.logo_url ? 'غيّر اللوجو' : 'ارفع لوجو شركتك'}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadLogo(f) }} />
+                  </label>
+                  <p className="text-[11px] text-gray-400 mt-1">JPG أو PNG — لحد ٣ ميجا. بيظهر على صفحة شركتك وفواتيرك.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block"><span className="text-xs font-bold text-gray-600">لون البراند</span>
+                  <span className="flex items-center gap-2 mt-1">
+                    <input type="color" value={form.accent} onChange={(e) => touch({ ...form, accent: e.target.value })} className="w-11 h-11 rounded-xl border border-gray-200 bg-white p-1" />
+                    <span className="text-xs text-gray-500" dir="ltr">{form.accent}</span>
+                  </span></label>
+                <label className="block"><span className="text-xs font-bold text-gray-600">لينك صفحتك</span>
+                  <input value={form.slug} onChange={(e) => touch({ ...form, slug: e.target.value.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase() })} className={INP} dir="ltr" placeholder="my-clinic" />
+                  <span className="text-[11px] text-gray-400" dir="ltr">madmonacairo.com/s/{form.slug || '...'}</span></label>
+              </div>
+            </div>
+
+            {/* 🏢 الفروع — زي شاشة الأدمن (الفرع الرئيسي جاهز، وتقدر تزوّد) */}
+            <div className="rounded-2xl border border-gray-100 bg-[#FAFAF7] p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-black text-[#04352A]">الفروع</p>
+                {form.branches.length < 5 && (
+                  <button type="button" onClick={() => touch({ ...form, branches: [...form.branches, { name: '', address: '', district: '', phone: '', manager_name: '' }] })}
+                    className="text-xs font-bold text-[#059669]">+ ضيف فرع</button>
+                )}
+              </div>
+              {form.branches.map((b, i) => (
+                <div key={i} className="rounded-xl bg-white border border-gray-100 p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input value={b.name} onChange={(e) => setBranch(i, 'name', e.target.value)} className={INP} placeholder={i === 0 ? 'الفرع الرئيسي' : `فرع ${i + 1}`} />
+                    {i > 0 && <button type="button" onClick={() => touch({ ...form, branches: form.branches.filter((_, x) => x !== i) })} className="text-xs text-red-500 font-bold shrink-0">شيل</button>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input value={b.district} onChange={(e) => setBranch(i, 'district', e.target.value)} className={INP} placeholder="الحي" />
+                    <input value={b.phone} onChange={(e) => setBranch(i, 'phone', e.target.value)} className={INP} dir="ltr" inputMode="tel" placeholder="تليفون الفرع" />
+                  </div>
+                  <input value={b.address} onChange={(e) => setBranch(i, 'address', e.target.value)} className={INP} placeholder="عنوان الفرع" />
+                </div>
+              ))}
+            </div>
+
             <details className="rounded-xl border border-dashed border-gray-200 px-3 py-2">
               <summary className="text-xs font-bold text-gray-500 cursor-pointer select-none">تفاصيل أكتر (اختياري) — اسمك · الإيميل · العنوان</summary>
               <div className="space-y-3 pt-3">
@@ -373,10 +449,10 @@ export default function StartPage() {
           <div className="rounded-3xl bg-white border-2 border-[#04352A] shadow-sm p-8 text-center">
             <CheckCircle2 className="w-10 h-10 text-[#059669] mx-auto mb-2" />
             <p className="font-black text-lg">اتعملت ✓</p>
-            <p className="text-sm text-gray-500 mt-1">هنودّيك على لوحة شركتك على طول — وتقدر تكمّل بياناتك من «كمّل شركتك» جوّه اللوحة.</p>
+            <p className="text-sm text-gray-500 mt-1">هنودّيك على «حسابي» في التطبيق — شركتك ولوحتها هتلاقيهم هناك.</p>
             {/* 🔑 (١٠/٩) محمد: «صاحب البيزنس لما بيخلص مش بيعرف يسجل دخول تاني» — نقوله المرة الجاية بيدخل منين */}
             <p className="text-xs text-[#04352A] bg-[#E6F4EE] rounded-xl px-3 py-2 mt-3 font-bold">المرة الجاية: افتح <span dir="ltr">madmonacairo.com/login</span> وادخل بنفس الرقم أو الإيميل + الباسورد اللي كتبته هنا (أو كود واتساب / حساب جوجل) — هتلاقي لوحتك على طول.</p>
-            {supplierId && <Link href={`/admin/business-finance/${supplierId}?welcome=1`} className="inline-block mt-4 bg-[#04352A] text-white font-black rounded-2xl px-6 py-3 no-underline">افتح لوحتي ←</Link>}
+            {supplierId && <Link href="/account?welcome=1" className="inline-block mt-4 bg-[#04352A] text-white font-black rounded-2xl px-6 py-3 no-underline">افتح حسابي ←</Link>}
           </div>
         )}
       </div>

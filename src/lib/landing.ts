@@ -11,7 +11,7 @@
 //
 // القاعدة دلوقتي:
 //   • موظف مضمونة       → /me   («شغلي» — بتشتغل بالتوكن؛ /admin/* محتاجة كوكي اللوحة)
-//   • صاحب/مدير بيزنس   → /admin/business-finance/<بيزنسه>   (اللوحة الكاملة)
+//   • صاحب/مدير بيزنس   → /account (التطبيق) — ومنها كارت «بيزنسي» بيفتح اللوحة الكاملة (١٨/٩/٢٠٢٦)
 //   • غير كده           → /home
 //
 // ⚠️ بيقبل البابين: جلسة Supabase أو توكن الواتساب (madmona_token) — نفس درس
@@ -48,7 +48,10 @@ export async function landingAfterLogin(fallback = '/home'): Promise<string> {
     }
     // 🚫 (٩/٩/٢٠٢٦) موظف في بيزنس (مش مالك/مدير) → «شغلي» مش لوحة الإدارة
     if (data?.ok && data.supplier_id && (data as { can_manage?: boolean }).can_manage !== true) return '/account/work'
-    if (data?.ok && data.supplier_id) return `/admin/business-finance/${data.supplier_id}`
+    // 📱 (١٨/٩/٢٠٢٦) محمد: «العميل يروح للأبليكيشن مباشرة بعد تسجيل الدخول وعمل الحساب — يروح على
+    //    madmonacairo.com ومنها لتاب شاشة حسابي». فصاحب البيزنس بيروح «حسابي» في التطبيق،
+    //    وكارت «بيزنسي» جوّاها بيفتح اللوحة الكاملة.
+    if (data?.ok && data.supplier_id) return '/account'
   } catch { /* نرجع للافتراضي */ }
   return fallback
 }
