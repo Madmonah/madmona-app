@@ -59,7 +59,11 @@ async function openwaReady(sb: ReturnType<typeof admin>): Promise<Set<string>> {
       .map((r) => [r.key, r.value]))
     if (!cfg.openwa_url) return new Set()
     const ac = new AbortController()
-    const t = setTimeout(() => ac.abort(), 2500)   // الدخول ماينتظرش أكتر من كده
+    // ⏱️ (١٨/٩/٢٠٢٦) كانت ٢٥٠٠ — وهي كافية لسيرفر في نفس الداتا سنتر، بس مش كافية
+    //    لما OpenWA يبقى على جهاز محمد ورا نفق كلاودفلير (فيرسل → كلاودفلير → مصر).
+    //    النتيجة كانت `wa_live:false` **من غير أي خطأ** والطلب مايوصلش أصلًا — اتأكد
+    //    بفحص من مكان تالت رجّع 401 (يعني النفق شغّال) بينما السيرفر مكانش بيوصل.
+    const t = setTimeout(() => ac.abort(), 8000)
     const res = await fetch(cfg.openwa_url.replace(/\/$/, '') + '/api/sessions', {
       headers: cfg.openwa_api_key ? { 'x-api-key': cfg.openwa_api_key } : {},
       signal: ac.signal,
