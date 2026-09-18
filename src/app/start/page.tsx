@@ -83,6 +83,39 @@ export default function StartPage() {
   }, [])
 
   // ── إنشاء الشركة (بعد ما الهوية تبقى موجودة) ──
+  // 🔑🔑🔑 (١٨/٩/٢٠٢٦) محمد: «موضوع توثيق الأرقام ده تعبني» → «اعملها».
+  //    الطريق التالت: **إيميل + باسورد**، من غير كود واتساب ولا جوجل.
+  //    القياس اللي وراه: ٢٩ كود في ٧ أيام → **واحد** اتوثّق، والمسار كله بيعتمد على
+  //    خدمة OpenWA اللي وقفت ١٧/٩. وسياسة ٢/٨ أصلًا بتقول «تأكيد الرقم مش على باب
+  //    الدخول — بيتطلب لما يلزم»، ومسار جوجل بياخد الرقم من الفورم من غير توثيق.
+  //    ⚠️ التسجيل بيتعمل **من المتصفح** بـsignUp العادي — مش بـservice_role من راوت
+  //    عام. يعني إعدادات Supabase (تأكيد الإيميل · منع الباسورد المسرّب) بتتطبّق زي
+  //    ما هي، ومحدش يقدر يسجّل بإيميل مش بتاعه لو التأكيد مفعّل.
+  async function signUpThenCreate(f: Form) {
+    setErr(null); setStage('creating')
+    const email = f.contact_email.trim().toLowerCase()
+    const { data, error } = await supabaseBrowser.auth.signUp({ email, password: f.password })
+    if (error) {
+      setStage('form')
+      const dup = /already|registered|exists/i.test(error.message)
+      const weak = /weak|easy to guess|pwned|leaked/i.test(error.message)
+      trackEvent({ event_type: 'start_error', metadata: { step: 'signup', error: error.message.slice(0, 120) } })
+      setErr(dup ? 'الإيميل ده عنده حساب بالفعل — ادخل من تاب «عندي حساب» بالباسورد بتاعك.'
+        : weak ? 'الباسورد ده معروف وسهل التخمين — اختار واحد تاني.'
+        : `مقدرناش نعمل الحساب (${error.message})`)
+      return
+    }
+    if (!data.session) {
+      // إعدادات Supabase بتطلب تأكيد الإيميل — الحساب اتعمل وبيستنى الضغطة
+      setStage('form')
+      trackEvent({ event_type: 'start_error', metadata: { step: 'signup_confirm' } })
+      setErr('بعتنالك إيميل تأكيد على ' + email + ' — افتحه واضغط اللينك، وبعدين ارجع هنا واضغط «أنشئ شركتي».')
+      return
+    }
+    void syncModuleSession()
+    await createBusiness(f, data.session.access_token)
+  }
+
   async function createBusiness(f: Form, accessToken?: string | null) {
     if (creatingRef.current) return
     creatingRef.current = true
@@ -182,6 +215,7 @@ export default function StartPage() {
     }
   }
 
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact_email.trim())
   const valid = form.business_name.trim().length >= 2 && form.contact_phone.replace(/\D/g, '').length >= 10 && pwOk
 
   // ── الخطوة ٢: توثيق الواتساب (زي /login بالظبط) ──
@@ -261,10 +295,14 @@ export default function StartPage() {
       if (form.business_name.trim().length < 2) missing.push('اسم الشركة')
       if (form.contact_phone.replace(/\D/g, '').length < 10) missing.push('رقم الواتساب (١١ رقم)')
       if (!pwOk) missing.push(form.password.length < 6 ? 'الباسورد ٦ حروف على الأقل' : 'الباسورد لازم فيه حروف وأرقام مع بعض')
+      if (form.contact_email.trim() && !emailOk) missing.push('الإيميل مش مظبوط')
       trackEvent({ event_type: 'start_error', metadata: { step: 'validation', error: missing.join(' · ') } })
       setErr('ناقص: ' + missing.join(' · ')); return
     }
     if (hasSession) { void createBusiness(form); return }
+    // 🔑 (١٨/٩/٢٠٢٦) إيميل + باسورد = الحساب يتعمل على طول، من غير توثيق رقم ولا جوجل.
+    //    ده الطريق اللي بيخلّي التسجيل مستقل تمامًا عن خدمة الواتساب.
+    if (emailOk) { void signUpThenCreate(form); return }
     void startWhatsApp()
   }
 
@@ -339,6 +377,11 @@ export default function StartPage() {
               <select value={form.industry} onChange={(e) => touch({ ...form, industry: e.target.value })} className={INP}>{INDUSTRIES.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}</select></label>
             <label className="block"><span className="text-xs font-bold text-gray-600">رقم الواتساب *</span>
               <input value={form.contact_phone} onChange={(e) => touch({ ...form, contact_phone: e.target.value })} className={INP} dir="ltr" inputMode="tel" placeholder="01xxxxxxxxx" required /></label>
+            {/* 🔑 (١٨/٩/٢٠٢٦) الإيميل طلع من القسم الاختياري المطوي وبقى أساسي: هو اللي بيخلّي
+                الحساب يتعمل **من غير أي توثيق** (إيميل + باسورد)، بدل ما التسجيل يستنى كود واتساب. */}
+            <label className="block"><span className="text-xs font-bold text-gray-600">الإيميل *</span>
+              <input value={form.contact_email} onChange={(e) => touch({ ...form, contact_email: e.target.value })} className={INP} dir="ltr" inputMode="email" autoComplete="email" placeholder="you@example.com" />
+              <span className="text-[11px] text-gray-400">هتدخل بيه + الباسورد. من غيره هتحتاج جوجل أو كود واتساب.</span></label>
             {/* 🔑 (١٤/٩/٢٠٢٦) محمد: «تسجيل دخول الاكونت بتاع ستارت بيزنس مش شغال — عايزينه بإيميل وباسورد أو برقم تليفون وباسورد».
                 الباسورد بيتحط على مستخدم Supabase في /api/start/create-business (service role) — وبعدها /login بيقبل الرقم أو الإيميل + الباسورد ده. */}
             <label className="block"><span className="text-xs font-bold text-gray-600">باسورد للدخول بعدين *</span>
@@ -405,8 +448,6 @@ export default function StartPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block"><span className="text-xs font-bold text-gray-600">اسم المسؤول</span>
                     <input value={form.contact_name} onChange={(e) => touch({ ...form, contact_name: e.target.value })} className={INP} placeholder="اسمك" /></label>
-                  <label className="block"><span className="text-xs font-bold text-gray-600">الإيميل</span>
-                    <input value={form.contact_email} onChange={(e) => touch({ ...form, contact_email: e.target.value })} className={INP} dir="ltr" inputMode="email" /></label>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block"><span className="text-xs font-bold text-gray-600">المدينة</span>
@@ -426,17 +467,20 @@ export default function StartPage() {
                 لأن المسار بيطلب من المستخدم يسيب الموقع ويفتح واتساب ويبعت كود.
                 ✅ جوجل بقى الأساسي (ضغطة واحدة، مفيش مغادرة، ومتأكد إنه شغّال)،
                 والواتساب بديل ثانوي. */}
-            {hasSession ? (
+            {hasSession || emailOk ? (
               <button type="submit" className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base flex items-center justify-center gap-2">
                 أنشئ شركتي
               </button>
             ) : (
               <div className="space-y-2">
+                <button type="submit" className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base">
+                  أنشئ شركتي
+                </button>
+                <p className="text-center text-[11px] text-gray-400">اكتب إيميلك فوق وهنعمل حسابك على طول — أو:</p>
                 <div onClick={() => { safeStorage.set(DRAFT_KEY, JSON.stringify(form)); trackEvent({ event_type: 'start_google_click' }) }}>
-                  <GoogleSignInButton redirectTo={googleNext} label="أنشئ شركتي بحساب جوجل" />
+                  <GoogleSignInButton redirectTo={googleNext} label="كمّل بحساب جوجل" />
                 </div>
-                <p className="text-center text-[11px] text-gray-400">أسرع طريقة — ضغطة واحدة من غير ما تسيب الصفحة</p>
-                <button type="submit" className="w-full py-3 rounded-2xl bg-white border-2 border-[#04352A] text-[#04352A] font-bold text-sm flex items-center justify-center gap-2">
+                <button type="button" onClick={() => { setErr(null); void startWhatsApp() }} className="w-full py-3 rounded-2xl bg-white border-2 border-[#04352A] text-[#04352A] font-bold text-sm flex items-center justify-center gap-2">
                   <MessageCircle className="w-4 h-4" /> أو وثّق رقمي بالواتساب
                 </button>
               </div>
