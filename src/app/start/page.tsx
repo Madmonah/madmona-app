@@ -419,15 +419,26 @@ export default function StartPage() {
               </div>
             </details>
             {err && <p className="text-xs text-red-600">{err}</p>}
-            <button type="submit" className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base flex items-center justify-center gap-2">
-              {hasSession ? 'أنشئ شركتي' : <><MessageCircle className="w-4 h-4" /> وثّق رقمي بالواتساب وأنشئ شركتي</>}
-            </button>
-            {!hasSession && (
-              <div className="pt-1">
-                <p className="text-center text-[11px] text-gray-400 mb-2">أو</p>
+            {/* 🔑 (١٨/٩/٢٠٢٦) محمد: «موضوع توثيق الأرقام تعبني».
+                الترتيب كان مقلوب: الواتساب هو الزرار الأساسي وجوجل تحته «أو» —
+                فلما خدمة OpenWA وقعت (١٧/٩) الطريق الرئيسي اتقفل والبديل مستخبي.
+                والأرقام بتقول نفس الحاجة: ٢٩ كود في ٧ أيام → **واحد** اتوثّق،
+                لأن المسار بيطلب من المستخدم يسيب الموقع ويفتح واتساب ويبعت كود.
+                ✅ جوجل بقى الأساسي (ضغطة واحدة، مفيش مغادرة، ومتأكد إنه شغّال)،
+                والواتساب بديل ثانوي. */}
+            {hasSession ? (
+              <button type="submit" className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base flex items-center justify-center gap-2">
+                أنشئ شركتي
+              </button>
+            ) : (
+              <div className="space-y-2">
                 <div onClick={() => { safeStorage.set(DRAFT_KEY, JSON.stringify(form)); trackEvent({ event_type: 'start_google_click' }) }}>
-                  <GoogleSignInButton redirectTo={googleNext} label="كمّل بحساب جوجل" />
+                  <GoogleSignInButton redirectTo={googleNext} label="أنشئ شركتي بحساب جوجل" />
                 </div>
+                <p className="text-center text-[11px] text-gray-400">أسرع طريقة — ضغطة واحدة من غير ما تسيب الصفحة</p>
+                <button type="submit" className="w-full py-3 rounded-2xl bg-white border-2 border-[#04352A] text-[#04352A] font-bold text-sm flex items-center justify-center gap-2">
+                  <MessageCircle className="w-4 h-4" /> أو وثّق رقمي بالواتساب
+                </button>
               </div>
             )}
             <p className="text-[11px] text-gray-400 text-center">من غير دفع دلوقتي. <b>عندك حساب أو شركة بالفعل؟</b> <Link href="/login" className="text-[#059669] font-bold">سجّل دخولك من هنا</Link> بنفس الرقم أو الإيميل + الباسورد (أو جوجل/الواتساب) وهتلاقي لوحتك.</p>
