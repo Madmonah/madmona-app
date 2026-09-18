@@ -1,0 +1,10 @@
+const { chromium } = require('playwright')
+;(async () => {
+  const b = await chromium.launch({ channel: 'chrome', headless: true })
+  const p = await (await b.newContext({ viewport: { width: 412, height: 915 }, locale: 'ar-EG' })).newPage()
+  const r = await p.goto('https://www.madmonacairo.com/start', { waitUntil: 'domcontentloaded', timeout: 60000 })
+  await p.waitForTimeout(4000)
+  const t = await p.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 200))
+  console.log(JSON.stringify({ status: r.status(), hasForm: !!(await p.$('form')), newBtn: /بعتّ الكود/.test(await p.content()), text: t.slice(0, 120) }))
+  await b.close()
+})().catch(e => console.log('ERR', e.message))
