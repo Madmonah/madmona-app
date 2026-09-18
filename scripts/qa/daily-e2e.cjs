@@ -70,20 +70,22 @@ const ok = (name, pass, note = '') => { steps.push({ step: name, pass: !!pass, n
       // ── ٤) إضافة منتج ──
       await p.goto(`${SITE}/admin/business-finance/${supplierId}/products`, { waitUntil: 'domcontentloaded', timeout: 60000 })
       await p.waitForTimeout(7000)
-      const addBtn = await p.$('button:has-text("ضيف منتج"), button:has-text("منتج جديد"), button:has-text("إضافة")')
+      const addBtn = await p.$('button:has-text("منتج جديد"), button:has-text("ضيف منتج"), button:has-text("إضافة")')
       ok('شاشة المنتجات والخدمات بتفتح', !!addBtn || /منتجات|خدمات/.test(await p.evaluate(() => document.body.innerText).catch(() => '')))
       if (addBtn) {
-        await addBtn.click(); await p.waitForTimeout(2500)
-        const nameInput = await p.$('[role=dialog] input, form input')
-        if (nameInput) {
-          await nameInput.fill('منتج اختبار يومي')
-          const price = await p.$('input[inputmode="decimal"], input[type="number"]')
-          if (price) await price.fill('150')
-          const save = await p.$('button:has-text("حفظ"), button:has-text("احفظ")')
-          if (save) { await save.click(); await p.waitForTimeout(5000) }
-        }
+        // ⚠️ (١٨/٩) فورم المنتج **مش dialog** — بيتفتح جوّه الصفحة نفسها:
+        //    صورة (file) → الاسم (text) → القسم/النوع (select) → سعر البيع (number) → «احفظ».
+        await addBtn.click(); await p.waitForTimeout(3500)
+        // ⚠️ (١٨/٩) خانة الاسم **من غير خاصية type** — `input[type=text]` مابيلقيهاش (الـDOM بيقول text
+        //    بس الـattribute مش موجود). فبنستبعد الأنواع المعروفة وناخد أول خانة.
+        const texts = await p.$$('input:not([type=file]):not([type=number]):not([type=color]):not([type=password]):not([type=checkbox])')
+        const nums = await p.$$('input[type=number]')
+        if (texts[0]) await texts[0].fill('منتج اختبار يومي')
+        if (nums[0]) await nums[0].fill('150')
+        const save = await p.$('button:has-text("احفظ"), button:has-text("حفظ")')
+        if (save) { await save.click(); await p.waitForTimeout(7000) }
         const body = await p.evaluate(() => document.body.innerText)
-        ok('المنتج اتسجّل وظهر', /منتج اختبار يومي/.test(body))
+        ok('المنتج اتسجّل وظهر', /منتج اختبار يومي/.test(body), body.includes('ماتعملش') ? 'رسالة خطأ في الشاشة' : '')
       }
       // ── ٥) فيتشر اليوم ──
       const feats = ['branches', 'team', 'expenses', 'marketplace-catalog']
