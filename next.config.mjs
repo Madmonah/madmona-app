@@ -82,12 +82,16 @@ const nextConfig = {
       { source: '/signup', destination: '/auth/signup', permanent: false },
     );
 
-    // Deprecated supplier-signup paths → unified /add-listing flow
+    // Deprecated supplier-signup paths
     // (old WhatsApp messages still contain these URLs)
-    // NOTE: /auth/signup is NOT redirected — it's the legitimate account
-    // creation page used after listing submission.
+    // 🚪 (١٨/٩/٢٠٢٦) «سجّل نشاطك» كان بيودّي على **فورم إعلان** مش على إنشاء حساب —
+    //    اتكشف بفحص أبواب الدخول الحقيقية (scripts/qa/entry-points.cjs). صاحب البيزنس
+    //    اللي بيدوس «سجّل كمورد» من أي شاشة قديمة لازم يوصل لـ/start (الشاشة الوحيدة
+    //    اللي بتعمل الحساب والشركة). permanent:false عشان الـ308 القديم ماينفعش يتغيّر
+    //    في متصفح اتكاش عليه.
+    // NOTE: /auth/signup is NOT redirected here — صفحتها نفسها بتحوّل على /login.
     redirects.push(
-      { source: '/supplier/register', destination: '/add-listing', permanent: true },
+      { source: '/supplier/register', destination: '/start', permanent: false },
       { source: '/list-your-asset', destination: '/add-listing', permanent: true },
     );
 

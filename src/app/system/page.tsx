@@ -144,11 +144,18 @@ export default function SystemPage() {
 
         {/* CTA */}
         <section className="mt-12 rounded-2xl bg-[#1F6F5F] px-6 py-8 text-center">
-          <p className="text-2xl font-black leading-snug text-[#FAFAF7]">برنامج الإدارة كامل بـ١٠٠٠ ج — بدل كتير.</p>
-          <p className="mt-2 text-[#CFEBDD]">لعدد محدود من الحسابات. سيب رقمك وإحنا نكلّمك ونفعّلك — من غير دفع دلوقتي.</p>
-          <Link href="/pro" className="mt-5 inline-block rounded-2xl bg-[#FAFAF7] px-8 py-4 text-lg font-extrabold text-[#0C2B22]">
-            احجز حسابك ←
+          {/* 🚪 (١٨/٩/٢٠٢٦) الصفحة كانت من غير أي باب تسجيل — الزرار كان بيودّي /pro
+              وبيقول «سيب رقمك» والفورم اتشال من ١٢/٩. الباب دلوقتي /start مباشرة. */}
+          <p className="text-2xl font-black leading-snug text-[#FAFAF7]">افتح حسابك دلوقتي — مجانًا.</p>
+          <p className="mt-2 text-[#CFEBDD]">مجاني لصاحب البيزنس + موظف. فريق أكبر بـ١٠٠٠ ج شهريًا بدل كتير.</p>
+          <Link href="/start?utm_source=system" className="mt-5 inline-block rounded-2xl bg-[#FAFAF7] px-8 py-4 text-lg font-extrabold text-[#0C2B22]">
+            ابدأ مجانًا دلوقتي ←
           </Link>
+          <p className="mt-3 text-sm text-[#CFEBDD]">
+            عندك حساب؟ <Link href="/start?tab=login" className="font-extrabold text-[#FAFAF7] underline">سجّل دخولك</Link>
+            {' · '}
+            <Link href="/pro" className="font-extrabold text-[#FAFAF7] underline">تفاصيل الباقة</Link>
+          </p>
           <p className="mt-4 text-sm text-[#CFEBDD]">
             مش عارف تايتلك إيه؟ <Link href="/title" className="font-extrabold text-[#FAFAF7] underline">ارفع صورة من شغلك ونقولك</Link>
           </p>

@@ -87,6 +87,12 @@ const ok = (name, pass, note = '') => { steps.push({ step: name, pass: !!pass, n
         const body = await p.evaluate(() => document.body.innerText)
         ok('المنتج اتسجّل وظهر', /منتج اختبار يومي/.test(body), body.includes('ماتعملش') ? 'رسالة خطأ في الشاشة' : '')
       }
+      // ── ٤.٥) الفروع: لازم فرع واحد مش اتنين (فرع HQ الأوتوماتيكي بيتحدّث مش بيتكرر) ──
+      await p.goto(`${SITE}/admin/business-finance/${supplierId}/branches`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+      await p.waitForTimeout(7000)
+      const branchRows = await p.evaluate(() => (document.body.innerText.match(/الفرع الرئيسي/g) || []).length)
+      ok('فرع واحد مش مكرر', branchRows === 1, 'عدد «الفرع الرئيسي» = ' + branchRows)
+
       // ── ٥) فيتشر اليوم ──
       const feats = ['branches', 'team', 'expenses', 'marketplace-catalog']
       const feat = feats[new Date().getDate() % feats.length]

@@ -80,12 +80,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.5,
     },
-    {
-      url: `${SITE_URL}/supplier/register`,
-      lastModified,
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
+    // ⛔ (١٨/٩/٢٠٢٦) /supplier/register اتشال من السايت ماب — بقى redirect على /start،
+    //    والروابط المحوّلة في السايت ماب بتتحسب «redirect error» في Search Console.
   ]
 
   // Dynamic: published listings + active categories
