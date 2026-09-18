@@ -6,6 +6,7 @@ import {
   Loader2, ShieldCheck, Building2, Crown, ChevronLeft, ClipboardList,
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { ensureSupabaseSession } from '@/lib/session-upgrade'
 import { modulesForIndustry, canOpenModule } from '@/lib/erpModules'
 import BusinessSetupSteps from '@/components/BusinessSetupSteps'
 
@@ -52,10 +53,24 @@ export default function MyWorkspaceCard() {
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      try {
+      // 🐞 (١٨/٩/٢٠٢٦ — الاختبار اليومي كشفها) صاحب بيزنس جديد بيدخل «حسابي» ومايلاقيش كارت «بيزنسي» خالص:
+      //    `get_my_workspace` بتعتمد على `auth.uid()`، والكارت كان بينادي الـRPC **قبل** ما جلسة Supabase تجهز
+      //    (اللي داخل بكود واتساب معاه `madmona_token` والجلسة بتترقّى بعدها بلحظات) — فبترجع فاضية،
+      //    و`list.length === 0` بيخفي الكارت للأبد. دلوقتي: نستنى ترقية الجلسة، ونعيد المحاولة مرة لو فاضية.
+      const call = async () => {
         const { data } = await (supabaseBrowser.rpc as unknown as (
           fn: string,
         ) => Promise<{ data: Workspace | null }>)('get_my_workspace')
+        return data
+      }
+      try {
+        await ensureSupabaseSession(4000).catch(() => null)
+        let data = await call()
+        if (!data?.memberships?.length) {
+          await new Promise((r) => setTimeout(r, 1500))
+          await ensureSupabaseSession(4000).catch(() => null)
+          data = await call()
+        }
         if (!cancelled) setWs(data)
       } catch (e) {
         console.error('[workspace] get_my_workspace failed:', e)
