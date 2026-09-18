@@ -97,6 +97,9 @@ export interface RestaurantCloudProps {
   listing: { id: string; slug?: string | null }
   supplier: { id: string; business_name: string }
   items: CloudItem[]
+  /** 🍽️ (١٨/٩/٢٠٢٦) أقسام معدّلة من صاحب البيزنس — صورة/إيموچي لكل قسم.
+   *  لو القسم موجود هنا بتغلب على أي تخمين في الكود. */
+  categories?: { name: string; emoji?: string | null; photo_url?: string | null; display_order?: number | null }[]
   /** لو الصفحة عندها هيدر بتاعها (صفحة الإعلان) — نعرض المنيو بس */
   hideHeader?: boolean
 }
@@ -107,7 +110,7 @@ function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g, '-').replace(/^-+|-+$/g, '') || 'cat'
 }
 
-export default function RestaurantCloud({ business, listing, supplier, items, hideHeader }: RestaurantCloudProps) {
+export default function RestaurantCloud({ business, listing, supplier, items, categories, hideHeader }: RestaurantCloudProps) {
   const { t, lang } = useT()
   const cart = useCart()
   const [active, setActive] = useState<string>('')
@@ -123,8 +126,24 @@ export default function RestaurantCloud({ business, listing, supplier, items, hi
       if (!m.has(c)) m.set(c, [])
       m.get(c)!.push(it)
     }
-    return Array.from(m.entries()).map(([name, list]) => ({ name, id: slugify(name), items: list, cover: list.find((x) => x.photo_url)?.photo_url || null }))
-  }, [items])
+    // 🍽️ (١٨/٩/٢٠٢٦) الأولوية: صورة القسم المعدّلة ← صورة أول صنف ← (وفي العرض) الإيموچي
+    //    المعدّل ← تخمين من الاسم. يعني صاحب البيزنس يقدر يغيّر أي حاجة، والكود fallback بس.
+    const meta = new Map((categories || []).map((c) => [c.name.trim(), c]))
+    const arr = Array.from(m.entries()).map(([name, list]) => {
+      const md = meta.get(name)
+      return {
+        name, id: slugify(name), items: list,
+        cover: md?.photo_url || list.find((x) => x.photo_url)?.photo_url || null,
+        emoji: md?.emoji || null,
+        order: md?.display_order ?? null,
+      }
+    })
+    // ترتيب معدّل لو متحط، وإلا الترتيب الطبيعي زي ما هو
+    if (arr.some((g) => g.order !== null)) {
+      arr.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999))
+    }
+    return arr
+  }, [items, categories])
 
   const currency = items.find((i) => i.currency)?.currency || 'EGP'
   const count = cartItemCount(cart)
@@ -195,7 +214,7 @@ export default function RestaurantCloud({ business, listing, supplier, items, hi
             {g.cover ? (
               <div className="h-24" style={{ backgroundImage: `url(${g.cover})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             ) : (
-              <div className="h-24 grid place-items-center text-4xl" style={{ background: 'linear-gradient(135deg,#DCE9E1,#F4EFE8)' }}>{catEmoji(g.name)}</div>
+              <div className="h-24 grid place-items-center text-4xl" style={{ background: 'linear-gradient(135deg,#DCE9E1,#F4EFE8)' }}>{g.emoji || catEmoji(g.name)}</div>
             )}
             <div className="px-3 py-2.5 flex items-center justify-between gap-1">
               <div className="min-w-0">

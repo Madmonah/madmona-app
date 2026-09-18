@@ -419,6 +419,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
   //    — والمنيو الحقيقي مش ظاهر. أول تطبيق: لمونة (١٦٣ صنف · درهم).
   const [menu, setMenu] = useState<any[]>([])
   const [menuListing, setMenuListing] = useState<{ id: string; slug: string | null } | null>(null)
+  const [menuCats, setMenuCats] = useState<any[]>([])   // 🍽️ أقسام المنيو المعدّلة (صورة/إيموچي)
 
   useEffect(() => {
     (async () => {
@@ -446,6 +447,10 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
             for (const s of (sz || []) as any[]) { if (s.is_available === false) continue; if (!szMap.has(s.menu_item_id)) szMap.set(s.menu_item_id, []); szMap.get(s.menu_item_id)!.push({ id: s.id, name_ar: s.name_ar, price: Number(s.price) }) }
             setMenu(items.map((x) => ({ ...x, price: Number(x.price), sizes: szMap.get(x.id) || [] })))
             setMenuListing({ id: first.id, slug: first.slug ?? null })
+            // 🍽️ (١٨/٩/٢٠٢٦) صور وإيموچي الأقسام المعدّلة
+            const { data: cats } = await supabase.from('restaurant_menu_categories')
+              .select('name, emoji, photo_url, display_order').eq('listing_id', first.id)
+            setMenuCats((cats || []) as any[])
           }
         }
       } catch { /* المنيو إضافة — لو فشل الصفحة تكمّل زي ما كانت */ }
@@ -719,6 +724,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
         {menu.length > 0 && menuListing && (
           <RestaurantCloud
             hideHeader
+            categories={menuCats}
             business={{ name: data.business_name, logo: data.logo_url, tagline: data.description_ar || null,
               phone: data.contact_phone || null, city: data.city || null }}
             listing={{ id: menuListing.id, slug: menuListing.slug }}

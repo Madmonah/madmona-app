@@ -164,6 +164,9 @@ export default function ListingDetailPage() {
   const [shareSuccess, setShareSuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'location' | 'reviews'>('details')
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  // 🍽️ (١٨/٩/٢٠٢٦) أقسام المنيو المعدّلة (صورة/إيموچي/ترتيب) — من restaurant_menu_categories
+  type MenuCat = { name: string; emoji: string | null; photo_url: string | null; display_order: number | null }
+  const [menuCategories, setMenuCategories] = useState<MenuCat[]>([])
   const [martProducts, setMartProducts] = useState<MartProduct[]>([])
 
   useEffect(() => {
@@ -318,6 +321,12 @@ export default function ListingDetailPage() {
             .eq('is_available', true)
             .order('display_order', { ascending: true })
           const itemsArr = (mi || []) as MenuItem[]
+          // 🍽️ (١٨/٩/٢٠٢٦) صور وإيموچي الأقسام المعدّلة من صاحب البيزنس (القراءة عامة بالـRLS)
+          const { data: cats } = await supabaseBrowser
+            .from('restaurant_menu_categories')
+            .select('name, emoji, photo_url, display_order')
+            .eq('listing_id', l.id)
+          setMenuCategories((cats || []) as MenuCat[])
           if (itemsArr.length > 0) {
             const { data: szs } = await supabaseBrowser
               .from('restaurant_menu_item_sizes')
@@ -1065,6 +1074,7 @@ export default function ListingDetailPage() {
             {isRestaurant && !isDirectory && listing.supplier && (
               <RestaurantCloud
                 hideHeader
+                categories={menuCategories}
                 business={{ name: listing.supplier.business_name || displayTitle, logo: listing.supplier.logo_url ?? null,
                   tagline: null, phone: listing.supplier?.profile?.phone ?? null, city: listing.city ?? null }}
                 listing={{ id: listing.id, slug: listing.slug ?? null }}

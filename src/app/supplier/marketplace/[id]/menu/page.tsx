@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import MenuCategoriesEditor from '@/components/MenuCategoriesEditor'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
@@ -322,6 +323,18 @@ export default function SupplierMenuPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-6">
+        {/* 🍽️ (١٨/٩/٢٠٢٦) محمد: «الصور والإيموجي عايزنهم دينامك أو قابلين للتعديل» —
+            القالب زي ما هو، وصاحب المطعم بيتحكم في شكل كروت الأقسام من هنا. */}
+        {items.length > 0 && (
+          <details className="mb-5 bg-white rounded-3xl shadow-soft overflow-hidden">
+            <summary className="px-5 py-4 cursor-pointer font-black text-gray-900 select-none">
+              🎨 شكل أقسام المنيو — صور وأيقونات
+            </summary>
+            <div className="px-4 pb-4">
+              <MenuCategoriesEditor listingId={listingId} />
+            </div>
+          </details>
+        )}
         {items.length === 0 ? (
           <div className="bg-white rounded-3xl shadow-card p-10 text-center max-w-md mx-auto">
             <div className="w-20 h-20 mx-auto mb-5 bg-gray-100 rounded-3xl flex items-center justify-center">

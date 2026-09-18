@@ -97,6 +97,8 @@ const TOKEN_FNS = new Set([
   // (٥/٩/٢٠٢٦) دوال الحجز — اتحطّ عليها حارس p_token عشان صفحة الحجز
   // كانت واقفة على صاحب البيزنس (anon بتوكن الواتساب).
   'admin_get_bookings', 'admin_create_walkin_booking', 'admin_update_booking_status',
+  // 🍽️ (١٨/٩/٢٠٢٦) أقسام المنيو — صاحب المطعم بيعدّل صورة/إيموچي كل قسم بنفسه
+  'business_menu_categories', 'business_menu_category_save',
 ])
 export function withToken(client: any) {
   return {
