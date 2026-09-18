@@ -346,7 +346,15 @@ export async function POST(req: NextRequest) {
     // لو الأول مش راضي يفتح أو رقمه مش شغّال عنده.
     // 🔒 (٩/٩/٢٠٢٦) محمد: «خلي رقم تأكيد الدخول 1551 بس» — مفيش بدائل خالص.
     //    (liveWaNumbers فضلت للتشخيص في /api/whatsapp/sessions مش هنا)
-    const alternatives: { number: string; url: string }[] = []
+    // 📞 (١٨/٩/٢٠٢٦) محمد: «خليني أوصّل التليفونات والتأكيد يكون على أي رقم مربوط».
+    //    كانت مقفولة على 1551 لوحده من ٩/٩ («خلي رقم تأكيد الدخول 1551 بس») — ودي خلّت
+    //    التوثيق كله معلّق على رقم واحد، فلما وقع وقف التسجيل. التأكيد نفسه **session-agnostic**
+    //    أصلًا (الويبهوك بيأكّد الكود من أي رقم بيستقبله) — اللي كان محصور هو **العرض** بس.
+    //    دلوقتي بنعرض كل رقم جلسته `ready` فعلًا، والعميل يبعت على أي واحد فيهم.
+    const live = await liveWaNumbers(sb).catch(() => [])
+    const alternatives = live
+      .filter((n) => n && n !== waNumber)
+      .map((n) => ({ number: n, url: `https://wa.me/${n}?text=${text}` }))
     // 🔴 (١٨/٩/٢٠٢٦) محمد: «توثيق الرقم هل شغال؟؟» — الفحص كشف إن خدمة OpenWA
     //    على Railway كانت بترجّع «Application not found» (404) وآخر رسالة واردة
     //    بقالها ١٩ ساعة، و٣ أكواد من ناس حقيقيين راحوا في الفراغ ١٧/٩ بالليل.
@@ -355,7 +363,7 @@ export async function POST(req: NextRequest) {
     //    ✅ الرد بقى بيقول الحقيقة: `wa_live` = فيه جلسة شغالة فعلًا ولا لأ —
     //    والواجهة بتوجّهه لجوجل بدل الطريق المسدود. ⚠️ الفولباك مايتشالش
     //    (الكود بيتخزّن والتوثيق بيتم لو الخدمة رجعت وهو لسه في المهلة).
-    const waLive = (await liveWaNumbers(sb).catch(() => [])).length > 0
+    const waLive = live.length > 0
     return NextResponse.json({
       alternatives,
       code,

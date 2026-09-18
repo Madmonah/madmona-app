@@ -65,7 +65,7 @@ export default function StartPage() {
   const [form, setForm] = useState<Form>({ business_name: '', industry: 'clinic', contact_name: '', contact_phone: '', contact_email: '', password: '', city: 'القاهرة', district: '', address: '', slug: '', accent: '#059669', logo_url: '', branches: [{ name: 'الفرع الرئيسي', address: '', district: '', phone: '', manager_name: '' }] })
   const [logoBusy, setLogoBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [wa, setWa] = useState<{ code: string; number: string; url: string } | null>(null)
+  const [wa, setWa] = useState<{ code: string; number: string; url: string; alts?: { number: string; url: string }[] } | null>(null)
   const [supplierId, setSupplierId] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const creatingRef = useRef(false)
@@ -109,7 +109,7 @@ export default function StartPage() {
       // إعدادات Supabase بتطلب تأكيد الإيميل — الحساب اتعمل وبيستنى الضغطة
       setStage('form')
       trackEvent({ event_type: 'start_error', metadata: { step: 'signup_confirm' } })
-      setErr('بعتنالك إيميل تأكيد على ' + email + ' — افتحه واضغط اللينك، وبعدين ارجع هنا واضغط «أنشئ شركتي».')
+      setErr('بعتنالك إيميل تأكيد على ' + email + ' — افتحه واضغط اللينك، وبعدين ارجع هنا واضغط «أنشئ نشاطي التجاري».')
       return
     }
     void syncModuleSession()
@@ -142,7 +142,7 @@ export default function StartPage() {
       if (!r.ok) {
         trackEvent({ event_type: 'start_error', metadata: { step: 'create', error: String(r.error || '').slice(0, 120) } })
         const weak = /weak|easy to guess|pwned|leaked|Password/i.test(String(r.password_error || r.error || ''))
-        setErr(weak ? 'الباسورد ده معروف وسهل التخمين — اختار باسورد تاني (٨ حروف وأرقام مش متوقعة) واضغط «أنشئ شركتي» — رقمك اتوثّق خلاص.' : (r.error || 'ماتعملش — جرّب تاني'))
+        setErr(weak ? 'الباسورد ده معروف وسهل التخمين — اختار باسورد تاني (٨ حروف وأرقام مش متوقعة) واضغط «أنشئ نشاطي التجاري» — رقمك اتوثّق خلاص.' : (r.error || 'ماتعملش — جرّب تاني'))
         setStage('form'); creatingRef.current = false; return
       }
       trackEvent({ event_type: 'start_created', metadata: { existing: r.existing === true, industry: f.industry } })
@@ -230,11 +230,12 @@ export default function StartPage() {
     //    الصح نقول الحقيقة ونوجّهه لجوجل — مش نحطه في طريق مسدود.
     if (r.wa_live === false) {
       trackEvent({ event_type: 'start_error', metadata: { step: 'wa_offline' } })
-      setErr('توثيق الواتساب متوقف مؤقتًا عندنا — كمّل بحساب جوجل من الزرار اللي تحت، وهتوصل لشركتك على طول.')
+      setErr('توثيق الواتساب متوقف مؤقتًا عندنا — كمّل بحساب جوجل من الزرار اللي تحت، وهتوصل لنشاطك على طول.')
       return
     }
     trackEvent({ event_type: 'start_wa_requested', metadata: { wa_number: r.wa_number } })
-    const pending = { code: r.code, number: r.wa_number, url: r.wa_url, at: Date.now() }
+    // 📞 (١٨/٩/٢٠٢٦) «التأكيد على أي رقم مربوط» — بنحتفظ بباقي الأرقام الجاهزة كبدائل
+    const pending = { code: r.code, number: r.wa_number, url: r.wa_url, alts: Array.isArray(r.alternatives) ? r.alternatives : [], at: Date.now() }
     safeStorage.set(WA_KEY, JSON.stringify(pending))
     setWa(pending)
     setStage('verify')
@@ -292,7 +293,7 @@ export default function StartPage() {
     //    الزرار كان disabled بصمت لأن الباسورد أقل من ٨ أو من غير حرف/رقم. الزرار بقى شغّال دايمًا وبيقول الناقص بالاسم.
     if (!valid) {
       const missing: string[] = []
-      if (form.business_name.trim().length < 2) missing.push('اسم الشركة')
+      if (form.business_name.trim().length < 2) missing.push('اسم النشاط التجاري')
       if (form.contact_phone.replace(/\D/g, '').length < 10) missing.push('رقم الواتساب (١١ رقم)')
       if (!pwOk) missing.push(form.password.length < 6 ? 'الباسورد ٦ حروف على الأقل' : 'الباسورد لازم فيه حروف وأرقام مع بعض')
       if (form.contact_email.trim() && !emailOk) missing.push('الإيميل مش مظبوط')
@@ -329,8 +330,8 @@ export default function StartPage() {
           <div className="flex items-center gap-3">
             <span className="w-11 h-11 rounded-2xl bg-[#34D399] text-[#04352A] grid place-items-center"><Building2 className="w-5 h-5" /></span>
             <div>
-              <h1 className="text-2xl font-black leading-tight">{tab === 'login' ? 'ادخل على لوحة شركتك' : 'ضيف شركتك على مضمونة'}</h1>
-              <p className="text-white/75 text-sm">{tab === 'login' ? 'برقمك أو إيميلك والباسورد — أو بجوجل' : '٤ خانات ودقيقة واحدة — حسابك ولوحة شركتك يتعملوا مع بعض'}</p>
+              <h1 className="text-2xl font-black leading-tight">{tab === 'login' ? 'ادخل على لوحة نشاطك' : 'ضيف نشاطك التجاري على مضمونة'}</h1>
+              <p className="text-white/75 text-sm">{tab === 'login' ? 'برقمك أو إيميلك والباسورد — أو بجوجل' : '٤ خانات ودقيقة واحدة — حسابك ولوحة نشاطك يتعملوا مع بعض'}</p>
             </div>
           </div>
         </div>
@@ -371,7 +372,7 @@ export default function StartPage() {
             {/* 📈 (١٥/٩/٢٠٢٦) محمد: «عايز growth» — الفورم كان ٩ خانات على شاشة موبايل لزائر جاي من شورت.
                 المطلوب للإنشاء فعلًا: اسم الشركة · النشاط · رقم الواتساب · باسورد (قاعدة ١٤/٩). الباقي (المسؤول · الإيميل ·
                 المدينة · الحي · العنوان) بيتكمّل في «كمّل شركتك» — هنا اختياري ومطوي. */}
-            <label className="block"><span className="text-xs font-bold text-gray-600">اسم الشركة *</span>
+            <label className="block"><span className="text-xs font-bold text-gray-600">اسم النشاط التجاري *</span>
               <input value={form.business_name} onChange={(e) => touch({ ...form, business_name: e.target.value })} className={INP} placeholder="مثلًا: عيادة د. أحمد — مصر الجديدة" required maxLength={200} /></label>
             <label className="block"><span className="text-xs font-bold text-gray-600">النشاط *</span>
               <select value={form.industry} onChange={(e) => touch({ ...form, industry: e.target.value })} className={INP}>{INDUSTRIES.map((i) => <option key={i.value} value={i.value}>{i.label}</option>)}</select></label>
@@ -389,7 +390,7 @@ export default function StartPage() {
               <span className={`text-[11px] ${form.password && !pwOk ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>{form.password && !pwOk ? (form.password.length < 6 ? `لسه ${6 - form.password.length} حروف — ` : 'لازم حروف وأرقام مع بعض — ') : ''}٦ على الأقل، فيه حروف وأرقام، ومش معروف (مش ١٢٣٤٥٦٧٨ ولا رقم موبايلك). هتدخل بيه بعدين برقم الواتساب.</span></label>
             {/* 🎨 هوية الشركة — نفس حقول شاشة الأدمن: لوجو · لون البراند · لينك الصفحة */}
             <div className="rounded-2xl border border-gray-100 bg-[#FAFAF7] p-3 space-y-3">
-              <p className="text-xs font-black text-[#04352A]">هوية شركتك</p>
+              <p className="text-xs font-black text-[#04352A]">هوية نشاطك</p>
               <div className="flex items-center gap-3">
                 <div className="w-16 h-16 rounded-2xl border-2 border-dashed border-gray-300 bg-white grid place-items-center overflow-hidden shrink-0">
                   {form.logo_url
@@ -399,11 +400,11 @@ export default function StartPage() {
                 <div className="flex-1">
                   <label className="inline-flex items-center gap-2 text-xs font-bold text-[#059669] cursor-pointer">
                     {logoBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                    {form.logo_url ? 'غيّر اللوجو' : 'ارفع لوجو شركتك'}
+                    {form.logo_url ? 'غيّر اللوجو' : 'ارفع لوجو نشاطك'}
                     <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
                       onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadLogo(f) }} />
                   </label>
-                  <p className="text-[11px] text-gray-400 mt-1">JPG أو PNG — لحد ٣ ميجا. بيظهر على صفحة شركتك وفواتيرك.</p>
+                  <p className="text-[11px] text-gray-400 mt-1">JPG أو PNG — لحد ٣ ميجا. بيظهر على صفحة نشاطك وفواتيرك.</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -469,12 +470,12 @@ export default function StartPage() {
                 والواتساب بديل ثانوي. */}
             {hasSession || emailOk ? (
               <button type="submit" className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base flex items-center justify-center gap-2">
-                أنشئ شركتي
+                أنشئ نشاطي التجاري
               </button>
             ) : (
               <div className="space-y-2">
                 <button type="submit" className="w-full py-4 rounded-2xl bg-[#04352A] text-white font-black text-base">
-                  أنشئ شركتي
+                  أنشئ نشاطي التجاري
                 </button>
                 <p className="text-center text-[11px] text-gray-400">اكتب إيميلك فوق وهنعمل حسابك على طول — أو:</p>
                 <div onClick={() => { safeStorage.set(DRAFT_KEY, JSON.stringify(form)); trackEvent({ event_type: 'start_google_click' }) }}>
@@ -497,6 +498,16 @@ export default function StartPage() {
             <p className="text-sm text-gray-500">افتح واتساب وابعت الكود لرقم مضمونة — هنعرفك من رقمك ونكمّل لوحدنا.</p>
             <div className="rounded-2xl bg-[#FAFAF7] border border-dashed border-[#34D399] py-4 text-3xl font-black tracking-widest" dir="ltr">{wa.code}</div>
             <a href={wa.url} target="_blank" rel="noopener noreferrer" className="block w-full py-4 rounded-2xl bg-[#25D366] text-white font-black no-underline flex items-center justify-center gap-2"><MessageCircle className="w-5 h-5" /> افتح واتساب وابعت الكود</a>
+            {!!wa.alts?.length && (
+              <div className="pt-1">
+                <p className="text-[11px] text-gray-400 mb-1">أو ابعته على أي رقم من دول — كله بيتأكّد:</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {wa.alts.map((a) => (
+                    <a key={a.number} href={a.url} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-[#04352A] bg-[#E6F4EE] rounded-xl px-3 py-2 no-underline" dir="ltr">{a.number}</a>
+                  ))}
+                </div>
+              </div>
+            )}
             <p className="text-xs text-gray-400 flex items-center justify-center gap-2"><Loader2 className="w-3.5 h-3.5 animate-spin" /> مستنيين رسالتك… الصفحة هتكمّل لوحدها أول ما ترجع</p>
             {/* 🐞 (١٨/٩/٢٠٢٦) على الموبايل التاب بيتجمّد وإنت في واتساب — الزرار ده بيفحص فورًا من غير انتظار */}
             <button type="button" onClick={() => { setErr(null); void checkOnce(wa.code, form) }} className="w-full py-3 rounded-2xl bg-[#04352A] text-white font-black">بعتّ الكود — كمّل</button>
@@ -505,14 +516,14 @@ export default function StartPage() {
         )}
 
         {stage === 'creating' && (
-          <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8 text-center"><Loader2 className="w-7 h-7 text-[#059669] animate-spin mx-auto mb-3" /><p className="font-black">بنجهّز شركتك…</p></div>
+          <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-8 text-center"><Loader2 className="w-7 h-7 text-[#059669] animate-spin mx-auto mb-3" /><p className="font-black">بنجهّز نشاطك…</p></div>
         )}
 
         {stage === 'done' && (
           <div className="rounded-3xl bg-white border-2 border-[#04352A] shadow-sm p-8 text-center">
             <CheckCircle2 className="w-10 h-10 text-[#059669] mx-auto mb-2" />
             <p className="font-black text-lg">اتعملت ✓</p>
-            <p className="text-sm text-gray-500 mt-1">هنودّيك على «حسابي» في التطبيق — شركتك ولوحتها هتلاقيهم هناك.</p>
+            <p className="text-sm text-gray-500 mt-1">هنودّيك على «حسابي» في التطبيق — نشاطك ولوحته هتلاقيهم هناك.</p>
             {/* 🔑 (١٠/٩) محمد: «صاحب البيزنس لما بيخلص مش بيعرف يسجل دخول تاني» — نقوله المرة الجاية بيدخل منين */}
             <p className="text-xs text-[#04352A] bg-[#E6F4EE] rounded-xl px-3 py-2 mt-3 font-bold">المرة الجاية: افتح <span dir="ltr">madmonacairo.com/login</span> وادخل بنفس الرقم أو الإيميل + الباسورد اللي كتبته هنا (أو كود واتساب / حساب جوجل) — هتلاقي لوحتك على طول.</p>
             {supplierId && <Link href="/account?welcome=1" className="inline-block mt-4 bg-[#04352A] text-white font-black rounded-2xl px-6 py-3 no-underline">افتح حسابي ←</Link>}
