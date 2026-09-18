@@ -175,6 +175,12 @@ export default function WhatsAppLogin({
         }
         return
       }
+      // 🔴 (١٨/٩/٢٠٢٦) مفيش جلسة واتساب شغالة = الكود هيروح في الفراغ.
+      //    قول الحقيقة ووجّه لجوجل/الباسورد بدل ما تسيبه مستني رد مش جاي.
+      if (j.wa_live === false) {
+        setErr('توثيق الواتساب متوقف مؤقتًا — ادخل بجوجل أو بالرقم والباسورد من نفس الشاشة.')
+        return
+      }
       codeRef.current = j.code
       setCode(j.code)
       setWaUrl(j.wa_url)

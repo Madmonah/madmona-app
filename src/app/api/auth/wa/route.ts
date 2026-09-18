@@ -347,9 +347,19 @@ export async function POST(req: NextRequest) {
     // 🔒 (٩/٩/٢٠٢٦) محمد: «خلي رقم تأكيد الدخول 1551 بس» — مفيش بدائل خالص.
     //    (liveWaNumbers فضلت للتشخيص في /api/whatsapp/sessions مش هنا)
     const alternatives: { number: string; url: string }[] = []
+    // 🔴 (١٨/٩/٢٠٢٦) محمد: «توثيق الرقم هل شغال؟؟» — الفحص كشف إن خدمة OpenWA
+    //    على Railway كانت بترجّع «Application not found» (404) وآخر رسالة واردة
+    //    بقالها ١٩ ساعة، و٣ أكواد من ناس حقيقيين راحوا في الفراغ ١٧/٩ بالليل.
+    //    `pickLoginWa` بترجّع 1551 حتى لو مفيش أي جلسة `ready` (فولباك في الـcatch)،
+    //    فالعميل بيتقاله «ابعت الكود» لرقم **مفصول** وبيفضل مستني للأبد.
+    //    ✅ الرد بقى بيقول الحقيقة: `wa_live` = فيه جلسة شغالة فعلًا ولا لأ —
+    //    والواجهة بتوجّهه لجوجل بدل الطريق المسدود. ⚠️ الفولباك مايتشالش
+    //    (الكود بيتخزّن والتوثيق بيتم لو الخدمة رجعت وهو لسه في المهلة).
+    const waLive = (await liveWaNumbers(sb).catch(() => [])).length > 0
     return NextResponse.json({
       alternatives,
       code,
+      wa_live: waLive,
       wa_number: waNumber,
       wa_url: `https://wa.me/${waNumber}?text=${text}`,
     })

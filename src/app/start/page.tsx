@@ -191,6 +191,14 @@ export default function StartPage() {
     const r = await fetch('/api/auth/wa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'start', phone: form.contact_phone }) })
       .then((x) => x.json()).catch(() => null)
     if (!r?.code) { trackEvent({ event_type: 'start_error', metadata: { step: 'wa_start' } }); setErr('مقدرناش نبدأ التوثيق — جرّب تاني'); return }
+    // 🔴 (١٨/٩/٢٠٢٦) لو مفيش جلسة واتساب شغالة، الكود بيروح في الفراغ والعميل
+    //    بيفضل مستني للأبد (حصل ١٧/٩: ٣ أكواد من ناس حقيقيين وصفر توثيق).
+    //    الصح نقول الحقيقة ونوجّهه لجوجل — مش نحطه في طريق مسدود.
+    if (r.wa_live === false) {
+      trackEvent({ event_type: 'start_error', metadata: { step: 'wa_offline' } })
+      setErr('توثيق الواتساب متوقف مؤقتًا عندنا — كمّل بحساب جوجل من الزرار اللي تحت، وهتوصل لشركتك على طول.')
+      return
+    }
     trackEvent({ event_type: 'start_wa_requested', metadata: { wa_number: r.wa_number } })
     const pending = { code: r.code, number: r.wa_number, url: r.wa_url, at: Date.now() }
     safeStorage.set(WA_KEY, JSON.stringify(pending))
