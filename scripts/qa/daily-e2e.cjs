@@ -50,11 +50,19 @@ const ok = (name, pass, note = '') => { steps.push({ step: name, pass: !!pass, n
     ok('بعد الإنشاء بيروح «حسابي» في التطبيق', /\/account/.test(p.url()), p.url().slice(0, 60))
     await p.waitForTimeout(4000)
     // ── ٣) كارت بيزنسي → لوحة الشركة ──
+    // الكارت بيفتح لوحده لو بيزنس واحد؛ لو لأ ندوس على اسم الشركة الأول
     let bizLink = await p.$('a[href*="/admin/business-finance/"]')
+    if (!bizLink) {
+      const row = await p.$('button:has-text("صاحب البيزنس")')
+      if (row) { await row.click(); await p.waitForTimeout(2500) }
+      bizLink = await p.$('a[href*="/admin/business-finance/"]')
+    }
     if (!bizLink) { await p.waitForTimeout(6000); bizLink = await p.$('a[href*="/admin/business-finance/"]') }
     const href = bizLink ? await bizLink.getAttribute('href') : ''
     supplierId = (href || '').match(/business-finance\/([0-9a-f-]{36})/)?.[1] || null
-    ok('كارت «بيزنسي» موجود في حسابي', !!supplierId, supplierId || 'مفيش')
+    const nameShown = /QA (mobile|desktop)/.test(await p.evaluate(() => document.body.innerText).catch(() => ''))
+    ok('كارت «بيزنسي» في حسابي فيه اسم الشركة', nameShown)
+    ok('زرار لوحة الشركة ظاهر من غير دوسة زيادة', !!supplierId, supplierId || 'مفيش')
     if (supplierId) {
       // ── ٤) إضافة منتج ──
       await p.goto(`${SITE}/admin/business-finance/${supplierId}/products`, { waitUntil: 'domcontentloaded', timeout: 60000 })

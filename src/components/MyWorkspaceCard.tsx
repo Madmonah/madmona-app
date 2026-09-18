@@ -49,6 +49,9 @@ export default function MyWorkspaceCard() {
   const [loading, setLoading] = useState(true)
   const [ws, setWs] = useState<Workspace | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
+  // 📱 (١٨/٩/٢٠٢٦) صاحب بيزنس واحد بس؟ الكارت بيتفتح لوحده — من غير كده زرار «لوحة الإدارة»
+  //    بيفضل مدفون ورا دوسة، وصاحب البيزنس الجديد بيدخل «حسابي» ومايعرفش يوصل للوحته.
+  //    (نفس شكوى محمد ٢٠/٨: «تابات مدفونة ورا دوسة محدش يعرف إنها موجودة»).
 
   useEffect(() => {
     let cancelled = false
@@ -71,7 +74,11 @@ export default function MyWorkspaceCard() {
           await ensureSupabaseSession(4000).catch(() => null)
           data = await call()
         }
-        if (!cancelled) setWs(data)
+        if (!cancelled) {
+          setWs(data)
+          const only = data?.memberships?.length === 1 ? data.memberships[0].supplier_id : null
+          if (only) setOpenId(only)
+        }
       } catch (e) {
         console.error('[workspace] get_my_workspace failed:', e)
       } finally {
