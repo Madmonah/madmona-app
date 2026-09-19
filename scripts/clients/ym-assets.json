@@ -1,0 +1,15 @@
+{
+  "logo": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/logo.jpg",
+  "cover": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/02-hall.jpg",
+  "portrait": "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/01-youssef.jpg",
+  "gallery": [
+    "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/02-hall.jpg",
+    "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/03-bath.jpg",
+    "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/04-hall2.jpg",
+    "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/05-corridor.jpg",
+    "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/06-corridor-window.jpg",
+    "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/07-entrance-door.jpg",
+    "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/08-entrance-door2.jpg",
+    "https://mjhflxpxunwycbiquoig.supabase.co/storage/v1/object/public/content-images/clients/ym/09-bath2.jpg"
+  ]
+}
