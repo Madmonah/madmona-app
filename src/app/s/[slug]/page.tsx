@@ -11,6 +11,7 @@ import {
   ChevronDown, MessageCircle, ShieldCheck, Image as ImageIcon, Crown, Wind,
   Brush, Hand, Flower2, Building2, Stethoscope, Utensils, Briefcase,
   Wrench, Car, ShoppingBag, Home, Factory, Plane, Package, Share2,
+  PlayCircle as PlayIcon,
 } from 'lucide-react'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -540,7 +541,14 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
    *  الصور الحقيقية بتترفع من: /supplier/dashboard ← تاب «الصور» (حساب
    *  صاحب البيزنس)، أو /admin/business-finance/<id>/identity ← «معرض الصور».
    */
-  const galleryTiles = gallery.map((g, i) => ({ url: galUrl(g), cap: galCap(g) || `صورة ${i + 1}` }))
+  /* 🎬 (١٩/٩/٢٠٢٦) محمد: «ضيف الفيديو والبوستر في الصفحة».
+   *  الفيديو بيتحط في نفس `gallery` بس كعنصر `{url, kind:'video', poster}` —
+   *  مفيش عمود جديد، وأي بيزنس يقدر يضيف فيديو بنفس الطريقة.
+   *  بيتعرض في **قسم مستقل بعرض الشاشة** فوق المعرض مش كمربع ١٤٠px،
+   *  لأن إعلانات البيزنس عمودية وطويلة والمربع الصغير بيضيّعها. */
+  const isVid = (g: any) => (typeof g !== 'string' && g?.kind === 'video') || /\.(mp4|webm|mov)(\?|$)/i.test(galUrl(g))
+  const videos = gallery.filter(isVid).map((g: any) => ({ url: galUrl(g), poster: g?.poster || '', cap: galCap(g) }))
+  const galleryTiles = gallery.filter((g) => !isVid(g)).map((g, i) => ({ url: galUrl(g), cap: galCap(g) || `صورة ${i + 1}` }))
 
   return (
     <div className="min-h-screen" dir="rtl" style={{ background: t.pageBg }}>
@@ -644,6 +652,21 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
             </div>
             <span className="font-bold text-sm flex items-center gap-0.5 flex-shrink-0" style={{ color: t.accent }}>تسوّق <ChevronLeft className="w-4 h-4" /></span>
           </Link>
+        )}
+
+        {/* 🎬 فيديو البيزنس — قبل المعرض عشان يشوفه أول حاجة */}
+        {videos.length > 0 && (
+          <section>
+            <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5">
+              <PlayIcon className="w-4 h-4" style={{ color: t.accent }} /> فيديو
+            </h2>
+            <div className="space-y-3">
+              {videos.map((vd, i) => (
+                <video key={i} src={vd.url} poster={vd.poster || undefined} controls playsInline preload="metadata"
+                  className="w-full rounded-2xl ring-1 ring-black/5 bg-black max-h-[70vh]" />
+              ))}
+            </div>
+          </section>
         )}
 
         {/* gallery — بيبان بس لو فيه صور حقيقية (شوف التعليق فوق) */}
