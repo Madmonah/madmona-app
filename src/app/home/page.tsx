@@ -377,7 +377,7 @@ export default function MadmonaHome() {
                 <div className="space-y-2">
                   <p className="text-[11px] font-bold text-[#6B7280]">احجز خدمة جديدة:</p>
                   {bookBranches.map((b: any) => (
-                    <Link key={b.branch_id} href={`/book/${b.code}`} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-[#34D399]/5 hover:bg-[#34D399]/10 transition-colors">
+                    <Link key={b.branch_id} href={`/at/${b.code}`} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-[#34D399]/5 hover:bg-[#34D399]/10 transition-colors">
                       <span className="text-sm font-bold text-[#1A2E26] flex items-center gap-2"><Calendar className="w-4 h-4 text-[#059669]" /> {b.name}</span>
                       <ChevronLeft className="w-4 h-4 text-[#6B7280]" />
                     </Link>

@@ -90,7 +90,11 @@ const nextConfig = {
     //    اللي بتعمل الحساب والشركة). permanent:false عشان الـ308 القديم ماينفعش يتغيّر
     //    في متصفح اتكاش عليه.
     // NOTE: /auth/signup is NOT redirected here — صفحتها نفسها بتحوّل على /login.
+    // 📅 (٢١/٩/٢٠٢٦) محمد: «جرب /s/sa3dawy وجرب تحجز» — زرار «احجز» في كل فرع كان
+    //    بيودّي `/book/<code>` **وده مسار مش موجود** (404 مؤكد لايف). الصح `/at/<code>`.
+    //    الروابط اتصلحت في الكود، والتحويل ده للي اتبعت للعملاء قبل كده (بايو · واتساب · QR).
     redirects.push(
+      { source: '/book/:code', destination: '/at/:code', permanent: false },
       { source: '/supplier/register', destination: '/start', permanent: false },
       { source: '/list-your-asset', destination: '/add-listing', permanent: true },
     );

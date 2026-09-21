@@ -178,7 +178,7 @@ function BookTab({ branchCode, router, setPanel, hasProducts }: any) {
   return (
     <div className="space-y-4">
       {/* PRIMARY: book */}
-      <button onClick={() => router.push(`/book/${branchCode}`)}
+      <button onClick={() => router.push(`/at/${branchCode}`)}
         className="w-full bg-[#34D399] text-[#04352A] rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-[#059669]/20 active:scale-[0.99] transition-transform md-glow">
         <div className="flex items-center gap-3 text-start">
           <div className="w-11 h-11 rounded-xl bg-white/15 grid place-items-center"><CalendarPlus className="w-6 h-6" /></div>
@@ -233,7 +233,7 @@ function ServicesTab({ services, branchCode, router }: any) {
   return (
     <div className="space-y-2.5">
       {services.map((s: any) => (
-        <button key={s.id} onClick={() => router.push(`/book/${branchCode}?service=${s.id}`)}
+        <button key={s.id} onClick={() => router.push(`/at/${branchCode}?service=${s.id}`)}
           className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between text-start active:scale-[0.99] transition-all hover:border-[#059669]/40 hover:shadow-md hover:shadow-[#1A2E26]/5">
           <div>
             <p className="font-black text-sm text-[#1A2E26]">{lang === 'en' && s.name_en ? s.name_en : s.name_ar}</p>

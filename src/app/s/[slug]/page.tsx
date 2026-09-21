@@ -718,7 +718,7 @@ export default function StorefrontPage({ params }: { params: { slug: string } })
           <h2 className="text-sm font-black text-[#1A2E26] mb-3 flex items-center gap-1.5"><MapPin className="w-4 h-4" style={{ color: t.accent }} /> {v.branchesHeading}</h2>
           <div className="space-y-2.5">
             {branches.map((b: any) => (
-              <Link key={b.id} href={`/book/${b.code}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-2.5 flex items-center gap-3 hover:border-gray-300 hover:shadow-md transition-all">
+              <Link key={b.id} href={`/at/${b.code}`} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-2.5 flex items-center gap-3 hover:border-gray-300 hover:shadow-md transition-all">
                 <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 ring-1 ring-black/5">
                   {b.image_url ? (
                     <img src={b.image_url} alt={b.name} className="w-full h-full object-cover" />

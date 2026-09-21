@@ -36,7 +36,7 @@ export default function BranchesPage({ params }: { params: { supplierId: string 
   useEffect(() => { load() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [supplierId])
 
   function copyBookingLink(code: string) {
-    const link = `https://madmonacairo.com/book/${code}`
+    const link = `https://madmonacairo.com/at/${code}`
     navigator.clipboard.writeText(link)
     setCopiedCode(code)
     setTimeout(() => setCopiedCode(null), 2000)
