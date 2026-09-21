@@ -1005,15 +1005,20 @@ function StepCategory({
         : catTrack === tab;
 
   // Filter mains by selected track tab — «بيع» (products) بيضم sales (بيع الأصول)
+  // 🧭 (٢١/٩/٢٠٢٦) محمد: «زبط الويزارد برضه». نفس إصلاح العرض (rootsForTrack):
+  //    كان بيفلتر بتراك **الرووت** بس، و«معدات ثقيله» أبوها «شركات وصناعة»
+  //    (industry) وأقسامها إيجار — فالقسم كان بيختفي من تاب الإيجار خالص،
+  //    ومعاه عقارات صناعية ومقاولات (٣١ قسم). دلوقتي: الرووت بيظهر لو هو في
+  //    التراك **أو** فيه أقسام في التراك، وأقسامه بتتفلتر عليه.
   const visibleMains = useMemo(() => {
     if (activeTrack === 'all') return categories;
-    return categories.filter((c) =>
-      activeTrack === 'products'
-        ? c.track === 'products' || c.track === 'sales'
-        : activeTrack === 'rentals'
-          ? c.track === 'rentals' || c.track === 'hybrid'
-          : c.track === activeTrack,
-    );
+    const inTrack = (t?: string | null) =>
+      activeTrack === 'products' ? t === 'products' || t === 'sales'
+      : activeTrack === 'rentals' ? t === 'rentals' || t === 'hybrid'
+      : t === activeTrack;
+    return categories
+      .filter((c) => inTrack(c.track) || (c.subs || []).some((sb) => inTrack(sb.track)))
+      .map((c) => (inTrack(c.track) ? c : { ...c, subs: (c.subs || []).filter((sb) => inTrack(sb.track)) }));
   }, [activeTrack, categories]);
 
   if (!main) {

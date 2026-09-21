@@ -274,6 +274,10 @@ async function getDBExtraCategories(): Promise<MainCategory[]> {
         subs: expandedSubs.map((s) => ({
           parent_id: s.parent_id ?? null,
           slug: s.slug,
+          // 🧭 (٢١/٩/٢٠٢٦) `track` كان بيتشال هنا — زي ما حصل مع حقول المجموعة ٢/٩.
+          //    من غيره الويزارد مايقدرش يعرف إن «معدات ثقيله» (أبوها industry)
+          //    أقسامها إيجار، فالقسم كان بيختفي من تاب الإيجار خالص.
+          track: (s as { track?: string | null }).track ?? null,
           name_ar: s.name_ar,
           name_i18n: (s as { name_i18n?: Record<string, string> | null }).name_i18n ?? null,
           group_slug: (s as { group_slug?: string | null }).group_slug ?? null,
