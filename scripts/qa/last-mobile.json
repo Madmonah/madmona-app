@@ -1,0 +1,59 @@
+{
+  "at": "2026-09-18T05:31:52.341Z",
+  "mode": "mobile",
+  "phone": "01999889791",
+  "pw": "Qa449791x",
+  "supplierId": "d985cc24-2d12-4f8b-a7db-04b81aa35bea",
+  "steps": [
+    {
+      "step": "شاشة التسجيل فيها الهوية (لون/لوجو/فروع)",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "step": "الكود وصل واتوثّق",
+      "pass": true,
+      "note": "{\"ok\":true,\"forwarded\":true,\"brain\":{\"ok\":true,\"lo"
+    },
+    {
+      "step": "بعد الإنشاء بيروح «حسابي» في التطبيق",
+      "pass": true,
+      "note": "https://www.madmonacairo.com/account?welcome=1"
+    },
+    {
+      "step": "كارت «بيزنسي» في حسابي فيه اسم الشركة",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "step": "زرار لوحة الشركة ظاهر من غير دوسة زيادة",
+      "pass": true,
+      "note": "d985cc24-2d12-4f8b-a7db-04b81aa35bea"
+    },
+    {
+      "step": "شاشة المنتجات والخدمات بتفتح",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "step": "المنتج اتسجّل وظهر",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "step": "فرع واحد مش مكرر",
+      "pass": true,
+      "note": "عدد «الفرع الرئيسي» = 1"
+    },
+    {
+      "step": "فيتشر اليوم (expenses) بيفتح",
+      "pass": true,
+      "note": "رجوع B2B PARTNER · EXPENSES المصاريف · QA mobile 2026-09-1"
+    },
+    {
+      "step": "الدخول تاني بالرقم + الباسورد",
+      "pass": true,
+      "note": "https://www.madmonacairo.com/account"
+    }
+  ]
+}

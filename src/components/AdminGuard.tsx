@@ -17,6 +17,8 @@ import { createContext, useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { readMadmonaToken } from '@/lib/madmona-token'
+import { getSessionSafe } from '@/lib/session-safe'
+import { ensureSupabaseSession } from '@/lib/session-upgrade'
 import { Loader2, ShieldAlert, ArrowLeft } from 'lucide-react'
 
 type State = 'checking' | 'staff' | 'owner' | 'supplier' | 'guest'
@@ -55,7 +57,20 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     let alive = true
     ;(async () => {
       const bizId = businessIdFromPath(pathname)
-      const { data: { session } } = await supabaseBrowser.auth.getSession()
+      // 🔒 (٢١/٩/٢٠٢٦) محمد: «لما بدوس على صفحات جوة البيزنس مش بتفتح».
+      //    الفحص بحساب حقيقي على ٧٤ شاشة: الشاشات بتفتح في الأول، وبعد عدد من
+      //    التنقلات الجلسة بتضيع فجأة وكل الشاشات تقول «سجّل دخولك الأول» —
+      //    وصاحب البيزنس داخل فعلًا (`my_supplier_access` بترجّع is_owner:true).
+      //    السبب: الحارس ده كان بينادي `supabaseBrowser.auth.getSession()` **مباشرة**،
+      //    وده مخالف لقاعدة ٩/٩ («أي شاشة واجهة تنادي getSession مباشرة = قنبلة»):
+      //    مع التنقل المتكرر بيحصل تزاحم على قفل التجديد فالنداء يرجع null.
+      //    ✅ getSessionSafe (مهلة ٤ ثواني، مستحيل تعلّق) + محاولة ترقية واحدة
+      //    قبل ما نحكم عليه بـ«زائر».
+      let session = await getSessionSafe(4000)
+      if (!session?.user) {
+        const up = await ensureSupabaseSession(4000).catch(() => null)
+        if (up?.user) session = up
+      }
 
       // 🚪🚪 (٣ سبتمبر ٢٠٢٦) محمد: «مش بيفتح إضافة الموظفين» من الموبايل.
       //    الحارس ده كان بيسأل عن **جلسة Supabase بس**، ومحمد وأصحاب
