@@ -91,3 +91,36 @@ export function resolveTopGroups<T extends GroupMeta>(
 // و'hybrid' جوّه 'rentals'.
 export const TRACK_TAB_ORDER = ['products', 'rentals', 'services', 'restaurants', 'industry'] as const
 export type MarketTrack = (typeof TRACK_TAB_ORDER)[number]
+
+/**
+ * 🧭 رووتس التراك — **مصدر واحد للعرض والإضافة** (٢١ سبتمبر ٢٠٢٦).
+ *
+ * محمد: «انا مش لاقي قسم المعدات الثقلة مع اني شايف ٥٠٠ نوع معدات تصوير».
+ *
+ * المشكلة: الرووتس كانت بتتحسب `parent_id === null && track === التراك` بس.
+ * وفيه **٣١ قسم نشط أبوهم في تراك تاني** — يعني القسم في «إيجار» وأبوه في
+ * «شركات وصناعة»، فالابن مالوش أب في شجرة الإيجار و**بيختفي خالص**:
+ *   • معدات ثقيله → ٨ أقسام (أوناش · كومبريسور · محطات خلط · أساسات ·
+ *     تحريك تربة · خرسانة · لحام · مولدات)
+ *   • عقارات صناعية → ١٦ (مصنع · مخزن · مخزن مبرد · مركز لوجستي · ورشة …)
+ *   • مقاولات وتشطيبات → ٦ · إلكترونيات → ١
+ *
+ * القاعدة دلوقتي: رووتس التراك = الرووتس الحقيقية **+ أي أب** ليه أولاد في
+ * التراك ده وهو نفسه مش فيه. الأب بيتعرض بأقسامه، بدل ما تتبعتر أو تختفي.
+ */
+export function rootsForTrack<T extends { id: string; parent_id: string | null; track?: string | null }>(
+  all: T[],
+  inTrack: (c: T) => boolean,
+): T[] {
+  const roots = all.filter((c) => c.parent_id === null && inTrack(c))
+  const rootIds = new Set(roots.map((r) => r.id))
+  const byId = new Map(all.map((c) => [c.id, c]))
+  const extra = new Map<string, T>()
+  for (const c of all) {
+    if (!c.parent_id || !inTrack(c) || rootIds.has(c.parent_id)) continue
+    const parent = byId.get(c.parent_id)
+    // الأب مش في رووتس التراك → نرفعه كرووت عشان أولاده يبانوا تحته
+    if (parent && !rootIds.has(parent.id) && !extra.has(parent.id)) extra.set(parent.id, parent)
+  }
+  return [...roots, ...extra.values()]
+}

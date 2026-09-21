@@ -3,7 +3,7 @@
 import CountryToggle from '@/components/CountryToggle'
 import LanguageToggle from '@/components/LanguageToggle'
 import { Suspense, useEffect, useRef, useState, type MouseEvent } from 'react'
-import { resolveTopGroups, TRACK_TAB_ORDER } from '@/lib/categoryGroups'
+import { resolveTopGroups, TRACK_TAB_ORDER, rootsForTrack } from '@/lib/categoryGroups'
 import Link from 'next/link'
 import SmartImage from '@/components/SmartImage'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -196,9 +196,15 @@ function MarketplaceBrowseContent({ initialListings, country = 'EG' }: { initial
           // default landing tab is now 'products' (buy) since 'all' is gone
           : 'products')) as TrackTab
   )
+  // 🧭 (٢١/٩/٢٠٢٦) محمد: «مش لاقي قسم المعدات الثقلة». الرووتس كانت `parent_id === null`
+  //    بس — و٣١ قسم نشط أبوهم في تراك تاني (معدات ثقيله · عقارات صناعية · مقاولات)
+  //    كانوا بيختفوا خالص. `rootsForTrack` بترفع الأب كرووت عشان أقسامه تبان.
+  const inActiveTrack = (c: Category) => c.track === activeTrack
+    || (activeTrack === 'rentals' && c.track === 'hybrid')
+    || (activeTrack === 'products' && c.track === 'sales')
   const rootCategories = activeTrack === 'all'
     ? allRootCategories
-    : allRootCategories.filter(c => c.track === activeTrack || (activeTrack === 'rentals' && c.track === 'hybrid') || (activeTrack === 'products' && c.track === 'sales'))
+    : rootsForTrack(allCategories, inActiveTrack)
 
   // كل تصنيفات التراك (مش الرووتس بس) — الفلتر بالمجموعة بيحتاجها لأن
   // مجموعات بعض التراكات عايشة على الأولاد (شركات وصناعة).
