@@ -3041,6 +3041,10 @@ hydration بتفشل → الأزرار ميتة (الـ٣ شرط) والشاش�
   select c.slug, c.track, pa.name_ar as الأب, pa.track from categories c
   join categories pa on pa.id=c.parent_id where c.is_active and pa.is_active and c.track<>pa.track;
   ```
-- ⚠️ **لسه ناقص:** اتطبّق في `/marketplace` بس. ويزارد `/add-listing` بيبني `mains` من
-  `add-listing/page.tsx` بشكل مجمّع (مش شجرة خام) فمحتاج نفس الإصلاح — **وقاعدة ٢/٩
-  «الإضافة تطابق العرض» لسه مكسورة هنا**.
+- ✅ **اتطبّق في الاتنين** (٢١/٩ — محمد: «زبط الويزارد برضه»): `/marketplace` عبر
+  `rootsForTrack`، و`/add-listing` عبر `visibleMains` (الرووت بيظهر لو هو في التراك **أو**
+  فيه أقسام في التراك، وأقسامه بتتفلتر عليه). تاب الصناعة فضل كامل زي ما هو.
+- 🐞 **وفخ تاني في الويزارد:** `track` كان **بيتشال من الأقسام الفرعية** في
+  `add-listing/page.tsx` — نفس اللي حصل مع حقول المجموعة يوم ٢/٩ — فالويزارد ماكانش
+  يعرف تراك القسم أصلًا. ⚠️ **أي حقل جديد بيتقري منه قرار عرض لازم يتمرّر للـsubs كمان**،
+  مش للرووتس بس.
